@@ -23,5 +23,5 @@ if not exist "node_modules" (
   )
 )
 
-echo Starting Web Learning Lab at http://localhost:5181/
+echo Starting Web Learning Lab at http://localhost:5181/ (SQL Learning Lab uses 5180)
 call npm run dev -- --open --port 5181
