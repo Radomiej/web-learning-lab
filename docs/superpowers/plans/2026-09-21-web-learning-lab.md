@@ -54,7 +54,7 @@
 **Interfaces:**
 - Vite entry point at src/main.jsx and App renders a named application root.
 - npm scripts: dev, build, preview, test, and test:watch.
-- start-course.cmd runs npm install only when node_modules is absent and then runs npm run dev -- --open --port 5180.
+- start-course.cmd runs npm install only when node_modules is absent and then runs npm run dev -- --open --port 5181.
 
 - [ ] Step 1: Write the failing smoke test.
 
@@ -720,7 +720,7 @@
 - Create: src/components/accessibility.test.jsx
 
 **Interfaces:**
-- README documents Node 18+, one-click start, manual start, port 5180, reset local progress, and 39-lesson / 24-layout-task / 8-React-lesson scope.
+- README documents Node 18+, one-click start, manual start, port 5181, reset local progress, and 39-lesson / 24-layout-task / 8-React-lesson scope.
 - Launcher prints a clear message on missing Node/npm and exits with a nonzero status.
 - Responsive UI supports desktop, tablet, and 360–430 CSS px widths without host horizontal overflow.
 - Interactive controls expose labels and visible focus indicators.
@@ -750,7 +750,7 @@
     Add focus-visible styles for sidebar items, tabs, editor buttons, and task controls.
     Update README with:
       npm install
-      npm run dev -- --port 5180
+      npm run dev -- --port 5181
       npm test
       npm run build
 
@@ -786,8 +786,8 @@
 
 - [ ] Step 2: Start the new app on the reserved port.
 
-    Run: npm run dev -- --port 5180
-    Expected: Vite reports http://localhost:5180/ without falling back to another port.
+    Run: npm run dev -- --port 5181
+    Expected: Vite reports http://localhost:5181/ without falling back to another port.
 
 - [ ] Step 3: Verify the core browser flow at a desktop viewport.
     Open the app, select HTML lesson 2, switch through all four tabs, edit HTML and CSS, click Uruchom, and confirm the iframe renders.
@@ -811,4 +811,3 @@
 
     Run: git add docs/qa-checklist.md docs/fidelity-ledger.md
     Run: git commit -m "qa: verify web learning lab workflow"
-
