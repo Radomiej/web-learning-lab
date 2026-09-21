@@ -1,4 +1,5 @@
 const BRIDGE_SOURCE = 'web-learning-lab';
+import { compileJsx, getReactRuntimeScripts } from './reactRuntimeAssets.js';
 
 function escapeInlineScript(source = '') {
   return String(source).replace(/<\/script/gi, '<\\/script');
@@ -152,10 +153,14 @@ export function buildPreviewDocument(files = {}, options = {}) {
   const normalized = normalizeHtmlDocument(files.html ?? '');
   const baseCss = String(files.baseCss ?? '');
   const themeCss = String(files.themeCss ?? '');
-  const studentJavaScript = escapeInlineScript(files.js ?? '');
+  const isReactTrack = options.track === 'react';
+  const compiledStudentCode = isReactTrack ? compileJsx(files.js ?? '').code : String(files.js ?? '');
+  const studentJavaScript = escapeInlineScript(compiledStudentCode);
   const bridge = createRuntimeBridge({ requestedSignals: options.requestedSignals ?? [] })
     .replace('TRACK_PLACEHOLDER', String(options.track ?? 'html'));
-  const runtimeScripts = (options.runtimeScripts ?? [])
+  const reactRuntime = isReactTrack ? getReactRuntimeScripts() : null;
+  const localRuntimeScripts = reactRuntime ? [reactRuntime.react, reactRuntime.reactDom] : [];
+  const runtimeScripts = [...localRuntimeScripts, ...(options.runtimeScripts ?? [])]
     .map((script) => `<script data-runtime="true">${escapeInlineScript(script)}</script>`)
     .join('');
   const styleMarkup = [

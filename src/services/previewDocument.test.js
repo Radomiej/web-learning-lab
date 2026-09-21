@@ -37,3 +37,16 @@ test('escapes script end markers inside student JavaScript', () => {
   }, { track: 'html' });
   expect(document).toContain('<\\/script>');
 });
+
+test('adds local React, ReactDOM, and compiled JSX only for the React track', () => {
+  const document = buildPreviewDocument({
+    html: '<div id="root"></div>',
+    baseCss: '',
+    themeCss: '',
+    js: 'const App = () => <button>Gotowe</button>; ReactDOM.createRoot(document.getElementById("root")).render(<App />);',
+  }, { track: 'react' });
+  expect(document).toContain('ReactDOM');
+  expect(document).toContain('React.createElement');
+  expect(document.indexOf('React.createElement')).toBeGreaterThan(document.indexOf('data-runtime="true"'));
+  expect(document).not.toMatch(/<script[^>]+src=/i);
+});
