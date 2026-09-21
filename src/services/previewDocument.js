@@ -2,7 +2,9 @@ const BRIDGE_SOURCE = 'web-learning-lab';
 import { compileJsx, getReactRuntimeScripts } from './reactRuntimeAssets.js';
 
 function escapeInlineScript(source = '') {
-  return String(source).replace(/<\/script/gi, '<\\/script');
+  return String(source)
+    .replace(/<\/script/gi, '\\x3c/script')
+    .replace(/<script/gi, '\\x3cscript');
 }
 
 function extractAttributeText(openingTag = '') {
@@ -23,7 +25,7 @@ export function normalizeHtmlDocument(html = '') {
     return {
       doctype: '<!doctype html>',
       htmlAttributes: 'lang="pl"',
-      headMarkup: '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0>',
+      headMarkup: '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">',
       bodyMarkup: source,
     };
   }
@@ -182,10 +184,12 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
     window.setTimeout(snapshot, 0);
   });
 
-  window.setTimeout(() => {
-    send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });
-    snapshot();
-  }, 0);
+  window.addEventListener('load', () => {
+    window.setTimeout(() => {
+      send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });
+      snapshot();
+    }, 0);
+  });
 })();
 `;
 }
@@ -201,13 +205,15 @@ export function buildPreviewDocument(files = {}, options = {}) {
     .replace('TRACK_PLACEHOLDER', String(options.track ?? 'html'));
   const reactRuntime = isReactTrack ? getReactRuntimeScripts() : null;
   const localRuntimeScripts = reactRuntime ? [reactRuntime.react, reactRuntime.reactDom] : [];
-  const runtimeScripts = [...localRuntimeScripts, ...(options.runtimeScripts ?? [])]
+  const runtimeScripts = localRuntimeScripts
+    .concat(options.runtimeScripts ?? [])
     .map((script) => `<script data-runtime="true">${escapeInlineScript(script)}</script>`)
     .join('');
+  const bridgeScript = `<script data-runtime="bridge">${escapeInlineScript(bridge)}</script>`;
   const styleMarkup = [
     `<style data-file="base.css">${baseCss}</style>`,
     `<style data-file="theme.css">${themeCss}</style>`,
   ].join('');
 
-  return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${styleMarkup}</head><body>${normalized.bodyMarkup}${runtimeScripts}<script data-runtime="bridge">${escapeInlineScript(bridge)}</script><script data-file="script.js">${studentJavaScript}</script></body></html>`;
+  return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${styleMarkup}</head><body>${normalized.bodyMarkup}${bridgeScript}${runtimeScripts}<script data-file="script.js">${studentJavaScript}</script></body></html>`;
 }

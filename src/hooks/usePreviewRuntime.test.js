@@ -21,5 +21,27 @@ test('React track marks the runtime as local-react mode', () => {
     'react',
   ));
   expect(result.current.previewDocument).toContain('ReactDOM');
-  expect(result.current.previewDocument).not.toContain('https://');
+  expect(result.current.previewDocument).not.toMatch(/<script[^>]+src="https?:/i);
+});
+
+test('resets runtime state when the active task scope changes', () => {
+  const { result, rerender } = renderHook(
+    ({ scopeKey }) => usePreviewRuntime(
+      { html: '<p>ok</p>', baseCss: '', themeCss: '', js: '' },
+      [],
+      'html',
+      scopeKey,
+    ),
+    { initialProps: { scopeKey: 'html-02-guided' } },
+  );
+
+  act(() => result.current.runPreview());
+  expect(result.current.runtimeState.status).toBe('running');
+
+  rerender({ scopeKey: 'layout-15-guided' });
+
+  expect(result.current.runtimeState.status).toBe('idle');
+  expect(result.current.runtimeState.messages).toEqual([]);
+  expect(result.current.runtimeState.checkResults).toEqual([]);
+  expect(result.current.runtimeState.scopeKey).toBe('layout-15-guided');
 });

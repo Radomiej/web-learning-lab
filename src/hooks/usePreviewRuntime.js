@@ -11,7 +11,8 @@ const emptySignals = () => ({
   react: {},
 });
 
-const initialRuntimeState = () => ({
+const initialRuntimeState = (scopeKey = 'default') => ({
+  scopeKey,
   status: 'idle',
   messages: [],
   errors: [],
@@ -30,13 +31,14 @@ function mergeSignals(previous, payload = {}) {
   };
 }
 
-export function usePreviewRuntime(files, checks = [], track = 'html') {
+export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey = 'default') {
   const [previewKey, setPreviewKey] = useState(1);
-  const [runtimeState, setRuntimeState] = useState(initialRuntimeState);
+  const [runtimeState, setRuntimeState] = useState(() => initialRuntimeState(scopeKey));
   const frameRef = useRef(null);
   const filesRef = useRef(files);
   const checksRef = useRef(checks);
   const trackRef = useRef(track);
+  const scopeKeyRef = useRef(scopeKey);
   const signalsRef = useRef(emptySignals());
   const pendingCheckRef = useRef(false);
   const evaluationTimerRef = useRef(null);
@@ -44,6 +46,8 @@ export function usePreviewRuntime(files, checks = [], track = 'html') {
   useEffect(() => { filesRef.current = files; }, [files]);
   useEffect(() => { checksRef.current = checks; }, [checks]);
   useEffect(() => { trackRef.current = track; }, [track]);
+
+  if (scopeKeyRef.current !== scopeKey) scopeKeyRef.current = scopeKey;
 
   const previewDocument = useMemo(() => buildPreviewDocument(files, {
     track,
@@ -63,8 +67,10 @@ export function usePreviewRuntime(files, checks = [], track = 'html') {
 
   const scheduleCheckEvaluation = useCallback(() => {
     clearEvaluationTimer();
+    const evaluationScope = scopeKeyRef.current;
     evaluationTimerRef.current = window.setTimeout(() => {
       evaluationTimerRef.current = null;
+      if (scopeKeyRef.current !== evaluationScope) return;
       const result = evaluateChecks(checksRef.current, {
         files: filesRef.current,
         signals: signalsRef.current,
@@ -72,6 +78,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html') {
       pendingCheckRef.current = false;
       setRuntimeState((current) => ({
         ...current,
+        scopeKey: evaluationScope,
         status: current.errors.length > 0 ? 'error' : 'ready',
         checkResults: result.results,
       }));
@@ -150,7 +157,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html') {
     pendingCheckRef.current = false;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
-    setRuntimeState({ ...initialRuntimeState(), status: 'running' });
+    setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
     setPreviewKey((key) => key + 1);
   }, [clearEvaluationTimer]);
 
@@ -158,7 +165,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html') {
     pendingCheckRef.current = true;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
-    setRuntimeState({ ...initialRuntimeState(), status: 'running' });
+    setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
     setPreviewKey((key) => key + 1);
   }, [clearEvaluationTimer]);
 
@@ -166,15 +173,26 @@ export function usePreviewRuntime(files, checks = [], track = 'html') {
     pendingCheckRef.current = false;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
-    setRuntimeState(initialRuntimeState());
+    setRuntimeState(initialRuntimeState(scopeKeyRef.current));
   }, [clearEvaluationTimer]);
 
+  useEffect(() => {
+    pendingCheckRef.current = false;
+    clearEvaluationTimer();
+    signalsRef.current = emptySignals();
+    setRuntimeState(initialRuntimeState(scopeKey));
+  }, [clearEvaluationTimer, scopeKey]);
+
   useEffect(() => () => clearEvaluationTimer(), [clearEvaluationTimer]);
+
+  const visibleRuntimeState = runtimeState.scopeKey === scopeKey
+    ? runtimeState
+    : initialRuntimeState(scopeKey);
 
   return {
     previewDocument,
     previewKey,
-    runtimeState,
+    runtimeState: visibleRuntimeState,
     runPreview,
     checkPreview,
     clearRuntime,

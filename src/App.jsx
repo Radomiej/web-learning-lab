@@ -40,7 +40,7 @@ export default function App() {
     ...(filesByTask[activeTask.id] || {}),
   }), [activeTask, filesByTask, selectedLesson.starter]);
 
-  const previewRuntime = usePreviewRuntime(files, activeTask.checks, selectedLesson.track);
+  const previewRuntime = usePreviewRuntime(files, activeTask.checks, selectedLesson.track, activeTask.id);
   const runtimeLabel = previewRuntime.runtimeState.status === 'running'
     ? 'Uruchamiam'
     : previewRuntime.runtimeState.status === 'error'

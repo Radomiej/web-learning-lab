@@ -15,6 +15,17 @@ test('places base CSS before theme CSS and student JavaScript after both', () =>
   );
 });
 
+test('waits for the iframe load event before collecting the initial snapshot', () => {
+  const document = buildPreviewDocument({
+    html: '<p>ready</p>',
+    baseCss: '',
+    themeCss: '',
+    js: '',
+  }, { track: 'html' });
+
+  expect(document).toContain("window.addEventListener('load'");
+});
+
 test('does not duplicate head or body for a full HTML document', () => {
   const document = buildPreviewDocument({
     html: '<!doctype html><html lang="pl"><head><title>Ćwiczenie</title></head><body><h1>Start</h1></body></html>',
@@ -28,6 +39,17 @@ test('does not duplicate head or body for a full HTML document', () => {
   expect(document).toContain('<title>Ćwiczenie</title>');
 });
 
+test('builds a valid viewport meta tag for HTML fragments', () => {
+  const document = buildPreviewDocument({
+    html: '<div id="root"></div>',
+    baseCss: '',
+    themeCss: '',
+    js: '',
+  }, { track: 'react' });
+
+  expect(document).toContain('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
+});
+
 test('escapes script end markers inside student JavaScript', () => {
   const document = buildPreviewDocument({
     html: '<p>safe</p>',
@@ -35,7 +57,19 @@ test('escapes script end markers inside student JavaScript', () => {
     themeCss: '',
     js: 'const label = "</script>";',
   }, { track: 'html' });
-  expect(document).toContain('<\\/script>');
+  expect(document).toContain('\\x3c/script>');
+});
+
+test('escapes script openers inside inline runtime code', () => {
+  const document = buildPreviewDocument({
+    html: '<div id="root"></div>',
+    baseCss: '',
+    themeCss: '',
+    js: '',
+  }, { track: 'react' });
+
+  expect(document).toContain('\\x3cscript');
+  expect(document).not.toContain("'<script><' + '/script>'");
 });
 
 test('adds local React, ReactDOM, and compiled JSX only for the React track', () => {

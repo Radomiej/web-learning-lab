@@ -15,6 +15,8 @@ test('returns non-empty local React and ReactDOM runtime scripts', () => {
   expect(runtime.reactDom).toContain('ReactDOM');
   expect(runtime.react.startsWith('http')).toBe(false);
   expect(runtime.reactDom.startsWith('http')).toBe(false);
+  expect(() => new Function(runtime.react)).not.toThrow();
+  expect(() => new Function(runtime.reactDom)).not.toThrow();
 });
 
 test('reports JSX errors as warnings instead of throwing from the editor', () => {

@@ -1,6 +1,8 @@
-import Babel from '@babel/standalone';
+import * as BabelNamespace from '@babel/standalone';
 import reactRuntime from '../assets/react.development.js?raw';
 import reactDomRuntime from '../assets/react-dom.development.js?raw';
+
+const Babel = BabelNamespace.default ?? BabelNamespace;
 
 export function compileJsx(source = '') {
   try {
@@ -21,9 +23,8 @@ export function compileJsx(source = '') {
 }
 
 export function getReactRuntimeScripts() {
-  const localScript = (source) => source.replace(/https?:\/\/[^\s'\"]+/g, '');
   return {
-    react: localScript(reactRuntime),
-    reactDom: localScript(reactDomRuntime),
+    react: reactRuntime,
+    reactDom: reactDomRuntime,
   };
 }
