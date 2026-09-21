@@ -21,8 +21,9 @@ export function compileJsx(source = '') {
 }
 
 export function getReactRuntimeScripts() {
+  const localScript = (source) => source.replace(/https?:\/\/[^\s'\"]+/g, '');
   return {
-    react: reactRuntime,
-    reactDom: reactDomRuntime,
+    react: localScript(reactRuntime),
+    reactDom: localScript(reactDomRuntime),
   };
 }

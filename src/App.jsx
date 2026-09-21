@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { allLessons, trackOrder, tracks } from './data/curriculum.js';
-import { evaluateChecks } from './services/lessonValidator.js';
-import { buildPreviewDocument } from './services/previewDocument.js';
 import { useCourseProgress } from './hooks/useCourseProgress.js';
+import { usePreviewRuntime } from './hooks/usePreviewRuntime.js';
 import AppShell from './components/AppShell.jsx';
 import LessonWorkspace from './components/LessonWorkspace.jsx';
 import MobileHeader from './components/MobileHeader.jsx';
@@ -26,18 +25,11 @@ export default function App() {
   const [activeTaskId, setActiveTaskId] = useState(selectedLesson.tasks[0]?.id);
   const [activeFile, setActiveFile] = useState('html');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [previewKey, setPreviewKey] = useState(1);
-  const [runtimeState, setRuntimeState] = useState({ status: 'idle', label: 'Gotowe' });
-  const [runtimeMessages, setRuntimeMessages] = useState([]);
-  const [runtimeErrors, setRuntimeErrors] = useState([]);
-  const [runtimeSignals, setRuntimeSignals] = useState({ dom: {}, styles: {}, viewport: {}, interactions: {}, runtimeErrors: [], react: {} });
-  const [checkResults, setCheckResults] = useState([]);
 
   useEffect(() => {
     if (!selectedLesson.tasks.some((task) => task.id === activeTaskId)) {
       setActiveTaskId(selectedLesson.tasks[0]?.id);
       setActiveFile('html');
-      setCheckResults([]);
     }
   }, [activeTaskId, selectedLesson]);
 
@@ -47,70 +39,34 @@ export default function App() {
     ...activeTask.starter,
     ...(filesByTask[activeTask.id] || {}),
   }), [activeTask, filesByTask, selectedLesson.starter]);
-  const previewDocument = useMemo(() => buildPreviewDocument(files, {
-    track: selectedLesson.track,
-    requestedSignals: activeTask.checks,
-  }), [activeTask.checks, files, selectedLesson.track]);
 
-  const handlePreviewMessage = (message) => {
-    if (message?.type === 'load') {
-      setRuntimeState((current) => current.status === 'idle' && current.label === 'Gotowe'
-        ? current
-        : { status: 'idle', label: 'Gotowe' });
-      return;
-    }
-    if (!message || message.source !== 'web-learning-lab') return;
-    if (message.type === 'ready') setRuntimeState({ status: 'idle', label: 'Gotowe' });
-    if (message.type === 'console') setRuntimeMessages((current) => [...current.slice(-29), message.payload]);
-    if (message.type === 'runtime-error') {
-      const errorMessage = message.payload?.message || 'Nieznany błąd runtime';
-      setRuntimeErrors((current) => [...current, errorMessage]);
-      setRuntimeState({ status: 'error', label: 'Błąd' });
-    }
-    if (message.type === 'signals') {
-      setRuntimeSignals((current) => ({
-        ...current,
-        ...message.payload,
-        dom: { ...current.dom, ...(message.payload?.dom || {}) },
-        styles: { ...current.styles, ...(message.payload?.styles || {}) },
-        interactions: { ...current.interactions, ...(message.payload?.interactions || {}) },
-      }));
-    }
-  };
+  const previewRuntime = usePreviewRuntime(files, activeTask.checks, selectedLesson.track);
+  const runtimeLabel = previewRuntime.runtimeState.status === 'running'
+    ? 'Uruchamiam'
+    : previewRuntime.runtimeState.status === 'error'
+      ? 'Błąd'
+      : 'Gotowe';
 
-  const handleRun = () => {
-    setRuntimeMessages([]);
-    setRuntimeErrors([]);
-    setRuntimeSignals({ dom: {}, styles: {}, viewport: {}, interactions: {}, runtimeErrors: [], react: {} });
-    setCheckResults([]);
-    setRuntimeState({ status: 'running', label: 'Uruchamiam' });
-    setPreviewKey((key) => key + 1);
-  };
-
-  const handleCheck = () => {
-    const result = evaluateChecks(activeTask.checks, {
-      files,
-      signals: { ...runtimeSignals, runtimeErrors },
-    });
-    setCheckResults(result.results);
-    if (result.total > 0 && result.passed === result.total) markTaskComplete(activeTask.id);
-  };
+  useEffect(() => {
+    const results = previewRuntime.runtimeState.checkResults;
+    if (results.length > 0 && results.every((result) => result.passed)) markTaskComplete(activeTask.id);
+  }, [activeTask.id, markTaskComplete, previewRuntime.runtimeState.checkResults]);
 
   const handleReset = () => {
     resetTask(activeTask.id);
-    setCheckResults([]);
-    setPreviewKey((key) => key + 1);
+    previewRuntime.clearRuntime();
+    previewRuntime.runPreview();
   };
 
   const handleSolution = () => {
     updateFiles(activeTask.id, activeTask.solution);
-    setPreviewKey((key) => key + 1);
+    previewRuntime.runPreview();
   };
 
   const handleTaskChange = (taskId) => {
     setActiveTaskId(taskId);
     setActiveFile('html');
-    setCheckResults([]);
+    previewRuntime.clearRuntime();
   };
 
   const sidebar = (
@@ -129,21 +85,21 @@ export default function App() {
 
   const main = (
     <>
-      <MobileHeader onOpen={() => setSidebarOpen(true)} runtimeLabel={runtimeState.label} />
+      <MobileHeader onOpen={() => setSidebarOpen(true)} runtimeLabel={runtimeLabel} />
       <LessonWorkspace
         lesson={selectedLesson}
         activeTask={activeTask}
         activeFile={activeFile}
         files={files}
         completedTasks={completedTasks}
-        checkResults={checkResults}
-        runtimeErrors={runtimeErrors}
+        checkResults={previewRuntime.runtimeState.checkResults}
+        runtimeErrors={previewRuntime.runtimeState.errors}
         onTaskChange={handleTaskChange}
         onFileChange={setActiveFile}
         onCodeChange={(fileKey, value) => updateFiles(activeTask.id, { [fileKey]: value })}
-        onRun={handleRun}
+        onRun={previewRuntime.runPreview}
         onReset={handleReset}
-        onCheck={handleCheck}
+        onCheck={previewRuntime.checkPreview}
         onSolution={handleSolution}
       />
     </>
@@ -152,12 +108,13 @@ export default function App() {
   const inspector = (
     <>
       <PreviewInspector
-        previewDocument={previewDocument}
-        previewKey={previewKey}
-        onMessage={handlePreviewMessage}
-        runtimeState={runtimeState}
+        previewDocument={previewRuntime.previewDocument}
+        previewKey={previewRuntime.previewKey}
+        onMessage={previewRuntime.handleMessage}
+        onFrameReady={previewRuntime.setFrame}
+        runtimeState={{ ...previewRuntime.runtimeState, label: runtimeLabel }}
       />
-      <RuntimeConsole messages={runtimeMessages} />
+      <RuntimeConsole messages={previewRuntime.runtimeState.messages} />
     </>
   );
 

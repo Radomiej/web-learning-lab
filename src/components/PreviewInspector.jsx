@@ -1,4 +1,17 @@
-export default function PreviewInspector({ previewDocument, previewKey, onMessage, runtimeState = {} }) {
+import { useEffect, useRef } from 'react';
+
+export default function PreviewInspector({ previewDocument, previewKey, onMessage, onFrameReady, runtimeState = {} }) {
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    const handleWindowMessage = (event) => {
+      if (!frameRef.current || event.source !== frameRef.current.contentWindow) return;
+      onMessage?.(event.data);
+    };
+    window.addEventListener('message', handleWindowMessage);
+    return () => window.removeEventListener('message', handleWindowMessage);
+  }, [onMessage]);
+
   return (
     <section className="preview-card" aria-labelledby="preview-title">
       <div className="preview-heading">
@@ -13,11 +26,15 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
       <div className="preview-frame-wrap">
         <iframe
           key={previewKey}
+          ref={frameRef}
           className="preview-frame"
           title="Podgląd strony ucznia"
           sandbox="allow-scripts"
           srcDoc={previewDocument}
-          onLoad={(event) => onMessage?.({ type: 'load', frame: event.currentTarget })}
+          onLoad={(event) => {
+            onFrameReady?.(event.currentTarget);
+            onMessage?.({ type: 'load', frame: event.currentTarget });
+          }}
         />
       </div>
       <div className="preview-footer">

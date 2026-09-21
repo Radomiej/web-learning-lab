@@ -157,7 +157,12 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
 
   window.addEventListener('message', (event) => {
     const message = event.data;
-    if (!message || message.source !== source || message.type !== 'run-action') return;
+    if (!message || message.source !== source) return;
+    if (message.type === 'collect-signals') {
+      snapshot();
+      return;
+    }
+    if (message.type !== 'run-action') return;
     const action = message.payload || {};
     let element = null;
     try { element = document.querySelector(action.selector); } catch {}
