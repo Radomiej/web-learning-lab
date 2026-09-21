@@ -61,7 +61,7 @@ const check = (id, type, label, hint, fields = {}) => ({
 
 const standardTasks = (definition, starter) => [
   createTask({
-    id: `${definition.id}-guided`,
+    id: `${definition.track}-${String(definition.order).padStart(2, '0')}-guided`,
     mode: 'guided',
     title: `Prowadzone: ${definition.focus}`,
     prompt: `Wykonaj pierwszy krok lekcji „${definition.title}”. Skorzystaj z podpowiedzi i sprawdź wynik.`,
@@ -71,7 +71,7 @@ const standardTasks = (definition, starter) => [
     hint: `Zacznij od małej, poprawnej zmiany związanej z: ${definition.focus}.`,
   }),
   createTask({
-    id: `${definition.id}-independent`,
+    id: `${definition.track}-${String(definition.order).padStart(2, '0')}-independent`,
     mode: 'independent',
     title: `Samodzielnie: ${definition.focus}`,
     prompt: `Zbuduj własny mały przykład pokazujący temat: ${definition.focus}. Zadbaj o czytelne nazwy i semantykę.`,
@@ -180,7 +180,7 @@ const layoutTasks = (definition, starter) => {
   ];
 
   return modes.map(([mode, label], index) => createTask({
-    id: `${definition.id}-${mode}`,
+    id: `${definition.track}-${String(definition.order).padStart(2, '0')}-${mode}`,
     mode,
     title: `${label}: ${definition.focus}`,
     prompt: index === 0
