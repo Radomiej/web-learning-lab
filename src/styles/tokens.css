@@ -1,0 +1,26 @@
+:root {
+  --navy-950: #0e2438;
+  --navy-900: #122c44;
+  --navy-800: #183a56;
+  --ink-900: #17324d;
+  --ink-700: #47647b;
+  --ink-500: #71889a;
+  --paper: #ffffff;
+  --canvas: #f3f7fa;
+  --line: #dfe9ef;
+  --line-strong: #c7d8e2;
+  --teal-500: #25b8a7;
+  --teal-600: #15998e;
+  --teal-soft: #dff6f1;
+  --blue-soft: #e6f0ff;
+  --yellow-soft: #fff6d9;
+  --red-soft: #fff0ef;
+  --green: #23976f;
+  --red: #c8544e;
+  --shadow-sm: 0 1px 2px rgb(16 42 67 / 5%);
+  --shadow-md: 0 12px 28px rgb(16 42 67 / 9%);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}

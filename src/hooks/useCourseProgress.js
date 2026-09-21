@@ -23,9 +23,10 @@ function normalizeBundle(bundle) {
 
 export function useCourseProgress(lessons = []) {
   const firstLesson = lessons[0] || null;
+  const initialLesson = lessons.find((lesson) => lesson.order === 2) || firstLesson;
   const defaultProgress = {
-    selectedTrack: firstLesson?.track || 'html',
-    selectedLessonId: firstLesson?.id || '',
+    selectedTrack: initialLesson?.track || 'html',
+    selectedLessonId: initialLesson?.id || '',
     completedTasks: [],
   };
   const [storedProgress, setStoredProgress] = useLocalStorage(PROGRESS_STORAGE_KEY, defaultProgress);
