@@ -70,6 +70,25 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
     }
   }
 
+  function selectorMatches(element, selector) {
+    if (!element || !selector) return false;
+    try { return element.matches(selector); } catch { return false; }
+  }
+
+  function describeElement(element) {
+    if (!element) return { exists: false, text: '', attrs: {} };
+    return {
+      exists: true,
+      text: element.textContent || '',
+      className: typeof element.className === 'string' ? element.className : '',
+      visible: Boolean(element.getClientRects().length),
+      attrs: Array.from(element.attributes).reduce((result, attribute) => {
+        result[attribute.name] = attribute.value;
+        return result;
+      }, {}),
+    };
+  }
+
   function snapshot() {
     const elements = Array.from(document.querySelectorAll('*')).map((element) => ({
       tagName: element.tagName.toLowerCase(),
@@ -92,15 +111,30 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
           value: element ? getComputedStyle(element).getPropertyValue(signal.property).trim() : null,
         };
       });
+    const dom = requestedSignals.reduce((result, signal) => {
+      if (!signal || !signal.selector || !['elementExists', 'attributeEquals', 'textContains', 'reactRendered'].includes(signal.type)) return result;
+      let element = null;
+      try { element = document.querySelector(signal.selector); } catch {}
+      result[signal.selector] = describeElement(element);
+      return result;
+    }, {});
+    const reactSignal = requestedSignals.find((signal) => signal && signal.type === 'reactRendered');
+    let reactTarget = null;
+    try { reactTarget = document.querySelector(reactSignal?.selector || '#root'); } catch {}
 
     send('signals', {
       html: document.documentElement.outerHTML,
       text: document.body ? document.body.innerText : '',
       elements,
+      dom,
       styles,
+      react: {
+        rootReady: Boolean(window.React && window.ReactDOM && reactTarget && reactTarget.childElementCount > 0),
+      },
       viewport: {
         width: window.innerWidth,
         height: window.innerHeight,
+        clientWidth: document.documentElement.clientWidth || window.innerWidth,
         scrollWidth: Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0),
       },
     });
@@ -128,7 +162,7 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
     let element = null;
     try { element = document.querySelector(action.selector); } catch {}
     if (!element) {
-      send('signals', { action: { ok: false, selector: action.selector, reason: 'missing-selector' } });
+      send('signals', { interactions: { [action.checkId || action.id || action.selector]: { ok: false, selector: action.selector, reason: 'missing-selector' } }, action: { ok: false, selector: action.selector, reason: 'missing-selector' } });
       return;
     }
     if (action.action === 'click') element.click();
@@ -137,7 +171,9 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
       element.dispatchEvent(new Event('input', { bubbles: true }));
       element.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    send('signals', { action: { ok: true, selector: action.selector, matched: selectorMatches(element, action.selector) } });
+    const interactionId = action.checkId || action.id || action.selector;
+    const interaction = describeElement(element);
+    send('signals', { interactions: { [interactionId]: { ...interaction, ok: true, selector: action.selector, matched: selectorMatches(element, action.selector) } }, action: { ok: true, selector: action.selector, matched: selectorMatches(element, action.selector) } });
     window.setTimeout(snapshot, 0);
   });
 
