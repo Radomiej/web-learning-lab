@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" style="background-color:#ffffff" shape-rendering="geometricPrecision">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#000000">Model pudełkowy CSS</text>
+  <rect x="135" y="92" width="730" height="400" fill="#f4f4f4" stroke="#000000" stroke-width="4" stroke-dasharray="14 8"/>
+  <rect x="205" y="145" width="590" height="294" fill="#e3e3e3" stroke="#000000" stroke-width="4"/>
+  <rect x="275" y="198" width="450" height="188" fill="#c9c9c9" stroke="#000000" stroke-width="4"/>
+  <rect x="350" y="252" width="300" height="80" fill="#ffffff" stroke="#000000" stroke-width="4"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#000000">
+    <text x="500" y="120" font-size="25" font-weight="700">MARGIN - margines</text>
+    <text x="500" y="177" font-size="24" font-weight="700">BORDER - obramowanie</text>
+    <text x="500" y="230" font-size="23" font-weight="700">PADDING - odstęp wewnętrzny</text>
+    <text x="500" y="287" font-size="25" font-weight="700">CONTENT</text>
+    <text x="500" y="316" font-size="19">treść elementu</text>
+  </g>
+  <g stroke="#000000" stroke-width="3" fill="#000000">
+    <path d="M90 290 H125 L113 282 M125 290 L113 298"/>
+    <path d="M910 290 H875 L887 282 M875 290 L887 298"/>
+  </g>
+  <g font-family="Arial, sans-serif" fill="#000000">
+    <text x="24" y="258" font-size="18">zewnętrzny</text>
+    <text x="24" y="282" font-size="18">odstęp</text>
+    <text x="24" y="306" font-size="18">od sąsiadów</text>
+    <text x="875" y="258" font-size="18">wewnętrzny</text>
+    <text x="875" y="282" font-size="18">odstęp od</text>
+    <text x="875" y="306" font-size="18">krawędzi</text>
+  </g>
+  <text x="500" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#000000">box-sizing: border-box sprawia, że width obejmuje padding i border.</text>
+</svg>

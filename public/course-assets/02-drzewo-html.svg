@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="640" viewBox="0 0 1100 640" style="background-color:#ffffff" shape-rendering="geometricPrecision">
+  <rect x="0" y="0" width="1100" height="640" fill="#ffffff"/>
+  <text x="550" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#000000">Drzewo dokumentu HTML5</text>
+  <g stroke="#000000" stroke-width="3" fill="none">
+    <path d="M550 100 V145 M550 145 H290 M550 145 H810 M290 145 V190 M810 145 V190"/>
+    <path d="M290 255 V300 M290 300 H125 M290 300 H455"/>
+    <path d="M810 255 V300 M810 300 H645 M810 300 H975"/>
+    <path d="M810 300 V445"/>
+  </g>
+  <g stroke="#000000" stroke-width="3" fill="#ffffff">
+    <rect x="415" y="58" width="270" height="48" rx="8"/>
+    <rect x="175" y="190" width="230" height="65" rx="10"/>
+    <rect x="695" y="190" width="230" height="65" rx="10"/>
+    <rect x="35" y="300" width="180" height="70" rx="10"/>
+    <rect x="365" y="300" width="180" height="70" rx="10"/>
+    <rect x="555" y="300" width="180" height="70" rx="10"/>
+    <rect x="885" y="300" width="180" height="70" rx="10"/>
+    <rect x="720" y="445" width="180" height="70" rx="10"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#000000">
+    <text x="550" y="90" font-size="24" font-weight="700">html lang="pl"</text>
+    <text x="290" y="225" font-size="25" font-weight="700">head</text>
+    <text x="290" y="246" font-size="18">metadane</text>
+    <text x="810" y="225" font-size="25" font-weight="700">body</text>
+    <text x="810" y="246" font-size="18">widok</text>
+    <text x="125" y="332" font-size="22" font-weight="700">meta</text>
+    <text x="125" y="355" font-size="17">kodowanie</text>
+    <text x="455" y="332" font-size="22" font-weight="700">title</text>
+    <text x="455" y="355" font-size="17">tytuł karty</text>
+    <text x="645" y="332" font-size="21" font-weight="700">header / nav</text>
+    <text x="645" y="355" font-size="17">góra strony</text>
+    <text x="975" y="332" font-size="22" font-weight="700">main</text>
+    <text x="975" y="355" font-size="17">treść</text>
+    <text x="810" y="477" font-size="22" font-weight="700">footer</text>
+    <text x="810" y="500" font-size="17">dół strony</text>
+  </g>
+  <text x="550" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#000000">Rodzic zawiera dzieci, a przeglądarka tworzy z nich drzewo.</text>
+</svg>

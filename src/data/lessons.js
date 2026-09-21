@@ -1,4 +1,9 @@
 import { createLesson, createTask } from './lessonFactories.js';
+import { cssLessons } from './cssLessons.js';
+import { htmlLessons } from './htmlLessons.js';
+import { jsLessons } from './jsLessons.js';
+import { layoutLessons } from './layoutLessons.js';
+import { reactLessons } from './reactLessons.js';
 
 const bundle = (html, baseCss = '', themeCss = '', js = '') => ({
   html,
@@ -419,14 +424,24 @@ const definitions = [
   },
 ];
 
+const contentMetadata = new Map([
+  ...htmlLessons,
+  ...cssLessons,
+  ...layoutLessons,
+  ...jsLessons,
+  ...reactLessons,
+].map((content) => [content.order, content]));
+
 export const lessons = definitions.map((definition) => {
   const starter = standardStarter(definition.track, definition.order, definition.title);
   const tasks = definition.track === 'layout'
     ? layoutTasks(definition, starter)
     : standardTasks(definition, starter);
+  const content = contentMetadata.get(definition.order) || {};
 
   return createLesson({
     ...definition,
+    ...content,
     starter,
     solution: starter,
     tasks,

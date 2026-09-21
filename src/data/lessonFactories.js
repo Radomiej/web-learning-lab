@@ -33,5 +33,11 @@ export function createLesson(input = {}) {
     starter,
     solution,
     tasks: (input.tasks ?? []).map(createTask),
+    requiredTags: input.requiredTags ?? [],
+    requiredPractices: input.requiredPractices ?? [],
+    requiredProperties: input.requiredProperties ?? [],
+    requiredApis: input.requiredApis ?? [],
+    runtime: input.runtime ?? 'browser',
+    assets: input.assets ?? [],
   };
 }

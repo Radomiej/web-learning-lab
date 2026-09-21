@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" style="background-color:#ffffff" shape-rendering="geometricPrecision">
+  <rect x="0" y="0" width="1200" height="360" fill="#ffffff"/>
+  <defs>
+    <marker id="arrow-flow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000000"/>
+    </marker>
+  </defs>
+  <text x="600" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#000000">Od kodu do widoku</text>
+  <g stroke="#000000" stroke-width="3" fill="#ffffff">
+    <rect x="35" y="105" width="245" height="135" rx="12"/>
+    <rect x="325" y="105" width="245" height="135" rx="12"/>
+    <rect x="615" y="105" width="245" height="135" rx="12"/>
+    <rect x="905" y="105" width="245" height="135" rx="12"/>
+  </g>
+  <g stroke="#000000" stroke-width="3" marker-end="url(#arrow-flow)">
+    <line x1="288" y1="172" x2="315" y2="172"/>
+    <line x1="578" y1="172" x2="605" y2="172"/>
+    <line x1="868" y1="172" x2="895" y2="172"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#000000">
+    <text x="157" y="155" font-size="28" font-weight="700">HTML</text>
+    <text x="157" y="190" font-size="20">treść i znaczenie</text>
+    <text x="447" y="155" font-size="28" font-weight="700">CSS</text>
+    <text x="447" y="190" font-size="20">wygląd i układ</text>
+    <text x="737" y="155" font-size="24" font-weight="700">Przeglądarka</text>
+    <text x="737" y="190" font-size="20">interpretuje kod</text>
+    <text x="1027" y="155" font-size="24" font-weight="700">Użytkownik</text>
+    <text x="1027" y="190" font-size="20">obsługuje widok</text>
+  </g>
+  <text x="600" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#000000">JavaScript może dodać zachowanie, a serwer - dane i logikę.</text>
+</svg>

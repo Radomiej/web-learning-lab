@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" style="background-color:#ffffff" shape-rendering="geometricPrecision">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#000000">RWD - ta sama treść, różne ekrany</text>
+  <g stroke="#000000" stroke-width="4" fill="#ffffff">
+    <rect x="35" y="95" width="505" height="325" rx="10"/>
+    <rect x="590" y="95" width="245" height="325" rx="14"/>
+    <rect x="875" y="95" width="90" height="325" rx="14"/>
+  </g>
+  <g stroke="#000000" stroke-width="3" fill="#eeeeee">
+    <rect x="65" y="130" width="445" height="45"/>
+    <rect x="65" y="200" width="105" height="170"/>
+    <rect x="190" y="200" width="105" height="170"/>
+    <rect x="315" y="200" width="105" height="170"/>
+    <rect x="440" y="200" width="70" height="170"/>
+    <rect x="615" y="130" width="195" height="42"/>
+    <rect x="615" y="195" width="195" height="70"/>
+    <rect x="615" y="285" width="195" height="70"/>
+    <rect x="895" y="145" width="50" height="55"/>
+    <rect x="895" y="220" width="50" height="55"/>
+    <rect x="895" y="295" width="50" height="55"/>
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#000000">
+    <text x="287" y="465" font-size="23" font-weight="700">desktop</text>
+    <text x="712" y="465" font-size="23" font-weight="700">tablet</text>
+    <text x="920" y="465" font-size="20" font-weight="700">telefon</text>
+  </g>
+  <g stroke="#000000" stroke-width="3" fill="#000000">
+    <path d="M550 255 H575 L566 247 M575 255 L566 263"/>
+    <path d="M845 255 H860 L852 247 M860 255 L852 263"/>
+  </g>
+  <text x="500" y="525" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#000000">Media queries zmieniają reguły, gdy dostępne miejsce przestaje wystarczać.</text>
+</svg>
