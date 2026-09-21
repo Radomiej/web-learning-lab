@@ -81,6 +81,17 @@ Każda z lekcji 15–22 ma trzy zadania: prowadzone, samodzielne i wyzwanie. Raz
 30. **Walidacja, błędy i localStorage** — walidacja klienta, komunikaty, `try/catch`, `JSON.stringify`, `JSON.parse`, zapis i odczyt.
 31. **Projekt końcowy: planer wydarzenia** — semantyczny HTML, dwa arkusze CSS, formularz, tabela zadań, interakcje JS, responsywność i checklista jakości.
 
+### Ścieżka React — 8 lekcji
+
+32. **React i JSX w sandboxie** — komponent root, JSX, renderowanie do elementu root, różnica między HTML i JSX.
+33. **Komponenty i props** — funkcje komponentów, props, children, rozbijanie widoku na małe części.
+34. **Stan i zdarzenia** — useState, kliknięcia, formularze, aktualizacja stanu i ponowne renderowanie.
+35. **Listy i warunkowe renderowanie** — mapowanie danych, key, filtrowanie, empty state, operator warunkowy.
+36. **Formularze kontrolowane** — value, onChange, submit, walidacja, komunikaty błędów i reset formularza.
+37. **Efekty i przepływ danych** — useEffect, zależności, sprzątanie, dane pochodzące ze stanu i unikanie pętli renderowania.
+38. **Kompozycja i własne hooki** — przekazywanie callbacków, lifting state up, custom hook i ponowne użycie logiki.
+39. **Projekt końcowy: React task board** — komponenty, stan, formularz, filtrowanie, responsywny layout i zapis prostych danych.
+
 ## Model interfejsu
 
 ### App shell
@@ -132,6 +143,8 @@ Iframe używa `sandbox="allow-scripts"`. Kod ucznia nie ma dostępu do aplikacji
 
 Przycisk `Uruchom` czyści poprzedni iframe i tworzy nową sesję. `Wyczyść` przywraca starter bieżącego zadania. `Rozwiązanie` jest jawnie oznaczone i wymaga kliknięcia.
 
+Dla ścieżki React runtime korzysta z lokalnie zbundlowanych assetów, bez CDN i bez połączenia z internetem. Aplikacja używa lokalnego React i ReactDOM jako globali `React` oraz `ReactDOM`, a Babel Standalone kompiluje JSX ucznia przed wstrzyknięciem kodu do iframe. W pierwszej wersji zadania React nie używają importów npm; uczą API komponentów, stanu, efektów i hooków w izolowanym dokumencie. React runtime jest dodawany tylko dla lekcji tracku `react`, więc zwykłe lekcje HTML/CSS/JS pozostają lekkie.
+
 ## Walidacja lekcji
 
 Walidacja jest deklaratywna i przechowywana przy lekcji. Nie polega wyłącznie na porównaniu całego tekstu kodu.
@@ -153,9 +166,10 @@ Każdy test ma `id`, `label`, `hint` i oczekiwany rezultat. Wynik pokazuje, któ
 Treść kursu jest data-driven i nie jest zaszyta w komponentach. Planowane moduły:
 
 - `src/data/lessons.js` — metadane, cele, teoria, startery, zadania i rozwiązania;
-- `src/data/curriculum.js` — kolejność ścieżek i grupowanie 31 lekcji;
+- `src/data/curriculum.js` — kolejność ścieżek i grupowanie 39 lekcji;
 - `src/services/lessonValidator.js` — normalizacja sygnałów i ewaluacja testów;
 - `src/services/previewDocument.js` — składanie `srcDoc` i mostek runtime;
+- `src/services/reactRuntimeAssets.js` — lokalne assety React/ReactDOM i kompilacja JSX dla tracku React;
 - `src/hooks/useCourseProgress.js` — postęp, bieżące pliki i historia sesji;
 - `src/components/` — shell, sidebar, lesson view, editor, preview, feedback.
 
@@ -174,11 +188,12 @@ Projekt używa React + Vite. W katalogu głównym mają znaleźć się:
 
 Testy jednostkowe i komponentowe mają pokryć:
 
-- kolejność i kompletność 31 lekcji;
+- kolejność i kompletność 39 lekcji;
 - trzy poziomy zadań w każdej z ośmiu lekcji layoutowych, razem 24 zadania;
 - obecność wszystkich tematów HTML z materiału źródłowego;
 - składanie dokumentu preview z dwoma arkuszami CSS i opcjonalnym JS;
 - bezpieczne przekazywanie logów i błędów z iframe;
+- lokalne uruchamianie JSX/React bez CDN;
 - każdy typ walidatora, w tym interakcję;
 - zapis i odczyt postępu;
 - przełączanie plików i reset startera;
@@ -199,6 +214,7 @@ Oraz w przeglądarce sprawdzić pełny przepływ: otwarcie aplikacji ze skryptu,
 - współdzielenie projektów między uczniami;
 - import/export plików z dysku;
 - pełny lint HTML/CSS/JS;
+- pełny bundler z importami npm wewnątrz kodu ucznia;
 - backend, baza danych i uruchamianie serwerowych frameworków w iframe;
 - edytor z zaawansowanym autocompletion jak VS Code.
 
