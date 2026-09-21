@@ -51,26 +51,35 @@ Przepływ jednej lekcji:
 8. **Formularze i walidacja** — `form`, `label`, `input`, typy pól, `textarea`, `select`, `option`, `button`, `fieldset`, `legend`, `name`, `action`, `method`, `required`, `minlength`, `maxlength`, `min`, `max`, `pattern`.
 9. **Semantyka i dostępność** — `header`, `main`, `section`, `article`, `aside`, `footer`, `time`, `div`, `span`, hierarchia nagłówków, `alt`, fokus, klawiatura, kontrast i natywne kontrolki.
 
-### Ścieżka CSS — 7 lekcji
+### Ścieżka CSS i layouty — 14 lekcji
 
 10. **CSS i dołączanie arkuszy** — `link`, `style`, style liniowe, selektor, właściwość, wartość, komentarze.
 11. **Selektory i kaskada** — selektory elementu, klasy, `id`, atrybuty, potomkowie, dzieci, pseudoklasy, specyficzność, dziedziczenie, unikanie `!important`.
 12. **Jednostki, kolory i typografia** — `px`, `%`, `rem`, `em`, `vw`, `vh`, HEX, `rgb`, `hsl`, `font-family`, `font-size`, `font-weight`, `font-style`, `line-height`, `text-align`, `text-decoration`, custom properties.
 13. **Model pudełkowy** — `content`, `padding`, `border`, `margin`, `width`, `height`, `box-sizing`, `border-box`, `gap`.
 14. **Wyświetlanie, pozycjonowanie i powierzchnie** — `display`, `block`, `inline`, `inline-block`, `none`, `visibility`, `position`, `top`, `right`, `bottom`, `left`, `z-index`, tła, gradienty, `border-radius`, `overflow`.
-15. **Flexbox, Grid i RWD** — `display: flex`, `flex-direction`, `flex-wrap`, `justify-content`, `align-items`, `gap`, `display: grid`, `grid-template-columns`, `grid-template-areas`, `fr`, `repeat`, `@media`, obrazy elastyczne.
-16. **Przejścia, animacje i projekt końcowy** — `transition`, `:hover`, `:focus`, `@keyframes`, `animation`, `prefers-reduced-motion`, checklista jakości i przygotowanie projektu.
+15. **Flexbox: pierwsza oś** — `display: flex`, `flex-direction`, oś główna i poprzeczna, `justify-content`, `align-items`.
+16. **Flexbox: odstępy i zawijanie** — `gap`, `row-gap`, `column-gap`, `flex-wrap`, `align-content` oraz przewidywalny układ wielu elementów.
+17. **Flexbox: rozmiar elementów** — `flex-basis`, `flex-grow`, `flex-shrink`, skrót `flex` i wpływ wolnego miejsca.
+18. **Flexbox: elementy wyjątkowe** — `order`, `align-self`, `min-width`, `max-width`, proporcje i unikanie przepełnienia.
+19. **Flexbox w praktyce** — nawigacja, rząd przycisków, karty, media-object, panel boczny i układ kolumnowy.
+20. **Grid: siatka od podstaw** — `display: grid`, `grid-template-columns`, `grid-template-rows`, `fr`, `repeat`, `minmax`, `gap`.
+21. **Grid: obszary i złożone layouty** — `grid-template-areas`, `grid-area`, `grid-column`, `grid-row`, nakładanie elementów i wybór Grid/Flexbox.
+22. **Responsywne layouty** — `@media`, mobile-first, elastyczne obrazy, breakpoint wynikający z treści, brak poziomego overflow i testowanie widoków.
+23. **Przejścia, animacje i projekt końcowy** — `transition`, `:hover`, `:focus`, `@keyframes`, `animation`, `prefers-reduced-motion`, checklista jakości i przygotowanie projektu.
+
+Każda z lekcji 15–22 ma trzy zadania: prowadzone, samodzielne i wyzwanie. Razem daje to **24 interaktywne zadania z Flexboxa, Grida i responsywności**.
 
 ### Ścieżka JavaScript — 8 lekcji
 
-17. **JavaScript w przeglądarce** — `script`, `console`, `const`, `let`, typy i bezpieczne logowanie.
-18. **Warunki i funkcje** — `if`, `else`, operatory, funkcje, parametry, wartości zwracane.
-19. **Tablice, obiekty i pętle** — dane, `for`, `for...of`, `map`, `filter`, dostęp do właściwości.
-20. **DOM i renderowanie** — `querySelector`, `querySelectorAll`, `textContent`, `innerHTML`, `classList`, `setAttribute`, tworzenie elementów.
-21. **Zdarzenia i formularze** — `addEventListener`, `click`, `input`, `submit`, `preventDefault`, odczyt wartości i komunikaty.
-22. **Stan małej aplikacji** — jeden obiekt stanu, funkcja `render`, filtrowanie listy i pusty stan.
-23. **Walidacja, błędy i localStorage** — walidacja klienta, komunikaty, `try/catch`, `JSON.stringify`, `JSON.parse`, zapis i odczyt.
-24. **Projekt końcowy: planer wydarzenia** — semantyczny HTML, dwa arkusze CSS, formularz, tabela zadań, interakcje JS, responsywność i checklista jakości.
+24. **JavaScript w przeglądarce** — `script`, `console`, `const`, `let`, typy i bezpieczne logowanie.
+25. **Warunki i funkcje** — `if`, `else`, operatory, funkcje, parametry, wartości zwracane.
+26. **Tablice, obiekty i pętle** — dane, `for`, `for...of`, `map`, `filter`, dostęp do właściwości.
+27. **DOM i renderowanie** — `querySelector`, `querySelectorAll`, `textContent`, `innerHTML`, `classList`, `setAttribute`, tworzenie elementów.
+28. **Zdarzenia i formularze** — `addEventListener`, `click`, `input`, `submit`, `preventDefault`, odczyt wartości i komunikaty.
+29. **Stan małej aplikacji** — jeden obiekt stanu, funkcja `render`, filtrowanie listy i pusty stan.
+30. **Walidacja, błędy i localStorage** — walidacja klienta, komunikaty, `try/catch`, `JSON.stringify`, `JSON.parse`, zapis i odczyt.
+31. **Projekt końcowy: planer wydarzenia** — semantyczny HTML, dwa arkusze CSS, formularz, tabela zadań, interakcje JS, responsywność i checklista jakości.
 
 ## Model interfejsu
 
@@ -144,7 +153,7 @@ Każdy test ma `id`, `label`, `hint` i oczekiwany rezultat. Wynik pokazuje, któ
 Treść kursu jest data-driven i nie jest zaszyta w komponentach. Planowane moduły:
 
 - `src/data/lessons.js` — metadane, cele, teoria, startery, zadania i rozwiązania;
-- `src/data/curriculum.js` — kolejność ścieżek i grupowanie 24 lekcji;
+- `src/data/curriculum.js` — kolejność ścieżek i grupowanie 31 lekcji;
 - `src/services/lessonValidator.js` — normalizacja sygnałów i ewaluacja testów;
 - `src/services/previewDocument.js` — składanie `srcDoc` i mostek runtime;
 - `src/hooks/useCourseProgress.js` — postęp, bieżące pliki i historia sesji;
@@ -165,7 +174,8 @@ Projekt używa React + Vite. W katalogu głównym mają znaleźć się:
 
 Testy jednostkowe i komponentowe mają pokryć:
 
-- kolejność i kompletność 24 lekcji;
+- kolejność i kompletność 31 lekcji;
+- trzy poziomy zadań w każdej z ośmiu lekcji layoutowych, razem 24 zadania;
 - obecność wszystkich tematów HTML z materiału źródłowego;
 - składanie dokumentu preview z dwoma arkuszami CSS i opcjonalnym JS;
 - bezpieczne przekazywanie logów i błędów z iframe;
