@@ -1,19 +1,18 @@
 const modeLabels = {
-  guided: 'Prowadzone',
+  guided: 'Z przykładem',
   independent: 'Samodzielnie',
   challenge: 'Wyzwanie',
 };
 
 export default function TaskList({ tasks = [], activeTaskId, completedTasks = [], onTaskChange }) {
   return (
-    <div className="task-list" role="list" aria-label="Zadania lekcji">
+    <ul className="task-list" aria-label="Zadania lekcji">
       {tasks.map((task, index) => {
         const completed = completedTasks.includes(task.id);
         return (
-          <button
+          <li key={task.id}><button
             className={`task-button${activeTaskId === task.id ? ' is-active' : ''}`}
             type="button"
-            role="listitem"
             aria-pressed={activeTaskId === task.id}
             key={task.id}
             onClick={() => onTaskChange(task.id)}
@@ -24,9 +23,9 @@ export default function TaskList({ tasks = [], activeTaskId, completedTasks = []
               <strong>{task.title}</strong>
             </span>
             {completed && <span className="task-done-label">gotowe</span>}
-          </button>
+          </button></li>
         );
       })}
-    </div>
+    </ul>
   );
 }

@@ -4,12 +4,10 @@ import { lessons } from './lessons.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
 import { evaluateChecks } from '../services/lessonValidator.js';
 
-for (const lesson of lessons) {
-  for (const task of lesson.tasks) {
-    test(task.id + ' solution passes in an executing document', async () => {
+async function runTask(lesson, task, files) {
       let signals = { dom: {}, styles: {}, interactions: {}, runtimeErrors: [] };
       let snapshots = 0;
-      const dom = new JSDOM(buildPreviewDocument(task.solution, { track: lesson.track, requestedSignals: task.checks }), {
+      const dom = new JSDOM(buildPreviewDocument(files, { track: lesson.track, requestedSignals: task.checks }), {
         runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: new VirtualConsole(),
         beforeParse(window) {
           window.addEventListener('message', event => {
@@ -33,9 +31,27 @@ for (const lesson of lessons) {
           expect(snapshots).toBeGreaterThan(beforeActions);
           actions.forEach(check => expect(signals.interactions[check.id]).toBeDefined());
         }, { timeout: 3000 });
-        const result = evaluateChecks(task.checks, { files: task.solution, signals });
-        expect(result.results.filter(item => !item.passed)).toEqual([]);
+        return evaluateChecks(task.checks, { files, signals });
       } finally { dom.window.close(); }
+}
+
+for (const lesson of lessons) {
+  for (const [index, task] of lesson.tasks.entries()) {
+    test(task.id + ' solution passes in an executing document', async () => {
+      const result = await runTask(lesson, task, task.solution);
+      expect(result.results.filter(item => !item.passed)).toEqual([]);
+    });
+    test(task.id + ' starter cannot pass without student work', async () => {
+      const result = await runTask(lesson, task, task.starter);
+      expect(result.passed).toBeLessThan(result.total);
+    });
+    if (index > 0) test(task.id + ' rejects the preceding solution even with cosmetic legacy adaptations', async () => {
+      const files = { ...lesson.tasks[index - 1].solution };
+      files.html = files.html.replace('</body>', '<section id="podsumowanie"><h2>Podsumowanie</h2><p>Wnioski</p></section></body>');
+      files.themeCss += '\n.practice { letter-spacing: 2px; }';
+      files.js = files.js.replaceAll('GOTOWE', 'SAMODZIELNIE').replaceAll('c + 1', 'c + 2');
+      const result = await runTask(lesson, task, files);
+      expect(result.passed).toBeLessThan(result.total);
     });
   }
 }

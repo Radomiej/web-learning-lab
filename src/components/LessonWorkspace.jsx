@@ -33,6 +33,7 @@ export default function LessonWorkspace({
         <div className="editor-shell">
           <EditorTabs activeFile={activeFile} onFileChange={onFileChange} />
           <CodeEditor
+            key={`${activeTask.id}:${activeFile}`}
             fileKey={activeFile}
             fileLabel={activeTab.label}
             value={files[activeFile] || ''}
@@ -40,7 +41,7 @@ export default function LessonWorkspace({
             onRun={onRun}
             onReset={onReset}
             onCheck={onCheck}
-            onSolution={onSolution}
+            onSolution={activeTask.mode === 'guided' ? onSolution : undefined}
           />
         </div>
       </section>

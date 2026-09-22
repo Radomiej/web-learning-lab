@@ -43,11 +43,12 @@ export function useCourseProgress(lessons = []) {
     : {};
   const selectedLesson = findLesson(lessons, progress.selectedLessonId) || firstLesson;
   const selectedTrack = selectedLesson?.track || progress.selectedTrack || firstLesson?.track || 'html';
-  const completedTasks = Array.isArray(progress.completedTasks) ? progress.completedTasks : [];
 
   const taskIndex = useMemo(() => new Map(
     lessons.flatMap((lesson) => lesson.tasks.map((task) => [task.id, task])),
   ), [lessons]);
+  const completedTasks = Array.isArray(progress.completedTasks)
+    ? progress.completedTasks.filter(taskId => taskIndex.has(taskId)) : [];
 
   const selectLesson = (lessonId) => {
     const lesson = findLesson(lessons, lessonId);

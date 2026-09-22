@@ -1,0 +1,48 @@
+// Each exercise applies the lesson's topic to a new structure, not an extra paragraph.
+export const independentHtml = {
+  1: {
+    title: 'Wizytówka ucznia', goal: 'Zbuduj prostą wizytówkę: tytuł, opis zainteresowań i podpis autora.',
+    html: '<main><h1>Moja wizytówka</h1><p id="about">Uczę się tworzyć strony.</p><section id="interests"><h2>Moje zainteresowania</h2><p>Fotografia i programowanie.</p></section></main><footer><p>Autor: Ola</p></footer>',
+    requirements: [['main > h1', 'W <body> utwórz <main>, a w nim <h1> z tytułem wizytówki.'], ['main > p#about', 'Bezpośrednio w <main> dodaj akapit <p id="about"> z krótkim opisem siebie.'], ['main > section#interests > h2', 'W <main> dodaj sekcję <section id="interests"> z nagłówkiem <h2> „Moje zainteresowania”.'], ['#interests > p', 'W sekcji zainteresowań dodaj akapit <p> z własnym opisem.'], ['body > footer > p', 'Po zamknięciu <main> dodaj <footer> z akapitem <p> zawierającym podpis autora.']],
+  },
+  2: {
+    title: 'Dokument anglojęzyczny', goal: 'Przygotuj stronę anglojęzycznej pracowni. Zmień język dokumentu i dodaj opis dla wyszukiwarki.',
+    html: '<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="description" content="A web development workshop"><title>Web workshop</title></head><body><main><h1>Web workshop</h1><p>Learn by building.</p></main></body></html>',
+    requirements: [['html[lang="en"]', 'W znaczniku <html> ustaw lang="en", ponieważ treść strony jest po angielsku.'], ['head > meta[charset="UTF-8"]', 'Zachowaj kodowanie UTF-8 w <head>.'], ['head > meta[name="description"][content]:not([content=""])', 'W <head> dodaj <meta name="description" content="..."> z krótkim opisem pracowni po angielsku.'], ['head > title', 'W <title> wpisz tytuł karty przeglądarki.'], ['body > main > h1', 'W <body> dodaj <main> z nagłówkiem <h1> po angielsku.'], ['main > p', 'Pod nagłówkiem dodaj akapit <p> opisujący pracownię.']],
+  },
+  3: {
+    title: 'Notatka z kodem i cytatem', goal: 'Opracuj notatkę pokazującą różnicę między zwykłym tekstem, kodem i cytatem.',
+    html: '<main><h1>Notatka</h1><p>Użyj <code>display: flex;</code> w CSS.</p><pre><code>.menu { display: flex; }</code></pre><blockquote><p>Ćwiczenie buduje umiejętności.</p></blockquote><p><cite>Notatki z warsztatów</cite></p><p><abbr title="HyperText Markup Language">HTML</abbr> opisuje strukturę.</p></main>',
+    requirements: [['main > h1', 'Dodaj <main> z głównym nagłówkiem <h1>.'], ['main > p > code', 'W akapicie <p> umieść krótki fragment kodu w <code>.'], ['main > pre > code', 'Dodaj blok <pre>, a w nim <code> z przykładem reguły CSS.'], ['blockquote > p', 'Dodaj cytat: <blockquote> z akapitem <p>.'], ['p > cite', 'W osobnym akapicie podaj tytuł źródła cytatu w <cite>.'], ['abbr[title]:not([title=""])', 'Skrót HTML oznacz przez <abbr> i rozwiń go w atrybucie title.']],
+  },
+  4: {
+    title: 'Przepis krok po kroku', goal: 'Przygotuj przepis z listą składników i numerowaną listą kroków zawierającą podpunkty.',
+    html: '<main><h1>Kanapka</h1><section id="ingredients"><h2>Składniki</h2><ul><li>Pieczywo</li><li>Ser</li><li>Pomidor</li></ul></section><section id="steps"><h2>Przygotowanie</h2><ol><li>Przygotuj<ul><li>Umyj pomidor</li></ul></li><li>Ułóż składniki</li></ol></section></main>',
+    requirements: [['main > h1', 'W <main> dodaj <h1> z nazwą dania.'], ['#ingredients > h2', 'Dodaj sekcję <section id="ingredients"> z nagłówkiem <h2> „Składniki”.'], ['#ingredients > ul > li:nth-child(3)', 'W sekcji składników utwórz <ul> z co najmniej trzema punktami <li>.'], ['#steps > h2', 'Dodaj sekcję <section id="steps"> z nagłówkiem <h2> „Przygotowanie”.'], ['#steps > ol > li:nth-child(2)', 'W sekcji przygotowania dodaj <ol> z co najmniej dwoma krokami <li>.'], ['#steps > ol > li > ul > li', 'W jednym kroku numerowanej listy umieść podlistę <ul> z punktem <li>.']],
+  },
+  5: {
+    title: 'Kontakt i plik do pobrania', goal: 'Przygotuj linki otwierające pocztę, wybieranie telefonu i pobranie materiału.',
+    html: '<main><h1>Kontakt</h1><address><a href="mailto:szkola@example.com">Napisz do nas</a><a href="tel:+48123456789">Zadzwoń</a></address><a href="/course-assets/04-flexbox-grid.svg" download>Schemat do pobrania</a></main>',
+    requirements: [['main > h1', 'W <main> dodaj nagłówek <h1> „Kontakt”.'], ['address > a[href="mailto:szkola@example.com"]', 'W <address> dodaj link <a> z href="mailto:szkola@example.com" i czytelnym tekstem „Napisz do nas”.'], ['address > a[href="tel:+48123456789"]', 'W tym samym <address> dodaj link z href="tel:+48123456789".'], ['a[download][href="/course-assets/04-flexbox-grid.svg"]', 'Dodaj link do /course-assets/04-flexbox-grid.svg z atrybutem download i tekstem opisującym pobierany plik.']],
+  },
+  6: {
+    title: 'Galeria z dostępnymi opisami', goal: 'Zbuduj dwie podpisane ilustracje, zadbaj o opisy i leniwe ładowanie drugiego obrazu.',
+    html: '<main><h1>Galeria</h1><figure><img src="/course-assets/04-flexbox-grid.svg" alt="Porównanie układów CSS" width="240" height="160"><figcaption>Układy</figcaption></figure><figure><img src="/course-assets/04-flexbox-grid.svg" alt="Schemat do ćwiczenia" width="240" height="160" loading="lazy"><figcaption>Ćwiczenie</figcaption></figure></main>',
+    requirements: [['main > h1', 'W <main> dodaj tytuł galerii w <h1>.'], ['main > figure:first-of-type > img[alt]:not([alt=""])[width][height]', 'Dodaj pierwszy <figure> z obrazem <img>, niepustym alt oraz width i height. Użyj pliku /course-assets/04-flexbox-grid.svg.'], ['main > figure:first-of-type > figcaption', 'Pod pierwszym obrazem dodaj podpis w <figcaption>.'], ['main > figure:nth-of-type(2) > img[alt]:not([alt=""])[width][height][loading="lazy"]', 'Dodaj drugi <figure> z obrazem mającym alt, width, height i loading="lazy". Możesz użyć tego samego pliku.'], ['main > figure:nth-of-type(2) > figcaption', 'Dodaj odrębny podpis drugiego obrazu w <figcaption>.']],
+  },
+  7: {
+    title: 'Tabela z grupowanym nagłówkiem', goal: 'Przygotuj tabelę zajęć z nagłówkiem obejmującym dwie kolumny i podsumowaniem.',
+    html: '<table><caption>Warsztaty</caption><thead><tr><th colspan="2" scope="colgroup">Zajęcia</th></tr><tr><th scope="col">Temat</th><th scope="col">Czas</th></tr></thead><tbody><tr><th scope="row">HTML</th><td>2 h</td></tr><tr><th scope="row">CSS</th><td>3 h</td></tr></tbody><tfoot><tr><td colspan="2">Łącznie 5 h</td></tr></tfoot></table>',
+    requirements: [['table > caption', 'Dodaj tabelę <table> z tytułem w <caption>.'], ['thead > tr > th[colspan="2"][scope="colgroup"]', 'W pierwszym wierszu <thead> dodaj <th colspan="2" scope="colgroup"> obejmujący dwie kolumny.'], ['thead > tr:nth-child(2) > th[scope="col"]:nth-child(2)', 'W drugim wierszu <thead> dodaj dwa nagłówki kolumn <th scope="col">.'], ['tbody > tr:nth-child(2) > th[scope="row"]', 'W <tbody> dodaj co najmniej dwa wiersze. Drugi powinien mieć nagłówek <th scope="row">.'], ['tbody > tr:nth-child(2) > td', 'W drugim wierszu danych dodaj komórkę <td> z czasem zajęć.'], ['tfoot td[colspan="2"]', 'W <tfoot> dodaj wiersz z komórką <td colspan="2"> podsumowującą zajęcia.']],
+  },
+  8: {
+    title: 'Rezerwacja warsztatów', goal: 'Zbuduj formularz rezerwacji z datą, liczbą miejsc i obowiązkową zgodą.',
+    html: '<form><fieldset><legend>Rezerwacja</legend><label for="date">Data</label><input id="date" name="date" type="date" required><label for="seats">Liczba miejsc</label><input id="seats" name="seats" type="number" min="1" max="6" required><label for="consent">Akceptuję zasady</label><input id="consent" name="consent" type="checkbox" required><button type="submit">Rezerwuj</button></fieldset></form>',
+    requirements: [['form > fieldset > legend', 'Utwórz <form> z grupą <fieldset> i jej nazwą w <legend>.'], ['label[for="date"]', 'Dodaj etykietę <label for="date">Data</label>.'], ['input#date[name="date"][type="date"][required]', 'Dodaj obowiązkowe pole daty: <input id="date" name="date" type="date" required>.'], ['label[for="seats"]', 'Dodaj etykietę liczby miejsc z for="seats".'], ['input#seats[name="seats"][type="number"][min="1"][max="6"][required]', 'Dodaj obowiązkowe pole number z id i name równym seats oraz zakresem min="1", max="6".'], ['label[for="consent"]', 'Dodaj etykietę zgody z for="consent".'], ['input#consent[name="consent"][type="checkbox"][required]', 'Dodaj obowiązkowy checkbox z id i name równym consent.'], ['form button[type="submit"]', 'Dodaj przycisk <button type="submit">Rezerwuj</button>.']],
+  },
+  9: {
+    title: 'Strona najczęstszych pytań', goal: 'Użyj natywnych elementów rozwijanych zamiast budować je z samych divów.',
+    html: '<header><h1>Pytania o kurs</h1></header><main><section aria-labelledby="faq-title"><h2 id="faq-title">FAQ</h2><details><summary>Czy potrzebuję internetu?</summary><p>Do instalacji tak, do ćwiczeń nie.</p></details><details><summary>Gdzie jest podgląd?</summary><p>Po prawej stronie.</p></details></section></main><footer><p>Kontakt ze szkołą</p></footer>',
+    requirements: [['header > h1', 'Dodaj <header> z tytułem strony w <h1>.'], ['main > section[aria-labelledby="faq-title"] > h2#faq-title', 'W <main> dodaj <section aria-labelledby="faq-title"> z nagłówkiem <h2 id="faq-title">.'], ['section > details:first-of-type > summary', 'Dodaj pierwszy element <details>, a w nim pytanie w <summary>.'], ['section > details:first-of-type > p', 'W pierwszym <details>, po <summary>, dodaj odpowiedź w <p>.'], ['section > details:nth-of-type(2) > summary', 'Dodaj drugi <details> z innym pytaniem w <summary>.'], ['section > details:nth-of-type(2) > p', 'W drugim <details> dodaj odpowiedź w <p>.'], ['footer > p', 'Dodaj <footer> z akapitem kontaktowym.']],
+  },
+};

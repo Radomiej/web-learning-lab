@@ -2,7 +2,7 @@ const tabs = [
   { key: 'html', label: 'index.html' },
   { key: 'baseCss', label: 'base.css' },
   { key: 'themeCss', label: 'theme.css' },
-  { key: 'js', label: 'script.js', optional: true },
+  { key: 'js', label: 'script.js' },
 ];
 
 export { tabs };
@@ -22,7 +22,6 @@ export default function EditorTabs({ activeFile, onFileChange }) {
         >
           <span className={`file-icon file-icon--${tab.key}`} aria-hidden="true">{tab.key === 'html' ? '‹›' : tab.key === 'js' ? 'JS' : '◈'}</span>
           {tab.label}
-          {tab.optional && <small>opcjonalny</small>}
         </button>
       ))}
     </div>

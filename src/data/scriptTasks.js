@@ -1,4 +1,5 @@
 import { createTask } from './lessonFactories.js';
+import { independentScriptTask } from './independentScripts.js';
 
 function reactExercise(order, word) {
   const recipes = {
@@ -28,7 +29,8 @@ function jsExercise(order, word) {
 }
 export function scriptTasks(definition, base) {
   return ['guided', 'independent'].map((mode, variant) => {
-    const word = variant ? 'SAMODZIELNIE' : 'GOTOWE';
+    if (variant) return independentScriptTask(definition, base);
+    const word = 'GOTOWE';
     const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-${mode}`;
     const checks = [{ id: id + '-errors', type: 'runtimeError', label: 'Kod uruchamia się bez błędów' }];
     let starter, solution, prompt;
@@ -41,15 +43,9 @@ export function scriptTasks(definition, base) {
       checks.push(action
         ? { id: id + '-action', type: 'interaction', selector: action === 'input' ? '#name' : action === 'add' ? '#add' : selector, resultSelector: selector, action: action === 'input' ? 'input' : 'click', value: word, expected: { text: expected }, label: `Po ${action === 'input' ? 'wpisaniu tekstu' : 'kliknięciu'} ${selector} zawiera „${expected}”` }
         : { id: id + '-text', type: 'textContains', selector, expected, label: `${selector} zawiera „${expected}”` });
-      if (variant && [34, 38].includes(definition.order)) {
-        solution.js = solution.js.replace('c + 1', 'c + 2');
-        prompt = prompt.replace('o 1', 'o 2').replace('z 0 do 1', 'z 0 do 2');
-        checks.at(-1).expected = { text: '2' };
-        checks.at(-1).label = 'Po kliknięciu licznik zwiększa się z 0 do 2';
-      }
     } else {
       const [code, instruction, action] = jsExercise(definition.order, word);
-      starter = { ...base, html: '<main><h1>Laboratorium JavaScript</h1><button id="action">Dodaj</button><ul id="result"></ul></main>', js: '// Napisz rozwiązanie tutaj.\n' };
+      starter = { ...base, html: `<main><h1>Laboratorium JavaScript</h1><button id="action">Dodaj</button>${definition.order === 31 ? '<ul id="result"></ul>' : '<output id="result"></output>'}</main>`, js: '// Napisz rozwiązanie tutaj.\n' };
       solution = { ...starter, js: code };
       prompt = instruction + ` Tekst zadania: „${word}”.`;
       checks.push(action
@@ -58,6 +54,6 @@ export function scriptTasks(definition, base) {
       if (definition.order === 27) checks.push({ id: id + '-class', type: 'elementExists', selector: '#result.ready', label: '#result ma klasę ready' });
       if (definition.order === 31) checks.push({ id: id + '-item', type: 'elementExists', selector: '#result > li', label: 'Wydarzenie jest elementem li' });
     }
-    return createTask({ id, mode, title: `${variant ? 'Samodzielnie' : 'Prowadzone'}: ${definition.title}`, prompt, starter, solution, checks });
+    return createTask({ id, mode, title: definition.title, prompt, starter, solution, checks });
   });
 }

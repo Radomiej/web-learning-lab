@@ -59,6 +59,7 @@ export default function App() {
   };
 
   const handleSolution = () => {
+    if (activeTask.mode !== 'guided') return;
     updateFiles(activeTask.id, activeTask.solution);
     previewRuntime.runPreview(activeTask.solution);
   };

@@ -19,7 +19,7 @@ test('every exercise starts and ends with a complete HTML document', () => {
   for (const lesson of lessons) {
     for (const bundle of [lesson.starter, lesson.solution, ...lesson.tasks.flatMap(task => [task.starter, task.solution])]) {
       expect(bundle.html).toMatch(/^<!doctype html>/i);
-      expect(bundle.html).toContain('<html lang="pl">');
+      expect(bundle.html).toMatch(/<html lang="(?:pl|en)">/);
       expect(bundle.html).toContain('<head>');
       expect(bundle.html).toContain('<meta charset="UTF-8">');
       expect(bundle.html).toContain('name="viewport"');

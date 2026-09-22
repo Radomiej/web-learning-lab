@@ -1,9 +1,3 @@
-const modeLabels = {
-  guided: 'Prowadzone',
-  independent: 'Samodzielnie',
-  challenge: 'Wyzwanie',
-};
-
 export default function Sidebar({
   tracks,
   trackOrder,
@@ -75,9 +69,9 @@ export default function Sidebar({
             >
               <span className="lesson-number">{String(lesson.order).padStart(2, '0')}</span>
               <span className="lesson-copy">
-                <strong title={lesson.title}>{selectedLessonId === lesson.id ? `Lekcja ${String(lesson.order).padStart(2, '0')}` : lesson.title}</strong>
+                <strong title={lesson.title}>{lesson.title}</strong>
                 <small>{lesson.summary}</small>
-                <em>{lesson.tasks.length} {lesson.tasks.length === 1 ? 'zadanie' : 'zadań'} · {modeLabels[lesson.tasks[0]?.mode] || 'praktyka'}</em>
+                <em>{lesson.tasks.length} {lesson.tasks.length === 1 ? 'zadanie' : 'zadania'}</em>
               </span>
               {lessonComplete && <span className="lesson-check" aria-label="Ukończona">✓</span>}
             </button>

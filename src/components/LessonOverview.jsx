@@ -8,7 +8,6 @@ export default function LessonOverview({ lesson }) {
           <h1 id="lesson-title">{lesson.title}</h1>
           <p className="lesson-summary">{lesson.summary}</p>
         </div>
-        <span className="lesson-tag">Praktyka + teoria</span>
       </div>
       <div className="overview-grid">
         <div className="overview-block">

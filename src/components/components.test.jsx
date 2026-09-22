@@ -5,7 +5,7 @@ import App from '../App.jsx';
 test('shows the first lesson, four editor files, preview status, and track navigation', () => {
   render(<App />);
   expect(screen.getByText('Web Learning Lab')).toBeInTheDocument();
-  expect(screen.getByText('Pierwszy dokument HTML5')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Pierwszy dokument HTML5', level: 1 })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'index.html' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'base.css' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'theme.css' })).toBeInTheDocument();
@@ -37,4 +37,15 @@ test('collapses and restores the lesson panel without remounting the sandbox or 
   await user.click(screen.getByRole('button', { name: 'Pokaż panel lekcji' }));
   expect(container.querySelector('.app-shell')).not.toHaveClass('app-shell--sidebar-collapsed');
   expect(screen.getByRole('button', { name: 'Schowaj panel lekcji' })).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('only example exercises expose a solution button', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  expect(screen.getByRole('button', { name: 'Pokaż rozwiązanie' })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: /Samodzielnie/i }));
+  expect(screen.queryByRole('button', { name: 'Pokaż rozwiązanie' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('tab', { name: /Layout/ }));
+  await user.click(screen.getByRole('button', { name: /Wyzwanie/i }));
+  expect(screen.queryByRole('button', { name: 'Pokaż rozwiązanie' })).not.toBeInTheDocument();
 });

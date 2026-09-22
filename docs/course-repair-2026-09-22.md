@@ -12,7 +12,9 @@ Preview applies drafts on Run or Check; reset and solutions pass explicit bundle
 Vite uses port 5181 with strictPort, leaving SQL on 5180.
 
 Verification:
-- npm test: 129 passing tests, including 86 executed reference solutions in JSDOM.
+- npm test: 274 passing tests. The 219 executing-document checks cover all 86
+  reference solutions, all 86 unchanged starters, and all 47 next variants against
+  the preceding solution (including legacy text/paragraph/letter-spacing edits).
 - npm run build: passes; the bundled local React/Babel runtime still triggers the
   large-chunk advisory.
 - Real browser: Flexbox solution 5/5; theme.css overriding display with block
@@ -27,10 +29,31 @@ Verification:
   inspector stays at viewport top while the lesson scrolls. Browser checks at
   1280x720 and 390x844 confirmed no horizontal page overflow; mobile keeps the
   preview in document flow and exposes navigation through a menu.
+- Replaced 31 superficial HTML/CSS/JS/React independent variants with separate
+  scenarios and requirements. Versioned task IDs preserve old drafts without
+  granting credit to new scenarios. Layout still contains 24 exercises; several
+  previously overlapping plans now have additional distinct requirements.
+- Exact text and before/after interaction checks reject static final messages.
+  Missing action targets produce a fresh snapshot and a failed check.
+- Code editor: lazy local Prettier for HTML/CSS/JS/JSX, 2-space Tab and Shift+Tab,
+  indentation on Enter, Ctrl+Shift+K line deletion, undo/redo, Escape then Tab to
+  leave the editor. Parse failures and in-flight edits preserve student input.
+- Solution button and handler are available only in the guided mode, now labeled
+  "Z przykładem". Independent and challenge modes have no solution control.
+- Real browser editor smoke: format HTML/JSX, undo, Tab/outdent, delete-line/undo.
+  Independent React toggle: static "Noc" gets 2/3, real state toggles Dzień/Noc
+  both ways. QA code restored to the empty starter; no relevant console errors.
+- Impeccable manual review: clearer mode names, larger instructions/buttons,
+  wrapping lesson/task names, removal of repeated badges and misleading JS
+  "optional" label. This is not a claim of a CLI audit or objective "zero AI slop".
 
 Limits:
-- Independent exercises still need stronger differentiation; several currently
-  add a small requirement or change expected text rather than teach a new scenario.
+- The app is a local learning tool, not an exam anti-cheating system. Reference
+  solutions remain in client-side curriculum data for automated validation.
+- npm audit reports 5 existing development-tool findings (3 moderate, 1 high,
+  1 critical) in Vitest and its Vite/esbuild/mocker dependencies. The suggested
+  fix is a major Vitest upgrade, not applied automatically. Prettier is not
+  among affected packages. Do not expose the Vitest UI server to the network.
 - JSDOM tests do not verify physical layout geometry or responsive breakpoints.
   Browser smoke tests cover representative flows, not every viewport/task.
 - Behavioral checks establish the rendered result, not proof that the student

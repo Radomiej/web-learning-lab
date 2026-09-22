@@ -126,6 +126,14 @@ function evaluateOne(check = {}, context = {}) {
           ? resultFor(check, true, 'Tekst jest widoczny.')
           : resultFor(check, false, `Nie znaleziono tekstu „${expected}”.`);
       }
+      case 'textEquals': {
+        const signal = getDomSignal(signals, check.selector);
+        const actual = safeString(signal?.text).trim();
+        const expected = safeString(expectedValue(check));
+        return signal?.exists && actual === expected
+          ? resultFor(check, true, 'Wynik jest zgodny z oczekiwaniem.')
+          : resultFor(check, false, `Oczekiwano „${expected}”, odczytano „${actual}”.`);
+      }
       case 'computedStyle': {
         const actual = getStyleSignal(signals, check.selector, check.property);
         const expected = safeString(expectedValue(check));
@@ -144,11 +152,13 @@ function evaluateOne(check = {}, context = {}) {
         const expected = check.expected || {};
         const actualText = safeString(interaction.text);
         const textPasses = expected.text == null || actualText.includes(safeString(expected.text));
+        const exactPasses = expected.textEquals == null || actualText.trim() === safeString(expected.textEquals);
+        const beforePasses = expected.beforeText == null || safeString(interaction.before?.text).trim() === safeString(expected.beforeText);
         const classPasses = expected.class == null || safeString(interaction.className).includes(safeString(expected.class));
         const visiblePasses = expected.visible == null || Boolean(interaction.visible) === Boolean(expected.visible);
         const attributePasses = !expected.attribute
           || safeString((interaction.attrs || interaction.attributes)?.[expected.attribute.name]) === safeString(expected.attribute.value);
-        return textPasses && classPasses && visiblePasses && attributePasses
+        return textPasses && exactPasses && beforePasses && classPasses && visiblePasses && attributePasses
           ? resultFor(check, true, 'Interakcja zmieniła widok zgodnie z oczekiwaniem.')
           : resultFor(check, false, 'Interakcja zadziałała, ale wynik nie spełnia oczekiwania.');
       }

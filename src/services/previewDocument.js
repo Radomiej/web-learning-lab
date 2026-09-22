@@ -118,7 +118,7 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
         };
       });
     const dom = requestedSignals.reduce((result, signal) => {
-      if (!signal || !signal.selector || !['elementExists', 'attributeEquals', 'textContains', 'reactRendered'].includes(signal.type)) return result;
+      if (!signal || !signal.selector || !['elementExists', 'attributeEquals', 'textContains', 'textEquals', 'reactRendered'].includes(signal.type)) return result;
       let element = null;
       try { element = document.querySelector(signal.selector); } catch {}
       result[signal.selector] = describeElement(element);
@@ -174,8 +174,10 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
     try { element = document.querySelector(action.selector); } catch {}
     if (!element) {
       send('signals', { interactions: { [action.checkId || action.id || action.selector]: { ok: false, selector: action.selector, reason: 'missing-selector' } }, action: { ok: false, selector: action.selector, reason: 'missing-selector' } });
+      snapshot();
       return;
     }
+    const before = describeElement(action.resultSelector ? document.querySelector(action.resultSelector) : element);
     if (action.action === 'click') element.click();
     if (action.action === 'input') {
       const setter = Object.getOwnPropertyDescriptor(element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value')?.set;
@@ -188,7 +190,7 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
     window.setTimeout(() => {
       const target = action.resultSelector ? document.querySelector(action.resultSelector) : element;
       const interaction = describeElement(target);
-      send('signals', { interactions: { [interactionId]: { ...interaction, ok: Boolean(target) } } });
+      send('signals', { interactions: { [interactionId]: { ...interaction, before, ok: Boolean(target) } } });
       snapshot();
     }, 50);
   });

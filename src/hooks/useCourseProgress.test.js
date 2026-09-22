@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { FILES_STORAGE_KEY, useCourseProgress } from './useCourseProgress.js';
+import { FILES_STORAGE_KEY, PROGRESS_STORAGE_KEY, useCourseProgress } from './useCourseProgress.js';
 import { lessons } from '../data/lessons.js';
 
 beforeEach(() => {
@@ -42,4 +42,13 @@ test('keeps the starter HTML when only the CSS file is edited', () => {
 
   expect(result.current.filesByTask['layout-15-guided'].html).toContain('<main>');
   expect(result.current.filesByTask['layout-15-guided'].baseCss).toContain('display: flex');
+});
+
+test('retired exercises do not grant credit to new scenarios but their drafts remain recoverable', () => {
+  window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({ completedTasks: ['html-01-independent', 'html-01-guided'] }));
+  window.localStorage.setItem(FILES_STORAGE_KEY, JSON.stringify({ 'html-01-independent': { html: '<p>Moja stara praca</p>' } }));
+  const { result } = renderHook(() => useCourseProgress(lessons));
+  expect(result.current.completedTasks).toEqual(['html-01-guided']);
+  expect(result.current.filesByTask['html-01-independent'].html).toContain('Moja stara praca');
+  expect(result.current.filesByTask['html-01-independent-v2']).toBeUndefined();
 });
