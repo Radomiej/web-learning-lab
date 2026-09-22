@@ -28,10 +28,10 @@ export default function CodeEditor({
         aria-label={`Edytor ${fileLabel}`}
       />
       <div className="editor-actions">
-        <button className="button button--primary" type="button" onClick={onRun}><span aria-hidden="true">▶</span> Uruchom</button>
-        <button className="button button--secondary" type="button" onClick={onCheck}>Sprawdź</button>
-        <button className="button button--ghost" type="button" onClick={onReset}>Wyczyść</button>
-        <button className="button button--ghost button--solution" type="button" onClick={onSolution}>Pokaż rozwiązanie</button>
+        <button className="button button--primary" type="button" onClick={() => onRun?.()}><span aria-hidden="true">▶</span> Uruchom</button>
+        <button className="button button--secondary" type="button" onClick={() => onCheck?.()}>Sprawdź</button>
+        <button className="button button--ghost" type="button" onClick={() => onReset?.()}>Wyczyść</button>
+        <button className="button button--ghost button--solution" type="button" onClick={() => onSolution?.()}>Pokaż rozwiązanie</button>
       </div>
     </section>
   );

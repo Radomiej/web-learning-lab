@@ -18,6 +18,7 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
         <div>
           <p className="eyebrow">Sandbox</p>
           <h2 id="preview-title">Podgląd na żywo</h2>
+          <small>Zmiany zastosujesz przyciskiem Uruchom lub Sprawdź.</small>
         </div>
         <span className={`runtime-pill runtime-pill--${runtimeState.status || 'idle'}`}>
           <span className="status-dot" />{runtimeState.label || 'Gotowe'}
@@ -25,12 +26,12 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
       </div>
       <div className="preview-frame-wrap">
         <iframe
-          key={previewKey}
           ref={frameRef}
           className="preview-frame"
           title="Podgląd strony ucznia"
+          data-preview-key={previewKey}
           sandbox="allow-scripts"
-          srcDoc={previewDocument}
+          srcDoc={`${previewDocument}\n<!-- preview-run:${previewKey} -->`}
           onLoad={(event) => {
             onFrameReady?.(event.currentTarget);
             onMessage?.({ type: 'load', frame: event.currentTarget });

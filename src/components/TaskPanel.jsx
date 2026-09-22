@@ -19,6 +19,7 @@ export default function TaskPanel({ lesson, activeTask, completedTasks, onTaskCh
       <div className="task-prompt">
         <span className="prompt-label">{activeTask.mode === 'challenge' ? 'Wyzwanie' : 'Cel zadania'}</span>
         <p>{activeTask.prompt}</p>
+        <ol aria-label="Wymagania zadania">{activeTask.checks.filter(check => check.type !== 'runtimeError').map(check => <li key={check.id}>{check.label}</li>)}</ol>
         {activeTask.hint && <p className="task-hint"><strong>Podpowiedź:</strong> {activeTask.hint}</p>}
       </div>
     </section>

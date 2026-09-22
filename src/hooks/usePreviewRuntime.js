@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { evaluateChecks } from '../services/lessonValidator.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
 
@@ -20,12 +20,19 @@ const initialRuntimeState = (scopeKey = 'default') => ({
   checkResults: [],
 });
 
+function buildRequestedPreviewDocument(files, track, checks) {
+  return buildPreviewDocument(files, {
+    track,
+    requestedSignals: checks,
+  });
+}
+
 function mergeSignals(previous, payload = {}) {
   return {
     ...previous,
     ...payload,
     dom: { ...(previous.dom || {}), ...(payload.dom || {}) },
-    styles: { ...(previous.styles || {}), ...(payload.styles || {}) },
+    styles: payload.styles ?? previous.styles ?? {},
     interactions: { ...(previous.interactions || {}), ...(payload.interactions || {}) },
     runtimeErrors: payload.runtimeErrors || previous.runtimeErrors || [],
   };
@@ -33,6 +40,9 @@ function mergeSignals(previous, payload = {}) {
 
 export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey = 'default') {
   const [previewKey, setPreviewKey] = useState(1);
+  const [previewDocument, setPreviewDocument] = useState(() => (
+    buildRequestedPreviewDocument(files, track, checks)
+  ));
   const [runtimeState, setRuntimeState] = useState(() => initialRuntimeState(scopeKey));
   const frameRef = useRef(null);
   const filesRef = useRef(files);
@@ -49,11 +59,6 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
 
   if (scopeKeyRef.current !== scopeKey) scopeKeyRef.current = scopeKey;
 
-  const previewDocument = useMemo(() => buildPreviewDocument(files, {
-    track,
-    requestedSignals: checks,
-  }), [checks, files, track]);
-
   const clearEvaluationTimer = useCallback(() => {
     if (evaluationTimerRef.current !== null) {
       window.clearTimeout(evaluationTimerRef.current);
@@ -63,6 +68,15 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
 
   const sendToFrame = useCallback((message) => {
     frameRef.current?.contentWindow?.postMessage(message, '*');
+  }, []);
+
+  const refreshPreview = useCallback((nextFiles = filesRef.current) => {
+    setPreviewDocument(buildRequestedPreviewDocument(
+      nextFiles,
+      trackRef.current,
+      checksRef.current,
+    ));
+    setPreviewKey((key) => key + 1);
   }, []);
 
   const scheduleCheckEvaluation = useCallback(() => {
@@ -94,6 +108,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
         payload: {
           checkId: check.id,
           selector: check.selector,
+          resultSelector: check.resultSelector,
           action: check.action || 'click',
           value: check.value,
         },
@@ -103,15 +118,12 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   const handleMessage = useCallback((message) => {
     if (!message) return;
     if (message.type === 'load') {
-      setRuntimeState((current) => current.status === 'idle'
-        ? current
-        : { ...current, status: 'ready' });
       return;
     }
     if (message.source !== 'web-learning-lab') return;
 
     if (message.type === 'ready') {
-      setRuntimeState((current) => ({ ...current, status: 'ready' }));
+      setRuntimeState((current) => ({ ...current, status: current.errors.length ? 'error' : 'ready' }));
       if (pendingCheckRef.current) {
         sendToFrame({ source: 'web-learning-lab', type: 'collect-signals', payload: { checks: checksRef.current } });
         sendDeclaredActions();
@@ -129,6 +141,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
 
     if (message.type === 'runtime-error') {
       const errorMessage = message.payload?.message || 'Nieznany błąd runtime';
+      signalsRef.current.runtimeErrors.push(errorMessage);
       setRuntimeState((current) => ({
         ...current,
         status: 'error',
@@ -145,7 +158,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
         ...current,
         signals: mergeSignals(current.signals, message.payload),
       }));
-      if (pendingCheckRef.current) scheduleCheckEvaluation();
+      if (pendingCheckRef.current && checksRef.current.filter(check => check.type === 'interaction').every(check => signalsRef.current.interactions[check.id])) scheduleCheckEvaluation();
     }
   }, [scheduleCheckEvaluation, sendDeclaredActions, sendToFrame]);
 
@@ -153,21 +166,21 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     frameRef.current = frame;
   }, []);
 
-  const runPreview = useCallback(() => {
+  const runPreview = useCallback((nextFiles) => {
     pendingCheckRef.current = false;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
-    setPreviewKey((key) => key + 1);
-  }, [clearEvaluationTimer]);
+    refreshPreview(nextFiles);
+  }, [clearEvaluationTimer, refreshPreview]);
 
   const checkPreview = useCallback(() => {
     pendingCheckRef.current = true;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
-    setPreviewKey((key) => key + 1);
-  }, [clearEvaluationTimer]);
+    refreshPreview();
+  }, [clearEvaluationTimer, refreshPreview]);
 
   const clearRuntime = useCallback(() => {
     pendingCheckRef.current = false;
@@ -181,9 +194,31 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState(initialRuntimeState(scopeKey));
+    setPreviewDocument(buildRequestedPreviewDocument(
+      filesRef.current,
+      trackRef.current,
+      checksRef.current,
+    ));
+    setPreviewKey((key) => key + 1);
   }, [clearEvaluationTimer, scopeKey]);
 
   useEffect(() => () => clearEvaluationTimer(), [clearEvaluationTimer]);
+
+  const draftSignature = JSON.stringify(files);
+  useEffect(() => {
+    pendingCheckRef.current = false;
+    clearEvaluationTimer();
+    setRuntimeState(current => current.checkResults.length ? { ...current, checkResults: [] } : current);
+  }, [draftSignature, clearEvaluationTimer]);
+
+  useEffect(() => {
+    if (runtimeState.status !== 'running') return;
+    const timer = window.setTimeout(() => {
+      pendingCheckRef.current = false;
+      setRuntimeState(current => ({ ...current, status: 'error', errors: [...current.errors, 'Podgląd nie odpowiedział. Sprawdź składnię i uruchom kod ponownie.'], checkResults: [] }));
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [runtimeState.status]);
 
   const visibleRuntimeState = runtimeState.scopeKey === scopeKey
     ? runtimeState

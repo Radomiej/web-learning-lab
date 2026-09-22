@@ -1,5 +1,6 @@
 import { allLessons } from './curriculum.js';
 import { lessons } from './lessons.js';
+import { evaluateChecks } from '../services/lessonValidator.js';
 
 test('contains the complete 39-lesson sequence', () => {
   expect(allLessons).toHaveLength(39);
@@ -34,4 +35,39 @@ test('exposes all four editable files in every starter bundle', () => {
     lesson.starter.themeCss !== undefined &&
     lesson.starter.js !== undefined
   ))).toBe(true);
+});
+
+test('HTML and CSS tasks require more than one copy-paste token', () => {
+  const tasks = lessons
+    .filter((lesson) => ['html', 'css'].includes(lesson.track))
+    .flatMap((lesson) => lesson.tasks);
+
+  expect(tasks.length).toBeGreaterThan(0);
+  expect(tasks.every((task) => (
+    task.checks.length > 1
+    || task.checks.some((check) => check.type !== 'sourceIncludes')
+  ))).toBe(true);
+});
+
+test('untouched and lesson-one starter code cannot pass later HTML or CSS tasks', () => {
+  const laterTasks = lessons
+    .filter((lesson) => lesson.order > 1 && ['html', 'css'].includes(lesson.track))
+    .flatMap((lesson) => lesson.tasks);
+  const lessonOneFiles = lessons.find((lesson) => lesson.order === 1).starter;
+  const emptySignals = {
+    dom: {},
+    styles: {},
+    viewport: {},
+    interactions: {},
+    runtimeErrors: [],
+    react: {},
+  };
+
+  laterTasks.forEach((task) => {
+    const untouched = evaluateChecks(task.checks, { files: task.starter, signals: emptySignals });
+    const copiedFromLessonOne = evaluateChecks(task.checks, { files: lessonOneFiles, signals: emptySignals });
+
+    expect(untouched.passed, `${task.id} passes untouched`).toBeLessThan(untouched.total);
+    expect(copiedFromLessonOne.passed, `${task.id} passes copied lesson one`).toBeLessThan(copiedFromLessonOne.total);
+  });
 });

@@ -4,6 +4,8 @@ import { htmlLessons } from './htmlLessons.js';
 import { jsLessons } from './jsLessons.js';
 import { layoutLessons } from './layoutLessons.js';
 import { reactLessons } from './reactLessons.js';
+import { practicalTasks } from './practicalTasks.js';
+import { scriptTasks } from './scriptTasks.js';
 
 const bundle = (html, baseCss = '', themeCss = '', js = '') => ({
   html,
@@ -434,9 +436,9 @@ const contentMetadata = new Map([
 
 export const lessons = definitions.map((definition) => {
   const starter = standardStarter(definition.track, definition.order, definition.title);
-  const tasks = definition.track === 'layout'
-    ? layoutTasks(definition, starter)
-    : standardTasks(definition, starter);
+  const tasks = ['html', 'css', 'layout'].includes(definition.track)
+    ? practicalTasks(definition, starter)
+    : scriptTasks(definition, starter);
   const content = contentMetadata.get(definition.order) || {};
 
   return createLesson({

@@ -15,7 +15,11 @@ function extractAttributeText(openingTag = '') {
 }
 
 export function normalizeHtmlDocument(html = '') {
-  const source = String(html).trim();
+  // The editor shows ordinary file references. The sandbox supplies their
+  // current contents inline, so they must not also load from the Vite server.
+  const source = String(html).trim()
+    .replace(/<link\b[^>]*href=["'](?:\.\/)?(?:base|theme)\.css["'][^>]*>/gi, '')
+    .replace(/<script\b[^>]*src=["'](?:\.\/)?script\.js["'][^>]*>\s*<\/script>/gi, '');
   const isFullDocument = /<!doctype\s+html/i.test(source)
     || /<html\b/i.test(source)
     || /<head\b/i.test(source)
@@ -131,7 +135,7 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
       dom,
       styles,
       react: {
-        rootReady: Boolean(window.React && window.ReactDOM && reactTarget && reactTarget.childElementCount > 0),
+        rootReady: Boolean(window.React && window.ReactDOM && reactTarget && reactTarget.childElementCount > 0 && Object.keys(document.querySelector('#root') || {}).some(key => key.startsWith('__reactContainer'))),
       },
       viewport: {
         width: window.innerWidth,
@@ -174,21 +178,26 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
     }
     if (action.action === 'click') element.click();
     if (action.action === 'input') {
-      element.value = action.value == null ? '' : String(action.value);
+      const setter = Object.getOwnPropertyDescriptor(element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value')?.set;
+      if (setter) setter.call(element, action.value == null ? '' : String(action.value));
+      else element.value = action.value == null ? '' : String(action.value);
       element.dispatchEvent(new Event('input', { bubbles: true }));
       element.dispatchEvent(new Event('change', { bubbles: true }));
     }
     const interactionId = action.checkId || action.id || action.selector;
-    const interaction = describeElement(element);
-    send('signals', { interactions: { [interactionId]: { ...interaction, ok: true, selector: action.selector, matched: selectorMatches(element, action.selector) } }, action: { ok: true, selector: action.selector, matched: selectorMatches(element, action.selector) } });
-    window.setTimeout(snapshot, 0);
+    window.setTimeout(() => {
+      const target = action.resultSelector ? document.querySelector(action.resultSelector) : element;
+      const interaction = describeElement(target);
+      send('signals', { interactions: { [interactionId]: { ...interaction, ok: Boolean(target) } } });
+      snapshot();
+    }, 50);
   });
 
   window.addEventListener('load', () => {
     window.setTimeout(() => {
       send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });
       snapshot();
-    }, 0);
+    }, 100);
   });
 })();
 `;
@@ -199,7 +208,8 @@ export function buildPreviewDocument(files = {}, options = {}) {
   const baseCss = String(files.baseCss ?? '');
   const themeCss = String(files.themeCss ?? '');
   const isReactTrack = options.track === 'react';
-  const compiledStudentCode = isReactTrack ? compileJsx(files.js ?? '').code : String(files.js ?? '');
+  const compilation = isReactTrack ? compileJsx(files.js ?? '') : null;
+  const compiledStudentCode = compilation?.warnings.length ? 'throw new Error(' + JSON.stringify(compilation.warnings.join('\n')) + ');' : isReactTrack ? compilation.code : String(files.js ?? '');
   const studentJavaScript = escapeInlineScript(compiledStudentCode);
   const bridge = createRuntimeBridge({ requestedSignals: options.requestedSignals ?? [] })
     .replace('TRACK_PLACEHOLDER', String(options.track ?? 'html'));

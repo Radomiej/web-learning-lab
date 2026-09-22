@@ -1,3 +1,5 @@
+import { documentBundle } from './fullDocument.js';
+
 export const emptyFileBundle = () => ({
   html: '',
   baseCss: '',
@@ -11,16 +13,16 @@ export function createTask(input = {}) {
     mode: input.mode ?? 'guided',
     title: input.title ?? 'Ćwiczenie',
     prompt: input.prompt ?? '',
-    starter: input.starter ?? emptyFileBundle(),
-    solution: input.solution ?? emptyFileBundle(),
+    starter: documentBundle(input.starter ?? emptyFileBundle(), input.title || 'Ćwiczenie'),
+    solution: documentBundle(input.solution ?? emptyFileBundle(), input.title || 'Ćwiczenie'),
     checks: input.checks ?? [],
     ...(input.hint ? { hint: input.hint } : {}),
   };
 }
 
 export function createLesson(input = {}) {
-  const starter = { ...emptyFileBundle(), ...(input.starter ?? {}) };
-  const solution = { ...starter, ...(input.solution ?? {}) };
+  const starter = documentBundle({ ...emptyFileBundle(), ...(input.starter ?? {}) }, input.title || 'Lekcja');
+  const solution = documentBundle({ ...starter, ...(input.solution ?? {}) }, input.title || 'Lekcja');
 
   return {
     id: input.id ?? 'lesson',

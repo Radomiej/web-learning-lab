@@ -3,7 +3,10 @@ import { emptyFileBundle } from '../data/lessonFactories.js';
 import { useLocalStorage } from './useLocalStorage.js';
 
 export const PROGRESS_STORAGE_KEY = 'web-learning-lab.progress.v1';
-export const FILES_STORAGE_KEY = 'web-learning-lab.files.v1';
+// The file bundle shape and lesson starters changed after the first course
+// release. A new key prevents stale, partially empty bundles from replacing
+// the current starter and producing a blank preview.
+export const FILES_STORAGE_KEY = 'web-learning-lab.files.v2';
 
 function findLesson(lessons, lessonId) {
   return lessons.find((lesson) => lesson.id === lessonId) || null;
@@ -70,7 +73,7 @@ export function useCourseProgress(lessons = []) {
       ...(current && typeof current === 'object' ? current : {}),
       [task.id]: {
         ...normalizeBundle(task.starter),
-        ...normalizeBundle(current?.[task.id]),
+        ...(current?.[task.id] || {}),
         ...(changes && typeof changes === 'object' ? changes : {}),
       },
     }));

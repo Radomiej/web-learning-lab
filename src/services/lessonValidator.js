@@ -51,6 +51,32 @@ function getStyleSignal(signals = {}, selector, property) {
   return undefined;
 }
 
+function normalizeCssValue(value) {
+  return safeString(value)
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\s*!important\s*$/i, '')
+    .toLowerCase();
+}
+
+function stripCssComments(source) {
+  return safeString(source).replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+function escapeRegExp(value) {
+  return safeString(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function readCssDeclaration(source, selector, property) {
+  const cleanSource = stripCssComments(source);
+  const selectorPattern = escapeRegExp(selector).replace(/\\\s+/g, '\\s*');
+  const rule = new RegExp(`(?:^|})\\s*${selectorPattern}\\s*\\{([^{}]*)\\}`, 'im').exec(cleanSource);
+  if (!rule) return null;
+
+  const declarationPattern = new RegExp(`(?:^|;)\\s*${escapeRegExp(property)}\\s*:\\s*([^;]+)`, 'i');
+  return declarationPattern.exec(rule[1])?.[1]?.trim() || null;
+}
+
 function expectedValue(check, fallback = '') {
   return check.expected ?? check.value ?? check.needle ?? fallback;
 }
@@ -67,6 +93,16 @@ function evaluateOne(check = {}, context = {}) {
         return source.includes(needle)
           ? resultFor(check, true, 'Znaleziono wymagany fragment kodu.')
           : resultFor(check, false, `Brak fragmentu „${needle}” w ${check.file || 'pliku'}.`);
+      }
+      case 'sourceDeclaration': {
+        const property = safeString(check.property).trim();
+        const selector = safeString(check.selector).trim();
+        const actual = readCssDeclaration(getFile(files, check.file), selector, property);
+        const expected = normalizeCssValue(expectedValue(check));
+        const passed = Boolean(actual) && (expected === '' || normalizeCssValue(actual) === expected);
+        return passed
+          ? resultFor(check, true, `Znaleziono deklarację ${property}: ${actual}.`)
+          : resultFor(check, false, `Brak poprawnej deklaracji ${property} w regule ${selector || '(brak selektora)'}${expected ? ` — oczekiwano „${expected}”.` : '.'}`);
       }
       case 'elementExists': {
         const signal = getDomSignal(signals, check.selector);
@@ -111,7 +147,7 @@ function evaluateOne(check = {}, context = {}) {
         const classPasses = expected.class == null || safeString(interaction.className).includes(safeString(expected.class));
         const visiblePasses = expected.visible == null || Boolean(interaction.visible) === Boolean(expected.visible);
         const attributePasses = !expected.attribute
-          || safeString(interaction.attributes?.[expected.attribute.name]) === safeString(expected.attribute.value);
+          || safeString((interaction.attrs || interaction.attributes)?.[expected.attribute.name]) === safeString(expected.attribute.value);
         return textPasses && classPasses && visiblePasses && attributePasses
           ? resultFor(check, true, 'Interakcja zmieniła widok zgodnie z oczekiwaniem.')
           : resultFor(check, false, 'Interakcja zadziałała, ale wynik nie spełnia oczekiwania.');

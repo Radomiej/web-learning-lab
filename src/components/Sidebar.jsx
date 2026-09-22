@@ -31,7 +31,7 @@ export default function Sidebar({
 
       <div className="sidebar-progress" aria-label="Postęp kursu">
         <div className="progress-heading"><span>Twój postęp</span><strong>{completedCount}</strong></div>
-        <div className="progress-track"><span style={{ width: `${Math.min(100, completedCount * 4)}%` }} /></div>
+        <div className="progress-track"><span style={{ width: `${100 * completedCount / Math.max(1, lessons.reduce((sum, lesson) => sum + lesson.tasks.length, 0))}%` }} /></div>
         <span className="progress-caption">{completedCount} ukończonych zadań</span>
       </div>
 

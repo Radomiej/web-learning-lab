@@ -41,3 +41,24 @@ test('fails unknown checks without throwing', () => {
   );
   expect(result).toMatchObject({ passed: 0, total: 1 });
 });
+
+test('matches a real CSS declaration without accepting a commented-out copy', () => {
+  const result = evaluateChecks([
+    {
+      id: 'declaration',
+      type: 'sourceDeclaration',
+      file: 'baseCss',
+      selector: '.lesson-card',
+      property: 'display',
+      expected: 'flex',
+      label: 'display flex',
+    },
+  ], {
+    files: {
+      baseCss: '/* .lesson-card { display: flex; } */ .lesson-card { display: grid; }',
+    },
+  });
+
+  expect(result).toMatchObject({ passed: 0, total: 1 });
+  expect(result.results[0].message).toContain('display');
+});

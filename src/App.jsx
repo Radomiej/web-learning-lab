@@ -55,12 +55,12 @@ export default function App() {
   const handleReset = () => {
     resetTask(activeTask.id);
     previewRuntime.clearRuntime();
-    previewRuntime.runPreview();
+    previewRuntime.runPreview(activeTask.starter);
   };
 
   const handleSolution = () => {
     updateFiles(activeTask.id, activeTask.solution);
-    previewRuntime.runPreview();
+    previewRuntime.runPreview(activeTask.solution);
   };
 
   const handleTaskChange = (taskId) => {

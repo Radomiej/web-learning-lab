@@ -22,3 +22,19 @@ test('changes the active editor file and opens the mobile sidebar', async () => 
   await user.click(screen.getByRole('button', { name: 'Otwórz menu' }));
   expect(screen.getByRole('navigation', { name: 'Nawigacja kursu' })).toHaveAttribute('data-open', 'true');
 });
+
+test('collapses and restores the lesson panel without remounting the sandbox or losing editor content', async () => {
+  const user = userEvent.setup();
+  const { container } = render(<App />);
+  const frame = container.querySelector('iframe');
+  const editor = screen.getByLabelText('Edytor index.html');
+  const value = editor.value;
+  await user.click(screen.getByRole('button', { name: 'Schowaj panel lekcji' }));
+  expect(container.querySelector('.app-shell')).toHaveClass('app-shell--sidebar-collapsed');
+  expect(screen.getByRole('button', { name: 'Pokaż panel lekcji' })).toHaveAttribute('aria-expanded', 'false');
+  expect(container.querySelector('iframe')).toBe(frame);
+  expect(editor.value).toBe(value);
+  await user.click(screen.getByRole('button', { name: 'Pokaż panel lekcji' }));
+  expect(container.querySelector('.app-shell')).not.toHaveClass('app-shell--sidebar-collapsed');
+  expect(screen.getByRole('button', { name: 'Schowaj panel lekcji' })).toHaveAttribute('aria-expanded', 'true');
+});
