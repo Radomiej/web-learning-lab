@@ -23,18 +23,150 @@
 }
 
 .editor-help-tooltip {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(300px, calc(100vw - 80px));
-  padding: 10px 12px;
+  position: fixed;
+  z-index: 120;
+  width: min(500px, calc(100vw - 72px));
+  padding: 18px;
   border: 1px solid var(--line-strong, #cbd9df);
   border-radius: 8px;
   color: var(--ink-700, #40586a);
   background: var(--paper, #fff);
   box-shadow: 0 10px 24px rgb(16 43 66 / 18%);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.45;
+  overflow-y: auto;
   overflow-wrap: anywhere;
+}
+
+.editor-help-header,
+.editor-help-groups,
+.editor-help-group,
+.editor-help-shortcuts,
+.editor-help-shortcut {
+  display: flex;
+}
+
+.editor-help-header,
+.editor-help-groups,
+.editor-help-group,
+.editor-help-shortcuts {
+  flex-direction: column;
+}
+
+.editor-help-header {
+  gap: 3px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--line, #dfe8ec);
+}
+.editor-help-header strong {
+  color: var(--ink-900, #102b42);
+  font-size: 15px;
+}
+.editor-help-header > span {
+  color: var(--ink-500, #6a7f8e);
+}
+.editor-help-groups {
+  gap: 15px;
+  margin-top: 15px;
+}
+.editor-help-group {
+  gap: 8px;
+}
+.editor-help-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-900, #102b42);
+  font-size: 12px;
+  font-weight: 800;
+}
+.editor-help-section-icon {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--teal-600, #168e83);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+.editor-help-shortcuts {
+  gap: 6px;
+}
+.editor-help-shortcut {
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 30px;
+}
+.editor-help-shortcut > span:last-child {
+  flex: 1 1 50%;
+  color: var(--ink-700, #40586a);
+}
+.editor-help-keymap {
+  display: inline-flex;
+  flex: 0 0 190px;
+  align-items: center;
+  gap: 4px;
+}
+.editor-help-key-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.editor-help-key-plus {
+  color: var(--ink-500, #6a7f8e);
+  font-size: 10px;
+  font-weight: 700;
+}
+.editor-help-tooltip kbd {
+  display: inline-flex;
+  min-width: 28px;
+  min-height: 25px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border: 1px solid #b8c9d1;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--ink-900, #102b42);
+  background: #f4f8fa;
+  box-shadow: 0 1px 1px rgb(16 43 66 / 8%);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+.editor-help-key-separator {
+  padding: 0 2px;
+  color: var(--ink-500, #6a7f8e);
+  font-size: 10px;
+}
+.editor-help-platform-note {
+  display: block;
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line, #dfe8ec);
+  color: var(--ink-500, #6a7f8e);
+}
+.editor-help-platform-note kbd {
+  min-width: 24px;
+  min-height: 22px;
+  padding: 2px 5px;
+  vertical-align: middle;
+}
+
+@media (max-width: 600px) {
+  .editor-help-tooltip {
+    width: min(360px, calc(100vw - 44px));
+    padding: 15px;
+  }
+  .editor-help-shortcut {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .editor-help-keymap {
+    flex-basis: auto;
+  }
 }

@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { allLessons, trackOrder, tracks } from './data/curriculum.js';
-import { useCourseProgress } from './hooks/useCourseProgress.js';
-import { usePreviewRuntime } from './hooks/usePreviewRuntime.js';
-import AppShell from './components/AppShell.jsx';
-import LessonWorkspace from './components/LessonWorkspace.jsx';
-import MobileHeader from './components/MobileHeader.jsx';
-import PreviewInspector from './components/PreviewInspector.jsx';
-import RuntimeConsole from './components/RuntimeConsole.jsx';
-import Sidebar from './components/Sidebar.jsx';
-import AddFileDialog from './components/AddFileDialog.jsx';
-import EditorDialog from './components/EditorDialog.jsx';
-import {normalizeProject} from './services/projectFiles.js';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { allLessons, trackOrder, tracks } from "./data/curriculum.js";
+import { useCourseProgress } from "./hooks/useCourseProgress.js";
+import { usePreviewRuntime } from "./hooks/usePreviewRuntime.js";
+import AppShell from "./components/AppShell.jsx";
+import LessonWorkspace from "./components/LessonWorkspace.jsx";
+import MobileHeader from "./components/MobileHeader.jsx";
+import PreviewInspector from "./components/PreviewInspector.jsx";
+import RuntimeConsole from "./components/RuntimeConsole.jsx";
+import Sidebar from "./components/Sidebar.jsx";
+import AddFileDialog from "./components/AddFileDialog.jsx";
+import EditorDialog from "./components/EditorDialog.jsx";
+import { normalizeProject } from "./services/projectFiles.js";
 
 export default function App() {
   const {
@@ -23,31 +23,48 @@ export default function App() {
     updateFiles,
     resetTask,
     markTaskComplete,
+    hardReset,
     storageWarning,
   } = useCourseProgress(allLessons);
-  const selectedLesson = allLessons.find((lesson) => lesson.id === selectedLessonId) || allLessons[0];
+  const selectedLesson =
+    allLessons.find((lesson) => lesson.id === selectedLessonId) ||
+    allLessons[0];
   const [activeTaskId, setActiveTaskId] = useState(selectedLesson.tasks[0]?.id);
-  const [activeFile, setActiveFile] = useState('index.html');
-  const [dialog,setDialog]=useState(null);
+  const [activeFile, setActiveFile] = useState("index.html");
+  const [dialog, setDialog] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!selectedLesson.tasks.some((task) => task.id === activeTaskId)) {
       setActiveTaskId(selectedLesson.tasks[0]?.id);
-      setActiveFile('index.html');
+      setActiveFile("index.html");
     }
   }, [activeTaskId, selectedLesson]);
 
-  const activeTask = selectedLesson.tasks.find((task) => task.id === activeTaskId) || selectedLesson.tasks[0];
-  const files = useMemo(() => normalizeProject(filesByTask[activeTask.id] || activeTask.starter, {track:selectedLesson.track}), [activeTask, filesByTask, selectedLesson.track]);
+  const activeTask =
+    selectedLesson.tasks.find((task) => task.id === activeTaskId) ||
+    selectedLesson.tasks[0];
+  const files = useMemo(
+    () =>
+      normalizeProject(filesByTask[activeTask.id] || activeTask.starter, {
+        track: selectedLesson.track,
+      }),
+    [activeTask, filesByTask, selectedLesson.track],
+  );
 
-  const previewRuntime = usePreviewRuntime(files, activeTask.checks, selectedLesson.track, activeTask.id);
+  const previewRuntime = usePreviewRuntime(
+    files,
+    activeTask.checks,
+    selectedLesson.track,
+    activeTask.id,
+  );
   const awardedRunRef = useRef(null);
-  const runtimeLabel = previewRuntime.runtimeState.status === 'running'
-    ? 'Uruchamiam'
-    : previewRuntime.runtimeState.status === 'error'
-      ? 'Błąd'
-      : 'Gotowe';
+  const runtimeLabel =
+    previewRuntime.runtimeState.status === "running"
+      ? "Uruchamiam"
+      : previewRuntime.runtimeState.status === "error"
+        ? "Błąd"
+        : "Gotowe";
 
   useEffect(() => {
     const results = previewRuntime.runtimeState.checkResults;
@@ -59,31 +76,47 @@ export default function App() {
       }
       return;
     }
-    if (results.length > 0 && results.every((result) => result.passed) && !completedTasks.includes(activeTask.id)) {
+    if (
+      results.length > 0 &&
+      results.every((result) => result.passed) &&
+      !completedTasks.includes(activeTask.id)
+    ) {
       awardedRunRef.current = run;
       markTaskComplete(activeTask.id);
     }
-  }, [activeTask.id, completedTasks, markTaskComplete, previewRuntime.runId, previewRuntime.runtimeState.checkResults, previewRuntime.runtimeState.errors]);
+  }, [
+    activeTask.id,
+    completedTasks,
+    markTaskComplete,
+    previewRuntime.runId,
+    previewRuntime.runtimeState.checkResults,
+    previewRuntime.runtimeState.errors,
+  ]);
 
   const handleReset = () => {
     setDialog(null);
-    setActiveFile('index.html');
+    setActiveFile("index.html");
     resetTask(activeTask.id);
     previewRuntime.clearRuntime();
-    previewRuntime.runPreview(normalizeProject(activeTask.starter,{track:selectedLesson.track}),'index.html');
+    previewRuntime.runPreview(
+      normalizeProject(activeTask.starter, { track: selectedLesson.track }),
+      "index.html",
+    );
   };
 
   const handleSolution = () => {
-    if (activeTask.mode !== 'guided') return;
-    const solution=normalizeProject(activeTask.solution,{track:selectedLesson.track});
+    if (activeTask.mode !== "guided") return;
+    const solution = normalizeProject(activeTask.solution, {
+      track: selectedLesson.track,
+    });
     updateFiles(activeTask.id, solution);
     setActiveFile(solution.entry);
-    previewRuntime.runPreview(solution,solution.entry);
+    previewRuntime.runPreview(solution, solution.entry);
   };
 
   const handleTaskChange = (taskId) => {
     setActiveTaskId(taskId);
-    setActiveFile('index.html');
+    setActiveFile("index.html");
     previewRuntime.clearRuntime();
   };
 
@@ -96,15 +129,29 @@ export default function App() {
       selectedLessonId={selectedLesson.id}
       completedTasks={completedTasks}
       isOpen={sidebarOpen}
-      onTrackChange={(trackId) => { selectTrack(trackId); setSidebarOpen(false); }}
-      onLessonChange={(lessonId) => { selectLesson(lessonId); setSidebarOpen(false); }}
+      onTrackChange={(trackId) => {
+        selectTrack(trackId);
+        setSidebarOpen(false);
+      }}
+      onLessonChange={(lessonId) => {
+        selectLesson(lessonId);
+        setSidebarOpen(false);
+      }}
+      onOpenSettings={() => setDialog("settings")}
     />
   );
 
   const main = (
     <>
-      <MobileHeader onOpen={() => setSidebarOpen(true)} runtimeLabel={runtimeLabel} />
-      {storageWarning && <p role="status" className="storage-warning">{storageWarning}</p>}
+      <MobileHeader
+        onOpen={() => setSidebarOpen(true)}
+        runtimeLabel={runtimeLabel}
+      />
+      {storageWarning && (
+        <p role="status" className="storage-warning">
+          {storageWarning}
+        </p>
+      )}
       <LessonWorkspace
         lesson={selectedLesson}
         activeTask={activeTask}
@@ -115,22 +162,118 @@ export default function App() {
         runtimeErrors={previewRuntime.runtimeState.errors}
         onTaskChange={handleTaskChange}
         onFileChange={setActiveFile}
-        onCodeChange={(fileKey, value) => updateFiles(activeTask.id, { [fileKey]: value })}
+        onCodeChange={(fileKey, value) =>
+          updateFiles(activeTask.id, { [fileKey]: value })
+        }
         onRun={() => previewRuntime.runPreview()}
-        onReset={() => setDialog('reset')}
-        onAddFile={() => setDialog('add')}
+        onReset={() => setDialog("reset")}
+        onAddFile={() => setDialog("add")}
         onCheck={previewRuntime.checkPreview}
         onSolution={handleSolution}
       />
-      {dialog==='add' && <AddFileDialog project={files} onClose={()=>setDialog(null)} onCreate={({project,path})=>{updateFiles(activeTask.id,project);setActiveFile(path);setDialog(null);}}/>}
-      {dialog==='reset' && <EditorDialog title="Przywrócić pliki zadania?" onClose={()=>setDialog(null)}><p>Twoje zmiany i dodane pliki w tym zadaniu zostaną zastąpione plikami startowymi. Inne zadania pozostaną bez zmian.</p><div className="editor-dialog-actions"><button className="button button--ghost" onClick={()=>setDialog(null)}>Anuluj</button><button className="button button--primary" onClick={handleReset}>Przywróć starter</button></div></EditorDialog>}
+      {dialog === "add" && (
+        <AddFileDialog
+          project={files}
+          onClose={() => setDialog(null)}
+          onCreate={({ project, path }) => {
+            updateFiles(activeTask.id, project);
+            setActiveFile(path);
+            setDialog(null);
+          }}
+        />
+      )}
+      {dialog === "reset" && (
+        <EditorDialog
+          title="Przywrócić pliki zadania?"
+          onClose={() => setDialog(null)}
+        >
+          <p>
+            Twoje zmiany i dodane pliki w tym zadaniu zostaną zastąpione plikami
+            startowymi. Inne zadania pozostaną bez zmian.
+          </p>
+          <div className="editor-dialog-actions">
+            <button
+              className="button button--ghost"
+              onClick={() => setDialog(null)}
+            >
+              Anuluj
+            </button>
+            <button className="button button--primary" onClick={handleReset}>
+              Przywróć starter
+            </button>
+          </div>
+        </EditorDialog>
+      )}
+      {dialog === "settings" && (
+        <EditorDialog title="Ustawienia kursu" onClose={() => setDialog(null)}>
+          <div className="settings-danger-zone">
+            <h3>Twardy reset</h3>
+            <p>
+              Usuń osiągnięcia, wybór lekcji i wszystkie zapisane projekty. Użyj
+              tej opcji, gdy po aktualizacji kurs wczytuje nieaktualne pliki.
+            </p>
+            <button
+              className="button button--danger-outline"
+              type="button"
+              onClick={() => setDialog("hard-reset")}
+            >
+              Wykonaj twardy reset
+            </button>
+          </div>
+          <div className="editor-dialog-actions">
+            <button
+              className="button button--ghost"
+              type="button"
+              onClick={() => setDialog(null)}
+            >
+              Zamknij
+            </button>
+          </div>
+        </EditorDialog>
+      )}
+      {dialog === "hard-reset" && (
+        <EditorDialog
+          title="Usunąć cały postęp i projekty?"
+          onClose={() => setDialog("settings")}
+        >
+          <p>
+            Ta operacja usunie wszystkie lokalne szkice i osiągnięcia Web
+            Learning Lab, łącznie z kopiami ze starszych wersji. Nie można jej
+            cofnąć.
+          </p>
+          <div className="editor-dialog-actions">
+            <button
+              className="button button--ghost"
+              type="button"
+              onClick={() => setDialog("settings")}
+            >
+              Anuluj
+            </button>
+            <button
+              className="button button--danger"
+              type="button"
+              onClick={() => {
+                hardReset();
+                setActiveFile("index.html");
+                setDialog(null);
+                setSidebarOpen(false);
+                previewRuntime.clearRuntime();
+              }}
+            >
+              Usuń wszystko i zacznij od nowa
+            </button>
+          </div>
+        </EditorDialog>
+      )}
     </>
   );
 
   const inspector = (
     <>
       <PreviewInspector
-        htmlFiles={Object.keys(files.files).filter(path=>path.endsWith('.html'))}
+        htmlFiles={Object.keys(files.files).filter((path) =>
+          path.endsWith(".html"),
+        )}
         previewPath={previewRuntime.previewPath}
         onPreviewPathChange={previewRuntime.setPreviewPath}
         previewDocument={previewRuntime.previewDocument}
