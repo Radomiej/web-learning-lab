@@ -1,5 +1,5 @@
 import CodeEditor from './CodeEditor.jsx';
-import EditorTabs, { tabs } from './EditorTabs.jsx';
+import EditorTabs from './EditorTabs.jsx';
 import FeedbackPanel from './FeedbackPanel.jsx';
 import LessonOverview from './LessonOverview.jsx';
 import TaskPanel from './TaskPanel.jsx';
@@ -19,8 +19,9 @@ export default function LessonWorkspace({
   onReset,
   onCheck,
   onSolution,
+  onAddFile,
 }) {
-  const activeTab = tabs.find((tab) => tab.key === activeFile) || tabs[0];
+  const path=Object.hasOwn(files.files, activeFile) ? activeFile : files.entry;
   return (
     <div className="lesson-workspace">
       <LessonOverview lesson={lesson} />
@@ -28,16 +29,16 @@ export default function LessonWorkspace({
       <section className="editor-section" aria-labelledby="editor-title">
         <div className="section-heading-row editor-section-heading">
           <div><p className="eyebrow">Laboratorium kodu</p><h2 id="editor-title">Zbuduj rozwiązanie</h2></div>
-          <span className="file-count">4 pliki dostępne</span>
+          <button type="button" className="button button--ghost" onClick={onAddFile}>Dodaj plik</button>
         </div>
         <div className="editor-shell">
-          <EditorTabs activeFile={activeFile} onFileChange={onFileChange} />
+          <EditorTabs files={files.files} activeFile={path} onFileChange={onFileChange} />
           <CodeEditor
-            key={`${activeTask.id}:${activeFile}`}
-            fileKey={activeFile}
-            fileLabel={activeTab.label}
-            value={files[activeFile] || ''}
-            onChange={(value) => onCodeChange(activeFile, value)}
+            key={`${activeTask.id}:${path}`}
+            fileKey={path}
+            fileLabel={path}
+            value={files.files[path] || ''}
+            onChange={(value) => onCodeChange(path, value)}
             onRun={onRun}
             onReset={onReset}
             onCheck={onCheck}

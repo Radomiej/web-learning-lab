@@ -2,13 +2,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App.jsx';
 
-test('shows the first lesson, four editor files, preview status, and track navigation', () => {
+test('shows the first lesson, three editor files, preview status, and track navigation', () => {
   render(<App />);
   expect(screen.getByText('Web Learning Lab')).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Pierwszy dokument HTML5', level: 1 })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'index.html' })).toBeInTheDocument();
-  expect(screen.getByRole('tab', { name: 'base.css' })).toBeInTheDocument();
-  expect(screen.getByRole('tab', { name: 'theme.css' })).toBeInTheDocument();
+  expect(screen.getByRole('tab', { name: 'styles.css' })).toBeInTheDocument();
+  expect(screen.queryByRole('tab', { name: 'theme.css' })).not.toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'script.js' })).toBeInTheDocument();
   expect(screen.getByText('Podgląd na żywo')).toBeInTheDocument();
   expect(screen.getByText('39 lekcji')).toBeInTheDocument();
@@ -17,10 +17,32 @@ test('shows the first lesson, four editor files, preview status, and track navig
 test('changes the active editor file and opens the mobile sidebar', async () => {
   const user = userEvent.setup();
   render(<App />);
-  await user.click(screen.getByRole('tab', { name: 'base.css' }));
-  expect(screen.getByLabelText('Edytor base.css')).toBeInTheDocument();
+  await user.click(screen.getByRole('tab', { name: 'styles.css' }));
+  expect(screen.getByLabelText('Edytor styles.css')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Otwórz menu' }));
   expect(screen.getByRole('navigation', { name: 'Nawigacja kursu' })).toHaveAttribute('data-open', 'true');
+});
+
+test('adds a component, restores it after reload and confirms reset',async()=>{
+  const user=userEvent.setup();
+  const view=render(<App/>);
+  await user.click(screen.getByRole('button',{name:'Dodaj plik'}));
+  await user.selectOptions(screen.getByLabelText('Typ pliku'),'react');
+  await user.type(screen.getByLabelText('Nazwa pliku'),'components/Card');
+  await user.click(screen.getByRole('button',{name:'Utwórz plik'}));
+  expect(screen.getByLabelText('Edytor components/Card.jsx').value).toContain('export default function Card');
+  view.unmount();
+  render(<App/>);
+  expect(screen.getByRole('tab',{name:'components/Card.jsx'})).toBeInTheDocument();
+  await user.click(screen.getByRole('button',{name:'Wyczyść'}));
+  expect(screen.getByRole('dialog',{name:'Przywrócić pliki zadania?'})).toBeInTheDocument();
+  await user.click(screen.getByRole('button',{name:'Anuluj'}));
+  expect(screen.getByRole('tab',{name:'components/Card.jsx'})).toBeInTheDocument();
+  await user.click(screen.getByRole('tab',{name:'components/Card.jsx'}));
+  await user.click(screen.getByRole('button',{name:'Wyczyść'}));
+  await user.click(screen.getByRole('button',{name:'Przywróć starter'}));
+  expect(screen.queryByRole('tab',{name:'components/Card.jsx'})).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Edytor index.html')).toHaveFocus();
 });
 
 test('collapses and restores the lesson panel without remounting the sandbox or losing editor content', async () => {

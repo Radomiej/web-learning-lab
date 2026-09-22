@@ -6,10 +6,58 @@ test('evaluates computed CSS arrays received from the iframe', async () => {
   const { result } = renderHook(() => usePreviewRuntime({ html: '<div class="practice"></div>' }, checks));
   act(() => result.current.checkPreview());
   await act(async () => {
-    result.current.handleMessage({ source: 'web-learning-lab', type: 'signals', payload: { styles: [{ selector: '.practice', property: 'display', value: 'flex' }] } });
+    result.current.handleMessage({ source: 'web-learning-lab', runId:result.current.runId, type: 'signals', payload: { styles: [{ selector: '.practice', property: 'display', value: 'flex' }] } });
     await new Promise(resolve => setTimeout(resolve, 50));
   });
   expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+});
+
+test('invalidates successful results when the active iframe fails later', async () => {
+  const checks = [{id: 'text', type: 'textEquals', selector: 'p', expected: 'OK'}];
+  const {result} = renderHook(() => usePreviewRuntime({html: '<p>OK</p>'}, checks));
+  act(() => result.current.checkPreview());
+  await act(async () => {
+    result.current.handleMessage({source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: {dom: {p: {exists: true, text: 'OK'}}}});
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+  act(() => result.current.handleMessage({source: 'web-learning-lab', runId: result.current.runId, type: 'runtime-error', payload: {message: 'late'}}));
+  expect(result.current.runtimeState.checkResults).toEqual([]);
+  expect(result.current.runtimeState.status).toBe('error');
+});
+
+test('ignores old run signals and checks entry instead of selected secondary page', async()=>{
+  const project={entry:'index.html',files:{'index.html':'<p>First</p>','other.html':'<p>Other</p>'}};
+  const checks=[{id:'text',type:'textEquals',selector:'p',expected:'First'}];
+  const {result}=renderHook(()=>usePreviewRuntime(project,checks));
+  const old=result.current.runId;
+  act(()=>result.current.setPreviewPath('other.html'));
+  expect(result.current.previewDocument).toContain('<p>Other</p>');
+  act(()=>result.current.checkPreview());
+  expect(result.current.previewPath).toBe('index.html');
+  await act(async()=>{
+    result.current.handleMessage({source:'web-learning-lab',runId:old,type:'signals',payload:{dom:{p:{exists:true,text:'First'}}}});
+    await new Promise(resolve=>setTimeout(resolve,50));
+  });
+  expect(result.current.runtimeState.checkResults).toEqual([]);
+  await act(async()=>{
+    result.current.handleMessage({source:'web-learning-lab',runId:result.current.runId,type:'signals',payload:{dom:{p:{exists:true,text:'First'}}}});
+    await new Promise(resolve=>setTimeout(resolve,50));
+  });
+  expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+});
+
+test('editing cancels pending verification even if iframe later sends success',async()=>{
+  const checks=[{id:'text',type:'textEquals',selector:'p',expected:'First'}];
+  const {result,rerender}=renderHook(({text})=>usePreviewRuntime({html:`<p>${text}</p>`},checks),{initialProps:{text:'First'}});
+  act(()=>result.current.checkPreview());
+  const runId=result.current.runId;
+  rerender({text:'Edited'});
+  await act(async()=>{
+    result.current.handleMessage({source:'web-learning-lab',runId,type:'signals',payload:{dom:{p:{exists:true,text:'First'}}}});
+    await new Promise(resolve=>setTimeout(resolve,50));
+  });
+  expect(result.current.runtimeState.checkResults).toEqual([]);
 });
 
 test('runPreview creates a new preview key and clears old runtime messages', () => {

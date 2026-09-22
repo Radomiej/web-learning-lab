@@ -17,15 +17,34 @@ test('HTML requirements explain tags in words instead of exposing bare selectors
 
 test('every exercise starts and ends with a complete HTML document', () => {
   for (const lesson of lessons) {
-    for (const bundle of [lesson.starter, lesson.solution, ...lesson.tasks.flatMap(task => [task.starter, task.solution])]) {
-      expect(bundle.html).toMatch(/^<!doctype html>/i);
-      expect(bundle.html).toMatch(/<html lang="(?:pl|en)">/);
-      expect(bundle.html).toContain('<head>');
-      expect(bundle.html).toContain('<meta charset="UTF-8">');
-      expect(bundle.html).toContain('name="viewport"');
-      expect(bundle.html).toContain('<title>');
-      expect(bundle.html).toContain('<body>');
-      expect(bundle.html).toMatch(/<\/body>\s*<\/html>$/);
+    for (const project of [lesson.starter, lesson.solution, ...lesson.tasks.flatMap(task => [task.starter, task.solution])]) {
+      const html = project.files['index.html'];
+      expect(html).toMatch(/^<!doctype html>/i);
+      expect(html).toMatch(/<html lang="(?:pl|en)">/);
+      expect(html).toContain('<head>');
+      expect(html).toContain('<meta charset="UTF-8">');
+      expect(html).toContain('name="viewport"');
+      expect(html).toContain('<title>');
+      expect(html).toContain('<body>');
+      expect(html).toMatch(/<\/body>\s*<\/html>$/);
+    }
+  }
+});
+
+test('React instructions name real module files and require imports', () => {
+  for (const lesson of lessons.filter((candidate) => candidate.track === 'react')) {
+    expect(lesson.theory.join(' ')).not.toMatch(/bez import|globalne obiekty/i);
+    for (const task of lesson.tasks) {
+      expect(task.prompt).not.toMatch(/script\.js|bez import/i);
+      const mentionedFiles = task.prompt.match(/[\w/-]+\.(?:jsx|js)/g) ?? [];
+      expect(mentionedFiles.length).toBeGreaterThan(0);
+      for (const path of mentionedFiles) {
+        expect(
+          Object.hasOwn(task.starter.files, path) || Object.hasOwn(task.solution.files, path),
+          `${task.id}: ${path}`,
+        ).toBe(true);
+      }
+      expect(task.prompt).toMatch(/import/i);
     }
   }
 });

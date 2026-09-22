@@ -4,10 +4,21 @@ import { lessons } from './lessons.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
 import { evaluateChecks } from '../services/lessonValidator.js';
 
-async function runTask(lesson, task, files) {
+const parserDom = new JSDOM('');
+
+beforeAll(() => {
+  vi.stubGlobal('DOMParser', parserDom.window.DOMParser);
+});
+
+afterAll(() => {
+  parserDom.window.close();
+  vi.unstubAllGlobals();
+});
+
+async function runTask(lesson, task, project) {
       let signals = { dom: {}, styles: {}, interactions: {}, runtimeErrors: [] };
       let snapshots = 0;
-      const dom = new JSDOM(buildPreviewDocument(files, { track: lesson.track, requestedSignals: task.checks }), {
+      const dom = new JSDOM(buildPreviewDocument(project, { track: lesson.track, requestedSignals: task.checks }), {
         runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: new VirtualConsole(),
         beforeParse(window) {
           window.addEventListener('message', event => {
@@ -31,7 +42,7 @@ async function runTask(lesson, task, files) {
           expect(snapshots).toBeGreaterThan(beforeActions);
           actions.forEach(check => expect(signals.interactions[check.id]).toBeDefined());
         }, { timeout: 3000 });
-        return evaluateChecks(task.checks, { files, signals });
+        return evaluateChecks(task.checks, { files: project.files, signals });
       } finally { dom.window.close(); }
 }
 
@@ -46,11 +57,14 @@ for (const lesson of lessons) {
       expect(result.passed).toBeLessThan(result.total);
     });
     if (index > 0) test(task.id + ' rejects the preceding solution even with cosmetic legacy adaptations', async () => {
-      const files = { ...lesson.tasks[index - 1].solution };
-      files.html = files.html.replace('</body>', '<section id="podsumowanie"><h2>Podsumowanie</h2><p>Wnioski</p></section></body>');
-      files.themeCss += '\n.practice { letter-spacing: 2px; }';
-      files.js = files.js.replaceAll('GOTOWE', 'SAMODZIELNIE').replaceAll('c + 1', 'c + 2');
-      const result = await runTask(lesson, task, files);
+      const preceding = lesson.tasks[index - 1].solution;
+      const project = { ...preceding, files: { ...preceding.files } };
+      project.files['index.html'] = project.files['index.html'].replace('</body>', '<section id="podsumowanie"><h2>Podsumowanie</h2><p>Wnioski</p></section></body>');
+      project.files['styles.css'] += '\n.practice { letter-spacing: 2px; }';
+      for (const path of Object.keys(project.files).filter((name) => /\.(?:js|jsx)$/.test(name))) {
+        project.files[path] = project.files[path].replaceAll('GOTOWE', 'SAMODZIELNIE').replaceAll('c + 1', 'c + 2');
+      }
+      const result = await runTask(lesson, task, project);
       expect(result.passed).toBeLessThan(result.total);
     });
   }

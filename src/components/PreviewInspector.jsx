@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function PreviewInspector({ previewDocument, previewKey, onMessage, onFrameReady, runtimeState = {} }) {
+export default function PreviewInspector({ previewDocument, previewKey, onMessage, onFrameReady, runtimeState = {}, htmlFiles = [], previewPath, onPreviewPathChange }) {
   const frameRef = useRef(null);
 
   useEffect(() => {
@@ -24,6 +24,7 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
           <span className="status-dot" />{runtimeState.label || 'Gotowe'}
         </span>
       </div>
+      {htmlFiles.length>1 && <div className="preview-page-choice"><label htmlFor="preview-page">Strona podglądu</label><select id="preview-page" value={previewPath} onChange={event=>onPreviewPathChange(event.target.value)}>{htmlFiles.map(path=><option key={path} value={path}>{path}</option>)}</select><small>Sprawdź zawsze otwiera i ocenia index.html.</small></div>}
       <div className="preview-frame-wrap">
         <iframe
           ref={frameRef}

@@ -110,13 +110,13 @@ export function practicalTasks(definition, base) {
       task.starter.html = '<!-- Tutaj, wewnątrz body, zbuduj treść strony według kroków zadania. -->';
       task.solution = { ...base, html: example };
       selectors.forEach((selector, index) => add('elementExists', independent ? independent.requirements[index][1] : htmlInstructions[definition.order][index], { selector }));
-      if (definition.order === 2) add('sourceIncludes', 'Na początku pliku, przed <html>, umieść deklarację <!doctype html>.', { file: 'html', value: '<!doctype html>' });
+      if (definition.order === 2) add('sourceIncludes', 'Na początku pliku index.html, przed <html>, umieść deklarację <!doctype html>.', { file: 'index.html', value: '<!doctype html>' });
     } else if (['css', 'layout'].includes(definition.track)) {
       let plan = definition.track === 'layout' ? layoutPlans[definition.order][variant] : stylePlans[definition.order];
       const independent = definition.track === 'css' && variant ? independentStyles[definition.order] : null;
       if (independent) { task.title = independent[0]; plan = independent[2]; }
       if (definition.track === 'layout') task.title = layoutScenarios[definition.order][variant];
-      task.prompt = `Pracuj w pliku theme.css. HTML jest już przygotowany: kontener ma class="practice", a trzy elementy w środku mają class="item". Zapis .practice w CSS wybiera kontener, a .item wybiera jego elementy — to nazwy klas, nie plików. Dodaj reguły według kroków poniżej, np. .practice { display: flex; }. Sprawdzamy rzeczywisty styl w podglądzie. ${definition.order === 23 ? 'Dodaj też stan :hover zmieniający opacity oraz wyłączenie przejść w prefers-reduced-motion.' : ''}`;
+      task.prompt = `Pracuj w pliku styles.css. HTML jest już przygotowany: kontener ma class="practice", a trzy elementy w środku mają class="item". Zapis .practice w CSS wybiera kontener, a .item wybiera jego elementy — to nazwy klas, nie plików. Dodaj reguły według kroków poniżej, np. .practice { display: flex; }. Sprawdzamy rzeczywisty styl w podglądzie. ${definition.order === 23 ? 'Dodaj też stan :hover zmieniający opacity oraz wyłączenie przejść w prefers-reduced-motion.' : ''}`;
       if (independent) task.prompt = independent[1] + ' ' + task.prompt;
       if (definition.order === 23) task.prompt = task.prompt.replace('Dodaj też stan :hover zmieniający opacity oraz wyłączenie przejść w prefers-reduced-motion.', '');
       task.starter = { ...base, html: `<main><h1>${task.title}</h1><section class="practice"><div class="item">Pierwszy element</div><div class="item">Drugi element</div><div class="item" id="featured">Trzeci element</div></section></main>`, themeCss: '.practice { min-height: 180px; background: #e0edf5; }\n.item { padding: 12px; background: #fff; border: 1px solid #789; }' };
@@ -131,6 +131,6 @@ export function practicalTasks(definition, base) {
     }
     add('runtimeError', 'Kod uruchamia się bez błędów');
     if (variant === 0 && !task.hint) task.hint = 'Realizuj po jednym wymaganiu. Kliknij Sprawdź, przeczytaj brakujące warunki i popraw kod.';
-    return createTask(task);
+    return createTask({ track: definition.track, ...task });
   });
 }

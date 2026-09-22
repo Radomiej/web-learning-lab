@@ -20,10 +20,12 @@ const initialRuntimeState = (scopeKey = 'default') => ({
   checkResults: [],
 });
 
-function buildRequestedPreviewDocument(files, track, checks) {
+function buildRequestedPreviewDocument(files, track, checks, documentPath, runId) {
   return buildPreviewDocument(files, {
     track,
     requestedSignals: checks,
+    documentPath,
+    runId,
   });
 }
 
@@ -39,9 +41,12 @@ function mergeSignals(previous, payload = {}) {
 }
 
 export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey = 'default') {
+  const runIdRef = useRef(crypto.randomUUID());
+  const pathRef = useRef(files.entry || 'index.html');
+  const [previewPath, setPath] = useState(pathRef.current);
   const [previewKey, setPreviewKey] = useState(1);
   const [previewDocument, setPreviewDocument] = useState(() => (
-    buildRequestedPreviewDocument(files, track, checks)
+    buildRequestedPreviewDocument(files, track, checks, pathRef.current, runIdRef.current)
   ));
   const [runtimeState, setRuntimeState] = useState(() => initialRuntimeState(scopeKey));
   const frameRef = useRef(null);
@@ -70,11 +75,16 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     frameRef.current?.contentWindow?.postMessage(message, '*');
   }, []);
 
-  const refreshPreview = useCallback((nextFiles = filesRef.current) => {
+  const refreshPreview = useCallback((nextFiles = filesRef.current, path = pathRef.current) => {
+    pathRef.current = nextFiles.files && !Object.hasOwn(nextFiles.files, path) ? nextFiles.entry : path;
+    setPath(pathRef.current);
+    runIdRef.current = crypto.randomUUID();
     setPreviewDocument(buildRequestedPreviewDocument(
       nextFiles,
       trackRef.current,
       checksRef.current,
+      pathRef.current,
+      runIdRef.current,
     ));
     setPreviewKey((key) => key + 1);
   }, []);
@@ -121,6 +131,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
       return;
     }
     if (message.source !== 'web-learning-lab') return;
+    if (message.runId !== runIdRef.current) return;
 
     if (message.type === 'ready') {
       setRuntimeState((current) => ({ ...current, status: current.errors.length ? 'error' : 'ready' }));
@@ -145,6 +156,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
       setRuntimeState((current) => ({
         ...current,
         status: 'error',
+        checkResults: [],
         errors: [...current.errors, errorMessage].slice(-40),
         signals: { ...current.signals, runtimeErrors: [...(current.signals.runtimeErrors || []), errorMessage] },
       }));
@@ -166,12 +178,12 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     frameRef.current = frame;
   }, []);
 
-  const runPreview = useCallback((nextFiles) => {
+  const runPreview = useCallback((nextFiles, documentPath) => {
     pendingCheckRef.current = false;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
-    refreshPreview(nextFiles);
+    refreshPreview(nextFiles, documentPath);
   }, [clearEvaluationTimer, refreshPreview]);
 
   const checkPreview = useCallback(() => {
@@ -179,7 +191,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
-    refreshPreview();
+    refreshPreview(filesRef.current, filesRef.current.entry || 'index.html');
   }, [clearEvaluationTimer, refreshPreview]);
 
   const clearRuntime = useCallback(() => {
@@ -194,10 +206,15 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState(initialRuntimeState(scopeKey));
+    pathRef.current = filesRef.current.entry || 'index.html';
+    setPath(pathRef.current);
+    runIdRef.current = crypto.randomUUID();
     setPreviewDocument(buildRequestedPreviewDocument(
       filesRef.current,
       trackRef.current,
       checksRef.current,
+      pathRef.current,
+      runIdRef.current,
     ));
     setPreviewKey((key) => key + 1);
   }, [clearEvaluationTimer, scopeKey]);
@@ -225,6 +242,9 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     : initialRuntimeState(scopeKey);
 
   return {
+    runId: runIdRef.current,
+    previewPath,
+    setPreviewPath: (path) => runPreview(filesRef.current, path),
     previewDocument,
     previewKey,
     runtimeState: visibleRuntimeState,

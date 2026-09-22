@@ -62,3 +62,10 @@ test('matches a real CSS declaration without accepting a commented-out copy', ()
   expect(result).toMatchObject({ passed: 0, total: 1 });
   expect(result.results[0].message).toContain('display');
 });
+test('reads exact filenames from a project and a flat filename map',()=>{
+  const checks=[{id:'doctype',type:'sourceIncludes',file:'index.html',value:'<!doctype html>'}];
+  for(const files of [{'index.html':'<!doctype html><p>Ok</p>'},{entry:'index.html',files:{'index.html':'<!doctype html><p>Ok</p>'}}]) {
+    expect(evaluateChecks(checks,{files}).passed).toBe(1);
+  }
+  expect(evaluateChecks(checks,{files:{'index.html':'',html:'<!doctype html>'}}).passed).toBe(0);
+});

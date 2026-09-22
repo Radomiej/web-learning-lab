@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { editSelection, formatCode } from '../services/codeEditing.js';
+import EditorHelp from './EditorHelp.jsx';
 
 export default function CodeEditor({
   fileKey,
@@ -103,7 +104,10 @@ export default function CodeEditor({
           <span className="eyebrow">Plik aktywny</span>
           <strong>{fileLabel}</strong>
         </div>
-        <button className="button button--ghost" type="button" onClick={handleFormat} disabled={formatting} title="Shift+Alt+F">Formatuj kod</button>
+        <div className="editor-card-heading-actions">
+          <button className="button button--ghost" type="button" onClick={handleFormat} disabled={formatting} title="Shift+Alt+F">Formatuj kod</button>
+          <EditorHelp />
+        </div>
       </div>
       <label className="sr-only" htmlFor={`editor-${fileKey}`}>Edytor {fileLabel}</label>
       <textarea
@@ -125,9 +129,7 @@ export default function CodeEditor({
         autoCorrect="off"
         wrap="off"
         aria-label={`Edytor ${fileLabel}`}
-        aria-describedby={`editor-help-${fileKey}`}
       />
-      <p className="editor-help" id={`editor-help-${fileKey}`}>Tab / Shift+Tab: wcięcia · Enter: zachowaj wcięcie · Ctrl+Shift+K: usuń linię · Shift+Alt+F: formatuj · Ctrl+Z: cofnij · Ctrl+Shift+Z: ponów. Na Macu użyj ⌘ zamiast Ctrl. Escape, potem Tab: wyjdź z edytora.</p>
       <p className="editor-status" role="status">{notice}</p>
       <div className="editor-actions">
         <button className="button button--primary" type="button" onClick={() => onRun?.()}><span aria-hidden="true">▶</span> Uruchom</button>

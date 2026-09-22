@@ -8,5 +8,8 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.js'],
     css: true,
     globals: true,
+    maxWorkers: 1,
+    minWorkers: 1,
+    fileParallelism: false,
   },
 });

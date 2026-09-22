@@ -33,8 +33,9 @@ export async function formatCode(text, fileKey) {
     import('prettier/standalone'), import('prettier/plugins/html'),
     import('prettier/plugins/postcss'), import('prettier/plugins/babel'), import('prettier/plugins/estree'),
   ]);
+  const extension = String(fileKey ?? '').toLowerCase().split('.').pop();
   return format(text, {
-    parser: fileKey === 'html' ? 'html' : fileKey === 'js' ? 'babel' : 'css',
+    parser: extension === 'html' ? 'html' : ['js', 'jsx'].includes(extension) ? 'babel' : 'css',
     plugins: [html, postcss, babel, estree], tabWidth: 2, printWidth: 90,
   });
 }

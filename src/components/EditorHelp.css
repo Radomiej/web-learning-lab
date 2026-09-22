@@ -1,0 +1,40 @@
+.editor-help-control {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.editor-card-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-help-button {
+  display: inline-grid;
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.editor-help-tooltip {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(300px, calc(100vw - 80px));
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong, #cbd9df);
+  border-radius: 8px;
+  color: var(--ink-700, #40586a);
+  background: var(--paper, #fff);
+  box-shadow: 0 10px 24px rgb(16 43 66 / 18%);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}

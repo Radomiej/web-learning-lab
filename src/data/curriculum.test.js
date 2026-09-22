@@ -28,12 +28,14 @@ test('contains eight React lessons after the JavaScript track', () => {
   expect(reactLessons.at(-1).order).toBe(39);
 });
 
-test('exposes all four editable files in every starter bundle', () => {
+test('exposes the standard project files in every starter', () => {
   expect(lessons.every((lesson) => (
-    lesson.starter.html !== undefined &&
-    lesson.starter.baseCss !== undefined &&
-    lesson.starter.themeCss !== undefined &&
-    lesson.starter.js !== undefined
+    lesson.starter.entry === 'index.html' &&
+    lesson.starter.files['index.html'] !== undefined &&
+    lesson.starter.files['styles.css'] !== undefined &&
+    (lesson.track === 'react'
+      ? lesson.starter.files['main.jsx'] !== undefined && lesson.starter.files['App.jsx'] !== undefined
+      : lesson.starter.files['script.js'] !== undefined)
   ))).toBe(true);
 });
 
@@ -53,7 +55,7 @@ test('untouched and lesson-one starter code cannot pass later HTML or CSS tasks'
   const laterTasks = lessons
     .filter((lesson) => lesson.order > 1 && ['html', 'css'].includes(lesson.track))
     .flatMap((lesson) => lesson.tasks);
-  const lessonOneFiles = lessons.find((lesson) => lesson.order === 1).starter;
+  const lessonOneFiles = lessons.find((lesson) => lesson.order === 1).starter.files;
   const emptySignals = {
     dom: {},
     styles: {},
@@ -64,7 +66,7 @@ test('untouched and lesson-one starter code cannot pass later HTML or CSS tasks'
   };
 
   laterTasks.forEach((task) => {
-    const untouched = evaluateChecks(task.checks, { files: task.starter, signals: emptySignals });
+    const untouched = evaluateChecks(task.checks, { files: task.starter.files, signals: emptySignals });
     const copiedFromLessonOne = evaluateChecks(task.checks, { files: lessonOneFiles, signals: emptySignals });
 
     expect(untouched.passed, `${task.id} passes untouched`).toBeLessThan(untouched.total);

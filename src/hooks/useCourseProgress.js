@@ -1,12 +1,13 @@
-import { useMemo } from 'react';
-import { emptyFileBundle } from '../data/lessonFactories.js';
+import { useMemo, useRef, useState } from 'react';
+import {normalizeProject} from '../services/projectFiles.js';
+import {loadProjects, saveProjects, PROJECT_STORAGE_KEY} from '../services/projectStorage.js';
 import { useLocalStorage } from './useLocalStorage.js';
 
 export const PROGRESS_STORAGE_KEY = 'web-learning-lab.progress.v1';
 // The file bundle shape and lesson starters changed after the first course
 // release. A new key prevents stale, partially empty bundles from replacing
 // the current starter and producing a blank preview.
-export const FILES_STORAGE_KEY = 'web-learning-lab.files.v2';
+export const FILES_STORAGE_KEY = PROJECT_STORAGE_KEY;
 
 function findLesson(lessons, lessonId) {
   return lessons.find((lesson) => lesson.id === lessonId) || null;
@@ -20,10 +21,6 @@ function findTask(lessons, taskId) {
   return null;
 }
 
-function normalizeBundle(bundle) {
-  return { ...emptyFileBundle(), ...(bundle && typeof bundle === 'object' ? bundle : {}) };
-}
-
 export function useCourseProgress(lessons = []) {
   const firstLesson = lessons[0] || null;
   const initialLesson = lessons.find((lesson) => lesson.order === 2) || firstLesson;
@@ -33,7 +30,19 @@ export function useCourseProgress(lessons = []) {
     completedTasks: [],
   };
   const [storedProgress, setStoredProgress] = useLocalStorage(PROGRESS_STORAGE_KEY, defaultProgress);
-  const [storedFiles, setStoredFiles] = useLocalStorage(FILES_STORAGE_KEY, {});
+  const [initialProjects]=useState(()=>{
+    try {return loadProjects(window.localStorage,lessons);} catch {return loadProjects(null,lessons);}
+  });
+  const [storedFiles, setStoredFiles] = useState(initialProjects.projects);
+  const filesRef=useRef(storedFiles);
+  const [storageWarning,setStorageWarning]=useState(initialProjects.warning);
+  function storeProjects(projects) {
+    filesRef.current=projects;
+    setStoredFiles(projects);
+    if(initialProjects.readOnly) return;
+    try {setStorageWarning(saveProjects(window.localStorage,projects).warning);}
+    catch {setStorageWarning('Nie udało się zapisać pracy. Zachowaj kopię kodu przed zamknięciem.');}
+  }
 
   const progress = storedProgress && typeof storedProgress === 'object'
     ? storedProgress
@@ -70,35 +79,33 @@ export function useCourseProgress(lessons = []) {
   const updateFiles = (taskId, changes = {}) => {
     const task = taskIndex.get(taskId) || findTask(lessons, taskId);
     if (!task) return;
-    setStoredFiles((current) => ({
-      ...(current && typeof current === 'object' ? current : {}),
-      [task.id]: {
-        ...normalizeBundle(task.starter),
-        ...(current?.[task.id] || {}),
-        ...(changes && typeof changes === 'object' ? changes : {}),
-      },
-    }));
+    const current=filesRef.current;
+    const track=lessons.find(lesson=>lesson.tasks.some(candidate=>candidate.id===taskId))?.track;
+    const previous=current[task.id] || normalizeProject(task.starter,{track});
+    const next=changes.files ? normalizeProject(changes) : normalizeProject({...previous,files:{...previous.files,...changes}});
+    storeProjects({...current,[task.id]:next});
   };
 
   const resetTask = (taskId) => {
     const task = taskIndex.get(taskId) || findTask(lessons, taskId);
     if (!task) return;
-    setStoredFiles((current) => ({
-      ...(current && typeof current === 'object' ? current : {}),
-      [task.id]: normalizeBundle(task.starter),
-    }));
+    const track=lessons.find(lesson=>lesson.tasks.some(candidate=>candidate.id===taskId))?.track;
+    storeProjects({...filesRef.current,[task.id]:normalizeProject(task.starter,{track})});
   };
 
-  const markTaskComplete = (taskId) => {
-    if (!taskIndex.has(taskId) || completedTasks.includes(taskId)) return;
+  const markTaskComplete = (taskId, complete = true) => {
+    if (!taskIndex.has(taskId) || completedTasks.includes(taskId) === complete) return;
     setStoredProgress((current) => ({
       ...defaultProgress,
       ...(current && typeof current === 'object' ? current : {}),
-      completedTasks: [...(Array.isArray(current?.completedTasks) ? current.completedTasks : []), taskId],
+      completedTasks: complete
+        ? [...new Set([...(Array.isArray(current?.completedTasks) ? current.completedTasks : []), taskId])]
+        : (Array.isArray(current?.completedTasks) ? current.completedTasks : []).filter(id => id !== taskId),
     }));
   };
 
   return {
+    storageWarning,
     selectedTrack,
     selectedLessonId: selectedLesson?.id || '',
     filesByTask,

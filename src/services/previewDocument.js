@@ -1,5 +1,6 @@
 const BRIDGE_SOURCE = 'web-learning-lab';
 import { compileJsx, getReactRuntimeScripts } from './reactRuntimeAssets.js';
+import { resolveDocumentResources } from './localResources.js';
 
 function escapeInlineScript(source = '') {
   return String(source)
@@ -56,7 +57,7 @@ function selectorMatches(element, selector) {
   }
 }
 
-export function createRuntimeBridge({ requestedSignals = [] } = {}) {
+export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}) {
   const serializedSignals = JSON.stringify(requestedSignals);
 
   return `
@@ -65,7 +66,7 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
   const requestedSignals = ${serializedSignals};
 
   function send(type, payload) {
-    window.parent.postMessage({ source, type, payload }, '*');
+    window.parent.postMessage({ source, runId: ${JSON.stringify(runId)}, type, payload }, '*');
   }
 
   function stringify(value) {
@@ -206,6 +207,16 @@ export function createRuntimeBridge({ requestedSignals = [] } = {}) {
 }
 
 export function buildPreviewDocument(files = {}, options = {}) {
+  if (files.files) {
+    const document = resolveDocumentResources(files, options.documentPath || files.entry);
+    const bridge = createRuntimeBridge({requestedSignals:options.requestedSignals ?? [],runId:options.runId}).replace('TRACK_PLACEHOLDER', String(options.track ?? 'html'));
+    // A JSX file can be added on any track, so load the local runtime when present.
+    const needsReact = options.track === 'react' || Object.keys(files.files).some(path=>path.endsWith('.jsx'));
+    const runtime=needsReact ? Object.values(getReactRuntimeScripts()) : [];
+    const scripts=[bridge,...runtime,...(options.runtimeScripts ?? [])].map(code=>`<script data-runtime="true">${escapeInlineScript(code)}</script>`).join('');
+    const errorScript=document.errors.length ? `<script>throw new Error(${JSON.stringify(document.errors.join('\n')).replace(/</g,'\\u003c')});</script>` : '';
+    return `${document.doctype}<html ${document.htmlAttributes}><head>${scripts}${document.headMarkup}</head><body ${document.bodyAttributes || ''}>${document.bodyMarkup}${errorScript}</body></html>`;
+  }
   const normalized = normalizeHtmlDocument(files.html ?? '');
   const baseCss = String(files.baseCss ?? '');
   const themeCss = String(files.themeCss ?? '');
@@ -213,7 +224,7 @@ export function buildPreviewDocument(files = {}, options = {}) {
   const compilation = isReactTrack ? compileJsx(files.js ?? '') : null;
   const compiledStudentCode = compilation?.warnings.length ? 'throw new Error(' + JSON.stringify(compilation.warnings.join('\n')) + ');' : isReactTrack ? compilation.code : String(files.js ?? '');
   const studentJavaScript = escapeInlineScript(compiledStudentCode);
-  const bridge = createRuntimeBridge({ requestedSignals: options.requestedSignals ?? [] })
+  const bridge = createRuntimeBridge({ requestedSignals: options.requestedSignals ?? [], runId:options.runId })
     .replace('TRACK_PLACEHOLDER', String(options.track ?? 'html'));
   const reactRuntime = isReactTrack ? getReactRuntimeScripts() : null;
   const localRuntimeScripts = reactRuntime ? [reactRuntime.react, reactRuntime.reactDom] : [];

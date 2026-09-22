@@ -45,15 +45,24 @@ test('invalid syntax is reported without replacing student code', async () => {
   expect(screen.getByRole('textbox').value).toBe('const = ;');
 });
 
-test('HTML and both CSS files use their own formatter parsers', async () => {
-  const { rerender } = render(<Editor key="html" fileKey="html" initial="<main><h1>Tytuł</h1><p>Opis</p></main>" />);
+test('HTML and CSS filenames use their own formatter parsers while aliases remain compatible', async () => {
+  const { rerender } = render(<Editor key="pages/index.html" fileKey="pages/index.html" initial="<main><h1>Tytuł</h1><p>Opis</p></main>" />);
   fireEvent.click(screen.getByRole('button', { name: 'Formatuj kod' }));
   await waitFor(() => expect(screen.getByRole('textbox').value).toContain('\n  <h1>Tytuł</h1>'));
-  for (const fileKey of ['baseCss', 'themeCss']) {
+  for (const fileKey of ['styles/site.css', 'baseCss', 'themeCss']) {
     rerender(<Editor key={fileKey} fileKey={fileKey} initial=".card{display:flex;gap:16px}" />);
     fireEvent.click(screen.getByRole('button', { name: 'Formatuj kod' }));
     await waitFor(() => expect(screen.getByRole('textbox').value).toBe('.card {\n  display: flex;\n  gap: 16px;\n}\n'));
   }
+});
+
+test('nested JSX and JavaScript filenames use the Babel formatter parser', async () => {
+  const { rerender } = render(<Editor key="components/Card.jsx" fileKey="components/Card.jsx" initial={'const Card=()=>{return <p>Karta</p>}'} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Formatuj kod' }));
+  await waitFor(() => expect(screen.getByRole('textbox').value).toContain('  return <p>Karta</p>;'));
+  rerender(<Editor key="scripts/app.js" fileKey="scripts/app.js" initial="const add=(left,right)=>left+right" />);
+  fireEvent.click(screen.getByRole('button', { name: 'Formatuj kod' }));
+  await waitFor(() => expect(screen.getByRole('textbox').value).toContain('const add = (left, right) => left + right;'));
 });
 
 test('formatting never overwrites typing performed while formatting is pending', async () => {

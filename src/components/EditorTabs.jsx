@@ -1,13 +1,5 @@
-const tabs = [
-  { key: 'html', label: 'index.html' },
-  { key: 'baseCss', label: 'base.css' },
-  { key: 'themeCss', label: 'theme.css' },
-  { key: 'js', label: 'script.js' },
-];
-
-export { tabs };
-
-export default function EditorTabs({ activeFile, onFileChange }) {
+export default function EditorTabs({ files, activeFile, onFileChange }) {
+  const tabs=Object.keys(files).map(path=>({key:path,label:path}));
   return (
     <div className="editor-tabs" role="tablist" aria-label="Pliki projektu">
       {tabs.map((tab) => (
@@ -20,7 +12,7 @@ export default function EditorTabs({ activeFile, onFileChange }) {
           key={tab.key}
           onClick={() => onFileChange(tab.key)}
         >
-          <span className={`file-icon file-icon--${tab.key}`} aria-hidden="true">{tab.key === 'html' ? '‹›' : tab.key === 'js' ? 'JS' : '◈'}</span>
+          <span className="file-icon" aria-hidden="true">{tab.key.endsWith('.html') ? '‹›' : /\.jsx?$/.test(tab.key) ? 'JS' : '◈'}</span>
           {tab.label}
         </button>
       ))}

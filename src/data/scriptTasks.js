@@ -1,16 +1,17 @@
 import { createTask } from './lessonFactories.js';
 import { independentScriptTask } from './independentScripts.js';
+import { reactProjectFor } from './reactProjects.js';
 
 function reactExercise(order, word) {
   const recipes = {
-    32: [`const App = () => <h1 id="result">${word}</h1>;`, 'Wyrenderuj komponent App z nagłówkiem h1#result.', '#result', word],
-    33: [`function Card({name, children}) { return <article id="result"><h2>{name}</h2>{children}</article>; } const App = () => <Card name="${word}"><p>Opis karty</p></Card>;`, 'Utwórz komponent Card z props name i children. Wyrenderuj article#result z h2 i opisem.', '#result', word],
-    34: [`function App() { const [count, setCount] = React.useState(0); return <button id="result" onClick={() => setCount(c => c + 1)}>{count}</button>; }`, 'Zbuduj licznik w button#result. Początkowo 0; każde kliknięcie zwiększa go o 1.', '#result', '1', true],
-    35: [`function App() { const items = [{id: 1, name: "${word}"}, {id: 2, name: "CSS"}]; return <ul id="result">{items.length ? items.map(item => <li key={item.id}>{item.name}</li>) : <li>Brak wyników</li>}</ul>; }`, 'Wyrenderuj tablicę dwóch obiektów w ul#result przez map. Nadaj stabilne key i obsłuż pustą listę.', '#result li', word],
-    36: [`function App() { const [name, setName] = React.useState(""); return <form onSubmit={e => e.preventDefault()}><label htmlFor="name">Imię</label><input id="name" value={name} onChange={e => setName(e.target.value)}/><output id="result">{name}</output></form>; }`, 'Połącz input#name ze stanem przez value i onChange. Pokazuj wpisaną wartość w output#result.', '#result', word, 'input'],
-    37: [`function App() { const [ready, setReady] = React.useState(false); React.useEffect(() => { const timer = setTimeout(() => setReady(true), 20); return () => clearTimeout(timer); }, []); return <p id="result">{ready ? "${word}" : "Czekam"}</p>; }`, 'Użyj useEffect z timerem i cleanup. Po 20 ms pokaż wynik w p#result.', '#result', word],
-    38: [`function useCounter() { const [count, setCount] = React.useState(0); return [count, () => setCount(c => c + 1)]; } function Counter({count, onAdd}) { return <button id="result" onClick={onAdd}>{count}</button>; } function App() { const [count, add] = useCounter(); return <Counter count={count} onAdd={add}/>; }`, 'Wydziel useCounter i komponent Counter przyjmujący count oraz onAdd. button#result zwiększa licznik z 0 do 1.', '#result', '1', true],
-    39: [`function App() { const [tasks, setTasks] = React.useState([]); return <main><button id="add" onClick={() => setTasks(items => [...items, {id: items.length, title: "${word}"}])}>Dodaj zadanie</button><ul id="result">{tasks.map(task => <li key={task.id}>{task.title}</li>)}</ul></main>; }`, 'Zbuduj pierwszy etap tablicy zadań: przycisk #add dodaje obiekt do stanu, ul#result renderuje zadania z key.', '#result', word, 'add'],
+    32: ['W App.jsx wyrenderuj nagłówek h1#result.', '#result', word],
+    33: ['W components/Card.jsx utwórz komponent Card z props name i children, a w App.jsx zaimportuj go i wyrenderuj article#result z h2 oraz opisem.', '#result', word],
+    34: ['W App.jsx zbuduj licznik w button#result. Początkowo 0; każde kliknięcie zwiększa go o 1.', '#result', '1', true],
+    35: ['W App.jsx wyrenderuj tablicę dwóch obiektów w ul#result przez map. Nadaj stabilne key i obsłuż pustą listę.', '#result li', word],
+    36: ['W App.jsx połącz input#name ze stanem przez value i onChange. Pokazuj wpisaną wartość w output#result.', '#result', word, 'input'],
+    37: ['W App.jsx użyj useEffect z timerem i cleanup. Po 20 ms pokaż wynik w p#result.', '#result', word],
+    38: ['W hooks/useCounter.js wydziel hook useCounter, w components/Counter.jsx komponent Counter, a oba zaimportuj do App.jsx. button#result zwiększa licznik z 0 do 1.', '#result', '1', true],
+    39: ['W components/TaskItem.jsx utwórz element listy i zaimportuj go do App.jsx. Przycisk #add ma dodać obiekt do stanu, a ul#result wyrenderować zadania ze stabilnym key.', '#result', word, 'add'],
   };
   return recipes[order];
 }
@@ -35,10 +36,10 @@ export function scriptTasks(definition, base) {
     const checks = [{ id: id + '-errors', type: 'runtimeError', label: 'Kod uruchamia się bez błędów' }];
     let starter, solution, prompt;
     if (definition.track === 'react') {
-      const [code, instruction, selector, expected, action] = reactExercise(definition.order, word);
-      starter = { ...base, html: '<div id="root"></div>', js: '// Napisz komponent i wyrenderuj go do #root.\n' };
-      solution = { ...starter, js: code + '\nReactDOM.createRoot(document.getElementById("root")).render(<App />);' };
-      prompt = instruction + ` Tekst zadania: „${word}”. React i ReactDOM są już dostępne — bez importów.`;
+      const [instruction, selector, expected, action] = reactExercise(definition.order, word);
+      starter = reactProjectFor(definition.order, 'guided', 'starter');
+      solution = reactProjectFor(definition.order, 'guided', 'solution');
+      prompt = `${instruction} Tekst zadania: „${word}”. Punkt wejścia main.jsx jest gotowy; pracuj w wymienionych plikach i zachowaj importy oraz eksporty.`;
       checks.push({ id: id + '-root', type: 'reactRendered', selector: '#root', label: 'React renderuje zawartość #root' });
       checks.push(action
         ? { id: id + '-action', type: 'interaction', selector: action === 'input' ? '#name' : action === 'add' ? '#add' : selector, resultSelector: selector, action: action === 'input' ? 'input' : 'click', value: word, expected: { text: expected }, label: `Po ${action === 'input' ? 'wpisaniu tekstu' : 'kliknięciu'} ${selector} zawiera „${expected}”` }
@@ -54,6 +55,6 @@ export function scriptTasks(definition, base) {
       if (definition.order === 27) checks.push({ id: id + '-class', type: 'elementExists', selector: '#result.ready', label: '#result ma klasę ready' });
       if (definition.order === 31) checks.push({ id: id + '-item', type: 'elementExists', selector: '#result > li', label: 'Wydarzenie jest elementem li' });
     }
-    return createTask({ id, mode, title: definition.title, prompt, starter, solution, checks });
+    return createTask({ id, mode, track: definition.track, title: definition.title, prompt, starter, solution, checks });
   });
 }

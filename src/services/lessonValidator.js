@@ -28,6 +28,8 @@ function resultFor(check, passed, message, hint = check.hint) {
 }
 
 function getFile(files = {}, file) {
+  if(files.files) return safeString(files.files[file]);
+  if(Object.hasOwn(files,file)) return safeString(files[file]);
   return safeString(files[FILE_KEYS[file] || file]);
 }
 
