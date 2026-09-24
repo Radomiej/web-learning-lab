@@ -1,4 +1,4 @@
-const extensions = { html: "html", css: "css", js: "js", react: "jsx" };
+const extensions = { html: "html", css: "css", js: "js", react: "jsx", php: "php" };
 const forbidden = new Set(["__proto__", "prototype", "constructor"]);
 
 function safePath(value, relative = false) {
@@ -48,9 +48,14 @@ function normalizeRuntime(runtime) {
   if (runtime === undefined) return undefined;
   if (!runtime || typeof runtime !== "object" || Array.isArray(runtime))
     throw new Error("Nieprawidłowy manifest runtime.");
-  const knownKinds = new Set(["react-cra", "react-vite"]);
+  const knownKinds = new Set(["react-cra", "react-vite", "php-wasm"]);
   if (!knownKinds.has(runtime.kind))
     throw new Error(`Nieznany runtime projektu: ${runtime.kind}.`);
+  if (runtime.kind === "php-wasm") {
+    if (runtime.phpVersion !== undefined && runtime.phpVersion !== "8.4")
+      throw new Error("Runtime PHP obsługuje obecnie wersję 8.4.");
+    return { ...runtime, phpVersion: runtime.phpVersion || "8.4" };
+  }
   if (typeof runtime.module !== "string" || !/\.(?:js|jsx)$/i.test(runtime.module))
     throw new Error("Runtime musi wskazywać moduł .js albo .jsx.");
   safePath(runtime.module);
@@ -71,10 +76,11 @@ export function normalizeProject(bundle = {}, { track = "html" } = {}) {
         return [path, value];
       }),
     );
-    const entry = safePath(bundle.entry || "index.html");
-    if (!Object.hasOwn(files, entry) || !entry.endsWith(".html"))
-      throw new Error("Brak dokumentu wejściowego HTML.");
     const runtime = normalizeRuntime(bundle.runtime);
+    const extension = runtime?.kind === "php-wasm" ? ".php" : ".html";
+    const entry = safePath(bundle.entry || `index${extension}`);
+    if (!Object.hasOwn(files, entry) || !entry.endsWith(extension))
+      throw new Error(runtime?.kind === "php-wasm" ? "Brak pliku wejściowego PHP." : "Brak dokumentu wejściowego HTML.");
     return runtime === undefined ? { entry, files } : { entry, files, runtime };
   }
   let linked = false;
@@ -171,7 +177,9 @@ export function createProjectFile(project, { type, name }) {
         ? '<!doctype html>\n<html lang="pl">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Nowa strona</title>\n</head>\n<body>\n  <h1>Nowa strona</h1>\n</body>\n</html>\n'
         : type === "css"
           ? "/* Dodaj style i podłącz ten plik do HTML lub modułu. */\n"
-          : "// Podłącz ten plik przez script albo import.\n";
+          : type === "php"
+            ? "<?php\n\n// Napisz tutaj kod PHP.\n"
+            : "// Podłącz ten plik przez script albo import.\n";
   return {
     project: { ...project, files: { ...project.files, [path]: source } },
     path,

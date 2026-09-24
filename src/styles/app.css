@@ -120,6 +120,7 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible { outline: 3p
 .file-icon--baseCss, .file-icon--themeCss { color: #3476bf; background: var(--blue-soft); }
 .file-icon--js { color: #9a7610; background: var(--yellow-soft); }
 .file-icon--react { color: #138a80; background: var(--teal-soft); }
+.file-icon--php { color: #6d56a7; background: #eee9ff; }
 .file-icon--generic { color: #718391; background: #edf3f6; }
 .file-type-preview { display: flex; align-items: center; gap: 11px; margin-top: 12px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: #f8fbfc; }
 .file-type-preview .file-icon { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 11px; }

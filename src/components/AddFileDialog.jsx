@@ -9,9 +9,10 @@ const hints = {
   js: 'Podłącz plik w HTML przez <script src="nazwa.js" defer></script> albo import w module.',
   react:
     'Zaimportuj komponent w App.jsx, np. import Card from "./components/Card.jsx", i użyj <Card />. Plik nie jest podłączany automatycznie.',
+  php: "Plik PHP zostanie dodany do projektu uruchamianego przez PHP.wasm. Połącz go przez require albo include, jeśli potrzebujesz podzielić kod.",
 };
 export default function AddFileDialog({ project, onCreate, onClose }) {
-  const [type, setType] = useState("html");
+  const [type, setType] = useState(project?.runtime?.kind === "php-wasm" ? "php" : "html");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const isCraProject = project?.runtime?.kind === "react-cra";
@@ -45,6 +46,7 @@ export default function AddFileDialog({ project, onCreate, onClose }) {
           <option value="css">CSS (.css)</option>
           <option value="js">JavaScript (.js)</option>
           <option value="react">React ({reactMeta.extension})</option>
+          <option value="php">PHP (.php)</option>
         </select>
         <div className="file-type-preview" aria-live="polite">
           <FileTypeIcon type={type} labelled reactProject={isCraProject} />

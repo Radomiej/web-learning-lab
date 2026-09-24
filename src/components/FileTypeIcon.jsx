@@ -19,6 +19,11 @@ const FILE_TYPE_META = Object.freeze({
     extension: ".jsx",
     description: "komponent JSX",
   },
+  php: {
+    label: "PHP",
+    extension: ".php",
+    description: "kod uruchamiany w PHP.wasm",
+  },
   generic: {
     label: "Plik",
     extension: "",
@@ -38,6 +43,7 @@ export function getFileTypeFromPath(path = "", { reactProject = false } = {}) {
   if (normalized.endsWith(".html")) return "html";
   if (normalized.endsWith(".css")) return "css";
   if (normalized.endsWith(".jsx") || normalized.endsWith(".tsx")) return "react";
+  if (normalized.endsWith(".php")) return "php";
   if (
     normalized.endsWith(".js") ||
     normalized.endsWith(".mjs") ||
@@ -83,6 +89,15 @@ function ReactGlyph() {
   );
 }
 
+function PhpGlyph() {
+  return (
+    <>
+      <rect x="3.5" y="6" width="25" height="20" rx="8" fill="currentColor" opacity=".16" />
+      <text x="16" y="19.5" textAnchor="middle" fill="currentColor" fontSize="8" fontWeight="800" letterSpacing="-.5">PHP</text>
+    </>
+  );
+}
+
 function GenericGlyph() {
   return <path d="M9 4.5h9l5 5V27H9zM18 4.5V10h5" />;
 }
@@ -111,6 +126,7 @@ export default function FileTypeIcon({
         {normalizedType === "css" && <CssGlyph />}
         {normalizedType === "js" && <JavaScriptGlyph />}
         {normalizedType === "react" && <ReactGlyph />}
+        {normalizedType === "php" && <PhpGlyph />}
         {normalizedType === "generic" && <GenericGlyph />}
       </svg>
     </span>
