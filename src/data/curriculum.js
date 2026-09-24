@@ -31,8 +31,14 @@ export const tracks = {
     description: 'Komponenty, stan i aplikacje w JSX.',
     accent: '#61dafb',
   },
+  php: {
+    id: 'php',
+    label: 'PHP',
+    description: 'Podstawy PHP uruchamiane lokalnie przez WebAssembly.',
+    accent: '#8f7ad8',
+  },
 };
 
-export const trackOrder = ['html', 'css', 'layout', 'js', 'react'];
+export const trackOrder = ['html', 'css', 'layout', 'js', 'react', 'php'];
 
 export const allLessons = [...lessons].sort((a, b) => a.order - b.order);

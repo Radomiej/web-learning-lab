@@ -92,7 +92,9 @@ export default function Sidebar({
                       ? "▦"
                       : trackId === "js"
                         ? "JS"
-                        : "⚛"}
+                        : trackId === "react"
+                          ? "⚛"
+                          : "PHP"}
               </span>
               <span>{item.label}</span>
               <span className="track-count">
@@ -142,7 +144,7 @@ export default function Sidebar({
       </div>
 
       <div className="sidebar-footer">
-        <span>39 lekcji</span>
+        <span>{lessons.length} lekcji</span>
         <span className="offline-badge">
           <span className="status-dot" />
           lokalnie
