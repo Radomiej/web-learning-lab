@@ -29,11 +29,12 @@ export function editSelection(text, start, end, command) {
 }
 
 export async function formatCode(text, fileKey) {
+  const extension = String(fileKey ?? '').toLowerCase().split('.').pop();
+  if (extension === 'php') return text;
   const [{ format }, html, postcss, babel, estree] = await Promise.all([
     import('prettier/standalone'), import('prettier/plugins/html'),
     import('prettier/plugins/postcss'), import('prettier/plugins/babel'), import('prettier/plugins/estree'),
   ]);
-  const extension = String(fileKey ?? '').toLowerCase().split('.').pop();
   return format(text, {
     parser: extension === 'html' ? 'html' : ['js', 'jsx'].includes(extension) ? 'babel' : 'css',
     plugins: [html, postcss, babel, estree], tabWidth: 2, printWidth: 90,
