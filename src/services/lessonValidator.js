@@ -83,6 +83,16 @@ function expectedValue(check, fallback = '') {
   return check.expected ?? check.value ?? check.needle ?? fallback;
 }
 
+function phpRequestKey(request = {}) {
+  const value = request && typeof request === 'object' && !Array.isArray(request) ? request : {};
+  return JSON.stringify({
+    method: safeString(value.method || 'GET').toUpperCase(),
+    query: value.query && typeof value.query === 'object' ? value.query : {},
+    form: value.form && typeof value.form === 'object' ? value.form : {},
+    body: value.body == null ? '' : safeString(value.body),
+  });
+}
+
 function evaluateOne(check = {}, context = {}) {
   const files = context.files || {};
   const signals = context.signals || {};
@@ -181,6 +191,19 @@ function evaluateOne(check = {}, context = {}) {
         return rootReady && Boolean(domSignal?.exists) && textPasses
           ? resultFor(check, true, 'Komponent React został wyrenderowany.')
           : resultFor(check, false, 'React nie wyrenderował oczekiwanego elementu lub tekstu.');
+      }
+      case 'phpRequest': {
+        const request = signals.phpRequest || {};
+        const expectedRequest = phpRequestKey(check.request || {});
+        const requestPasses = safeString(request.requestKey) === expectedRequest;
+        const signal = check.selector ? getDomSignal(signals, check.selector) : null;
+        const expectedText = safeString(expectedValue(check));
+        const textPasses = expectedText === '' || safeString(signal?.text ?? signals.text).includes(expectedText);
+        return requestPasses && textPasses
+          ? resultFor(check, true, 'PHP otrzymał żądanie i zwrócił oczekiwany wynik.')
+          : resultFor(check, false, requestPasses
+            ? `Odpowiedź PHP nie zawiera tekstu „${expectedText}”.`
+            : 'Podgląd nie został uruchomiony z wymaganym żądaniem PHP.');
       }
       case 'runtimeError': {
         const errors = Array.isArray(signals.runtimeErrors) ? signals.runtimeErrors : [];

@@ -279,8 +279,8 @@ export default function App() {
   const inspector = (
     <>
       <PreviewInspector
-        htmlFiles={Object.keys(files.files).filter((path) =>
-          path.endsWith(".html"),
+        previewFiles={Object.keys(files.files).filter((path) =>
+          path.endsWith(".html") || path.endsWith(".php"),
         )}
         previewPath={previewRuntime.previewPath}
         onPreviewPathChange={previewRuntime.setPreviewPath}

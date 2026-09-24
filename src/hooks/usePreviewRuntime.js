@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { evaluateChecks } from '../services/lessonValidator.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
+import { buildPhpErrorDocument, buildPhpPreviewDocument } from '../services/phpPreview.js';
+import { runPhpProject } from '../services/phpRuntime.js';
 
 const emptySignals = () => ({
   dom: {},
@@ -9,6 +11,7 @@ const emptySignals = () => ({
   interactions: {},
   runtimeErrors: [],
   react: {},
+  phpRequest: null,
 });
 
 const initialRuntimeState = (scopeKey = 'default') => ({
@@ -21,6 +24,13 @@ const initialRuntimeState = (scopeKey = 'default') => ({
 });
 
 function buildRequestedPreviewDocument(files, track, checks, documentPath, runId) {
+  if (track === 'php' || files?.runtime?.kind === 'php-wasm') {
+    return buildPhpPreviewDocument(
+      '<main><p>Uruchom podgląd, aby wykonać kod PHP.</p></main>',
+      files,
+      { track, requestedSignals: checks, documentPath, runId },
+    );
+  }
   return buildPreviewDocument(files, {
     track,
     requestedSignals: checks,
@@ -86,6 +96,10 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     frameRef.current?.contentWindow?.postMessage(message, '*');
   }, []);
 
+  const isPhpProject = useCallback((project = filesRef.current, projectTrack = trackRef.current) => (
+    projectTrack === 'php' || project?.runtime?.kind === 'php-wasm'
+  ), []);
+
   const refreshPreview = useCallback((nextFiles = filesRef.current, path = pathRef.current) => {
     pathRef.current = nextFiles.files && !Object.hasOwn(nextFiles.files, path) ? nextFiles.entry : path;
     setPath(pathRef.current);
@@ -120,6 +134,60 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
       }));
     }, 25);
   }, [clearEvaluationTimer]);
+
+  const runPhpPreview = useCallback((nextFiles = filesRef.current, documentPath = pathRef.current, request = {}) => {
+    const activePath = nextFiles.files && !Object.hasOwn(nextFiles.files, documentPath)
+      ? nextFiles.entry
+      : (documentPath || nextFiles.entry);
+    pathRef.current = activePath;
+    setPath(activePath);
+    const requestedRunId = crypto.randomUUID();
+    runIdRef.current = requestedRunId;
+    setPreviewDocument(buildPhpPreviewDocument(
+      '<main><p>Uruchamiam PHP.wasm…</p></main>',
+      nextFiles,
+      { track: trackRef.current, requestedSignals: checksRef.current, documentPath: activePath, runId: requestedRunId },
+    ));
+    setPreviewKey((key) => key + 1);
+    runPhpProject({ files: nextFiles.files, entry: nextFiles.entry, request })
+      .then((result) => {
+        if (runIdRef.current !== requestedRunId) return;
+        const errors = result.errors || (result.exitCode ? [`PHP zakończył pracę z kodem ${result.exitCode}.`] : []);
+        const errorText = errors.join('\n') || `PHP zakończył pracę z kodem ${result.exitCode}.`;
+        signalsRef.current = {
+          ...signalsRef.current,
+          phpRequest: { requestKey: result.requestKey, exitCode: result.exitCode },
+          runtimeErrors: errors,
+        };
+        setRuntimeState((current) => ({
+          ...current,
+          status: errors.length || result.exitCode ? 'error' : 'running',
+          errors,
+          signals: { ...current.signals, phpRequest: { requestKey: result.requestKey, exitCode: result.exitCode }, runtimeErrors: errors },
+        }));
+        setPreviewDocument(errors.length || result.exitCode
+          ? buildPhpErrorDocument(errorText, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, runId: requestedRunId })
+          : buildPhpPreviewDocument(result.html, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, documentPath: activePath, runId: requestedRunId }));
+        setPreviewKey((key) => key + 1);
+        if (errors.length || result.exitCode) {
+          if (pendingCheckRef.current) scheduleCheckEvaluation();
+        }
+      })
+      .catch((error) => {
+        if (runIdRef.current !== requestedRunId) return;
+        const message = error?.message || 'Nie udało się uruchomić PHP.';
+        signalsRef.current = { ...signalsRef.current, runtimeErrors: [message] };
+        setRuntimeState((current) => ({
+          ...current,
+          status: 'error',
+          errors: [message],
+          signals: { ...current.signals, runtimeErrors: [message] },
+        }));
+        setPreviewDocument(buildPhpErrorDocument(message, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, runId: requestedRunId }));
+        setPreviewKey((key) => key + 1);
+        if (pendingCheckRef.current) scheduleCheckEvaluation();
+      });
+  }, [scheduleCheckEvaluation]);
 
   const sendDeclaredActions = useCallback(() => {
     checksRef.current
@@ -196,8 +264,10 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
-    refreshPreview(nextFiles, documentPath);
-  }, [clearAutoPreviewTimer, clearEvaluationTimer, refreshPreview]);
+    const activeFiles = nextFiles || filesRef.current;
+    if (isPhpProject(activeFiles, trackRef.current)) runPhpPreview(activeFiles, documentPath, {});
+    else refreshPreview(activeFiles, documentPath);
+  }, [clearAutoPreviewTimer, clearEvaluationTimer, isPhpProject, refreshPreview, runPhpPreview]);
 
   const checkPreview = useCallback(() => {
     clearAutoPreviewTimer();
@@ -205,8 +275,11 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
-    refreshPreview(filesRef.current, filesRef.current.entry || 'index.html');
-  }, [clearAutoPreviewTimer, clearEvaluationTimer, refreshPreview]);
+    const activeFiles = filesRef.current;
+    const request = checksRef.current.find((check) => check.type === 'phpRequest')?.request || {};
+    if (isPhpProject(activeFiles, trackRef.current)) runPhpPreview(activeFiles, activeFiles.entry, request);
+    else refreshPreview(activeFiles, activeFiles.entry || 'index.html');
+  }, [clearAutoPreviewTimer, clearEvaluationTimer, isPhpProject, refreshPreview, runPhpPreview]);
 
   const clearRuntime = useCallback(() => {
     pendingCheckRef.current = false;

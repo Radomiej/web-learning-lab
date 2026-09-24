@@ -25,7 +25,7 @@ function inlineStyles(files = {}) {
 }
 
 export function buildPhpPreviewDocument(output = '', files = {}, options = {}) {
-  const normalized = normalizeHtmlDocument(output);
+  const normalized = normalizeHtmlDocument(String(output).replace(/<link\b[^>]*href=["'](?:\.\/)?styles\.css["'][^>]*>/gi, ''));
   const bridge = createRuntimeBridge({
     requestedSignals: options.requestedSignals || [],
     runId: options.runId,
@@ -42,4 +42,3 @@ export function buildPhpErrorDocument(message, files = {}, options = {}) {
     options,
   );
 }
-

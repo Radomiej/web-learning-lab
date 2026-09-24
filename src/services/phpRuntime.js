@@ -1,5 +1,5 @@
-import { PHP, PHPRequestHandler } from '@php-wasm/universal';
-import { loadWebRuntime } from '@php-wasm/web';
+import { loadPHPRuntime, PHP, PHPRequestHandler } from '@php-wasm/universal';
+import { getPHPLoaderModule } from '@php-wasm/web-8-4';
 
 export const PHP_VERSION = '8.4';
 export const PHP_RUN_TIMEOUT = 5000;
@@ -95,7 +95,8 @@ export function resetPhpRuntime() {
 async function getRuntime() {
   if (!runtimePromise) {
     runtimePromise = (async () => {
-      const runtimeId = await loadWebRuntime(PHP_VERSION);
+      const loaderModule = await getPHPLoaderModule();
+      const runtimeId = await loadPHPRuntime(loaderModule);
       const php = new PHP(runtimeId);
       const handler = new PHPRequestHandler({
         php,
@@ -175,4 +176,3 @@ export function runPhpProject(options = {}) {
   executionQueue = job.catch(() => undefined);
   return job;
 }
-
