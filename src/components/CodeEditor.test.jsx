@@ -91,3 +91,22 @@ test('Enter preserves indentation and deleting the last line removes its precedi
   fireEvent.keyDown(input, { key: 'k', ctrlKey: true, shiftKey: true });
   expect(input.value).toBe('one\n  two');
 });
+
+test('Ctrl+S saves the active file and prevents the browser save dialog', () => {
+  const onSave = vi.fn();
+  render(
+    <CodeEditor
+      fileKey="script.js"
+      fileLabel="script.js"
+      value="const ready = true;"
+      onChange={() => {}}
+      onSave={onSave}
+    />,
+  );
+  const input = screen.getByRole('textbox');
+
+  fireEvent.keyDown(input, { key: 's', ctrlKey: true });
+
+  expect(onSave).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('status')).toHaveTextContent('Zapisano plik');
+});

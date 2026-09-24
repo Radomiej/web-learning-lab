@@ -141,3 +141,29 @@ test("hard reset clears achievements, projects and legacy backups in memory and 
     ),
   ).toEqual([]);
 });
+
+test("preserves the CRA runtime through edits, reloads and task reset", () => {
+  const reactLesson = lessons.find((lesson) => lesson.id === "react-jsx");
+  const reactTask = reactLesson.tasks[0];
+  const taskId = reactTask.id;
+  const { result, unmount } = renderHook(() => useCourseProgress(lessons));
+
+  act(() =>
+    result.current.updateFiles(taskId, {
+      "src/App.js": "export default function App() { return <h1>Moja wersja</h1>; }",
+    }),
+  );
+  expect(result.current.filesByTask[taskId].runtime).toEqual(
+    reactTask.starter.runtime,
+  );
+  unmount();
+
+  const reloaded = renderHook(() => useCourseProgress(lessons));
+  expect(reloaded.result.current.filesByTask[taskId].runtime).toEqual(
+    reactTask.starter.runtime,
+  );
+  act(() => reloaded.result.current.resetTask(taskId));
+  expect(reloaded.result.current.filesByTask[taskId].runtime).toEqual(
+    reactTask.starter.runtime,
+  );
+});

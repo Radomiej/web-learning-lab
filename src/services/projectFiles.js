@@ -44,6 +44,23 @@ export function resolveLocalPath(from, specifier, files) {
   return found;
 }
 
+function normalizeRuntime(runtime) {
+  if (runtime === undefined) return undefined;
+  if (!runtime || typeof runtime !== "object" || Array.isArray(runtime))
+    throw new Error("Nieprawidłowy manifest runtime.");
+  const knownKinds = new Set(["react-cra", "react-vite"]);
+  if (!knownKinds.has(runtime.kind))
+    throw new Error(`Nieznany runtime projektu: ${runtime.kind}.`);
+  if (typeof runtime.module !== "string" || !/\.(?:js|jsx)$/i.test(runtime.module))
+    throw new Error("Runtime musi wskazywać moduł .js albo .jsx.");
+  safePath(runtime.module);
+  if (runtime.root !== undefined && typeof runtime.root !== "string")
+    throw new Error("Nieprawidłowy selektor root runtime.");
+  if (runtime.bootstrap !== undefined && typeof runtime.bootstrap !== "boolean")
+    throw new Error("Nieprawidłowa flaga Bootstrap runtime.");
+  return { ...runtime };
+}
+
 export function normalizeProject(bundle = {}, { track = "html" } = {}) {
   if (bundle.files && typeof bundle.files === "object") {
     const files = Object.fromEntries(
@@ -57,7 +74,8 @@ export function normalizeProject(bundle = {}, { track = "html" } = {}) {
     const entry = safePath(bundle.entry || "index.html");
     if (!Object.hasOwn(files, entry) || !entry.endsWith(".html"))
       throw new Error("Brak dokumentu wejściowego HTML.");
-    return { entry, files };
+    const runtime = normalizeRuntime(bundle.runtime);
+    return runtime === undefined ? { entry, files } : { entry, files, runtime };
   }
   let linked = false;
   let html = String(bundle.html ?? "").replace(
@@ -105,10 +123,33 @@ export function normalizeProject(bundle = {}, { track = "html" } = {}) {
   return { entry: "index.html", files };
 }
 
+export function relativeProjectPath(fromFile, targetFile) {
+  const from = safePath(fromFile);
+  const target = safePath(targetFile);
+  const fromDirectory = from.includes("/")
+    ? from.split("/").slice(0, -1)
+    : [];
+  const targetParts = target.split("/");
+  let common = 0;
+  while (
+    common < fromDirectory.length &&
+    common < targetParts.length &&
+    fromDirectory[common] === targetParts[common]
+  ) {
+    common += 1;
+  }
+  const upward = Array(fromDirectory.length - common).fill("..");
+  const downward = targetParts.slice(common);
+  const result = [...upward, ...downward].join("/");
+  return result.startsWith(".") ? result : `./${result}`;
+}
+
 export function createProjectFile(project, { type, name }) {
-  const extension = extensions[type];
+  const isCraReact = type === "react" && project?.runtime?.kind === "react-cra";
+  const extension = isCraReact ? "js" : extensions[type];
   if (!extension) throw new Error("Wybierz typ pliku.");
   let path = safePath(name);
+  if (isCraReact && !path.startsWith("src/")) path = `src/${path}`;
   const basename = path.split("/").pop();
   if (!basename.includes(".")) path += `.${extension}`;
   if (!path.endsWith(`.${extension}`))

@@ -1,4 +1,5 @@
 import { fullDocument } from './fullDocument.js';
+import { getReactPathSet, getReactProfile } from '../services/runtimeProfiles.js';
 
 const main = `import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -14,6 +15,35 @@ main, #root > section, #root > article { max-width: 760px; margin: 0 auto; paddi
 button, input { font: inherit; }
 button { cursor: pointer; }
 `;
+
+const craMain = `import React from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import App from './App';
+
+createRoot(document.getElementById('root')).render(<App />);
+`;
+
+const craIndexCss = styles;
+const craAppCss = `
+#root { min-height: 100vh; }
+`;
+
+function craDocument(title) {
+  const safeTitle = title.replace(/[<>&"]/g, '');
+  return `<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${safeTitle}</title>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>`;
+}
 
 const lessonTitles = {
   32: 'React i JSX',
@@ -266,22 +296,72 @@ function starterFiles(order, mode) {
   };
 }
 
-export function reactProjectFor(order, mode, kind) {
+function profilePath(path, profile) {
+  if (profile.runtime.kind !== 'react-cra') return path;
+  const paths = getReactPathSet(profile.id);
+  if (path === 'App.jsx') return paths.app;
+  const component = path.match(/^components\/([^/]+)\.jsx$/);
+  if (component) return paths.component(component[1]);
+  const hook = path.match(/^hooks\/([^/]+\.js)$/);
+  if (hook) return paths.hook(hook[1].replace(/\.js$/, ''));
+  return path;
+}
+
+function profileSource(source, path, profile) {
+  if (profile.runtime.kind !== 'react-cra') return source;
+  let result = source
+    .replace(/(['"])\.\/App\.jsx\1/g, '$1./App.js$1')
+    .replace(/(['"])\.\/components\/([^'"]+)\.jsx\1/g, '$1./components/$2.js$1')
+    .replace(/(['"])\.\/hooks\/([^'"]+)\.js\1/g, '$1./hooks/$2.js$1');
+  result = result.replaceAll('App.jsx', 'App.js');
+  if (path === 'App.jsx' && !result.includes("./App.css")) {
+    result = `import './App.css';\n${result}`;
+  }
+  return result;
+}
+
+function profileExerciseFiles(exerciseFiles, profile) {
+  return Object.fromEntries(
+    Object.entries(exerciseFiles).map(([path, source]) => [
+      profilePath(path, profile),
+      profileSource(source, path, profile),
+    ]),
+  );
+}
+
+function projectForProfile(order, exerciseFiles, profile) {
+  const paths = getReactPathSet(profile.id);
+  const files = profile.runtime.kind === 'react-cra'
+    ? {
+      [profile.entry]: craDocument(lessonTitles[order]),
+      [paths.indexCss]: craIndexCss,
+      [paths.appCss]: craAppCss,
+      [profile.runtime.module]: craMain,
+      ...profileExerciseFiles(exerciseFiles, profile),
+    }
+    : {
+      [profile.entry]: fullDocument('<div id="root"></div>', lessonTitles[order], { script: profile.runtime.module }),
+      [paths.indexCss]: styles,
+      [profile.runtime.module]: main,
+      ...profileExerciseFiles(exerciseFiles, profile),
+    };
+
+  return {
+    entry: profile.entry,
+    runtime: { ...profile.runtime },
+    files,
+  };
+}
+
+export function reactProjectFor(order, mode, kind, profileId = 'react-cra-inf04') {
   if (!lessonTitles[order]) throw new Error(`Nieznana lekcja React: ${order}.`);
   if (!['guided', 'independent'].includes(mode)) throw new Error(`Nieznany tryb zadania React: ${mode}.`);
   if (!['starter', 'solution'].includes(kind)) throw new Error(`Nieznany rodzaj projektu React: ${kind}.`);
+  const profile = getReactProfile(profileId);
 
   const exerciseFiles = kind === 'starter'
     ? starterFiles(order, mode)
     : (mode === 'guided' ? guidedSolutions : independentSolutions)[order];
 
-  return {
-    entry: 'index.html',
-    files: {
-      'index.html': fullDocument('<div id="root"></div>', lessonTitles[order], { script: 'main.jsx' }),
-      'styles.css': styles,
-      'main.jsx': main,
-      ...exerciseFiles,
-    },
-  };
+  return projectForProfile(order, exerciseFiles, profile);
 }

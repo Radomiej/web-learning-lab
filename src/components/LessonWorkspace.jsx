@@ -16,6 +16,7 @@ export default function LessonWorkspace({
   onFileChange,
   onCodeChange,
   onRun,
+  onSave,
   onReset,
   onCheck,
   onSolution,
@@ -46,6 +47,7 @@ export default function LessonWorkspace({
             activeFile={path}
             onFileChange={onFileChange}
             onAddFile={onAddFile}
+            runtime={files.runtime}
           />
           <CodeEditor
             key={`${activeTask.id}:${path}`}
@@ -54,6 +56,7 @@ export default function LessonWorkspace({
             value={files.files[path] || ""}
             onChange={(value) => onCodeChange(path, value)}
             onRun={onRun}
+            onSave={onSave}
             onReset={onReset}
             onCheck={onCheck}
             onSolution={activeTask.mode === "guided" ? onSolution : undefined}

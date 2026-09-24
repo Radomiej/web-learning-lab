@@ -1,5 +1,9 @@
-import { resolveLocalPath } from "./projectFiles.js";
+import { relativeProjectPath, resolveLocalPath } from "./projectFiles.js";
 import { compileModules } from "./moduleCompiler.js";
+import {
+  BOOTSTRAP_CSS_RESOURCE,
+  getBootstrapCss,
+} from "./bootstrapRuntime.js";
 
 const safeScript = (text) =>
   String(text).replace(/<\/script/gi, "\\x3c/script");
@@ -8,6 +12,7 @@ const safeStyle = (text) => String(text).replace(/<\/style/gi, "\\3c /style");
 export function resolveDocumentResources(
   project,
   documentPath = project.entry,
+  { runtimeModule = null } = {},
 ) {
   const errors = [];
   const deferred = [];
@@ -23,7 +28,30 @@ export function resolveDocumentResources(
       errors: [`Brak dokumentu ${documentPath}.`],
     };
   const doc = new DOMParser().parseFromString(files[documentPath], "text/html");
+  if (runtimeModule) {
+    let alreadyConnected = false;
+    for (const element of doc.querySelectorAll('script[type="module"][src]')) {
+      try {
+        if (
+          resolveLocalPath(documentPath, element.getAttribute("src"), files) ===
+          runtimeModule
+        ) {
+          alreadyConnected = true;
+          break;
+        }
+      } catch {
+        // The existing script will produce its own filename-bearing error below.
+      }
+    }
+    if (!alreadyConnected) {
+      const element = doc.createElement("script");
+      element.type = "module";
+      element.src = relativeProjectPath(documentPath, runtimeModule);
+      doc.body.append(element);
+    }
+  }
   function cssSource(path, stack = []) {
+    if (path === BOOTSTRAP_CSS_RESOURCE) return getBootstrapCss();
     if (stack.includes(path))
       throw new Error(`Cykl CSS: ${[...stack, path].join(" → ")}`);
     return files[path].replace(
@@ -41,7 +69,7 @@ export function resolveDocumentResources(
   }
   function style(path) {
     const element = doc.createElement("style");
-    element.dataset.file = path;
+    element.dataset.file = path === BOOTSTRAP_CSS_RESOURCE ? "bootstrap.min.css" : path;
     element.textContent = safeStyle(cssSource(path));
     return element;
   }

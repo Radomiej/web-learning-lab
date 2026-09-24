@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function PreviewInspector({ previewDocument, previewKey, onMessage, onFrameReady, runtimeState = {}, htmlFiles = [], previewPath, onPreviewPathChange }) {
+export default function PreviewInspector({ previewDocument, previewKey, onMessage, onFrameReady, runtimeState = {}, htmlFiles = [], previewPath, onPreviewPathChange, autoPreview = false, onAutoPreviewChange }) {
   const frameRef = useRef(null);
 
   useEffect(() => {
@@ -18,11 +18,26 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
         <div>
           <p className="eyebrow">Sandbox</p>
           <h2 id="preview-title">Podgląd na żywo</h2>
-          <small>Zmiany zastosujesz przyciskiem Uruchom lub Sprawdź.</small>
+          <small>{autoPreview ? 'Odświeżam po chwili od zakończenia pisania.' : 'Uruchom ręcznie albo użyj Ctrl+S, aby odświeżyć.'}</small>
         </div>
         <span className={`runtime-pill runtime-pill--${runtimeState.status || 'idle'}`}>
           <span className="status-dot" />{runtimeState.label || 'Gotowe'}
         </span>
+      </div>
+      <div className="preview-controls">
+        <label className="preview-auto-toggle">
+          <input
+            type="checkbox"
+            aria-label="Auto-podgląd"
+            checked={autoPreview}
+            onChange={(event) => onAutoPreviewChange?.(event.target.checked)}
+          />
+          <span className="preview-auto-toggle-copy">
+            <strong>Auto-podgląd</strong>
+            <small>odświeża po krótkiej pauzie w pisaniu</small>
+          </span>
+        </label>
+        <span className="preview-save-hint"><kbd>Ctrl</kbd><span>+</span><kbd>S</kbd> zapisuje i odświeża</span>
       </div>
       {htmlFiles.length>1 && <div className="preview-page-choice"><label htmlFor="preview-page">Strona podglądu</label><select id="preview-page" value={previewPath} onChange={event=>onPreviewPathChange(event.target.value)}>{htmlFiles.map(path=><option key={path} value={path}>{path}</option>)}</select><small>Sprawdź zawsze otwiera i ocenia index.html.</small></div>}
       <div className="preview-frame-wrap">

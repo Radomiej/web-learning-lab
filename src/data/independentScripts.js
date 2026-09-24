@@ -1,5 +1,6 @@
 import { createTask } from './lessonFactories.js';
 import { reactProjectFor } from './reactProjects.js';
+import { getReactPathSet, getReactProfile } from '../services/runtimeProfiles.js';
 
 const exists = (selector, label) => ({ type: 'elementExists', selector, label });
 const text = (selector, expected, label) => ({ type: 'textEquals', selector, expected, label });
@@ -91,9 +92,24 @@ const reactRecipes = {
   },
 };
 
+function reactRecipeFor(order) {
+  const paths = getReactPathSet();
+  const recipe = reactRecipes[order];
+  if (!recipe) return recipe;
+  return {
+    ...recipe,
+    prompt: recipe.prompt
+      .replaceAll('App.jsx', paths.app)
+      .replaceAll('components/Course.jsx', paths.component('Course'))
+      .replaceAll('components/Details.jsx', paths.component('Details'))
+      .replaceAll('components/TaskItem.jsx', paths.component('TaskItem'))
+      .replaceAll('hooks/useToggle.js', paths.hook('useToggle')),
+  };
+}
+
 export function independentScriptTask(definition, base) {
   const react = definition.track === 'react';
-  const recipe = (react ? reactRecipes : jsRecipes)[definition.order];
+  const recipe = (react ? reactRecipeFor(definition.order) : jsRecipes[definition.order]);
   const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-independent-v2`;
   const starter = react
     ? reactProjectFor(definition.order, 'independent', 'starter')
@@ -107,7 +123,7 @@ export function independentScriptTask(definition, base) {
     id, mode: 'independent', title: recipe.title,
     track: definition.track,
     prompt: react
-      ? `${recipe.prompt} Punkt wejścia main.jsx jest gotowy; zachowaj istniejące importy i eksporty.`
+      ? `${recipe.prompt} Punkt wejścia ${getReactProfile().runtime.module} jest gotowy; zachowaj istniejące importy i eksporty.`
       : `Pracuj w script.js. ${recipe.prompt} HTML jest przygotowany; zachowaj jego identyfikatory.`,
     starter, solution,
     checks: checks.map((check, index) => ({ ...check, id: `${id}-${index}` })),

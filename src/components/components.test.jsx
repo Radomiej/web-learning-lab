@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App.jsx";
 
+beforeEach(() => localStorage.clear());
+
 test("shows the first lesson, three editor files, preview status, and track navigation", () => {
   render(<App />);
   expect(screen.getByText("Web Learning Lab")).toBeInTheDocument();
@@ -16,6 +18,20 @@ test("shows the first lesson, three editor files, preview status, and track navi
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
   expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
   expect(screen.getByText("39 lekcji")).toBeInTheDocument();
+});
+
+test("opens the CRA public entry when the React track is selected", () => {
+  localStorage.setItem(
+    "web-learning-lab.progress.v1",
+    JSON.stringify({
+      selectedTrack: "react",
+      selectedLessonId: "react-jsx",
+      completedTasks: [],
+    }),
+  );
+  render(<App />);
+  expect(screen.getByRole("tab", { name: "public/index.html" })).toBeInTheDocument();
+  expect(screen.getByLabelText("Edytor public/index.html")).toBeInTheDocument();
 });
 
 test("places add file as the final control in the editor tab strip", () => {

@@ -20,6 +20,7 @@ const GROUPS = [
       [["Shift", "Alt", "F"], "Sformatuj aktywny plik"],
       [["Ctrl", "Z"], "Cofnij ostatnią zmianę"],
       [["Ctrl", "Shift", "Z"], "Ponów cofniętą zmianę"],
+      [["Ctrl", "S"], "Zapisz plik i odśwież podgląd"],
     ],
   },
   {

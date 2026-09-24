@@ -1,3 +1,5 @@
+import FileTypeIcon, { getFileTypeFromPath } from "./FileTypeIcon.jsx";
+
 function AddFileIcon() {
   return (
     <svg aria-hidden="true" className="editor-tab-add-icon" viewBox="0 0 20 20">
@@ -11,7 +13,9 @@ export default function EditorTabs({
   activeFile,
   onFileChange,
   onAddFile,
+  runtime,
 }) {
+  const reactProject = runtime?.kind?.startsWith("react") ?? false;
   const tabs = Object.keys(files).map((path) => ({ key: path, label: path }));
   return (
     <div
@@ -34,13 +38,10 @@ export default function EditorTabs({
             key={tab.key}
             onClick={() => onFileChange(tab.key)}
           >
-            <span className="file-icon" aria-hidden="true">
-              {tab.key.endsWith(".html")
-                ? "‹›"
-                : /\.jsx?$/.test(tab.key)
-                  ? "JS"
-                  : "◈"}
-            </span>
+            <FileTypeIcon
+              type={getFileTypeFromPath(tab.key, { reactProject })}
+              reactProject={reactProject}
+            />
             {tab.label}
           </button>
         ))}

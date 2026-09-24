@@ -10,10 +10,26 @@ test('every exported starter and solution uses real project files', () => {
       lesson.solution,
       ...lesson.tasks.flatMap((task) => [task.starter, task.solution]),
     ]) {
-      expect(project.entry).toBe('index.html');
-      expect(project.files['index.html']).toMatch(/^<!doctype html>/i);
-      expect(Object.keys(project.files).filter((path) => path.endsWith('.css'))).toEqual(['styles.css']);
-      expect(project.files['index.html']).toContain('href="styles.css"');
+      if (lesson.track === 'react') {
+        expect(project.entry).toBe('public/index.html');
+        expect(project.files['public/index.html']).toMatch(/^<!doctype html>/i);
+        expect(Object.keys(project.files).filter((path) => path.endsWith('.css'))).toEqual([
+          'src/index.css',
+          'src/App.css',
+        ]);
+        expect(project.files['public/index.html']).not.toMatch(/<script\b/i);
+        expect(project.runtime).toEqual({
+          kind: 'react-cra',
+          module: 'src/index.js',
+          root: '#root',
+          bootstrap: true,
+        });
+      } else {
+        expect(project.entry).toBe('index.html');
+        expect(project.files['index.html']).toMatch(/^<!doctype html>/i);
+        expect(Object.keys(project.files).filter((path) => path.endsWith('.css'))).toEqual(['styles.css']);
+        expect(project.files['index.html']).toContain('href="styles.css"');
+      }
       expect(project).not.toHaveProperty('html');
       expect(project).not.toHaveProperty('baseCss');
       expect(project).not.toHaveProperty('themeCss');
@@ -33,13 +49,15 @@ test('every source check refers to a file present in starter and solution', () =
   }
 });
 
-test('React projects use main.jsx, App.jsx, and no fresh legacy.jsx', () => {
+test('React course projects use CRA entry and source paths by default', () => {
   for (const lesson of reactLessons) {
     for (const task of lesson.tasks) {
       for (const project of [task.starter, task.solution]) {
-        expect(project.files['index.html']).toContain('src="main.jsx"');
-        expect(project.files['main.jsx']).toContain("from './App.jsx'");
-        expect(project.files['App.jsx']).toContain('export default');
+        expect(project.files['public/index.html']).toContain('id="root"');
+        expect(project.files['src/index.js']).toContain("from './App'");
+        expect(project.files['src/index.js']).toContain('bootstrap/dist/css/bootstrap.min.css');
+        expect(project.files['src/App.js']).toContain("import './App.css'");
+        expect(project.files['src/App.js']).toContain('export default');
         expect(Object.hasOwn(project.files, 'legacy.jsx')).toBe(false);
       }
     }
@@ -51,10 +69,28 @@ test.each(['guided', 'independent'])('%s React projects teach dedicated componen
   const hooks = reactProjectFor(38, mode, 'solution');
   const finalProject = reactProjectFor(39, mode, 'solution');
 
-  expect(Object.keys(components.files).some((path) => path.startsWith('components/'))).toBe(true);
-  expect(components.files['App.jsx']).toMatch(/from ['"]\.\/components\//);
-  expect(Object.keys(hooks.files).some((path) => path.startsWith('hooks/'))).toBe(true);
-  expect(hooks.files['App.jsx']).toMatch(/from ['"]\.\/hooks\//);
-  expect(Object.keys(hooks.files).some((path) => path.startsWith('components/'))).toBe(true);
-  expect(Object.keys(finalProject.files).some((path) => path.startsWith('components/'))).toBe(true);
+  expect(Object.keys(components.files).some((path) => path.startsWith('src/components/'))).toBe(true);
+  expect(components.files['src/App.js']).toMatch(/from ['"]\.\/components\//);
+  expect(Object.keys(hooks.files).some((path) => path.startsWith('src/hooks/'))).toBe(true);
+  expect(hooks.files['src/App.js']).toMatch(/from ['"]\.\/hooks\//);
+  expect(Object.keys(hooks.files).some((path) => path.startsWith('src/components/'))).toBe(true);
+  expect(Object.keys(finalProject.files).some((path) => path.startsWith('src/components/'))).toBe(true);
+});
+
+test('CRA starter copy uses the visible App.js filename in its preview text', () => {
+  const project = reactProjectFor(32, 'guided', 'starter');
+
+  expect(project.files['src/App.js']).toContain('Uzupełnij rozwiązanie w App.js');
+  expect(project.files['src/App.js']).not.toContain('App.jsx');
+});
+
+test('keeps the current Vite project shape when requested explicitly', () => {
+  const project = reactProjectFor(33, 'guided', 'solution', 'react-vite');
+
+  expect(project.entry).toBe('index.html');
+  expect(project.runtime.kind).toBe('react-vite');
+  expect(project.files['index.html']).toContain('src="main.jsx"');
+  expect(project.files['main.jsx']).toContain("from './App.jsx'");
+  expect(project.files['App.jsx']).toContain('export default');
+  expect(project.files['components/Card.jsx']).toContain('export default');
 });

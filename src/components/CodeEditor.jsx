@@ -11,6 +11,7 @@ export default function CodeEditor({
   onReset,
   onCheck,
   onSolution,
+  onSave,
 }) {
   const inputRef = useRef(null);
   const selectionRef = useRef(null);
@@ -79,6 +80,12 @@ export default function CodeEditor({
     escapeTab.current = false;
     if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'f') {
       event.preventDefault(); handleFormat(); return;
+    }
+    if (modifier && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      onSave?.();
+      setNotice('Zapisano plik. Podgląd odświeżony.');
+      return;
     }
     if (modifier && ['z', 'y'].includes(event.key.toLowerCase())) {
       event.preventDefault();

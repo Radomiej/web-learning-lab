@@ -30,6 +30,25 @@ test("valid v3 wins over v2 and retains empty file", () => {
   localStorage.setItem("web-learning-lab.files.v3", JSON.stringify(projects));
   expect(loadProjects(localStorage, []).projects).toEqual(projects);
 });
+
+test("round-trips CRA runtime metadata in v4 storage", () => {
+  const project = {
+    entry: "public/index.html",
+    runtime: {
+      kind: "react-cra",
+      module: "src/index.js",
+      root: "#root",
+      bootstrap: true,
+    },
+    files: {
+      "public/index.html": "<div id=\"root\"></div>",
+      "src/index.js": "",
+    },
+  };
+
+  expect(saveProjects(localStorage, { react: project }).warning).toBe("");
+  expect(loadProjects(localStorage, []).projects.react).toEqual(project);
+});
 test("malformed v3 is protected even when v2 is valid", () => {
   localStorage.setItem("web-learning-lab.files.v3", "{bad");
   localStorage.setItem("web-learning-lab.files.v2", "{}");

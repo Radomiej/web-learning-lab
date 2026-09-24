@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createProjectFile } from "../services/projectFiles.js";
 import EditorDialog from "./EditorDialog.jsx";
+import FileTypeIcon, { getFileTypeMeta } from "./FileTypeIcon.jsx";
 
 const hints = {
   html: "Nowy dokument otworzysz przez „Strona podglądu”. Sprawdzanie zadania zawsze dotyczy index.html.",
@@ -13,6 +14,13 @@ export default function AddFileDialog({ project, onCreate, onClose }) {
   const [type, setType] = useState("html");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const isCraProject = project?.runtime?.kind === "react-cra";
+  const typeMeta = getFileTypeMeta(type, { reactProject: isCraProject });
+  const reactMeta = getFileTypeMeta("react", { reactProject: isCraProject });
+  const hint =
+    type === "react" && isCraProject
+      ? 'Plik powstanie jako src/components/Card.js. Zaimportuj go w src/App.js, np. import Card from "./components/Card.js", i użyj <Card />. Plik nie jest podłączany automatycznie.'
+      : hints[type];
   function submit(event) {
     event.preventDefault();
     try {
@@ -36,8 +44,17 @@ export default function AddFileDialog({ project, onCreate, onClose }) {
           <option value="html">HTML (.html)</option>
           <option value="css">CSS (.css)</option>
           <option value="js">JavaScript (.js)</option>
-          <option value="react">React (.jsx)</option>
+          <option value="react">React ({reactMeta.extension})</option>
         </select>
+        <div className="file-type-preview" aria-live="polite">
+          <FileTypeIcon type={type} labelled reactProject={isCraProject} />
+          <div>
+            <strong>{typeMeta.label}</strong>
+            <span>
+              {typeMeta.extension} · {typeMeta.description}
+            </span>
+          </div>
+        </div>
         <label htmlFor="new-file-name">Nazwa pliku</label>
         <input
           id="new-file-name"
@@ -50,7 +67,7 @@ export default function AddFileDialog({ project, onCreate, onClose }) {
           autoComplete="off"
           aria-describedby="new-file-hint"
         />
-        <p id="new-file-hint">{hints[type]}</p>
+        <p id="new-file-hint">{hint}</p>
         {error && <p role="alert">{error}</p>}
         <div className="editor-dialog-actions">
           <button

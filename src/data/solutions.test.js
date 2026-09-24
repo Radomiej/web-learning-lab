@@ -59,8 +59,9 @@ for (const lesson of lessons) {
     if (index > 0) test(task.id + ' rejects the preceding solution even with cosmetic legacy adaptations', async () => {
       const preceding = lesson.tasks[index - 1].solution;
       const project = { ...preceding, files: { ...preceding.files } };
-      project.files['index.html'] = project.files['index.html'].replace('</body>', '<section id="podsumowanie"><h2>Podsumowanie</h2><p>Wnioski</p></section></body>');
-      project.files['styles.css'] += '\n.practice { letter-spacing: 2px; }';
+      project.files[project.entry] = project.files[project.entry].replace('</body>', '<section id="podsumowanie"><h2>Podsumowanie</h2><p>Wnioski</p></section></body>');
+      const cssPath = Object.keys(project.files).find((path) => path.endsWith('.css'));
+      project.files[cssPath] += '\n.practice { letter-spacing: 2px; }';
       for (const path of Object.keys(project.files).filter((name) => /\.(?:js|jsx)$/.test(name))) {
         project.files[path] = project.files[path].replaceAll('GOTOWE', 'SAMODZIELNIE').replaceAll('c + 1', 'c + 2');
       }

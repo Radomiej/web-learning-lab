@@ -12,6 +12,10 @@ import AddFileDialog from "./components/AddFileDialog.jsx";
 import EditorDialog from "./components/EditorDialog.jsx";
 import { normalizeProject } from "./services/projectFiles.js";
 
+function starterEntry(task, track) {
+  return normalizeProject(task?.starter, { track }).entry;
+}
+
 export default function App() {
   const {
     selectedTrack,
@@ -30,14 +34,16 @@ export default function App() {
     allLessons.find((lesson) => lesson.id === selectedLessonId) ||
     allLessons[0];
   const [activeTaskId, setActiveTaskId] = useState(selectedLesson.tasks[0]?.id);
-  const [activeFile, setActiveFile] = useState("index.html");
+  const [activeFile, setActiveFile] = useState(() =>
+    starterEntry(selectedLesson.tasks[0], selectedLesson.track),
+  );
   const [dialog, setDialog] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!selectedLesson.tasks.some((task) => task.id === activeTaskId)) {
       setActiveTaskId(selectedLesson.tasks[0]?.id);
-      setActiveFile("index.html");
+      setActiveFile(starterEntry(selectedLesson.tasks[0], selectedLesson.track));
     }
   }, [activeTaskId, selectedLesson]);
 
@@ -95,13 +101,13 @@ export default function App() {
 
   const handleReset = () => {
     setDialog(null);
-    setActiveFile("index.html");
+    const starter = normalizeProject(activeTask.starter, {
+      track: selectedLesson.track,
+    });
+    setActiveFile(starter.entry);
     resetTask(activeTask.id);
     previewRuntime.clearRuntime();
-    previewRuntime.runPreview(
-      normalizeProject(activeTask.starter, { track: selectedLesson.track }),
-      "index.html",
-    );
+    previewRuntime.runPreview(starter, starter.entry);
   };
 
   const handleSolution = () => {
@@ -115,8 +121,9 @@ export default function App() {
   };
 
   const handleTaskChange = (taskId) => {
+    const nextTask = selectedLesson.tasks.find((task) => task.id === taskId);
     setActiveTaskId(taskId);
-    setActiveFile("index.html");
+    setActiveFile(starterEntry(nextTask, selectedLesson.track));
     previewRuntime.clearRuntime();
   };
 
@@ -166,6 +173,7 @@ export default function App() {
           updateFiles(activeTask.id, { [fileKey]: value })
         }
         onRun={() => previewRuntime.runPreview()}
+        onSave={() => previewRuntime.savePreview()}
         onReset={() => setDialog("reset")}
         onAddFile={() => setDialog("add")}
         onCheck={previewRuntime.checkPreview}
@@ -254,7 +262,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 hardReset();
-                setActiveFile("index.html");
+                setActiveFile(starterEntry(activeTask, selectedLesson.track));
                 setDialog(null);
                 setSidebarOpen(false);
                 previewRuntime.clearRuntime();
@@ -278,6 +286,8 @@ export default function App() {
         onPreviewPathChange={previewRuntime.setPreviewPath}
         previewDocument={previewRuntime.previewDocument}
         previewKey={previewRuntime.previewKey}
+        autoPreview={previewRuntime.autoPreview}
+        onAutoPreviewChange={previewRuntime.setAutoPreview}
         onMessage={previewRuntime.handleMessage}
         onFrameReady={previewRuntime.setFrame}
         runtimeState={{ ...previewRuntime.runtimeState, label: runtimeLabel }}

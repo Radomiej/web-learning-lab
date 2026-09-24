@@ -208,10 +208,16 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
 
 export function buildPreviewDocument(files = {}, options = {}) {
   if (files.files) {
-    const document = resolveDocumentResources(files, options.documentPath || files.entry);
+    const documentPath = options.documentPath || files.entry;
+    const runtimeModule = documentPath === files.entry && files.runtime?.kind === 'react-cra'
+      ? files.runtime.module
+      : null;
+    const document = resolveDocumentResources(files, documentPath, { runtimeModule });
     const bridge = createRuntimeBridge({requestedSignals:options.requestedSignals ?? [],runId:options.runId}).replace('TRACK_PLACEHOLDER', String(options.track ?? 'html'));
     // A JSX file can be added on any track, so load the local runtime when present.
-    const needsReact = options.track === 'react' || Object.keys(files.files).some(path=>path.endsWith('.jsx'));
+    const needsReact = options.track === 'react'
+      || files.runtime?.kind?.startsWith('react')
+      || Object.keys(files.files).some(path=>path.endsWith('.jsx'));
     const runtime=needsReact ? Object.values(getReactRuntimeScripts()) : [];
     const scripts=[bridge,...runtime,...(options.runtimeScripts ?? [])].map(code=>`<script data-runtime="true">${escapeInlineScript(code)}</script>`).join('');
     const errorScript=document.errors.length ? `<script>throw new Error(${JSON.stringify(document.errors.join('\n')).replace(/</g,'\\u003c')});</script>` : '';

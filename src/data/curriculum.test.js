@@ -30,13 +30,47 @@ test('contains eight React lessons after the JavaScript track', () => {
 
 test('exposes the standard project files in every starter', () => {
   expect(lessons.every((lesson) => (
-    lesson.starter.entry === 'index.html' &&
-    lesson.starter.files['index.html'] !== undefined &&
-    lesson.starter.files['styles.css'] !== undefined &&
-    (lesson.track === 'react'
-      ? lesson.starter.files['main.jsx'] !== undefined && lesson.starter.files['App.jsx'] !== undefined
-      : lesson.starter.files['script.js'] !== undefined)
+    lesson.track === 'react'
+      ? lesson.starter.entry === 'public/index.html' &&
+        lesson.starter.files['public/index.html'] !== undefined &&
+        lesson.starter.files['src/index.js'] !== undefined &&
+        lesson.starter.files['src/App.js'] !== undefined &&
+        lesson.starter.files['src/index.css'] !== undefined &&
+        lesson.starter.files['src/App.css'] !== undefined
+      : lesson.starter.entry === 'index.html' &&
+        lesson.starter.files['index.html'] !== undefined &&
+        lesson.starter.files['styles.css'] !== undefined &&
+        lesson.starter.files['script.js'] !== undefined
   ))).toBe(true);
+});
+
+test('React tasks use the exam profile paths in their instructions', () => {
+  const tasks = lessons
+    .filter((lesson) => lesson.track === 'react')
+    .flatMap((lesson) => lesson.tasks);
+
+  expect(tasks).not.toHaveLength(0);
+  expect(tasks.every((task) => task.prompt.includes('src/'))).toBe(true);
+  expect(tasks.some((task) => task.prompt.includes('src/components/'))).toBe(true);
+  expect(tasks.some((task) => task.prompt.includes('src/hooks/'))).toBe(true);
+});
+
+test('React lesson metadata points to the CRA files students edit', () => {
+  const expectedFiles = new Map([
+    [32, 'src/index.js'],
+    [33, 'src/components/Card.js'],
+    [34, 'src/App.js'],
+    [35, 'src/App.js'],
+    [36, 'src/App.js'],
+    [37, 'src/App.js'],
+    [38, 'src/hooks/useCounter.js'],
+    [39, 'src/components/TaskItem.js'],
+  ]);
+
+  for (const lesson of lessons.filter((candidate) => candidate.track === 'react')) {
+    expect(lesson.file).toBe(expectedFiles.get(lesson.order));
+    expect(`${lesson.theory.join(' ')} ${lesson.focus}`).not.toMatch(/main\.jsx|App\.jsx/);
+  }
 });
 
 test('HTML and CSS tasks require more than one copy-paste token', () => {

@@ -41,6 +41,7 @@ function mergeSignals(previous, payload = {}) {
 }
 
 export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey = 'default') {
+  const autoPreviewDelay = 700;
   const runIdRef = useRef(crypto.randomUUID());
   const pathRef = useRef(files.entry || 'index.html');
   const [previewPath, setPath] = useState(pathRef.current);
@@ -48,6 +49,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   const [previewDocument, setPreviewDocument] = useState(() => (
     buildRequestedPreviewDocument(files, track, checks, pathRef.current, runIdRef.current)
   ));
+  const [autoPreview, setAutoPreviewState] = useState(false);
   const [runtimeState, setRuntimeState] = useState(() => initialRuntimeState(scopeKey));
   const frameRef = useRef(null);
   const filesRef = useRef(files);
@@ -57,6 +59,8 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   const signalsRef = useRef(emptySignals());
   const pendingCheckRef = useRef(false);
   const evaluationTimerRef = useRef(null);
+  const autoPreviewTimerRef = useRef(null);
+  const previewSignatureRef = useRef(JSON.stringify(files));
 
   useEffect(() => { filesRef.current = files; }, [files]);
   useEffect(() => { checksRef.current = checks; }, [checks]);
@@ -68,6 +72,13 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     if (evaluationTimerRef.current !== null) {
       window.clearTimeout(evaluationTimerRef.current);
       evaluationTimerRef.current = null;
+    }
+  }, []);
+
+  const clearAutoPreviewTimer = useCallback(() => {
+    if (autoPreviewTimerRef.current !== null) {
+      window.clearTimeout(autoPreviewTimerRef.current);
+      autoPreviewTimerRef.current = null;
     }
   }, []);
 
@@ -86,6 +97,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
       pathRef.current,
       runIdRef.current,
     ));
+    previewSignatureRef.current = JSON.stringify(nextFiles);
     setPreviewKey((key) => key + 1);
   }, []);
 
@@ -179,20 +191,22 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   }, []);
 
   const runPreview = useCallback((nextFiles, documentPath) => {
+    clearAutoPreviewTimer();
     pendingCheckRef.current = false;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
     refreshPreview(nextFiles, documentPath);
-  }, [clearEvaluationTimer, refreshPreview]);
+  }, [clearAutoPreviewTimer, clearEvaluationTimer, refreshPreview]);
 
   const checkPreview = useCallback(() => {
+    clearAutoPreviewTimer();
     pendingCheckRef.current = true;
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
     refreshPreview(filesRef.current, filesRef.current.entry || 'index.html');
-  }, [clearEvaluationTimer, refreshPreview]);
+  }, [clearAutoPreviewTimer, clearEvaluationTimer, refreshPreview]);
 
   const clearRuntime = useCallback(() => {
     pendingCheckRef.current = false;
@@ -200,6 +214,15 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     signalsRef.current = emptySignals();
     setRuntimeState(initialRuntimeState(scopeKeyRef.current));
   }, [clearEvaluationTimer]);
+
+  const setAutoPreview = useCallback((enabled) => {
+    setAutoPreviewState(enabled);
+    if (!enabled) clearAutoPreviewTimer();
+  }, [clearAutoPreviewTimer]);
+
+  const savePreview = useCallback(() => {
+    runPreview(filesRef.current, pathRef.current);
+  }, [runPreview]);
 
   useEffect(() => {
     pendingCheckRef.current = false;
@@ -209,6 +232,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     pathRef.current = filesRef.current.entry || 'index.html';
     setPath(pathRef.current);
     runIdRef.current = crypto.randomUUID();
+    previewSignatureRef.current = JSON.stringify(filesRef.current);
     setPreviewDocument(buildRequestedPreviewDocument(
       filesRef.current,
       trackRef.current,
@@ -221,12 +245,28 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
 
   useEffect(() => () => clearEvaluationTimer(), [clearEvaluationTimer]);
 
+  useEffect(() => () => clearAutoPreviewTimer(), [clearAutoPreviewTimer]);
+
   const draftSignature = JSON.stringify(files);
   useEffect(() => {
     pendingCheckRef.current = false;
     clearEvaluationTimer();
     setRuntimeState(current => current.checkResults.length ? { ...current, checkResults: [] } : current);
   }, [draftSignature, clearEvaluationTimer]);
+
+  useEffect(() => {
+    if (!autoPreview) {
+      clearAutoPreviewTimer();
+      return undefined;
+    }
+    if (draftSignature === previewSignatureRef.current) return undefined;
+    clearAutoPreviewTimer();
+    autoPreviewTimerRef.current = window.setTimeout(() => {
+      autoPreviewTimerRef.current = null;
+      runPreview(filesRef.current, pathRef.current);
+    }, autoPreviewDelay);
+    return clearAutoPreviewTimer;
+  }, [autoPreview, autoPreviewDelay, clearAutoPreviewTimer, draftSignature, runPreview]);
 
   useEffect(() => {
     if (runtimeState.status !== 'running') return;
@@ -247,8 +287,11 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     setPreviewPath: (path) => runPreview(filesRef.current, path),
     previewDocument,
     previewKey,
+    autoPreview,
     runtimeState: visibleRuntimeState,
     runPreview,
+    savePreview,
+    setAutoPreview,
     checkPreview,
     clearRuntime,
     handleMessage,

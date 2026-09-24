@@ -142,3 +142,58 @@ test('resets runtime state when the active task scope changes', () => {
   expect(result.current.runtimeState.checkResults).toEqual([]);
   expect(result.current.runtimeState.scopeKey).toBe('layout-15-guided');
 });
+
+test('auto-preview applies a changed draft after the typing debounce', () => {
+  vi.useFakeTimers();
+  try {
+    const { result, rerender } = renderHook(
+      ({ html }) => usePreviewRuntime({ html }, [], 'html', 'auto-preview'),
+      { initialProps: { html: '<p>First</p>' } },
+    );
+    const firstKey = result.current.previewKey;
+
+    act(() => result.current.setAutoPreview(true));
+    rerender({ html: '<p>Second</p>' });
+
+    expect(result.current.previewDocument).toContain('<p>First</p>');
+    act(() => vi.advanceTimersByTime(699));
+    expect(result.current.previewDocument).toContain('<p>First</p>');
+    act(() => vi.advanceTimersByTime(1));
+
+    expect(result.current.previewDocument).toContain('<p>Second</p>');
+    expect(result.current.previewKey).toBeGreaterThan(firstKey);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('checking cancels a queued auto-preview so verification can finish', () => {
+  vi.useFakeTimers();
+  try {
+    const checks = [{ id: 'text', type: 'textEquals', selector: 'p', expected: 'Edited' }];
+    const { result, rerender } = renderHook(
+      ({ html }) => usePreviewRuntime({ html }, checks, 'html', 'auto-check'),
+      { initialProps: { html: '<p>First</p>' } },
+    );
+
+    act(() => result.current.setAutoPreview(true));
+    rerender({ html: '<p>Edited</p>' });
+    act(() => result.current.checkPreview());
+    act(() => vi.advanceTimersByTime(700));
+    const runId = result.current.runId;
+
+    act(() => {
+      result.current.handleMessage({
+        source: 'web-learning-lab',
+        runId,
+        type: 'signals',
+        payload: { dom: { p: { exists: true, text: 'Edited' } } },
+      });
+      vi.advanceTimersByTime(25);
+    });
+
+    expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+  } finally {
+    vi.useRealTimers();
+  }
+});

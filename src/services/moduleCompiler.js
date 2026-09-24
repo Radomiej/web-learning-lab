@@ -1,8 +1,15 @@
 import * as BabelNamespace from "@babel/standalone";
 import { resolveLocalPath } from "./projectFiles.js";
+import {
+  BOOTSTRAP_CSS_RESOURCE,
+  BOOTSTRAP_CSS_SPECIFIER,
+} from "./bootstrapRuntime.js";
 
 const Babel = BabelNamespace.default ?? BabelNamespace;
 const EXTERNAL_MODULES = new Set(["react", "react-dom", "react-dom/client"]);
+const EXTERNAL_CSS_MODULES = new Map([
+  [BOOTSTRAP_CSS_SPECIFIER, BOOTSTRAP_CSS_RESOURCE],
+]);
 const JAVASCRIPT_EXTENSION = /\.(?:js|jsx)$/i;
 const CSS_EXTENSION = /\.css$/i;
 
@@ -135,7 +142,7 @@ function buildRuntime(modules, entry, sharedRuntimeKey) {
       const target = dependencies[id] && dependencies[id][specifier];
       if (target === '@external/react') return __globals.React;
       if (target === '@external/react-dom') return __globals.ReactDOM;
-      if (target === '@css') return {};
+      if (target === '@css' || target === ${JSON.stringify(BOOTSTRAP_CSS_RESOURCE)}) return {};
       if (!target) throw new Error(id + ': unresolved require "' + specifier + '".');
       return load(target);
     };
@@ -198,6 +205,16 @@ export function compileModules(files, entry, { sharedRuntimeKey } = {}) {
         if (EXTERNAL_MODULES.has(specifier)) {
           dependencyMap[specifier] =
             specifier === "react" ? "@external/react" : "@external/react-dom";
+          continue;
+        }
+
+        if (EXTERNAL_CSS_MODULES.has(specifier)) {
+          const resource = EXTERNAL_CSS_MODULES.get(specifier);
+          dependencyMap[specifier] = resource;
+          if (!cssSeen.has(resource)) {
+            cssSeen.add(resource);
+            cssPaths.push(resource);
+          }
           continue;
         }
 

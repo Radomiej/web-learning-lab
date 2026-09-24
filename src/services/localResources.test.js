@@ -2,6 +2,66 @@ import { JSDOM } from "jsdom";
 import { buildPreviewDocument } from "./previewDocument.js";
 import { resolveDocumentResources } from "./localResources.js";
 
+test("compiles a preview-only CRA runtime module once", () => {
+  const project = {
+    entry: "public/index.html",
+    runtime: {
+      kind: "react-cra",
+      module: "src/index.js",
+      root: "#root",
+      bootstrap: true,
+    },
+    files: {
+      "public/index.html":
+        '<!doctype html><html><head></head><body><div id="root"></div></body></html>',
+      "src/index.js": "globalThis.craEntry = true;",
+    },
+  };
+
+  const result = resolveDocumentResources(project, project.entry, {
+    runtimeModule: "src/index.js",
+  });
+
+  expect(result.bodyMarkup.match(/data-file="src\/index\.js"/g)).toHaveLength(1);
+  expect(result.bodyMarkup).toContain("globalThis.craEntry = true;");
+  expect(project.files[project.entry]).not.toContain("script");
+});
+
+test("does not duplicate an explicit runtime module script", () => {
+  const project = {
+    entry: "index.html",
+    files: {
+      "index.html": '<script type="module" src="main.js"></script>',
+      "main.js": "globalThis.entryRuns = (globalThis.entryRuns || 0) + 1;",
+    },
+  };
+
+  const result = resolveDocumentResources(project, project.entry, {
+    runtimeModule: "main.js",
+  });
+
+  expect(result.bodyMarkup.match(/data-file="main\.js"/g)).toHaveLength(1);
+});
+
+test("inlines Bootstrap CSS imports without a network request", () => {
+  const project = {
+    entry: "index.html",
+    files: {
+      "index.html": '<!doctype html><html><head></head><body><main class="container"></main><script type="module" src="main.js"></script></body></html>',
+      "main.js": `import 'bootstrap/dist/css/bootstrap.min.css'; import './index.css';`,
+      "index.css": ".container { color: red; }",
+    },
+  };
+
+  const result = resolveDocumentResources(project);
+
+  expect(result.errors).toEqual([]);
+  expect(result.headMarkup).toContain('data-file="bootstrap.min.css"');
+  expect(result.headMarkup).toContain(".container");
+  expect(result.headMarkup).toContain(".btn-primary");
+  expect(result.headMarkup).not.toMatch(/(?:src|href)=["']https?:/i);
+});
+
 const project = {
   entry: "index.html",
   files: {

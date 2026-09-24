@@ -1,6 +1,7 @@
 import { JSDOM } from "jsdom";
 import { compileModules } from "./moduleCompiler.js";
 import { getReactRuntimeScripts } from "./reactRuntimeAssets.js";
+import { BOOTSTRAP_CSS_RESOURCE } from "./bootstrapRuntime.js";
 
 function executeBundle(code, globals = {}) {
   new Function("globalThis", code)(globals);
@@ -54,6 +55,20 @@ test("collects imported CSS in execution order without duplicates", () => {
 
   expect(result.errors).toEqual([]);
   expect(result.cssPaths).toEqual(["base.css", "theme.css"]);
+  expect(() => executeBundle(result.code)).not.toThrow();
+});
+
+test("allows the real Bootstrap CSS import once as an offline side effect", () => {
+  const result = compileModules(
+    {
+      "main.js": `import 'bootstrap/dist/css/bootstrap.min.css'; import './feature.js';`,
+      "feature.js": `import 'bootstrap/dist/css/bootstrap.min.css';`,
+    },
+    "main.js",
+  );
+
+  expect(result.errors).toEqual([]);
+  expect(result.cssPaths).toEqual([BOOTSTRAP_CSS_RESOURCE]);
   expect(() => executeBundle(result.code)).not.toThrow();
 });
 

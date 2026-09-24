@@ -9,7 +9,9 @@ export const emptyFileBundle = () => ({
 });
 
 function cloneProject(project) {
-  return { entry: project.entry, files: { ...project.files } };
+  const clone = { entry: project.entry, files: { ...project.files } };
+  if (project.runtime) clone.runtime = { ...project.runtime };
+  return clone;
 }
 
 function projectFrom(input, title, track = 'html') {
@@ -44,6 +46,10 @@ export function createLesson(input = {}) {
     order: input.order ?? 0,
     title: input.title ?? 'Lekcja',
     summary: input.summary ?? '',
+    focus: input.focus ?? '',
+    file: input.file ?? '',
+    token: input.token ?? '',
+    tokenFile: input.tokenFile ?? '',
     objectives: input.objectives ?? [],
     theory: input.theory ?? [],
     starter,

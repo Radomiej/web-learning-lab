@@ -1,17 +1,18 @@
 import { createTask } from './lessonFactories.js';
 import { independentScriptTask } from './independentScripts.js';
 import { reactProjectFor } from './reactProjects.js';
+import { getReactPathSet, getReactProfile } from '../services/runtimeProfiles.js';
 
-function reactExercise(order, word) {
+function reactExercise(order, word, paths) {
   const recipes = {
-    32: ['W App.jsx wyrenderuj nagłówek h1#result.', '#result', word],
-    33: ['W components/Card.jsx utwórz komponent Card z props name i children, a w App.jsx zaimportuj go i wyrenderuj article#result z h2 oraz opisem.', '#result', word],
-    34: ['W App.jsx zbuduj licznik w button#result. Początkowo 0; każde kliknięcie zwiększa go o 1.', '#result', '1', true],
-    35: ['W App.jsx wyrenderuj tablicę dwóch obiektów w ul#result przez map. Nadaj stabilne key i obsłuż pustą listę.', '#result li', word],
-    36: ['W App.jsx połącz input#name ze stanem przez value i onChange. Pokazuj wpisaną wartość w output#result.', '#result', word, 'input'],
-    37: ['W App.jsx użyj useEffect z timerem i cleanup. Po 20 ms pokaż wynik w p#result.', '#result', word],
-    38: ['W hooks/useCounter.js wydziel hook useCounter, w components/Counter.jsx komponent Counter, a oba zaimportuj do App.jsx. button#result zwiększa licznik z 0 do 1.', '#result', '1', true],
-    39: ['W components/TaskItem.jsx utwórz element listy i zaimportuj go do App.jsx. Przycisk #add ma dodać obiekt do stanu, a ul#result wyrenderować zadania ze stabilnym key.', '#result', word, 'add'],
+    32: [`W ${paths.app} wyrenderuj nagłówek h1#result.`, '#result', word],
+    33: [`W ${paths.component('Card')} utwórz komponent Card z props name i children, a w ${paths.app} zaimportuj go i wyrenderuj article#result z h2 oraz opisem.`, '#result', word],
+    34: [`W ${paths.app} zbuduj licznik w button#result. Początkowo 0; każde kliknięcie zwiększa go o 1.`, '#result', '1', true],
+    35: [`W ${paths.app} wyrenderuj tablicę dwóch obiektów w ul#result przez map. Nadaj stabilne key i obsłuż pustą listę.`, '#result li', word],
+    36: [`W ${paths.app} połącz input#name ze stanem przez value i onChange. Pokazuj wpisaną wartość w output#result.`, '#result', word, 'input'],
+    37: [`W ${paths.app} użyj useEffect z timerem i cleanup. Po 20 ms pokaż wynik w p#result.`, '#result', word],
+    38: [`W ${paths.hook('useCounter')} wydziel hook useCounter, w ${paths.component('Counter')} komponent Counter, a oba zaimportuj do ${paths.app}. button#result zwiększa licznik z 0 do 1.`, '#result', '1', true],
+    39: [`W ${paths.component('TaskItem')} utwórz element listy i zaimportuj go do ${paths.app}. Przycisk #add ma dodać obiekt do stanu, a ul#result wyrenderować zadania ze stabilnym key.`, '#result', word, 'add'],
   };
   return recipes[order];
 }
@@ -36,10 +37,12 @@ export function scriptTasks(definition, base) {
     const checks = [{ id: id + '-errors', type: 'runtimeError', label: 'Kod uruchamia się bez błędów' }];
     let starter, solution, prompt;
     if (definition.track === 'react') {
-      const [instruction, selector, expected, action] = reactExercise(definition.order, word);
+      const profile = getReactProfile();
+      const paths = getReactPathSet(profile.id);
+      const [instruction, selector, expected, action] = reactExercise(definition.order, word, paths);
       starter = reactProjectFor(definition.order, 'guided', 'starter');
       solution = reactProjectFor(definition.order, 'guided', 'solution');
-      prompt = `${instruction} Tekst zadania: „${word}”. Punkt wejścia main.jsx jest gotowy; pracuj w wymienionych plikach i zachowaj importy oraz eksporty.`;
+      prompt = `${instruction} Tekst zadania: „${word}”. Punkt wejścia ${profile.runtime.module} jest gotowy; pracuj w wymienionych plikach i zachowaj importy oraz eksporty.`;
       checks.push({ id: id + '-root', type: 'reactRendered', selector: '#root', label: 'React renderuje zawartość #root' });
       checks.push(action
         ? { id: id + '-action', type: 'interaction', selector: action === 'input' ? '#name' : action === 'add' ? '#add' : selector, resultSelector: selector, action: action === 'input' ? 'input' : 'click', value: word, expected: { text: expected }, label: `Po ${action === 'input' ? 'wpisaniu tekstu' : 'kliknięciu'} ${selector} zawiera „${expected}”` }

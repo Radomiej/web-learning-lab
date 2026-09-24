@@ -2,7 +2,48 @@ import {
   normalizeProject,
   resolveLocalPath,
   createProjectFile,
+  relativeProjectPath,
 } from "./projectFiles.js";
+
+test("preserves an explicit CRA runtime manifest", () => {
+  const runtime = {
+    kind: "react-cra",
+    module: "src/index.js",
+    root: "#root",
+    bootstrap: true,
+  };
+  const project = normalizeProject({
+    entry: "public/index.html",
+    runtime,
+    files: {
+      "public/index.html": "<!doctype html><div id=\"root\"></div>",
+      "src/index.js": "",
+    },
+  });
+
+  expect(project.runtime).toEqual(runtime);
+  expect(normalizeProject(project)).toEqual(project);
+});
+
+test.each([
+  ["public/index.html", "src/index.js", "../src/index.js"],
+  ["index.html", "main.jsx", "./main.jsx"],
+  ["src/components/Card.js", "src/hooks/useCounter.js", "../hooks/useCounter.js"],
+])("creates a safe relative project reference from %s to %s", (from, target, expected) => {
+  expect(relativeProjectPath(from, target)).toBe(expected);
+});
+
+test.each([
+  { kind: "unknown-runtime", module: "src/index.js" },
+  { kind: "react-cra", module: "../index.js" },
+  { kind: "react-cra", module: "src/index.css" },
+])("rejects an invalid runtime manifest %#", (runtime) => {
+  expect(() => normalizeProject({
+    entry: "public/index.html",
+    runtime,
+    files: { "public/index.html": "<div id=\"root\"></div>" },
+  })).toThrow();
+});
 
 test("migration retains student source and CSS cascade", () => {
   const p = normalizeProject({
@@ -85,5 +126,56 @@ test("creates independent file without overwriting others", () => {
   ).toThrow();
   expect(() =>
     createProjectFile(project, { type: "css", name: "other.js" }),
+  ).toThrow();
+});
+
+test("creates CRA React components under src with a .js extension", () => {
+  const project = {
+    entry: "public/index.html",
+    runtime: {
+      kind: "react-cra",
+      module: "src/index.js",
+      root: "#root",
+      bootstrap: true,
+    },
+    files: {
+      "public/index.html": "<div id=\"root\"></div>",
+      "src/index.js": "",
+    },
+  };
+
+  const result = createProjectFile(project, {
+    type: "react",
+    name: "components/Card",
+  });
+
+  expect(result.path).toBe("src/components/Card.js");
+  expect(result.project.files[result.path]).toContain(
+    "export default function Card",
+  );
+  expect(result.project.runtime).toEqual(project.runtime);
+  expect(project.files[result.path]).toBeUndefined();
+});
+
+test("keeps an explicit CRA src path and protects it from duplicates", () => {
+  const project = {
+    entry: "public/index.html",
+    runtime: {
+      kind: "react-cra",
+      module: "src/index.js",
+      root: "#root",
+      bootstrap: true,
+    },
+    files: {
+      "public/index.html": "<div id=\"root\"></div>",
+      "src/components/Card.js": "keep",
+    },
+  };
+
+  expect(() =>
+    createProjectFile(project, { type: "react", name: "src/components/Card" }),
+  ).toThrow("Plik już istnieje");
+  expect(() =>
+    createProjectFile(project, { type: "react", name: "../Card" }),
   ).toThrow();
 });
