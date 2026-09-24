@@ -65,7 +65,12 @@ function prepareRequest(request, urlPath) {
   if (body && !Object.keys(headers).some((key) => key.toLowerCase() === 'content-type')) {
     headers['Content-Type'] = 'application/x-www-form-urlencoded';
   }
-  return { method, url, headers, ...(body === undefined ? {} : { body }) };
+  return {
+    method,
+    url,
+    headers,
+    ...(body === undefined ? {} : { body: new TextEncoder().encode(body) }),
+  };
 }
 
 function describeError(error) {
@@ -160,7 +165,7 @@ async function executePhpProject({ files = {}, entry = 'index.php', request = {}
     errors: stderr ? [stderr] : [],
     stderr,
     exitCode: Number(response?.exitCode ?? 0),
-    requestKey: requestKey(request),
+    requestKey: hasRequest ? requestKey(request) : null,
   };
 }
 
