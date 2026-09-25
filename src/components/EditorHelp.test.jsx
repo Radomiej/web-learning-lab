@@ -70,6 +70,12 @@ test("presents shortcuts as grouped keycaps with plain-language explanations", a
   ).toBeInTheDocument();
   expect(tooltip.querySelectorAll("kbd").length).toBeGreaterThanOrEqual(12);
   expect(tooltip).toHaveTextContent("Usuń całą bieżącą linię");
+  expect(tooltip).toHaveTextContent("Przełącz komentarz linii");
+  expect(tooltip).toHaveTextContent("Przenieś linię wyżej");
+  expect(tooltip).toHaveTextContent("Przenieś linię niżej");
+  expect(tooltip).toHaveTextContent("Duplikuj linię wyżej");
+  expect(tooltip).toHaveTextContent("Duplikuj linię niżej");
+  expect(tooltip).toHaveTextContent("Zapisz plik i odśwież podgląd");
   expect(tooltip).toHaveTextContent("Na macOS użyj ⌘ zamiast Ctrl");
 });
 

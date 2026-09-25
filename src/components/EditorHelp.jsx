@@ -11,6 +11,11 @@ const GROUPS = [
       [["Shift", "Tab"], "Zmniejsz wcięcie zaznaczenia"],
       [["Enter"], "Zacznij nową linię z tym samym wcięciem"],
       [["Ctrl", "Shift", "K"], "Usuń całą bieżącą linię"],
+      [["Ctrl", "/"], "Przełącz komentarz linii"],
+      [["Alt", "↑"], "Przenieś linię wyżej"],
+      [["Alt", "↓"], "Przenieś linię niżej"],
+      [["Shift", "Alt", "↑"], "Duplikuj linię wyżej"],
+      [["Shift", "Alt", "↓"], "Duplikuj linię niżej"],
     ],
   },
   {

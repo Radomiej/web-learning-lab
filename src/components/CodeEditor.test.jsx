@@ -254,3 +254,32 @@ test('falls back to textarea when Monaco loading fails', async () => {
   expect(await screen.findByRole('textbox')).toHaveClass('code-editor');
   expect(screen.getByRole('status')).toHaveTextContent('Monaco');
 });
+
+test('shows the active language label and Monaco host for React and PHP files', async () => {
+  const monacoLoader = createFakeMonacoLoader();
+  const { rerender } = render(
+    <CodeEditor
+      fileKey="src/App.jsx"
+      fileLabel="src/App.jsx"
+      value="export default function App() {}"
+      onChange={() => {}}
+      monacoLoader={monacoLoader}
+    />,
+  );
+
+  await screen.findByTestId('monaco-editor');
+  expect(screen.getByText('JavaScript / JSX · Monaco')).toBeInTheDocument();
+  expect(screen.getByTestId('monaco-editor')).toHaveClass('monaco-editor-host');
+
+  rerender(
+    <CodeEditor
+      fileKey="index.php"
+      fileLabel="index.php"
+      value="<?php echo 'ok';"
+      onChange={() => {}}
+      monacoLoader={monacoLoader}
+    />,
+  );
+
+  expect(screen.getByText('PHP · Monaco')).toBeInTheDocument();
+});

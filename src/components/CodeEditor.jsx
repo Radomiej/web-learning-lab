@@ -398,7 +398,10 @@ export default function CodeEditor({
           )}
         </div>
       )}
-      <p className="editor-status" role="status">
+      <p
+        className={`editor-status${editorState === 'error' ? ' editor-status--fallback' : ''}`}
+        role="status"
+      >
         {editorState === 'loading' ? 'Ładowanie edytora…' : notice}
       </p>
       <div className="editor-actions">
