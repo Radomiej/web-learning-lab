@@ -9,8 +9,9 @@ export default function EditorDialog({ title, onClose, children }) {
     const previous = document.activeElement;
     ref.current.querySelector("input,select,button")?.focus();
     return () => {
-      if (previous?.isConnected) previous.focus();
-      else document.querySelector(".code-editor")?.focus();
+      const editor = document.querySelector(".code-editor, .monaco-editor-host");
+      if (editor) editor.focus();
+      else if (previous?.isConnected) previous.focus();
     };
   }, []);
   function handleKey(event) {

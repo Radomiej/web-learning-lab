@@ -93,8 +93,9 @@ test("adds a component, restores it after reload and confirms reset", async () =
   await user.selectOptions(screen.getByLabelText("Typ pliku"), "react");
   await user.type(screen.getByLabelText("Nazwa pliku"), "components/Card");
   await user.click(screen.getByRole("button", { name: "Utwórz plik" }));
-  expect(screen.getByLabelText("Edytor components/Card.jsx").value).toContain(
-    "export default function Card",
+  expect(screen.getByLabelText("Edytor components/Card.jsx")).toHaveAttribute(
+    "aria-valuetext",
+    expect.stringContaining("export default function Card"),
   );
   view.unmount();
   render(<App />);

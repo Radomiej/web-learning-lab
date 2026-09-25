@@ -391,7 +391,9 @@ export default function CodeEditor({
             className="monaco-editor-host"
             data-testid={editorState === 'ready' ? 'monaco-editor' : undefined}
             role={editorState === 'ready' ? 'textbox' : undefined}
+            tabIndex={0}
             aria-label={`Edytor ${fileLabel}`}
+            aria-valuetext={value}
           />
           {editorState === 'loading' && (
             <div className="monaco-loading" aria-live="polite">Ładowanie edytora…</div>

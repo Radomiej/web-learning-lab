@@ -207,7 +207,7 @@ function makeChecks(id, recipe) {
 }
 
 export function phpTasks(definition, base) {
-  const localOrder = lessonSequence(definition.track, definition.order);
+  const localOrder = lessonSequence(definition.track ?? 'php', definition.order);
   return ['guided', 'independent'].map((mode) => {
     const recipe = recipes[localOrder + 39]?.[mode];
     if (!recipe) return null;

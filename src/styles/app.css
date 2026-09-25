@@ -5,7 +5,7 @@ html { min-width: 320px; background: var(--canvas); }
 body { margin: 0; min-width: 320px; color: var(--ink-900); background: var(--canvas); font-family: "Segoe UI", system-ui, sans-serif; }
 button, textarea { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, textarea:focus-visible, iframe:focus-visible { outline: 3px solid rgb(37 184 167 / 38%); outline-offset: 2px; }
+button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-editor-host:focus-visible { outline: 3px solid rgb(37 184 167 / 38%); outline-offset: 2px; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .muted-copy { color: var(--ink-500); line-height: 1.55; }
