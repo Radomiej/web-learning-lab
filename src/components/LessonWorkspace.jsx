@@ -50,11 +50,11 @@ export default function LessonWorkspace({
             runtime={files.runtime}
           />
           <CodeEditor
-            key={`${activeTask.id}:${path}`}
             fileKey={path}
             fileLabel={path}
+            workspaceKey={activeTask.id}
             value={files.files[path] || ""}
-            onChange={(value) => onCodeChange(path, value)}
+            onChange={onCodeChange}
             onRun={onRun}
             onSave={onSave}
             onReset={onReset}
