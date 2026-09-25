@@ -1,6 +1,7 @@
 import { createTask } from './lessonFactories.js';
 import { reactProjectFor } from './reactProjects.js';
 import { getReactPathSet, getReactProfile } from '../services/runtimeProfiles.js';
+import { lessonSequence } from './lessonNumbers.js';
 
 const exists = (selector, label) => ({ type: 'elementExists', selector, label });
 const text = (selector, expected, label) => ({ type: 'textEquals', selector, expected, label });
@@ -94,7 +95,7 @@ const reactRecipes = {
 
 function reactRecipeFor(order) {
   const paths = getReactPathSet();
-  const recipe = reactRecipes[order];
+  const recipe = reactRecipes[order + 31];
   if (!recipe) return recipe;
   return {
     ...recipe,
@@ -108,8 +109,9 @@ function reactRecipeFor(order) {
 }
 
 export function independentScriptTask(definition, base) {
+  const localOrder = lessonSequence(definition.track, definition.order);
   const react = definition.track === 'react';
-  const recipe = (react ? reactRecipeFor(definition.order) : jsRecipes[definition.order]);
+  const recipe = (react ? reactRecipeFor(localOrder) : jsRecipes[localOrder + 23]);
   const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-independent-v2`;
   const starter = react
     ? reactProjectFor(definition.order, 'independent', 'starter')

@@ -1,5 +1,6 @@
 import { fullDocument } from './fullDocument.js';
 import { getReactPathSet, getReactProfile } from '../services/runtimeProfiles.js';
+import { lessonSequence } from './lessonNumbers.js';
 
 const main = `import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -354,14 +355,16 @@ function projectForProfile(order, exerciseFiles, profile) {
 }
 
 export function reactProjectFor(order, mode, kind, profileId = 'react-cra-inf04') {
-  if (!lessonTitles[order]) throw new Error(`Nieznana lekcja React: ${order}.`);
+  const localOrder = lessonSequence('react', order);
+  const legacyOrder = localOrder + 31;
+  if (!lessonTitles[legacyOrder]) throw new Error(`Nieznana lekcja React: ${order}.`);
   if (!['guided', 'independent'].includes(mode)) throw new Error(`Nieznany tryb zadania React: ${mode}.`);
   if (!['starter', 'solution'].includes(kind)) throw new Error(`Nieznany rodzaj projektu React: ${kind}.`);
   const profile = getReactProfile(profileId);
 
   const exerciseFiles = kind === 'starter'
-    ? starterFiles(order, mode)
-    : (mode === 'guided' ? guidedSolutions : independentSolutions)[order];
+    ? starterFiles(legacyOrder, mode)
+    : (mode === 'guided' ? guidedSolutions : independentSolutions)[legacyOrder];
 
-  return projectForProfile(order, exerciseFiles, profile);
+  return projectForProfile(legacyOrder, exerciseFiles, profile);
 }

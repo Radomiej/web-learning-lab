@@ -24,6 +24,11 @@ test('every exported starter and solution uses real project files', () => {
           root: '#root',
           bootstrap: true,
         });
+      } else if (lesson.track === 'php') {
+        expect(project.entry).toBe('index.php');
+        expect(project.files['index.php']).toMatch(/^<\?php/);
+        expect(Object.keys(project.files).filter((path) => path.endsWith('.css'))).toEqual(['styles.css']);
+        expect(project.runtime).toEqual({ kind: 'php-wasm', phpVersion: '8.4' });
       } else {
         expect(project.entry).toBe('index.html');
         expect(project.files['index.html']).toMatch(/^<!doctype html>/i);
@@ -65,9 +70,9 @@ test('React course projects use CRA entry and source paths by default', () => {
 });
 
 test.each(['guided', 'independent'])('%s React projects teach dedicated component and hook files', (mode) => {
-  const components = reactProjectFor(33, mode, 'solution');
-  const hooks = reactProjectFor(38, mode, 'solution');
-  const finalProject = reactProjectFor(39, mode, 'solution');
+  const components = reactProjectFor(502, mode, 'solution');
+  const hooks = reactProjectFor(507, mode, 'solution');
+  const finalProject = reactProjectFor(508, mode, 'solution');
 
   expect(Object.keys(components.files).some((path) => path.startsWith('src/components/'))).toBe(true);
   expect(components.files['src/App.js']).toMatch(/from ['"]\.\/components\//);
@@ -78,14 +83,14 @@ test.each(['guided', 'independent'])('%s React projects teach dedicated componen
 });
 
 test('CRA starter copy uses the visible App.js filename in its preview text', () => {
-  const project = reactProjectFor(32, 'guided', 'starter');
+  const project = reactProjectFor(501, 'guided', 'starter');
 
   expect(project.files['src/App.js']).toContain('Uzupełnij rozwiązanie w App.js');
   expect(project.files['src/App.js']).not.toContain('App.jsx');
 });
 
 test('keeps the current Vite project shape when requested explicitly', () => {
-  const project = reactProjectFor(33, 'guided', 'solution', 'react-vite');
+  const project = reactProjectFor(502, 'guided', 'solution', 'react-vite');
 
   expect(project.entry).toBe('index.html');
   expect(project.runtime.kind).toBe('react-vite');

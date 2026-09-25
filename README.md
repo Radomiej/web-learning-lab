@@ -24,6 +24,6 @@ npm test
 npm run build
 ```
 
-Kurs obejmuje 47 lekcji: 9 HTML, 14 CSS/layout, 8 JavaScript, 8 React i 8 PHP. Lekcje layoutowe zawierają dokładnie 24 zadania Flexbox/Grid/RWD. Postęp i kod ucznia są przechowywane lokalnie w przeglądarce. Aby wyzerować postęp, wyczyść dane witryny dla `localhost:5181`.
+Kurs obejmuje 47 lekcji: 9 HTML, 14 CSS/layout, 8 JavaScript, 8 React i 8 PHP. Numeracja rezerwuje osobny zakres dla każdego typu: `1XX` HTML, `2XX` CSS, `3XX` layout, `4XX` JavaScript, `5XX` React i `6XX` PHP. Lekcje layoutowe zawierają dokładnie 24 zadania Flexbox/Grid/RWD. Postęp i kod ucznia są przechowywane lokalnie w przeglądarce. Aby wyzerować postęp, wyczyść dane witryny dla `localhost:5181`.
 
 W lekcjach HTML/CSS/JavaScript/React dostępne są pliki projektu takie jak `index.html`, arkusze stylów i skrypty. Ścieżka PHP używa `index.php` oraz `styles.css`; kod wykonuje lokalny runtime PHP 8.4 w WebAssembly, a jego wynik HTML trafia do tego samego sandboxowanego iframe. Ćwiczenie formularza uruchamia kontrolowane żądanie POST w pamięci. Sprawdzanie korzysta z deklaratywnych warunków DOM, CSS, interakcji, Reacta i odpowiedzi PHP. Runtime Reacta, kompilator JSX i PHP.wasm są dołączone lokalnie.

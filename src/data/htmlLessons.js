@@ -1,3 +1,5 @@
+import { lessonNumber } from './lessonNumbers.js';
+
 const htmlTags = {
   1: ['html', 'head', 'body', 'div'],
   2: ['doctype', 'html', 'head', 'body', 'meta', 'title'],
@@ -11,7 +13,7 @@ const htmlTags = {
 };
 
 export const htmlLessons = Object.entries(htmlTags).map(([order, requiredTags]) => ({
-  order: Number(order),
+  order: lessonNumber('html', Number(order)),
   requiredTags,
   requiredPractices: [
     'semantyczny HTML',

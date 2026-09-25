@@ -16,7 +16,7 @@ in the existing preview iframe.
 Success means:
 
 - the sidebar exposes a PHP track after React;
-- eight lessons (orders 40–47) teach a coherent beginner sequence;
+- eight lessons (orders 601–608) teach a coherent beginner sequence;
 - every lesson has explanation, a guided task, and an independent task with
   declarative checks;
 - PHP source is executed by a real PHP interpreter compiled to WebAssembly,
@@ -156,7 +156,7 @@ testable without exposing arbitrary network requests.
 Add `src/data/phpLessons.js` for metadata and `src/data/phpTasks.js` for
 starter/solution/check recipes. `lessons.js`
 will import the PHP metadata, create PHP starters, and append the new lessons
-after order 39. PHP tasks use the same `createLesson`/`createTask` shape, but
+after the React range ending at order 508. PHP tasks use the same `createLesson`/`createTask` shape, but
 their starter projects contain `index.php` and `styles.css` instead of
 `script.js`.
 

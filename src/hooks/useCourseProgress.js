@@ -29,7 +29,7 @@ function findTask(lessons, taskId) {
 export function useCourseProgress(lessons = []) {
   const firstLesson = lessons[0] || null;
   const initialLesson =
-    lessons.find((lesson) => lesson.order === 2) || firstLesson;
+    lessons.find((lesson) => lesson.id === "html-document") || firstLesson;
   const defaultProgress = {
     selectedTrack: initialLesson?.track || "html",
     selectedLessonId: initialLesson?.id || "",

@@ -1,4 +1,5 @@
 import { createTask } from './lessonFactories.js';
+import { lessonSequence } from './lessonNumbers.js';
 
 function projectWithSource(base, source) {
   return {
@@ -206,8 +207,9 @@ function makeChecks(id, recipe) {
 }
 
 export function phpTasks(definition, base) {
+  const localOrder = lessonSequence(definition.track, definition.order);
   return ['guided', 'independent'].map((mode) => {
-    const recipe = recipes[definition.order]?.[mode];
+    const recipe = recipes[localOrder + 39]?.[mode];
     if (!recipe) return null;
     const id = `php-${String(definition.order).padStart(2, '0')}-${mode}`;
     return createTask({
@@ -225,4 +227,3 @@ export function phpTasks(definition, base) {
     });
   }).filter(Boolean);
 }
-

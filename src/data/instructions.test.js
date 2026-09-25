@@ -1,9 +1,10 @@
 import { lessons } from './lessons.js';
 import { htmlInstructions } from './htmlInstructions.js';
+import { lessonSequence } from './lessonNumbers.js';
 
 test('HTML requirements explain tags in words instead of exposing bare selectors', () => {
   for (const lesson of lessons.filter(lesson => lesson.track === 'html')) {
-    expect(htmlInstructions[lesson.order].length).toBeGreaterThan(0);
+    expect(htmlInstructions[lessonSequence('html', lesson.order)].length).toBeGreaterThan(0);
     for (const task of lesson.tasks) {
       expect(task.prompt).toContain('index.html');
       expect(task.prompt).toContain('między <body> a </body>');
@@ -16,7 +17,7 @@ test('HTML requirements explain tags in words instead of exposing bare selectors
 });
 
 test('every exercise starts and ends with a complete HTML document', () => {
-  for (const lesson of lessons) {
+  for (const lesson of lessons.filter((candidate) => candidate.track !== 'php')) {
     for (const project of [lesson.starter, lesson.solution, ...lesson.tasks.flatMap(task => [task.starter, task.solution])]) {
       const html = project.files[project.entry];
       expect(html).toMatch(/^<!doctype html>/i);

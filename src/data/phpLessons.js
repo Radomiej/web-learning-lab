@@ -1,5 +1,6 @@
 import { createLesson } from './lessonFactories.js';
 import { phpTasks } from './phpTasks.js';
+import { lessonNumber } from './lessonNumbers.js';
 
 const phpStyles = `
 * { box-sizing: border-box; }
@@ -22,7 +23,7 @@ function phpProject(source = '<?php\n// Napisz rozwiązanie w pliku index.php.\n
 
 const definitions = [
   {
-    order: 40,
+    order: lessonNumber('php', 1),
     id: 'php-echo',
     title: 'Pierwszy skrypt PHP i echo',
     summary: 'Uruchom PHP.wasm i wygeneruj pierwszy fragment HTML.',
@@ -33,7 +34,7 @@ const definitions = [
     theory: ['PHP wykonuje się w tym kursie w przeglądarce dzięki PHP.wasm. Przeglądarka nie wyświetla kodu PHP — wyświetla tekst, który skrypt wypisał.', 'Instrukcja `echo` może wypisać zwykły tekst albo fragment HTML. Zacznij od małego wyniku i sprawdzaj go po każdym uruchomieniu.'],
   },
   {
-    order: 41,
+    order: lessonNumber('php', 2),
     id: 'php-variables',
     title: 'Zmienne i typy danych',
     summary: 'Przechowuj tekst, liczby i wartości logiczne w zmiennych PHP.',
@@ -44,7 +45,7 @@ const definitions = [
     theory: ['Każda zmienna PHP zaczyna się od znaku `$`, a przypisanie używa pojedynczego `=`.', 'Teksty możesz łączyć operatorem `.`, a w podwójnych cudzysłowach PHP potrafi wstawić prostą zmienną bez ręcznego łączenia.'],
   },
   {
-    order: 42,
+    order: lessonNumber('php', 3),
     id: 'php-conditions',
     title: 'Warunki if i else',
     summary: 'Podejmuj decyzję na podstawie wartości zmiennej.',
@@ -55,7 +56,7 @@ const definitions = [
     theory: ['Warunek `if` uruchamia blok tylko wtedy, gdy wyrażenie jest prawdziwe.', 'Dobrze nazwany komunikat pośredni upraszcza późniejsze renderowanie HTML i ułatwia czytanie kodu.'],
   },
   {
-    order: 43,
+    order: lessonNumber('php', 4),
     id: 'php-loops',
     title: 'Pętle for i while',
     summary: 'Powtarzaj fragment HTML bez kopiowania tych samych linii.',
@@ -66,7 +67,7 @@ const definitions = [
     theory: ['Pętla `for` pasuje do sytuacji, w której znasz licznik lub zakres powtórzeń.', '`while` wykonuje blok dopóty, dopóki warunek jest prawdziwy. Zmieniaj licznik w środku, aby zakończyć pętlę.'],
   },
   {
-    order: 44,
+    order: lessonNumber('php', 5),
     id: 'php-arrays-foreach',
     title: 'Tablice i foreach',
     summary: 'Przechowuj kolekcję danych i wyświetl każdy element.',
@@ -77,7 +78,7 @@ const definitions = [
     theory: ['Tablica przechowuje wiele wartości w jednej zmiennej.', '`foreach` pobiera kolejne elementy kolekcji i pozwala wyrenderować je bez ręcznego powtarzania markup-u.'],
   },
   {
-    order: 45,
+    order: lessonNumber('php', 6),
     id: 'php-functions',
     title: 'Funkcje i return',
     summary: 'Nadaj powtarzalnej logice nazwę i zwracaj jej wynik.',
@@ -88,7 +89,7 @@ const definitions = [
     theory: ['Funkcja grupuje instrukcje pod nazwą i może przyjąć parametry.', '`return` oddaje wartość wywołującemu kodowi. Dzięki temu funkcja opisuje dane, a `echo` decyduje, gdzie je wyświetlić.'],
   },
   {
-    order: 46,
+    order: lessonNumber('php', 7),
     id: 'php-post-forms',
     title: 'Formularz POST i bezpieczeństwo',
     summary: 'Odczytaj dane formularza, zabezpiecz je i zwróć HTML.',
@@ -99,7 +100,7 @@ const definitions = [
     theory: ['Dane z formularza są wejściem użytkownika i mogą zawierać znaczniki HTML.', '`htmlspecialchars` zamienia znaki specjalne na bezpieczne encje. W tej lekcji przycisk Sprawdź wysyła do PHP kontrolowane żądanie POST.'],
   },
   {
-    order: 47,
+    order: lessonNumber('php', 8),
     id: 'php-profile-project',
     title: 'Projekt: karta profilu PHP',
     summary: 'Połącz zmienne, funkcję, tablicę i pętlę w mały projekt.',
@@ -122,4 +123,3 @@ export const phpLessons = definitions.map((definition) => {
     tasks: phpTasks(definition, starter),
   });
 });
-
