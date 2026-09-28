@@ -6,6 +6,7 @@ import {
   saveProjects,
   PROJECT_STORAGE_KEY,
 } from "../services/projectStorage.js";
+import { trackNumberBases } from "../data/lessonNumbers.js";
 import { useLocalStorage } from "./useLocalStorage.js";
 
 export const PROGRESS_STORAGE_KEY = "web-learning-lab.progress.v1";
@@ -24,6 +25,31 @@ function findTask(lessons, taskId) {
     if (task) return task;
   }
   return null;
+}
+
+function legacyLessonOrder(track, sequence) {
+  if (track === "html") return sequence;
+  if (track === "css") return sequence <= 5 ? sequence + 9 : 23;
+  if (track === "layout") return sequence + 14;
+  if (track === "js") return sequence + 23;
+  if (track === "react") return sequence + 31;
+  return null;
+}
+
+function createTaskAliases(lessons) {
+  return new Map(
+    lessons.flatMap((lesson) => {
+      const base = trackNumberBases[lesson.track];
+      const sequence = base ? lesson.order - base : null;
+      const legacyOrder = sequence && legacyLessonOrder(lesson.track, sequence);
+      if (!legacyOrder) return [];
+      return lesson.tasks.map((task) => {
+        const suffix = task.id.replace(/^[^-]+-\d+-/, "");
+        const legacyId = `${lesson.track}-${String(legacyOrder).padStart(2, "0")}-${suffix}`;
+        return legacyId === task.id ? null : [legacyId, task.id];
+      }).filter(Boolean);
+    }),
+  );
 }
 
 export function useCourseProgress(lessons = []) {
@@ -87,8 +113,15 @@ export function useCourseProgress(lessons = []) {
       ),
     [lessons],
   );
+  const taskAliases = useMemo(() => createTaskAliases(lessons), [lessons]);
   const completedTasks = Array.isArray(progress.completedTasks)
-    ? progress.completedTasks.filter((taskId) => taskIndex.has(taskId))
+    ? Array.from(
+        new Set(
+          progress.completedTasks
+            .map((taskId) => taskAliases.get(taskId) || taskId)
+            .filter((taskId) => taskIndex.has(taskId)),
+        ),
+      )
     : [];
 
   const selectLesson = (lessonId) => {

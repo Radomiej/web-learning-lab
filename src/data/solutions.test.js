@@ -46,7 +46,10 @@ async function runTask(lesson, task, project) {
       } finally { dom.window.close(); }
 }
 
-for (const lesson of lessons) {
+// PHP.wasm is a browser-only runtime. Its integration path is validated in
+// the native preview; this Node/JSDOM suite covers deterministic DOM, CSS,
+// JavaScript, and React execution without pretending to execute PHP.
+for (const lesson of lessons.filter((candidate) => candidate.track !== 'php')) {
   for (const [index, task] of lesson.tasks.entries()) {
     test(task.id + ' solution passes in an executing document', async () => {
       const result = await runTask(lesson, task, task.solution);
