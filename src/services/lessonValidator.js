@@ -61,6 +61,25 @@ function normalizeCssValue(value) {
     .toLowerCase();
 }
 
+function computedStyleMatches(actual, expected, property) {
+  const normalizedActual = normalizeCssValue(actual);
+  const normalizedExpected = normalizeCssValue(expected);
+
+  if (normalizedActual === normalizedExpected) return true;
+
+  // Przy przeskalowanym podglądzie przeglądarka może zwrócić ułamkową
+  // szerokość obramowania, np. 1.6px zamiast zadeklarowanych 2px.
+  // Tolerancja dotyczy wyłącznie border-*width, nie zwykłego width.
+  const isBorderWidth = /^border(?:-(?:top|right|bottom|left))?-width$/i.test(safeString(property));
+  if (!isBorderWidth) return false;
+
+  const actualPx = normalizedActual.match(/^(-?\d+(?:\.\d+)?)px$/i);
+  const expectedPx = normalizedExpected.match(/^(-?\d+(?:\.\d+)?)px$/i);
+  if (!actualPx || !expectedPx) return false;
+
+  return Math.abs(Number(actualPx[1]) - Number(expectedPx[1])) < 0.5;
+}
+
 function stripCssComments(source) {
   return safeString(source).replace(/\/\*[\s\S]*?\*\//g, '');
 }
@@ -99,6 +118,19 @@ function evaluateOne(check = {}, context = {}) {
 
   try {
     switch (check.type) {
+      case 'gameScenario': {
+        const result = signals.gameScenarios?.[check.id];
+        if (!result?.ok) return resultFor(check, false, result?.error || 'Gra nie przekazała wyniku scenariusza. Uruchom ją przez GameLab.run.');
+        const mismatches = [];
+        for (const [path, expected] of Object.entries(check.expected || {})) {
+          const actual = path.split('.').reduce((value, key) => value?.[key], result.snapshot);
+          const matches = typeof expected === 'number'
+            ? typeof actual === 'number' && Math.abs(actual - expected) <= (check.tolerance ?? 0.01)
+            : actual === expected;
+          if (!matches) mismatches.push(`${path}: oczekiwano ${JSON.stringify(expected)}, otrzymano ${JSON.stringify(actual) ?? 'brak'}`);
+        }
+        return resultFor(check, mismatches.length === 0, mismatches.length ? mismatches.join('; ') : 'Gra zachowuje się zgodnie ze scenariuszem.');
+      }
       case 'sourceIncludes': {
         const source = getFile(files, check.file);
         const needle = safeString(expectedValue(check));
@@ -149,7 +181,7 @@ function evaluateOne(check = {}, context = {}) {
       case 'computedStyle': {
         const actual = getStyleSignal(signals, check.selector, check.property);
         const expected = safeString(expectedValue(check));
-        return safeString(actual) === expected
+        return computedStyleMatches(actual, expected, check.property)
           ? resultFor(check, true, `Właściwość ${check.property} ma wartość „${expected}”.`)
           : resultFor(check, false, `Właściwość ${check.property} ma wartość „${safeString(actual)}”, oczekiwano „${expected}”.`);
       }

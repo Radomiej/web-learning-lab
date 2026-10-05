@@ -30,3 +30,15 @@ test('exposes an accessible auto-preview toggle', async () => {
   await user.click(toggle);
   expect(onChange).toHaveBeenCalledWith(true);
 });
+test('game fullscreen keeps the same iframe and Escape restores focus', async () => {
+  const user = userEvent.setup();
+  const { container } = render(<PreviewInspector gameMode previewDocument="<canvas></canvas>" previewKey={1} />);
+  const frame = container.querySelector('iframe');
+  const button = screen.getByRole('button', { name: 'Pełny ekran gry' });
+  await user.click(button);
+  expect(screen.getByRole('dialog', { name: 'Podgląd gry' })).toBeInTheDocument();
+  expect(container.querySelector('iframe')).toBe(frame);
+  await user.keyboard('{Escape}');
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(button).toHaveFocus();
+});

@@ -17,7 +17,7 @@ test("shows the first lesson, three editor files, preview status, and track navi
   ).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
   expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
-  expect(screen.getByText("47 lekcji")).toBeInTheDocument();
+  expect(screen.getByText("57 lekcji")).toBeInTheDocument();
 });
 
 test("opens the CRA public entry when the React track is selected", () => {
@@ -80,6 +80,26 @@ test("changes the active editor file and opens the mobile sidebar", async () => 
   render(<App />);
   await user.click(screen.getByRole("tab", { name: "styles.css" }));
   expect(screen.getByLabelText("Edytor styles.css")).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Otwórz menu" }));
+  expect(
+    screen.getByRole("navigation", { name: "Nawigacja kursu" }),
+  ).toHaveAttribute("data-open", "true");
+});
+
+test("keeps the mobile lesson panel closable and reopenable", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole("button", { name: "Otwórz menu" }));
+  expect(
+    screen.getByRole("navigation", { name: "Nawigacja kursu" }),
+  ).toHaveAttribute("data-open", "true");
+
+  await user.click(screen.getByRole("button", { name: "Zamknij panel lekcji" }));
+  expect(
+    screen.getByRole("navigation", { name: "Nawigacja kursu" }),
+  ).toHaveAttribute("data-open", "false");
+
   await user.click(screen.getByRole("button", { name: "Otwórz menu" }));
   expect(
     screen.getByRole("navigation", { name: "Nawigacja kursu" }),
@@ -160,4 +180,18 @@ test("only example exercises expose a solution button", async () => {
   expect(
     screen.queryByRole("button", { name: "Pokaż rozwiązanie" }),
   ).not.toBeInTheDocument();
+});
+
+test('opens Game Dev with its three files, engine guide, and console below the editor', async () => {
+  const user = userEvent.setup();
+  const { container } = render(<App />);
+  await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
+  expect(screen.getByRole('heading', { name: 'Canvas: pierwsza klatka' })).toBeInTheDocument();
+  expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();
+  expect(screen.getByTitle('Podgląd gry ucznia')).toHaveAttribute('sandbox', 'allow-scripts');
+  expect(container.querySelector('.editor-shell')).toContainElement(screen.getByRole('heading', { name: 'Konsola' }));
+  await user.click(screen.getByText('Pomoc GameLab — składnia i API silnika'));
+  expect(container.querySelector('.game-api-guide')).toHaveAttribute('open');
+  await user.click(screen.getByRole('button', { name: /Samodzielnie/ }));
+  expect(screen.queryByRole('button', { name: 'Pokaż rozwiązanie' })).not.toBeInTheDocument();
 });

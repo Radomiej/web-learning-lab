@@ -6,14 +6,14 @@ import AppShell from "./components/AppShell.jsx";
 import LessonWorkspace from "./components/LessonWorkspace.jsx";
 import MobileHeader from "./components/MobileHeader.jsx";
 import PreviewInspector from "./components/PreviewInspector.jsx";
-import RuntimeConsole from "./components/RuntimeConsole.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import AddFileDialog from "./components/AddFileDialog.jsx";
 import EditorDialog from "./components/EditorDialog.jsx";
 import { normalizeProject } from "./services/projectFiles.js";
 
 function starterEntry(task, track) {
-  return normalizeProject(task?.starter, { track }).entry;
+  const project = normalizeProject(task?.starter, { track });
+  return project.runtime?.kind === 'game-js' ? 'game.js' : project.entry;
 }
 
 export default function App() {
@@ -70,7 +70,7 @@ export default function App() {
       ? "Uruchamiam"
       : previewRuntime.runtimeState.status === "error"
         ? "Błąd"
-        : "Gotowe";
+        : previewRuntime.runtimeState.status === 'ready' ? 'Gotowe' : 'Czeka';
 
   useEffect(() => {
     const results = previewRuntime.runtimeState.checkResults;
@@ -104,7 +104,7 @@ export default function App() {
     const starter = normalizeProject(activeTask.starter, {
       track: selectedLesson.track,
     });
-    setActiveFile(starter.entry);
+    setActiveFile(starter.runtime?.kind === 'game-js' ? 'game.js' : starter.entry);
     resetTask(activeTask.id);
     previewRuntime.clearRuntime();
     previewRuntime.runPreview(starter, starter.entry);
@@ -116,7 +116,7 @@ export default function App() {
       track: selectedLesson.track,
     });
     updateFiles(activeTask.id, solution);
-    setActiveFile(solution.entry);
+    setActiveFile(solution.runtime?.kind === 'game-js' ? 'game.js' : solution.entry);
     previewRuntime.runPreview(solution, solution.entry);
   };
 
@@ -145,6 +145,7 @@ export default function App() {
         setSidebarOpen(false);
       }}
       onOpenSettings={() => setDialog("settings")}
+      onClose={() => setSidebarOpen(false)}
     />
   );
 
@@ -167,6 +168,7 @@ export default function App() {
         completedTasks={completedTasks}
         checkResults={previewRuntime.runtimeState.checkResults}
         runtimeErrors={previewRuntime.runtimeState.errors}
+        runtimeState={previewRuntime.runtimeState}
         onTaskChange={handleTaskChange}
         onFileChange={setActiveFile}
         onCodeChange={(fileKey, value) =>
@@ -279,6 +281,7 @@ export default function App() {
   const inspector = (
     <>
       <PreviewInspector
+        gameMode={files.runtime?.kind === 'game-js'}
         previewFiles={Object.keys(files.files).filter((path) =>
           path.endsWith(".html") || path.endsWith(".php"),
         )}
@@ -292,7 +295,6 @@ export default function App() {
         onFrameReady={previewRuntime.setFrame}
         runtimeState={{ ...previewRuntime.runtimeState, label: runtimeLabel }}
       />
-      <RuntimeConsole messages={previewRuntime.runtimeState.messages} />
     </>
   );
 

@@ -1,6 +1,7 @@
 const BRIDGE_SOURCE = 'web-learning-lab';
 import { compileJsx, getReactRuntimeScripts } from './reactRuntimeAssets.js';
 import { resolveDocumentResources } from './localResources.js';
+import { getGameRuntimeScript } from './gameRuntime.js';
 
 function escapeInlineScript(source = '') {
   return String(source)
@@ -147,6 +148,19 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
     });
   }
 
+  function collectGameScenarios() {
+    const results = {};
+    for (const check of requestedSignals.filter(check => check.type === 'gameScenario')) {
+      try {
+        if (!window.GameLab) throw new Error('Brak silnika GameLab.');
+        results[check.id] = { ok: true, snapshot: window.GameLab.evaluateScenario(check.scenario || {}) };
+      } catch (error) {
+        results[check.id] = { ok: false, error: stringify(error.message || error) };
+      }
+    }
+    send('signals', { gameScenarios: results });
+  }
+
   ['log', 'warn', 'error'].forEach((level) => {
     const original = typeof console[level] === 'function' ? console[level].bind(console) : function noop() {};
     console[level] = function bridgedConsole(...args) {
@@ -161,11 +175,17 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
   window.addEventListener('unhandledrejection', (event) => {
     send('runtime-error', { message: stringify(event.reason) });
   });
+  window.addEventListener('keydown', event => {
+    if (!window.GameLab) return;
+    if (event.key === 'Escape') send('exit-game-fullscreen', {});
+    if (event.key === 'Tab' && !event.shiftKey && document.activeElement?.tagName === 'CANVAS') send('game-tab-boundary', {});
+  });
 
   window.addEventListener('message', (event) => {
     const message = event.data;
     if (!message || message.source !== source) return;
     if (message.type === 'collect-signals') {
+      collectGameScenarios();
       snapshot();
       return;
     }
@@ -199,6 +219,7 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
   window.addEventListener('load', () => {
     window.setTimeout(() => {
       send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });
+      collectGameScenarios();
       snapshot();
     }, 100);
   });
@@ -219,7 +240,8 @@ export function buildPreviewDocument(files = {}, options = {}) {
       || files.runtime?.kind?.startsWith('react')
       || Object.keys(files.files).some(path=>path.endsWith('.jsx'));
     const runtime=needsReact ? Object.values(getReactRuntimeScripts()) : [];
-    const scripts=[bridge,...runtime,...(options.runtimeScripts ?? [])].map(code=>`<script data-runtime="true">${escapeInlineScript(code)}</script>`).join('');
+    const gameRuntime = files.runtime?.kind === 'game-js' ? [getGameRuntimeScript()] : [];
+    const scripts=[bridge,...runtime,...gameRuntime,...(options.runtimeScripts ?? [])].map(code=>`<script data-runtime="true">${escapeInlineScript(code)}</script>`).join('');
     const errorScript=document.errors.length ? `<script>throw new Error(${JSON.stringify(document.errors.join('\n')).replace(/</g,'\\u003c')});</script>` : '';
     return `${document.doctype}<html ${document.htmlAttributes}><head>${scripts}${document.headMarkup}</head><body ${document.bodyAttributes || ''}>${document.bodyMarkup}${errorScript}</body></html>`;
   }

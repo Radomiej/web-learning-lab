@@ -31,14 +31,51 @@ export function loadProjects(storage, lessons = []) {
     if (current !== null) {
       const parsed = JSON.parse(current);
       if (!record(parsed)) throw new Error("Nieprawidłowy zapis v4");
+      const taskIndex = new Map(
+        lessons.flatMap((lesson) =>
+          lesson.tasks.map((task) => [task.id, { task, track: lesson.track }]),
+        ),
+      );
+      let repaired = false;
       const projects = Object.fromEntries(
         Object.entries(parsed).map(([id, p]) => {
           if (!record(p) || !record(p.files))
             throw new Error("Nieprawidłowy projekt v4");
-          return [id, normalizeProject(p)];
+          const project = normalizeProject(p);
+          const currentTask = taskIndex.get(id);
+          if (!currentTask) return [id, project];
+
+          const starter = normalizeProject(currentTask.task.starter, {
+            track: currentTask.track,
+          });
+          const files = { ...starter.files, ...project.files };
+          const missingStarterFile = Object.keys(starter.files).some(
+            (path) => !Object.hasOwn(project.files, path),
+          );
+          const missingRuntime = starter.runtime && !project.runtime;
+          if (!missingStarterFile && !missingRuntime) return [id, project];
+
+          repaired = true;
+          return [
+            id,
+            {
+              ...project,
+              files,
+              ...(project.runtime || !starter.runtime
+                ? {}
+                : { runtime: starter.runtime }),
+            },
+          ];
         }),
       );
-      return { projects, warning: "", readOnly: false };
+      const saved = repaired ? saveProjects(storage, projects) : { warning: "" };
+      return {
+        projects,
+        warning:
+          saved.warning ||
+          (repaired ? "Uzupełniono brakujące pliki projektów na podstawie aktualnych starterów." : ""),
+        readOnly: false,
+      };
     }
     const previous = storage.getItem(PREVIOUS_KEY);
     if (previous !== null) {

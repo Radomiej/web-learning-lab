@@ -9,6 +9,7 @@ import { scriptTasks } from './scriptTasks.js';
 import { reactProjectFor } from './reactProjects.js';
 import { phpLessons } from './phpLessons.js';
 import { lessonNumber } from './lessonNumbers.js';
+import { gameLessons } from './gameLessons.js';
 
 const bundle = (html, baseCss = '', themeCss = '', js = '') => ({
   html,
@@ -381,4 +382,4 @@ export const lessons = definitions.map((definition) => {
     solution: starter,
     tasks,
   });
-}).concat(phpLessons);
+}).concat(phpLessons, gameLessons);

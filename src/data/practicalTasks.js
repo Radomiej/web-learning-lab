@@ -21,7 +21,7 @@ const stylePlans = {
   1: [['color', 'rgb(20, 80, 120)'], ['background-color', 'rgb(240, 248, 255)']],
   2: [['color', 'rgb(128, 0, 128)'], ['font-weight', '700']],
   3: [['font-size', '24px'], ['line-height', '36px'], ['text-align', 'center']],
-  4: [['box-sizing', 'border-box'], ['padding-top', '24px'], ['border-top-width', '2px'], ['border-top-style', 'solid']],
+  4: [['box-sizing', 'border-box'], ['padding-top', '24px'], ['border-top-style', 'solid'], ['border-top-width', '2px']],
   5: [['position', 'relative'], ['border-radius', '16px'], ['overflow-x', 'hidden']],
   6: [['transition-property', 'opacity'], ['transition-duration', '0.2s']],
 };

@@ -48,9 +48,10 @@ function normalizeRuntime(runtime) {
   if (runtime === undefined) return undefined;
   if (!runtime || typeof runtime !== "object" || Array.isArray(runtime))
     throw new Error("Nieprawidłowy manifest runtime.");
-  const knownKinds = new Set(["react-cra", "react-vite", "php-wasm"]);
+  const knownKinds = new Set(["react-cra", "react-vite", "php-wasm", "game-js"]);
   if (!knownKinds.has(runtime.kind))
     throw new Error(`Nieznany runtime projektu: ${runtime.kind}.`);
+  if (runtime.kind === 'game-js') return { kind: 'game-js' };
   if (runtime.kind === "php-wasm") {
     if (runtime.phpVersion !== undefined && runtime.phpVersion !== "8.4")
       throw new Error("Runtime PHP obsługuje obecnie wersję 8.4.");
@@ -150,11 +151,17 @@ export function relativeProjectPath(fromFile, targetFile) {
   return result.startsWith(".") ? result : `./${result}`;
 }
 
-export function createProjectFile(project, { type, name }) {
+export function createProjectFile(project, { type, name, folder = "" }) {
   const isCraReact = type === "react" && project?.runtime?.kind === "react-cra";
   const extension = isCraReact ? "js" : extensions[type];
   if (!extension) throw new Error("Wybierz typ pliku.");
   let path = safePath(name);
+  if (folder) {
+    const normalizedFolder = safePath(folder);
+    if (path !== normalizedFolder && !path.startsWith(`${normalizedFolder}/`)) {
+      path = `${normalizedFolder}/${path}`;
+    }
+  }
   if (isCraReact && !path.startsWith("src/")) path = `src/${path}`;
   const basename = path.split("/").pop();
   if (!basename.includes(".")) path += `.${extension}`;

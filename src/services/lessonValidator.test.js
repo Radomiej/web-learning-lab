@@ -62,6 +62,33 @@ test('matches a real CSS declaration without accepting a commented-out copy', ()
   expect(result).toMatchObject({ passed: 0, total: 1 });
   expect(result.results[0].message).toContain('display');
 });
+
+test('accepts browser-rasterized border widths without relaxing ordinary width checks', () => {
+  const borderResult = evaluateChecks([{
+    id: 'border-width',
+    type: 'computedStyle',
+    selector: '.practice',
+    property: 'border-top-width',
+    expected: '2px',
+    label: 'border width',
+  }], {
+    signals: { styles: { '.practice|border-top-width': '1.6px' } },
+  });
+  const ordinaryWidthResult = evaluateChecks([{
+    id: 'width',
+    type: 'computedStyle',
+    selector: '.practice',
+    property: 'width',
+    expected: '200px',
+    label: 'width',
+  }], {
+    signals: { styles: { '.practice|width': '199px' } },
+  });
+
+  expect(borderResult.passed).toBe(1);
+  expect(ordinaryWidthResult.passed).toBe(0);
+});
+
 test('reads exact filenames from a project and a flat filename map',()=>{
   const checks=[{id:'doctype',type:'sourceIncludes',file:'index.html',value:'<!doctype html>'}];
   for(const files of [{'index.html':'<!doctype html><p>Ok</p>'},{entry:'index.html',files:{'index.html':'<!doctype html><p>Ok</p>'}}]) {

@@ -3,6 +3,8 @@ import EditorTabs from "./EditorTabs.jsx";
 import FeedbackPanel from "./FeedbackPanel.jsx";
 import LessonOverview from "./LessonOverview.jsx";
 import TaskPanel from "./TaskPanel.jsx";
+import RuntimeConsole from './RuntimeConsole.jsx';
+import GameApiGuide from './GameApiGuide.jsx';
 
 export default function LessonWorkspace({
   lesson,
@@ -12,6 +14,7 @@ export default function LessonWorkspace({
   completedTasks,
   checkResults,
   runtimeErrors,
+  runtimeState,
   onTaskChange,
   onFileChange,
   onCodeChange,
@@ -28,6 +31,7 @@ export default function LessonWorkspace({
   return (
     <div className="lesson-workspace">
       <LessonOverview lesson={lesson} />
+      {lesson.track === 'game-dev' && <GameApiGuide />}
       <TaskPanel
         lesson={lesson}
         activeTask={activeTask}
@@ -61,6 +65,7 @@ export default function LessonWorkspace({
             onCheck={onCheck}
             onSolution={activeTask.mode === "guided" ? onSolution : undefined}
           />
+          <RuntimeConsole messages={runtimeState?.messages} errors={runtimeErrors} status={runtimeState?.status} />
         </div>
       </section>
       <FeedbackPanel

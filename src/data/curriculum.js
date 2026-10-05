@@ -1,6 +1,11 @@
 import { lessons } from './lessons.js';
 
 export const tracks = {
+  'game-dev': {
+    id: 'game-dev', label: 'Game Dev JS',
+    description: 'Canvas, obiekty, komponenty i własna gra 2D.',
+    accent: '#70c994',
+  },
   html: {
     id: 'html',
     label: 'HTML',
@@ -39,6 +44,6 @@ export const tracks = {
   },
 };
 
-export const trackOrder = ['html', 'css', 'layout', 'js', 'react', 'php'];
+export const trackOrder = ['html', 'css', 'layout', 'js', 'react', 'php', 'game-dev'];
 
 export const allLessons = [...lessons].sort((a, b) => a.order - b.order);

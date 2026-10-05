@@ -12,6 +12,7 @@ const emptySignals = () => ({
   runtimeErrors: [],
   react: {},
   phpRequest: null,
+  gameScenarios: {},
 });
 
 const initialRuntimeState = (scopeKey = 'default') => ({
@@ -46,6 +47,7 @@ function mergeSignals(previous, payload = {}) {
     dom: { ...(previous.dom || {}), ...(payload.dom || {}) },
     styles: payload.styles ?? previous.styles ?? {},
     interactions: { ...(previous.interactions || {}), ...(payload.interactions || {}) },
+    gameScenarios: { ...(previous.gameScenarios || {}), ...(payload.gameScenarios || {}) },
     runtimeErrors: payload.runtimeErrors || previous.runtimeErrors || [],
   };
 }

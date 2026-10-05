@@ -49,6 +49,49 @@ test("round-trips CRA runtime metadata in v4 storage", () => {
   expect(saveProjects(localStorage, { react: project }).warning).toBe("");
   expect(loadProjects(localStorage, []).projects.react).toEqual(project);
 });
+
+test("repairs missing starter files in current v4 projects without replacing student files", () => {
+  const lessons = [
+    {
+      track: "layout",
+      tasks: [
+        {
+          id: "layout-301-guided",
+          starter: {
+            entry: "index.html",
+            files: {
+              "index.html": "<main><section class=\"practice\"></section></main>",
+              "styles.css": "/* starter */",
+              "script.js": "",
+            },
+          },
+        },
+      ],
+    },
+  ];
+  localStorage.setItem(
+    PROJECT_STORAGE_KEY,
+    JSON.stringify({
+      "layout-301-guided": {
+        entry: "index.html",
+        files: {
+          "index.html": "<main>Moja struktura</main>",
+          "script.js": "console.log('moja praca');",
+        },
+      },
+    }),
+  );
+
+  const result = loadProjects(localStorage, lessons);
+  const project = result.projects["layout-301-guided"];
+
+  expect(project.files["styles.css"]).toBe("/* starter */");
+  expect(project.files["index.html"]).toBe("<main>Moja struktura</main>");
+  expect(project.files["script.js"]).toBe("console.log('moja praca');");
+  expect(result.warning).toContain("Uzupełniono brakujące pliki");
+  expect(localStorage.getItem(PROJECT_STORAGE_KEY)).toContain("styles.css");
+});
+
 test("malformed v3 is protected even when v2 is valid", () => {
   localStorage.setItem("web-learning-lab.files.v3", "{bad");
   localStorage.setItem("web-learning-lab.files.v2", "{}");

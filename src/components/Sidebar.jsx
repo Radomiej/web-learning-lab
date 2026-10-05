@@ -8,6 +8,7 @@ export default function Sidebar({
   onTrackChange,
   onLessonChange,
   onOpenSettings,
+  onClose,
   isOpen = false,
 }) {
   const track = tracks[selectedTrack] || tracks[trackOrder[0]];
@@ -30,6 +31,16 @@ export default function Sidebar({
           <strong>Web Learning Lab</strong>
           <span>Ucz się przez budowanie</span>
         </div>
+        <button
+          className="sidebar-close-button"
+          type="button"
+          aria-label="Zamknij panel lekcji"
+          onClick={onClose}
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="m7 7 10 10M17 7 7 17" />
+          </svg>
+        </button>
         <button
           className="sidebar-settings-button"
           type="button"
