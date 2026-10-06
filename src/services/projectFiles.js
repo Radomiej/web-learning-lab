@@ -78,6 +78,12 @@ export function normalizeProject(bundle = {}, { track = "html" } = {}) {
       }),
     );
     const runtime = normalizeRuntime(bundle.runtime);
+    if (runtime?.kind === 'game-js') {
+      // Remove only the obsolete stock hint from saved course projects.
+      for (const path of Object.keys(files).filter(path => path.endsWith('.html'))) {
+        files[path] = files[path].replace(/\s*<p class="controls">Kliknij planszę, aby sterować\. (?:Strzałki \/ )?WASD · Spacja · R<\/p>/g, '');
+      }
+    }
     const extension = runtime?.kind === "php-wasm" ? ".php" : ".html";
     const entry = safePath(bundle.entry || `index${extension}`);
     if (!Object.hasOwn(files, entry) || !entry.endsWith(extension))

@@ -6,6 +6,7 @@ export const trackNumberBases = Object.freeze({
   react: 500,
   php: 600,
   'game-dev': 700,
+  playground: 800,
 });
 
 export function lessonNumber(track, sequence) {

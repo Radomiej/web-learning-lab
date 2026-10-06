@@ -66,7 +66,7 @@ export default function Sidebar({
                 (100 * completedCount) /
                 Math.max(
                   1,
-                  lessons.reduce((sum, lesson) => sum + lesson.tasks.length, 0),
+                  lessons.reduce((sum, lesson) => sum + lesson.tasks.filter(task => task.mode !== 'playground').length, 0),
                 )
               }%`,
             }}
@@ -105,7 +105,16 @@ export default function Sidebar({
                         ? "JS"
                         : trackId === "react"
                           ? "⚛"
-                          : "PHP"}
+                          : trackId === "php"
+                            ? "PHP"
+                            : trackId === "game-dev" || trackId === "playground"
+                              ? <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                  <path d="M7 8h10a4 4 0 0 1 3.9 3.1l.9 4.6a2 2 0 0 1-3.4 1.8L16 15H8l-2.4 2.5a2 2 0 0 1-3.4-1.8l.9-4.6A4 4 0 0 1 7 8Z" />
+                                  <path d="M7 10v4m-2-2h4" />
+                                  <circle cx="16" cy="11" r=".8" />
+                                  <circle cx="18.5" cy="13.5" r=".8" />
+                                </svg>
+                              : "?"}
               </span>
               <span>{item.label}</span>
               <span className="track-count">
@@ -118,7 +127,7 @@ export default function Sidebar({
 
       <div className="sidebar-section-heading">
         <span>{track?.label || "Lekcje"}</span>
-        <span>{trackLessons.length} lekcji</span>
+        <span>{selectedTrack === 'playground' ? 'własny projekt' : `${trackLessons.length} lekcji`}</span>
       </div>
       <div className="lesson-list">
         {trackLessons.map((lesson) => {
@@ -140,8 +149,10 @@ export default function Sidebar({
                 <strong title={lesson.title}>{lesson.title}</strong>
                 <small>{lesson.summary}</small>
                 <em>
+                  {lesson.track === 'playground' ? 'swobodna praca' : <>
                   {lesson.tasks.length}{" "}
                   {lesson.tasks.length === 1 ? "zadanie" : "zadania"}
+                  </>}
                 </em>
               </span>
               {lessonComplete && (

@@ -16,6 +16,7 @@ const GROUPS = [
       [["Alt", "↓"], "Przenieś linię niżej"],
       [["Shift", "Alt", "↑"], "Duplikuj linię wyżej"],
       [["Shift", "Alt", "↓"], "Duplikuj linię niżej"],
+      [["Ctrl", "Shift", "D"], "Duplikuj linię niżej — alternatywny skrót"],
     ],
   },
   {

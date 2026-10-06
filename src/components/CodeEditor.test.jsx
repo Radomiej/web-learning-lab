@@ -8,6 +8,7 @@ const fallbackMonacoLoader = async () => {
 
 let fakeCreateModel;
 let fakeActiveModel;
+let fakeRegisterCompletionProvider;
 
 function createFakeMonacoLoader() {
   const models = [];
@@ -51,6 +52,7 @@ function createFakeMonacoLoader() {
       KeyF: 8,
       KeyS: 16,
       KeyK: 32,
+      KeyD: 512,
       Slash: 64,
       UpArrow: 128,
       DownArrow: 256,
@@ -65,6 +67,10 @@ function createFakeMonacoLoader() {
       register: vi.fn(),
       setMonarchTokensProvider: vi.fn(),
       setLanguageConfiguration: vi.fn(),
+      registerCompletionItemProvider: vi.fn((_language, provider) => {
+        fakeRegisterCompletionProvider = provider;
+        return { dispose: vi.fn() };
+      }),
     },
   };
 
@@ -96,6 +102,29 @@ test('Ctrl+Shift+K deletes the current line and undo restores it', async () => {
   expect(input.value).toBe('one\nthree');
   fireEvent.keyDown(input, { key: 'z', ctrlKey: true });
   expect(input.value).toBe('one\ntwo\nthree');
+});
+
+test('fallback editor duplicates selected lines with keyboard shortcuts and supports undo', async () => {
+  render(<Editor />);
+  const input = await screen.findByRole('textbox');
+  input.focus(); input.setSelectionRange(4, 7);
+  fireEvent.keyDown(input, { key: 'ArrowDown', altKey: true, shiftKey: true });
+  expect(input.value).toBe('one\ntwo\ntwo\nthree');
+  fireEvent.keyDown(input, { key: 'z', ctrlKey: true });
+  expect(input.value).toBe('one\ntwo\nthree');
+  input.setSelectionRange(4, 7);
+  fireEvent.keyDown(input, { key: 'd', ctrlKey: true, shiftKey: true });
+  expect(input.value).toBe('one\ntwo\ntwo\nthree');
+});
+
+test('fallback comment shortcut toggles HTML comments without changing code content', async () => {
+  render(<Editor fileKey="index.html" initial="  <h1>Witaj</h1>" />);
+  const input = await screen.findByRole('textbox');
+  input.focus(); input.setSelectionRange(4, 4);
+  fireEvent.keyDown(input, { key: '/', ctrlKey: true });
+  expect(input.value).toBe('  <!-- <h1>Witaj</h1> -->');
+  fireEvent.keyDown(input, { key: '/', ctrlKey: true });
+  expect(input.value).toBe('  <h1>Witaj</h1>');
 });
 
 test('formats JSX and permits undo without changing its text content', async () => {
@@ -210,6 +239,41 @@ test('creates the active file model with the mapped language and URI', async () 
       path: 'inmemory://web-learning-lab/react-32-guided/src%2FApp.jsx',
     }),
   );
+});
+
+test('registers GameLab suggestions only for the Game Dev editor', async () => {
+  const monacoLoader = createFakeMonacoLoader();
+  const { unmount } = render(
+    <CodeEditor
+      fileKey="game.js"
+      fileLabel="game.js"
+      workspaceKey="game-dev-701-guided"
+      gameDev
+      value="GameLab."
+      onChange={() => {}}
+      monacoLoader={monacoLoader}
+    />,
+  );
+
+  await screen.findByTestId('monaco-editor');
+  expect(fakeRegisterCompletionProvider).toBeDefined();
+  expect(fakeRegisterCompletionProvider.triggerCharacters).toContain('.');
+  unmount();
+
+  const ordinaryLoader = createFakeMonacoLoader();
+  fakeRegisterCompletionProvider = null;
+  render(
+    <CodeEditor
+      fileKey="script.js"
+      fileLabel="script.js"
+      workspaceKey="js-101-guided"
+      value="const app = true;"
+      onChange={() => {}}
+      monacoLoader={ordinaryLoader}
+    />,
+  );
+  await screen.findByTestId('monaco-editor');
+  expect(fakeRegisterCompletionProvider).toBeNull();
 });
 
 test('external reset synchronizes the model without calling onChange', async () => {

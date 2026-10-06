@@ -5,6 +5,13 @@ import {
   relativeProjectPath,
 } from "./projectFiles.js";
 
+test('removes only the old stock control hint from saved game projects', () => {
+  const old = '<!doctype html><body><canvas id="game"></canvas><p class="controls">Kliknij planszę, aby sterować. Strzałki / WASD · Spacja · R</p><p class="controls">Moja instrukcja</p></body>';
+  const project = normalizeProject({ entry: 'index.html', runtime: { kind: 'game-js' }, files: { 'index.html': old, 'game.js': '' } });
+  expect(project.files['index.html']).not.toContain('Strzałki / WASD');
+  expect(project.files['index.html']).toContain('Moja instrukcja');
+});
+
 test("preserves an explicit CRA runtime manifest", () => {
   const runtime = {
     kind: "react-cra",

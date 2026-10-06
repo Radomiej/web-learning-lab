@@ -81,7 +81,7 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
       </div>
       <div className="preview-footer">
         <span><span className="status-dot status-dot--teal" />iframe sandbox</span>
-        <span>{gameMode ? 'Kliknij planszę, aby sterować · Esc zamyka pełny ekran' : 'bez zapisu poza przeglądarką'}</span>
+        <span>{gameMode ? 'Podgląd gry' : 'bez zapisu poza przeglądarką'}</span>
       </div>
     </section>
   );

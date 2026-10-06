@@ -1,6 +1,8 @@
 import { lessons } from './lessons.js';
+import { playgroundLesson } from './playground.js';
 
 export const tracks = {
+  playground: { id: 'playground', label: 'Playground', description: 'Własna gra, pusty projekt oraz import i eksport JSON.', accent: '#ffd166' },
   'game-dev': {
     id: 'game-dev', label: 'Game Dev JS',
     description: 'Canvas, obiekty, komponenty i własna gra 2D.',
@@ -44,6 +46,6 @@ export const tracks = {
   },
 };
 
-export const trackOrder = ['html', 'css', 'layout', 'js', 'react', 'php', 'game-dev'];
+export const trackOrder = ['html', 'css', 'layout', 'js', 'react', 'php', 'game-dev', 'playground'];
 
-export const allLessons = [...lessons].sort((a, b) => a.order - b.order);
+export const allLessons = [...lessons, playgroundLesson].sort((a, b) => a.order - b.order);

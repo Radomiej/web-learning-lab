@@ -47,6 +47,7 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .track-button:hover, .track-button:focus-visible, .lesson-button:hover, .lesson-button:focus-visible { color: white; background: rgb(255 255 255 / 7%); }
 .track-button.is-active { color: white; background: rgb(37 184 167 / 16%); box-shadow: inset 3px 0 var(--teal-500); }
 .track-icon { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 7px; color: var(--track-accent); background: rgb(255 255 255 / 7%); font-family: var(--mono); font-size: 10px; font-weight: 800; }
+.track-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .track-count { margin-left: auto; color: #718b9c; font-size: 10px; }
 .sidebar-section-heading { display: flex; align-items: center; justify-content: space-between; margin: 25px 10px 9px; color: #7892a5; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .lesson-list { min-height: 0; padding-right: 2px; overflow-y: auto; scrollbar-color: #31526a transparent; scrollbar-width: thin; }
@@ -229,13 +230,37 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .game-preview--fullscreen { position: fixed; z-index: 100; inset: 12px; display: flex; flex-direction: column; box-shadow: 0 0 0 100vmax rgb(8 24 37 / 75%); }
 .game-preview--fullscreen .preview-frame-wrap { flex: 1; min-height: 0; height: auto; }
 .game-preview--fullscreen .preview-frame { height: 100%; min-height: 0; }
-.game-api-guide { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; color: var(--ink-700); font-size: 13px; }
-.game-api-guide summary { cursor: pointer; font-weight: 650; color: var(--ink-900); }
-.game-api-guide summary:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 5px; }
-.game-api-body { line-height: 1.65; }
-.game-api-body pre { overflow: auto; padding: 14px; border-radius: 8px; background: #101c28; color: #bed5df; font: 12px/1.7 var(--mono); }
-.game-api-body dt { margin-top: 12px; font-weight: 650; }
-.game-api-body dd { margin-left: 0; }
+.game-api-guide { border-block: 1px solid var(--line); padding: 14px 0; color: var(--ink-700); font-size: 13px; }
+.game-api-guide > summary { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--ink-900); font-weight: 700; }
+.game-api-guide > summary span { color: var(--ink-500); font-size: 12px; font-weight: 450; }
+.game-api-guide summary:focus-visible, .game-api-nav button:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 4px; }
+.game-api-body { padding-top: 14px; line-height: 1.65; }
+.playground-tools { margin: 18px 0 4px; padding: 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--paper); }
+.playground-tools p { margin: 0 0 12px; color: var(--ink-700); font-size: 13px; line-height: 1.6; }
+.playground-tools-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.playground-tools p[role="status"] { margin: 12px 0 0; }
+.game-api-nav { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.game-api-nav button { padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; color: var(--ink-700); background: transparent; cursor: pointer; font: inherit; }
+.game-api-nav button.is-active { border-bottom-color: var(--teal-600); color: var(--ink-900); font-weight: 700; }
+.game-api-intro { max-width: 850px; }
+.game-api-start ol { padding-left: 22px; }
+.game-api-body pre { overflow: auto; margin: 12px 0; padding: 14px; border-radius: 8px; background: #101c28; color: #bed5df; font: 12px/1.7 var(--mono); }
+.game-api-callouts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.game-api-callouts p { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); }
+.game-api-callouts strong { color: var(--ink-900); }
+.game-api-callouts kbd { margin-right: 3px; padding: 1px 5px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--canvas); font: 11px var(--mono); }
+.game-api-search-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(150px, 220px); gap: 12px; }
+.game-api-search-row label { display: grid; gap: 5px; color: var(--ink-700); font-size: 12px; font-weight: 650; }
+.game-api-search-row input, .game-api-search-row select { width: 100%; min-height: 36px; padding: 7px 9px; border: 1px solid var(--line-strong); border-radius: 7px; color: var(--ink-900); background: var(--paper); font: inherit; }
+.game-api-count { margin: 10px 0; color: var(--ink-500); font-size: 11px; }
+.game-api-entries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 440px; overflow: auto; padding-right: 4px; }
+.game-api-entry { min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.game-api-entry > summary { display: flex; min-height: 40px; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; cursor: pointer; }
+.game-api-entry > summary code { overflow-wrap: anywhere; color: var(--ink-900); font: 11px/1.5 var(--mono); }
+.game-api-entry > summary span { flex: 0 0 auto; color: var(--ink-500); font-size: 10px; }
+.game-api-entry > p { margin: 0; padding: 0 10px 10px; }
+.game-api-entry > pre { margin: 0 8px 8px; }
+@media (max-width: 700px) { .game-api-callouts, .game-api-entries { grid-template-columns: 1fr; } .game-api-search-row { grid-template-columns: 1fr; } .game-api-guide > summary { align-items: flex-start; flex-direction: column; gap: 2px; } }
 
 @media (max-width: 1240px) {
   .main-region { padding-right: 20px; padding-left: 20px; }

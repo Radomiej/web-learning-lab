@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { editSelection, formatCode } from '../services/codeEditing.js';
 import { createEditorUri, getEditorLanguage } from '../services/editorLanguage.js';
 import { createEditorActions } from '../services/monacoEditorCommands.js';
+import { createGameLabCompletionProvider } from '../services/gameLabCompletions.js';
 import { loadMonaco } from '../services/monacoRuntime.js';
 import EditorHelp from './EditorHelp.jsx';
 
@@ -28,6 +29,8 @@ export default function CodeEditor({
   onSolution,
   onSave,
   workspaceKey = 'lesson',
+  gameDev = false,
+  resetLabel = 'Wyczyść',
   monacoLoader = loadMonaco,
 }) {
   const inputRef = useRef(null);
@@ -37,6 +40,7 @@ export default function CodeEditor({
   const modelsRef = useRef(new Map());
   const listenersRef = useRef(new Map());
   const editorActionsRef = useRef([]);
+  const completionProviderRef = useRef(null);
   const selectionRef = useRef(null);
   const history = useRef({ undo: [], redo: [] });
   const revision = useRef(0);
@@ -208,6 +212,21 @@ export default function CodeEditor({
       return;
     }
     escapeTab.current = false;
+    if (modifier && (event.key === '/' || event.code === 'Slash')) {
+      event.preventDefault();
+      const input = event.currentTarget;
+      applyEdit(editSelection(valueRef.current, input.selectionStart, input.selectionEnd, 'toggleComment', getEditorLanguage(fileKeyRef.current)));
+      return;
+    }
+    if ((event.altKey && ['ArrowUp', 'ArrowDown'].includes(event.key))
+      || (modifier && event.shiftKey && event.key.toLowerCase() === 'd')) {
+      event.preventDefault();
+      const down = event.key === 'ArrowDown' || event.key.toLowerCase() === 'd';
+      const command = event.shiftKey ? (down ? 'duplicateDown' : 'duplicateUp') : (down ? 'moveDown' : 'moveUp');
+      const input = event.currentTarget;
+      applyEdit(editSelection(valueRef.current, input.selectionStart, input.selectionEnd, command));
+      return;
+    }
     if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'f') {
       event.preventDefault();
       handleFormat();
@@ -281,6 +300,12 @@ export default function CodeEditor({
         editorActionsRef.current = actions
           .map((action) => editor.addAction(action))
           .filter(Boolean);
+        if (gameDev && monaco.languages.registerCompletionItemProvider) {
+          completionProviderRef.current = monaco.languages.registerCompletionItemProvider(
+            'javascript',
+            createGameLabCompletionProvider(monaco, workspaceKeyRef.current),
+          );
+        }
         editor.layout?.();
         if (!cancelled) setEditorState('ready');
       } catch (error) {
@@ -301,6 +326,8 @@ export default function CodeEditor({
       alive.current = false;
       editorActionsRef.current.forEach((action) => action.dispose?.());
       editorActionsRef.current = [];
+      completionProviderRef.current?.dispose?.();
+      completionProviderRef.current = null;
       listenersRef.current.forEach((listener) => listener.dispose?.());
       listenersRef.current.clear();
       modelsRef.current.forEach((model) => model.dispose?.());
@@ -310,7 +337,7 @@ export default function CodeEditor({
       monacoRef.current = null;
       ignoreModelChangeRef.current = false;
     };
-  }, [monacoLoader, workspaceKey]);
+  }, [gameDev, monacoLoader, workspaceKey]);
 
   useEffect(() => {
     if (editorState !== 'ready' || !editorRef.current) return;
@@ -408,8 +435,8 @@ export default function CodeEditor({
       </p>
       <div className="editor-actions">
         <button className="button button--primary" type="button" onClick={() => onRun?.()}><span aria-hidden="true">▶</span> Uruchom</button>
-        <button className="button button--secondary" type="button" onClick={() => onCheck?.()}>Sprawdź</button>
-        <button className="button button--ghost" type="button" onClick={() => onReset?.()}>Wyczyść</button>
+        {onCheck && <button className="button button--secondary" type="button" onClick={() => onCheck()}>Sprawdź</button>}
+        <button className="button button--ghost" type="button" onClick={() => onReset?.()}>{resetLabel}</button>
         {onSolution && <button className="button button--ghost button--solution" type="button" onClick={onSolution}>Pokaż rozwiązanie</button>}
       </div>
     </section>

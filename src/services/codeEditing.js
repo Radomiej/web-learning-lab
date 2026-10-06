@@ -1,8 +1,42 @@
-export function editSelection(text, start, end, command) {
+export function editSelection(text, start, end, command, language = 'javascript') {
   const lineStart = start === 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1;
   const lastSelected = end > start && text[end - 1] === '\n' ? end - 1 : end;
   const nextBreak = text.indexOf('\n', lastSelected);
   const lineEnd = nextBreak < 0 ? text.length : nextBreak;
+  const block = text.slice(lineStart, lineEnd);
+  if (command === 'toggleComment') {
+    const [open, close] = language === 'html' ? ['<!-- ', ' -->'] : language === 'css' ? ['/* ', ' */'] : ['// ', ''];
+    const lines = block.split('\n');
+    const uncomment = lines.every(line => line.trimStart().startsWith(open.trimEnd()) && (!close || line.trimEnd().endsWith(close.trimStart())));
+    const changed = lines.map(line => {
+      const indent = line.match(/^[\t ]*/)[0], body = line.slice(indent.length);
+      if (!uncomment) return indent + open + body + close;
+      const withoutOpen = body.slice(open.trimEnd().length).replace(/^ /, '');
+      return indent + (close ? withoutOpen.slice(0, -close.trimStart().length).replace(/ $/, '') : withoutOpen);
+    }).join('\n');
+    return { text: text.slice(0, lineStart) + changed + text.slice(lineEnd), start: lineStart, end: lineStart + changed.length };
+  }
+  if (command === 'duplicateUp' || command === 'duplicateDown') {
+    const offset = command === 'duplicateDown' ? lineEnd : lineStart;
+    const insertion = command === 'duplicateDown' ? '\n' + block : block + '\n';
+    const shift = command === 'duplicateDown' ? insertion.length : 0;
+    return { text: text.slice(0, offset) + insertion + text.slice(offset), start: start + shift, end: end + shift };
+  }
+  if (command === 'moveUp') {
+    if (!lineStart) return { text, start, end };
+    const previousStart = text.lastIndexOf('\n', lineStart - 2) + 1;
+    const previous = text.slice(previousStart, lineStart - 1);
+    const shift = previous.length + 1;
+    return { text: text.slice(0, previousStart) + block + '\n' + previous + text.slice(lineEnd), start: start - shift, end: end - shift };
+  }
+  if (command === 'moveDown') {
+    if (nextBreak < 0) return { text, start, end };
+    const followingBreak = text.indexOf('\n', lineEnd + 1);
+    const followingEnd = followingBreak < 0 ? text.length : followingBreak;
+    const following = text.slice(lineEnd + 1, followingEnd);
+    const shift = following.length + 1;
+    return { text: text.slice(0, lineStart) + following + '\n' + block + text.slice(followingEnd), start: start + shift, end: end + shift };
+  }
   if (command === 'deleteLine') {
     const from = nextBreak < 0 && lineStart > 0 ? lineStart - 1 : lineStart;
     const to = nextBreak < 0 ? text.length : lineEnd + 1;

@@ -1,4 +1,6 @@
 export function triggerEditorAction(editor, actionId) {
+  const action = editor.getAction?.(actionId);
+  if (action) return action.run();
   editor.trigger('web-learning-lab-command', actionId, null);
 }
 
@@ -49,8 +51,9 @@ export function createEditorActions(monaco, { format, save }) {
     {
       id: 'wll.duplicate-line-down',
       label: 'Web Learning Lab: Duplikuj linię niżej',
-      keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.DownArrow],
+      keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.DownArrow,
+        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyD],
       run: (editor) => triggerEditorAction(editor, 'editor.action.copyLinesDownAction'),
     },
-  ];
+  ].map(action => ({ ...action, precondition: '!editorReadonly', keybindingContext: 'editorTextFocus' }));
 }

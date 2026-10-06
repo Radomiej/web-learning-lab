@@ -6,6 +6,7 @@ const monaco = {
     KeyF: 8,
     KeyS: 16,
     KeyK: 32,
+    KeyD: 512,
     Slash: 64,
     UpArrow: 128,
     DownArrow: 256,
@@ -52,4 +53,15 @@ test('delegates built-in editor commands through Monaco trigger', () => {
     'editor.action.deleteLines',
     null,
   );
+});
+
+test('runs the actual Monaco duplicate action and offers an alternative shortcut', () => {
+  const run = vi.fn();
+  const editor = { getAction: vi.fn(() => ({ run })) };
+  const actions = createEditorActions(monaco, { format: vi.fn(), save: vi.fn() });
+  const duplicate = actions.find(action => action.id === 'wll.duplicate-line-down');
+  duplicate.run(editor);
+  expect(editor.getAction).toHaveBeenCalledWith('editor.action.copyLinesDownAction');
+  expect(run).toHaveBeenCalledOnce();
+  expect(duplicate.keybindings).toContain(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyD);
 });

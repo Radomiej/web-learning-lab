@@ -180,6 +180,12 @@ export default function App() {
         onAddFile={() => setDialog("add")}
         onCheck={previewRuntime.checkPreview}
         onSolution={handleSolution}
+        onImportProject={(project) => {
+          updateFiles(activeTask.id, project);
+          setActiveFile('game.js');
+          previewRuntime.clearRuntime();
+          previewRuntime.runPreview(project, project.entry);
+        }}
       />
       {dialog === "add" && (
         <AddFileDialog
@@ -194,7 +200,7 @@ export default function App() {
       )}
       {dialog === "reset" && (
         <EditorDialog
-          title="Przywrócić pliki zadania?"
+          title={selectedLesson.track === 'playground' ? 'Utworzyć pusty projekt?' : 'Przywrócić pliki zadania?'}
           onClose={() => setDialog(null)}
         >
           <p>
