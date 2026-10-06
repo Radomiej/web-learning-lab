@@ -39,6 +39,8 @@ Walidator `gameScenario` tworzy świeżą scenę i wykonuje deterministyczne kro
 W lekcjach HTML/CSS/JavaScript/React dostępne są pliki projektu takie jak `index.html`, arkusze stylów i skrypty. Ścieżka PHP używa `index.php` oraz `styles.css`; kod wykonuje lokalny runtime PHP 8.4 w WebAssembly, a jego wynik HTML trafia do tego samego sandboxowanego iframe. Ćwiczenie formularza uruchamia kontrolowane żądanie POST w pamięci. Sprawdzanie korzysta z deklaratywnych warunków DOM, CSS, interakcji, Reacta i odpowiedzi PHP. Runtime Reacta, kompilator JSX i PHP.wasm są dołączone lokalnie.
 # Pomoc AI w Playground
 
+Na Vercelu funkcje `api/ai/config.js` i `api/ai/chat.js` obsługują AI bez lokalnego serwera Node. Ustaw `OPENROUTER_API_KEY` w Environment Variables projektu Web Learning Lab dla Production, a następnie wykonaj redeploy. Zmienne z projektu databases nie są automatycznie współdzielone. Endpoint `/api/ai/config` powinien zwracać JSON, nie stronę HTML. Limity pamięciowe funkcji działają na instancję; publiczne szkolne wdrożenie wymaga dodatkowej ochrony/limitów na poziomie hostingu.
+
 Skopiuj `.env.example` do `.env` i ustaw `OPENROUTER_API_KEY` oraz
 wybierz darmowy model w panelu Playground. Nie używaj prefiksu
 `VITE_` dla klucza. `.env` jest ignorowany przez Git. Wymagany Node 22.9+.
