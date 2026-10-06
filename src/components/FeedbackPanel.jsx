@@ -4,8 +4,7 @@ export default function FeedbackPanel({ checkResults = [], runtimeErrors = [] })
     <section className="feedback-panel" aria-labelledby="feedback-title">
       <div className="section-heading-row">
         <div>
-          <p className="eyebrow">Informacja zwrotna</p>
-          <h2 id="feedback-title">Wynik sprawdzenia</h2>
+          <h2 id="feedback-title"><span aria-hidden="true">✓ </span>Wynik sprawdzenia</h2>
         </div>
         {checkResults.length > 0 && <span className={`score-badge${passed === checkResults.length ? ' is-complete' : ''}`}>{passed}/{checkResults.length}</span>}
       </div>
@@ -15,7 +14,7 @@ export default function FeedbackPanel({ checkResults = [], runtimeErrors = [] })
           {runtimeErrors.map((error, index) => <span key={`${error}-${index}`}>{error}</span>)}
         </div>
       )}
-      {checkResults.length === 0 && runtimeErrors.length === 0 && <p className="muted-copy">Uruchom kod, a następnie kliknij „Sprawdź”, aby zobaczyć wynik.</p>}
+      {checkResults.length === 0 && runtimeErrors.length === 0 && <p className="muted-copy">Uruchom kod, aby sprawdzić zadanie.</p>}
       {checkResults.length > 0 && (
         <ul className="feedback-list">
           {checkResults.map((result) => (

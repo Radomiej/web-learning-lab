@@ -28,6 +28,8 @@ export default function LessonWorkspace({
   onImportProject,
   projectRevision,
   onTutorApply,
+  nextLesson,
+  onNextLesson,
 }) {
   const playground = lesson.track === 'playground';
   const path = Object.hasOwn(files.files, activeFile)
@@ -46,8 +48,7 @@ export default function LessonWorkspace({
       <section className="editor-section" aria-labelledby="editor-title">
         <div className="section-heading-row editor-section-heading">
           <div>
-            <p className="eyebrow">Laboratorium kodu</p>
-            <h2 id="editor-title">{playground ? 'Twój projekt' : 'Zbuduj rozwiązanie'}</h2>
+            <h2 id="editor-title"><span aria-hidden="true">⌨ </span>{playground ? 'Twój projekt' : 'Zbuduj rozwiązanie'}</h2>
           </div>
         </div>
         <div className="editor-shell">
@@ -79,6 +80,7 @@ export default function LessonWorkspace({
         checkResults={checkResults}
         runtimeErrors={runtimeErrors}
       />}
+      {!playground && lesson.tasks.length > 0 && lesson.tasks.every(task => completedTasks.includes(task.id)) && <section className="lesson-complete" aria-label="Lekcja ukończona"><p><span aria-hidden="true">✓ </span>Lekcja zaliczona!</p>{nextLesson ? <button className="button button--primary" type="button" onClick={onNextLesson}>Następna lekcja: {nextLesson.title} <span aria-hidden="true">→</span></button> : <p>To ostatnia lekcja tej ścieżki.</p>}</section>}
     </div>
   );
 }

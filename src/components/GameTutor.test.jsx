@@ -6,7 +6,8 @@ test('includes code only after consent and shows configuration failure', async (
   const send = vi.fn(async () => ({ message: 'Gotowe', proposals: [] }));
   render(<GameTutor project={project} projectRevision={0} onApply={() => {}} loadConfig={loadConfig} sendMessage={send} />);
   fireEvent.click(screen.getByRole('button', { name: 'Pomoc AI' }));
-  await screen.findByRole('option', { name: 'Test model' });
+  await screen.findByText('Test model');
+  fireEvent.click(screen.getByRole('button', { name: 'Wybierz model' }));
   fireEvent.change(screen.getByLabelText('Darmowy model OpenRouter'), { target: { value: 'test' } });
   fireEvent.click(screen.getByRole('checkbox', { name: 'Dołącz kod aktualnego projektu' }));
   fireEvent.change(screen.getByLabelText('Twoje pytanie'), { target: { value: 'Sprawdź kod' } });
@@ -18,7 +19,8 @@ test('does not share code by default and applies only on explicit click', async 
   let payload; const apply = vi.fn();
   render(<GameTutor project={project} projectRevision={0} onApply={apply} loadConfig={loadConfig} sendMessage={async value => { payload = value; return { message: 'Wyjaśnienie', proposals: [{ path: 'components/Move.js', content: 'export class Move {}', reason: 'ruch' }] }; }} />);
   fireEvent.click(screen.getByRole('button', { name: 'Pomoc AI' }));
-  await screen.findByRole('option', { name: 'Test model' });
+  await screen.findByText('Test model');
+  fireEvent.click(screen.getByRole('button', { name: 'Wybierz model' }));
   fireEvent.change(screen.getByLabelText('Darmowy model OpenRouter'), { target: { value: 'test' } });
   fireEvent.change(screen.getByLabelText('Twoje pytanie'), { target: { value: 'Pomóż z ruchem' } });
   fireEvent.click(screen.getByRole('button', { name: 'Wyślij pytanie' }));

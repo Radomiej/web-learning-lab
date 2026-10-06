@@ -5,8 +5,7 @@ export default function TaskPanel({ lesson, activeTask, completedTasks, onTaskCh
     <section className="task-panel" aria-labelledby="task-panel-title">
       <div className="section-heading-row">
         <div>
-          <p className="eyebrow">Ćwiczenie</p>
-          <h2 id="task-panel-title">Zadania lekcji</h2>
+          <h2 id="task-panel-title"><span aria-hidden="true">☑ </span>Zadania lekcji</h2>
         </div>
         <span className="count-badge">{lesson.tasks.length}</span>
       </div>

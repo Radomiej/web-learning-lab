@@ -435,7 +435,6 @@ export default function CodeEditor({
       </p>
       <div className="editor-actions">
         <button className="button button--primary" type="button" onClick={() => onRun?.()}><span aria-hidden="true">▶</span> Uruchom</button>
-        {onCheck && <button className="button button--secondary" type="button" onClick={() => onCheck()}>Sprawdź</button>}
         <button className="button button--ghost" type="button" onClick={() => onReset?.()}>{resetLabel}</button>
         {onSolution && <button className="button button--ghost button--solution" type="button" onClick={onSolution}>Pokaż rozwiązanie</button>}
       </div>

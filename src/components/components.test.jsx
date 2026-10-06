@@ -1,6 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App.jsx";
+import { allLessons } from '../data/curriculum.js';
+
+test('offers the next lesson only after completing every task', async () => {
+  const lesson = allLessons.filter(item => item.track === 'html').sort((a, b) => a.order - b.order)[0];
+  localStorage.setItem('web-learning-lab.progress.v1', JSON.stringify({ selectedTrack: 'html', selectedLessonId: lesson.id, completedTasks: lesson.tasks.map(task => task.id) }));
+  const user = userEvent.setup();
+  render(<App />);
+  expect(screen.getByLabelText('Wybierz lekcję')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: /Następna lekcja:/ }));
+  expect(screen.getByRole('heading', { name: 'Pierwszy dokument HTML5' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Następna lekcja:/ })).not.toBeInTheDocument();
+});
 
 beforeEach(() => localStorage.clear());
 
@@ -175,7 +187,8 @@ test("only example exercises expose a solution button", async () => {
   expect(
     screen.queryByRole("button", { name: "Pokaż rozwiązanie" }),
   ).not.toBeInTheDocument();
-  await user.click(screen.getByRole("tab", { name: /Layout/ }));
+  await user.click(screen.getByLabelText('Wybierz ścieżkę'));
+  await user.click(screen.getByRole('tab', { name: /Layout/ }));
   await user.click(screen.getByRole("button", { name: /Wyzwanie/i }));
   expect(
     screen.queryByRole("button", { name: "Pokaż rozwiązanie" }),
@@ -185,6 +198,7 @@ test("only example exercises expose a solution button", async () => {
 test('opens Game Dev with its three files, engine guide, and console below the editor', async () => {
   const user = userEvent.setup();
   const { container } = render(<App />);
+  await user.click(screen.getByLabelText('Wybierz ścieżkę'));
   await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
   expect(screen.getByRole('heading', { name: 'Pierwsze obiekty i komponenty' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();

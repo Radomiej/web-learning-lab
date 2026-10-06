@@ -12,6 +12,7 @@ import AddFileDialog from "./components/AddFileDialog.jsx";
 import EditorDialog from "./components/EditorDialog.jsx";
 import { normalizeProject } from "./services/projectFiles.js";
 import { applyTutorProposal } from './services/tutorProposals.js';
+import { recordWorkEvent, workHistoryKey } from './services/workHistory.js';
 
 function starterEntry(task, track) {
   const project = normalizeProject(task?.starter, { track });
@@ -68,6 +69,15 @@ export default function App() {
     activeTask.id,
   );
   const awardedRunRef = useRef(null);
+  const loggedResultRef = useRef(null);
+  useEffect(() => {
+    const state = previewRuntime.runtimeState;
+    if (!state.checkResults.length && !state.errors.length) return;
+    const signature = JSON.stringify([activeTask.id, previewRuntime.runId, state.checkResults, state.errors.length]);
+    if (loggedResultRef.current === signature) return;
+    loggedResultRef.current = signature;
+    recordWorkEvent({ type: 'result', taskId: activeTask.id, runId: previewRuntime.runId, passed: state.checkResults.filter(item => item.passed).length, total: state.checkResults.length, errorCount: state.errors.length });
+  }, [activeTask.id, previewRuntime.runId, previewRuntime.runtimeState]);
   const runtimeLabel =
     previewRuntime.runtimeState.status === "running"
       ? "Uruchamiam"
@@ -165,6 +175,11 @@ export default function App() {
         </p>
       )}
       <LessonWorkspace
+        nextLesson={allLessons.filter(lesson => lesson.track === selectedLesson.track && lesson.order > selectedLesson.order).sort((a, b) => a.order - b.order)[0]}
+        onNextLesson={() => {
+          const next = allLessons.filter(lesson => lesson.track === selectedLesson.track && lesson.order > selectedLesson.order).sort((a, b) => a.order - b.order)[0];
+          if (next) { selectLesson(next.id); previewRuntime.clearRuntime(); }
+        }}
         projectRevision={projectRevision}
         onTutorApply={(proposal, snapshot) => {
           if (!snapshot || snapshot.revision !== projectRevision) throw new Error('Projekt został zastąpiony. Poproś o nową propozycję.');
@@ -182,10 +197,15 @@ export default function App() {
         runtimeState={previewRuntime.runtimeState}
         onTaskChange={handleTaskChange}
         onFileChange={setActiveFile}
-        onCodeChange={(fileKey, value) =>
-          updateFiles(activeTask.id, { [fileKey]: value })
-        }
-        onRun={() => previewRuntime.runPreview()}
+        onCodeChange={(fileKey, value) => {
+          recordWorkEvent({ type: 'edit', taskId: activeTask.id, file: fileKey, characterCount: value.length });
+          updateFiles(activeTask.id, { [fileKey]: value });
+        }}
+        onRun={() => {
+          recordWorkEvent({ type: 'run', taskId: activeTask.id });
+          if (selectedLesson.track === 'playground') previewRuntime.runPreview();
+          else previewRuntime.checkPreview();
+        }}
         onSave={() => previewRuntime.savePreview()}
         onReset={() => setDialog("reset")}
         onAddFile={() => setDialog("add")}
@@ -282,6 +302,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 hardReset();
+                localStorage.removeItem(workHistoryKey);
                 setProjectRevision(value => value + 1);
                 setActiveFile(starterEntry(activeTask, selectedLesson.track));
                 setDialog(null);

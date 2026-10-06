@@ -3,7 +3,7 @@ import { createTutorHandler } from './tutor.js';
 const loadModels = async () => ({ models: [{ id: 'test/model' }] });
 test('tool calls only return validated proposals, never write files', async () => {
   const handler = createTutorHandler({ apiKey: 'key', loadModels, fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: null, tool_calls: [{ function: { name: 'propose_project_files', arguments: JSON.stringify({ message: 'Zatwierdź komponent', proposals: [{ path: 'components/Move.js', content: 'export class Move {}', reason: 'ruch' }] }) } }] } }] }) }) });
-  const result = await handler({ model: 'test/model', messages: [{ role: 'user', content: 'Napisz komponent' }] });
+  const result = await handler({ model: 'test/model', project: { files: { 'game.js': '// aktualny kod' } }, messages: [{ role: 'user', content: 'Napisz komponent' }] });
   expect(result.status).toBe(200);
   expect(result.body.proposals[0].path).toBe('components/Move.js');
 });
@@ -31,7 +31,7 @@ test('provider errors are sanitized and malformed responses rejected', async () 
 test('rejects malicious proposals and excessive project context', async () => {
   const handler = createTutorHandler({ apiKey: 'secret', loadModels, fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ message: 'x', proposals: [{ path: '../x.js', content: '' }] }) } }] }) }) });
   const messages = [{ role: 'user', content: 'x' }];
-  expect((await handler({ model: 'test/model', messages })).status).toBe(502);
+  expect((await handler({ model: 'test/model', messages, project: { files: { 'game.js': '' } } })).status).toBe(502);
   expect((await handler({ model: 'test/model', messages, project: { files: { 'game.js': 'x'.repeat(100001) } } })).status).toBe(400);
 });
 test('rejects a model that has disappeared from the free catalog before chat', async () => {

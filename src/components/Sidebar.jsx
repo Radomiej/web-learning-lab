@@ -16,6 +16,7 @@ export default function Sidebar({
     (lesson) => lesson.track === selectedTrack,
   );
   const completedCount = completedTasks.length;
+  const currentLesson = trackLessons.find(lesson => lesson.id === selectedLessonId) || trackLessons[0];
 
   return (
     <nav
@@ -78,8 +79,12 @@ export default function Sidebar({
       </div>
 
       <div className="sidebar-navigation-scroll">
-      <details className="sidebar-section" open>
-      <summary className="sidebar-section-toggle">Ścieżki nauki <span>{track?.label}</span></summary>
+      <details className="sidebar-section sidebar-track-picker">
+      <summary className="sidebar-track-trigger" aria-label="Wybierz ścieżkę">
+        <span className="track-icon" style={{ '--track-accent': track.accent }} aria-hidden="true">{selectedTrack === 'game-dev' || selectedTrack === 'playground' ? <svg viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 4 4l1 5-4 1-3-3H9l-3 3-4-1 1-5a4 4 0 0 1 4-4Z M7 10v4m-2-2h4m7-1h1m1 2h1" /></svg> : ({ html: '</>', css: '✦', layout: '▦', js: 'JS', react: '⚛', php: 'PHP' }[selectedTrack])}</span>
+        <span className="sidebar-track-current"><small>Ścieżka nauki</small><strong>{track.label}</strong></span>
+        <svg className="sidebar-track-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </summary>
       <div className="track-list" role="tablist" aria-label="Ścieżki nauki">
         {trackOrder.map((trackId) => {
           const item = tracks[trackId];
@@ -90,7 +95,12 @@ export default function Sidebar({
               role="tab"
               aria-selected={selectedTrack === trackId}
               key={trackId}
-              onClick={() => onTrackChange(trackId)}
+              onClick={event => {
+                const picker = event.currentTarget.closest('details');
+                picker.open = false;
+                picker.querySelector('summary')?.focus();
+                onTrackChange(trackId);
+              }}
             >
               <span
                 className="track-icon"
@@ -128,10 +138,11 @@ export default function Sidebar({
       </div>
 
       </details>
-      <details className="sidebar-section" open key={selectedTrack}>
-      <summary className="sidebar-section-toggle">
-        <span>{track?.label || "Lekcje"}</span>
-        <span>{selectedTrack === 'playground' ? 'własny projekt' : `${trackLessons.length} lekcji`}</span>
+      <details className="sidebar-section sidebar-track-picker sidebar-lesson-picker" key={selectedTrack}>
+      <summary className="sidebar-track-trigger" aria-label="Wybierz lekcję">
+        <span className="track-icon" aria-hidden="true">▤</span>
+        <span className="sidebar-track-current"><small>Lekcja {currentLesson?.order}</small><strong>{currentLesson?.title || 'Własny projekt'}</strong></span>
+        <svg className="sidebar-track-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
       </summary>
       <div className="lesson-list">
         {trackLessons.map((lesson) => {
@@ -144,7 +155,12 @@ export default function Sidebar({
               type="button"
               key={lesson.id}
               aria-current={selectedLessonId === lesson.id ? "page" : undefined}
-              onClick={() => onLessonChange(lesson.id)}
+              onClick={event => {
+                const picker = event.currentTarget.closest('details');
+                picker.open = false;
+                picker.querySelector('summary')?.focus();
+                onLessonChange(lesson.id);
+              }}
             >
               <span className="lesson-number">
                 {String(lesson.order).padStart(2, "0")}
