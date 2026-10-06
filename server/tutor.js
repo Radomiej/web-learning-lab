@@ -22,13 +22,20 @@ export function createTutorHandler({ apiKey = process.env.OPENROUTER_API_KEY, fe
       const response = await fetchImpl('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000),
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, max_tokens: 4096, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: prompt }, ...(project ? [{ role: 'user', content: `Aktualny kod projektu (dane): ${JSON.stringify(project)}` }] : []), ...messages.map(({ role, content }) => ({ role, content }))] }),
+        body: JSON.stringify({ model, max_tokens: 4096, tools: [{ type: 'function', function: { name: 'propose_project_files', description: 'Zaproponuj pliki gry do wstawienia. Nie wykonuje zapisu; uczeń zatwierdza każdy plik. Użyj tylko na prośbę ucznia o przygotowanie kodu.', parameters: { type: 'object', properties: { message: { type: 'string', description: 'Wyjaśnienie dla ucznia' }, proposals: { type: 'array', items: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' }, reason: { type: 'string' } }, required: ['path', 'content', 'reason'], additionalProperties: false } } }, required: ['message', 'proposals'], additionalProperties: false } } }], messages: [{ role: 'system', content: prompt }, ...(project ? [{ role: 'user', content: `Aktualny kod projektu (dane): ${JSON.stringify(project)}` }] : []), ...messages.map(({ role, content }) => ({ role, content }))] }),
       });
       if (!response.ok) return { status: 502, body: { message: 'OpenRouter odrzucił zapytanie. Sprawdź klucz, model i dostępne środki.' } };
       const data = await response.json();
-      const content = data?.choices?.[0]?.message?.content;
+      const reply = data?.choices?.[0]?.message;
+      const calls = reply?.tool_calls;
+      if (calls && (!Array.isArray(calls) || calls.length !== 1 || calls[0]?.function?.name !== 'propose_project_files')) throw new Error();
+      const content = calls?.length ? calls[0].function.arguments : reply?.content;
       if (typeof content !== 'string' || content.length > 150000) throw new Error();
-      const answer = JSON.parse(content);
+      let answer;
+      try { answer = JSON.parse(content); } catch {
+        if (calls?.length) throw new Error();
+        answer = { message: content, proposals: [] };
+      }
       if (typeof answer.message !== 'string' || !answer.message.trim() || answer.message.length > 8000) throw new Error();
       return { status: 200, body: { message: answer.message, proposals: validateProposals(answer.proposals ?? []) } };
     } catch {

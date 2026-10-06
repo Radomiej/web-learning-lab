@@ -1,6 +1,12 @@
 // @vitest-environment node
 import { createTutorHandler } from './tutor.js';
 const loadModels = async () => ({ models: [{ id: 'test/model' }] });
+test('tool calls only return validated proposals, never write files', async () => {
+  const handler = createTutorHandler({ apiKey: 'key', loadModels, fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: null, tool_calls: [{ function: { name: 'propose_project_files', arguments: JSON.stringify({ message: 'Zatwierdź komponent', proposals: [{ path: 'components/Move.js', content: 'export class Move {}', reason: 'ruch' }] }) } }] } }] }) }) });
+  const result = await handler({ model: 'test/model', messages: [{ role: 'user', content: 'Napisz komponent' }] });
+  expect(result.status).toBe(200);
+  expect(result.body.proposals[0].path).toBe('components/Move.js');
+});
 test('does not expose secrets or call upstream when not configured', async () => {
   const handler = createTutorHandler({ apiKey: '', model: '' });
   expect((await handler({ messages: [{ role: 'user', content: 'pomoc' }] })).status).toBe(503);
