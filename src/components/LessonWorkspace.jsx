@@ -4,8 +4,8 @@ import FeedbackPanel from "./FeedbackPanel.jsx";
 import LessonOverview from "./LessonOverview.jsx";
 import TaskPanel from "./TaskPanel.jsx";
 import RuntimeConsole from './RuntimeConsole.jsx';
-import GameApiGuide from './GameApiGuide.jsx';
 import PlaygroundTools from './PlaygroundTools.jsx';
+import GameTutor from './GameTutor.jsx';
 
 export default function LessonWorkspace({
   lesson,
@@ -26,6 +26,8 @@ export default function LessonWorkspace({
   onSolution,
   onAddFile,
   onImportProject,
+  projectRevision,
+  onTutorApply,
 }) {
   const playground = lesson.track === 'playground';
   const path = Object.hasOwn(files.files, activeFile)
@@ -34,7 +36,7 @@ export default function LessonWorkspace({
   return (
     <div className="lesson-workspace">
       {playground ? <section className="lesson-overview"><p className="eyebrow">Playground · GameLab</p><h1>{lesson.title}</h1><p className="lesson-summary">{lesson.summary}</p><PlaygroundTools project={files} onImport={onImportProject} /></section> : <LessonOverview lesson={lesson} />}
-      {files.runtime?.kind === 'game-js' && <GameApiGuide />}
+      {playground && <GameTutor key={`${activeTask.id}:${projectRevision}`} project={files} projectRevision={projectRevision} onApply={onTutorApply} />}
       {!playground && <TaskPanel
         lesson={lesson}
         activeTask={activeTask}

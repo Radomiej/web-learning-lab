@@ -3,6 +3,7 @@ import { allLessons, trackOrder, tracks } from "./data/curriculum.js";
 import { useCourseProgress } from "./hooks/useCourseProgress.js";
 import { usePreviewRuntime } from "./hooks/usePreviewRuntime.js";
 import AppShell from "./components/AppShell.jsx";
+import GameApiGuide from './components/GameApiGuide.jsx';
 import LessonWorkspace from "./components/LessonWorkspace.jsx";
 import MobileHeader from "./components/MobileHeader.jsx";
 import PreviewInspector from "./components/PreviewInspector.jsx";
@@ -10,6 +11,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import AddFileDialog from "./components/AddFileDialog.jsx";
 import EditorDialog from "./components/EditorDialog.jsx";
 import { normalizeProject } from "./services/projectFiles.js";
+import { applyTutorProposal } from './services/tutorProposals.js';
 
 function starterEntry(task, track) {
   const project = normalizeProject(task?.starter, { track });
@@ -39,6 +41,7 @@ export default function App() {
   );
   const [dialog, setDialog] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [projectRevision, setProjectRevision] = useState(0);
 
   useEffect(() => {
     if (!selectedLesson.tasks.some((task) => task.id === activeTaskId)) {
@@ -100,6 +103,7 @@ export default function App() {
   ]);
 
   const handleReset = () => {
+    setProjectRevision(value => value + 1);
     setDialog(null);
     const starter = normalizeProject(activeTask.starter, {
       track: selectedLesson.track,
@@ -161,6 +165,13 @@ export default function App() {
         </p>
       )}
       <LessonWorkspace
+        projectRevision={projectRevision}
+        onTutorApply={(proposal, snapshot) => {
+          if (!snapshot || snapshot.revision !== projectRevision) throw new Error('Projekt został zastąpiony. Poproś o nową propozycję.');
+          const next = applyTutorProposal(files, snapshot.project, proposal);
+          updateFiles(activeTask.id, next);
+          setActiveFile(proposal.path);
+        }}
         lesson={selectedLesson}
         activeTask={activeTask}
         activeFile={activeFile}
@@ -181,6 +192,7 @@ export default function App() {
         onCheck={previewRuntime.checkPreview}
         onSolution={handleSolution}
         onImportProject={(project) => {
+          setProjectRevision(value => value + 1);
           updateFiles(activeTask.id, project);
           setActiveFile('game.js');
           previewRuntime.clearRuntime();
@@ -270,6 +282,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 hardReset();
+                setProjectRevision(value => value + 1);
                 setActiveFile(starterEntry(activeTask, selectedLesson.track));
                 setDialog(null);
                 setSidebarOpen(false);
@@ -306,6 +319,7 @@ export default function App() {
 
   return (
     <AppShell
+      toolbarActions={files.runtime?.kind === 'game-js' ? <GameApiGuide /> : null}
       sidebar={sidebar}
       main={main}
       inspector={inspector}

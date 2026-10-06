@@ -17,7 +17,7 @@ test("shows the first lesson, three editor files, preview status, and track navi
   ).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
   expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
-  expect(screen.getByText("57 lekcji")).toBeInTheDocument();
+  expect(screen.getByText("60 lekcji")).toBeInTheDocument();
 });
 
 test("opens the CRA public entry when the React track is selected", () => {
@@ -122,7 +122,7 @@ test("adds a component, restores it after reload and confirms reset", async () =
   expect(
     screen.getByRole("tab", { name: "components/Card.jsx" }),
   ).toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "Wyczyść" }));
+  await user.click(screen.getByRole("button", { name: "Przywróć start" }));
   expect(
     screen.getByRole("dialog", { name: "Przywrócić pliki zadania?" }),
   ).toBeInTheDocument();
@@ -131,7 +131,7 @@ test("adds a component, restores it after reload and confirms reset", async () =
     screen.getByRole("tab", { name: "components/Card.jsx" }),
   ).toBeInTheDocument();
   await user.click(screen.getByRole("tab", { name: "components/Card.jsx" }));
-  await user.click(screen.getByRole("button", { name: "Wyczyść" }));
+  await user.click(screen.getByRole("button", { name: "Przywróć start" }));
   await user.click(screen.getByRole("button", { name: "Przywróć starter" }));
   expect(
     screen.queryByRole("tab", { name: "components/Card.jsx" }),
@@ -186,12 +186,13 @@ test('opens Game Dev with its three files, engine guide, and console below the e
   const user = userEvent.setup();
   const { container } = render(<App />);
   await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
-  expect(screen.getByRole('heading', { name: 'Canvas: pierwsza klatka' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Pierwsze obiekty i komponenty' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();
   expect(screen.getByTitle('Podgląd gry ucznia')).toHaveAttribute('sandbox', 'allow-scripts');
   expect(container.querySelector('.editor-shell')).toContainElement(screen.getByRole('heading', { name: 'Konsola' }));
-  await user.click(screen.getByText('Pomoc GameLab — składnia i API silnika'));
-  expect(container.querySelector('.game-api-guide')).toHaveAttribute('open');
+  await user.click(screen.getByRole('button', { name: 'Dokumentacja GameLab' }));
+  expect(screen.getByRole('dialog', { name: 'Dokumentacja GameLab' })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Zamknij dokumentację' }));
   await user.click(screen.getByRole('button', { name: /Samodzielnie/ }));
   expect(screen.queryByRole('button', { name: 'Pokaż rozwiązanie' })).not.toBeInTheDocument();
 });

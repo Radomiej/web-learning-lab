@@ -37,3 +37,20 @@ Kliknij planszę, aby przechwycić klawiaturę. Pełny ekran zachowuje tę samą
 Walidator `gameScenario` tworzy świeżą scenę i wykonuje deterministyczne kroki z klawiszami, czasem i rozmiarem planszy. Odczytuje stan obiektów oraz polecenia renderowania, zamiast szukać fragmentu kodu. Testy wykonują każde rozwiązanie i starter w sandboxie JSDOM, z adapterem Canvas 2D. Rzeczywisty obraz wymaga dodatkowego sprawdzenia w przeglądarce.
 
 W lekcjach HTML/CSS/JavaScript/React dostępne są pliki projektu takie jak `index.html`, arkusze stylów i skrypty. Ścieżka PHP używa `index.php` oraz `styles.css`; kod wykonuje lokalny runtime PHP 8.4 w WebAssembly, a jego wynik HTML trafia do tego samego sandboxowanego iframe. Ćwiczenie formularza uruchamia kontrolowane żądanie POST w pamięci. Sprawdzanie korzysta z deklaratywnych warunków DOM, CSS, interakcji, Reacta i odpowiedzi PHP. Runtime Reacta, kompilator JSX i PHP.wasm są dołączone lokalnie.
+# Pomoc AI w Playground
+
+Skopiuj `.env.example` do `.env` i ustaw `OPENROUTER_API_KEY` oraz
+wybierz darmowy model w panelu Playground. Nie używaj prefiksu
+`VITE_` dla klucza. `.env` jest ignorowany przez Git. Wymagany Node 22.9+.
+
+`npm run dev` uruchamia frontend na 5181 i lokalny backend na 5183.
+`npm run dev:frontend` uruchamia sam kurs bez AI. Po zmianie `.env` restartuj
+backend. Klucza nie wpisujesz w aplikacji ani nie dołączasz do projektu gry.
+
+Tutor zna API GameLab. Wysyłanie kodu wymaga zaznaczenia „Dołącz kod”.
+Backend przed każdym pytaniem sprawdza aktualny katalog i odrzuca modele płatne.
+OpenRouter i operator modelu otrzymują treść
+rozmowy. Propozycje plików wymagają osobnego zatwierdzenia. Import/reset projektu
+usuwa rozmowę i oczekujące propozycje. Eksport JSON nie zawiera historii chatu.
+Nie wystawiaj tego lokalnego backendu publicznie ani przez tunel bez
+uwierzytelnienia i limitów kosztów.

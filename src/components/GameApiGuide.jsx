@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { gameLabApi, gameLabMemberDocs, gameLabMembers } from '../data/gameLabApi.js';
 
 const example = `class MyGame extends GameLab.Game {
@@ -31,6 +32,23 @@ const memberEntries = Object.entries(gameLabMembers).flatMap(([owner, names]) =>
 const categories = ['Wszystko', ...new Set(gameLabApi.map(item => item.category))];
 
 export default function GameApiGuide() {
+  const [open, setOpen] = useState(false);
+  const dialogRef = useRef(null);
+  const triggerRef = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    if (dialog.showModal) dialog.showModal();
+    else dialog.setAttribute('open', '');
+    dialog.querySelector('button')?.focus();
+    return () => {
+      dialog.close?.();
+      document.body.style.overflow = overflow;
+      triggerRef.current?.focus();
+    };
+  }, [open]);
   const [section, setSection] = useState('start');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Wszystko');
@@ -42,12 +60,18 @@ export default function GameApiGuide() {
     );
   }, [category, query]);
 
-  return <details className="game-api-guide">
-    <summary>Dokumentacja GameLab <span>Klasy, metody i przykłady</span></summary>
+  return <>
+    <button ref={triggerRef} className="button button--ghost" type="button" aria-label="Dokumentacja GameLab" aria-haspopup="dialog" onClick={() => setOpen(true)}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 5v15M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z" /></svg>
+      Dokumentacja GameLab
+    </button>
+    {open && createPortal(<dialog ref={dialogRef} className="game-guide-modal" aria-label="Dokumentacja GameLab" onCancel={event => { event.preventDefault(); setOpen(false); }} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); setOpen(false); } }} onClick={event => { if (event.target === event.currentTarget) setOpen(false); }}>
+    <header className="game-guide-heading"><div><p className="eyebrow">GameLab · Dokumentacja silnika</p><h2>Obiekty, komponenty i API</h2></div><button className="button button--ghost" type="button" onClick={() => setOpen(false)} aria-label="Zamknij dokumentację">Zamknij ×</button></header>
     <div className="game-api-body">
       <nav className="game-api-nav" aria-label="Rozdziały dokumentacji GameLab">
         <button type="button" className={section === 'start' ? 'is-active' : ''} aria-current={section === 'start' ? 'page' : undefined} onClick={() => setSection('start')}>Pierwsze kroki</button>
         <button type="button" className={section === 'reference' ? 'is-active' : ''} aria-current={section === 'reference' ? 'page' : undefined} onClick={() => setSection('reference')}>API silnika</button>
+        <button type="button" className={section === 'architecture' ? 'is-active' : ''} aria-current={section === 'architecture' ? 'page' : undefined} onClick={() => setSection('architecture')}>Architektura</button>
       </nav>
       {section === 'start' ? <div className="game-api-start">
         <div className="game-api-intro">
@@ -60,7 +84,7 @@ export default function GameApiGuide() {
           <p><strong>Współrzędne i sterowanie</strong><br />Pozycja oznacza środek obiektu w pikselach, dodatnie Y biegnie w dół. Ruch postaci w kursie: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>.</p>
           <p><strong>Testy a podgląd</strong><br />„Sprawdź” tworzy świeżą scenę i symuluje klatki oraz klawisze. Podgląd na żywo ma własną, niezależną instancję gry.</p>
         </div>
-      </div> : <div className="game-api-reference">
+      </div> : section === 'architecture' ? <div className="game-api-start"><h3>Obiekt + komponenty = zachowanie</h3><p>Scena dziedziczy po <code>GameLab.Game</code>. Obiekt przechowuje pozycję, a komponenty dodają wygląd, ruch, kolizje i reguły gry.</p><h3>Cykl życia</h3><p><code>onCreate()</code> przygotowuje stan raz. <code>onUpdate(delta)</code> aktualizuje go co klatkę. Czas podajemy w sekundach, prędkość w pikselach na sekundę.</p><h3>Kamera i HUD</h3><p><code>Camera2D</code> przesuwa widok świata, nie pozycje obiektów. Tekst interfejsu używa <code>TextRenderer</code> w przestrzeni ekranu.</p><h3>Twoje pliki</h3><p>W <code>game.js</code> uruchom scenę. Własne komponenty trzymaj w folderze <code>components/</code> i importuj jako moduły JavaScript. Canvas jest wynikiem pracy silnika, nie miejscem przechowywania reguł gry.</p></div> : <div className="game-api-reference">
         <div className="game-api-search-row">
           <label>Wyszukaj klasę lub metodę<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="np. Sprite, move, kolizje" /></label>
           <label>Kategoria<select value={category} onChange={event => setCategory(event.target.value)}>{categories.map(value => <option key={value}>{value}</option>)}</select></label>
@@ -76,5 +100,6 @@ export default function GameApiGuide() {
         </div>
       </div>}
     </div>
-  </details>;
+    </dialog>, document.body)}
+  </>;
 }

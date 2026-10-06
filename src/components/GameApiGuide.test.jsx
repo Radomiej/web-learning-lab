@@ -1,6 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import GameApiGuide from './GameApiGuide.jsx';
 
+test('opens a modal and restores the trigger focus after Escape', () => {
+  render(<GameApiGuide />);
+  const trigger = screen.getByRole('button', { name: 'Dokumentacja GameLab' });
+  trigger.focus();
+  fireEvent.click(trigger);
+  const dialog = screen.getByRole('dialog', { name: 'Dokumentacja GameLab' });
+  fireEvent.keyDown(dialog, { key: 'Escape' });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+});
+
 test('opens the GameLab quick-start and browsable API reference', () => {
   render(<GameApiGuide />);
   fireEvent.click(screen.getByText('Dokumentacja GameLab'));

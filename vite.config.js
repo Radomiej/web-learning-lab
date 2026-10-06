@@ -8,5 +8,5 @@ export default defineConfig({
     include: ['@php-wasm/universal', 'ini'],
     exclude: ['@php-wasm/web-8-4'],
   },
-  server: { port: 5181, strictPort: true },
+  server: { port: 5181, strictPort: true, proxy: { '/api/ai': { target: 'http://127.0.0.1:5183', changeOrigin: true } } },
 });

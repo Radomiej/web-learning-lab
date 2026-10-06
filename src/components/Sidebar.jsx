@@ -77,7 +77,9 @@ export default function Sidebar({
         </span>
       </div>
 
-      <div className="sidebar-section-title">Ścieżki nauki</div>
+      <div className="sidebar-navigation-scroll">
+      <details className="sidebar-section" open>
+      <summary className="sidebar-section-toggle">Ścieżki nauki <span>{track?.label}</span></summary>
       <div className="track-list" role="tablist" aria-label="Ścieżki nauki">
         {trackOrder.map((trackId) => {
           const item = tracks[trackId];
@@ -125,10 +127,12 @@ export default function Sidebar({
         })}
       </div>
 
-      <div className="sidebar-section-heading">
+      </details>
+      <details className="sidebar-section" open key={selectedTrack}>
+      <summary className="sidebar-section-toggle">
         <span>{track?.label || "Lekcje"}</span>
         <span>{selectedTrack === 'playground' ? 'własny projekt' : `${trackLessons.length} lekcji`}</span>
-      </div>
+      </summary>
       <div className="lesson-list">
         {trackLessons.map((lesson) => {
           const lessonComplete =
@@ -163,6 +167,9 @@ export default function Sidebar({
             </button>
           );
         })}
+      </div>
+
+      </details>
       </div>
 
       <div className="sidebar-footer">
