@@ -202,6 +202,7 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .monaco-editor-wrap { position: relative; min-height: 292px; overflow: hidden; border-top: 1px solid #eef3f5; border-bottom: 1px solid #eef3f5; background: #102b42; }
 .monaco-editor-host { width: 100%; min-height: 292px; }
 .monaco-editor-host .monaco-editor { border: 0; }
+.monaco-editor.monaco-overflow-layer { position: fixed; top: 0; left: 0; width: 0; height: 0; overflow: visible; z-index: 60; }
 .monaco-loading { position: absolute; inset: 0; display: grid; min-height: 292px; place-items: center; color: #b9d3df; background: #102b42; font-family: var(--mono); font-size: 12px; }
 .editor-status--fallback { border-top: 1px solid #f0d2a9; color: #8a5b16; background: #fff9ef; }
 .editor-help, .editor-status { margin: 0; padding: 8px 14px; color: var(--ink-700); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }

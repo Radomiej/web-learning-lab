@@ -268,6 +268,7 @@ export default function CodeEditor({
   useEffect(() => {
     alive.current = true;
     let cancelled = false;
+    let overflowWidgetsNode;
     setEditorState('loading');
     setNotice('');
 
@@ -276,7 +277,13 @@ export default function CodeEditor({
         const { monaco } = await monacoLoader();
         if (cancelled || !editorHostRef.current) return;
 
+        // Escape clipping/stacking contexts of the editor shell and sticky panels.
+        overflowWidgetsNode = document.createElement('div');
+        overflowWidgetsNode.className = 'monaco-editor vs-dark monaco-overflow-layer';
+        document.body.append(overflowWidgetsNode);
         const editor = monaco.editor.create(editorHostRef.current, {
+          overflowWidgetsDomNode: overflowWidgetsNode,
+          fixedOverflowWidgets: true,
           automaticLayout: true,
           minimap: { enabled: false },
           theme: 'vs-dark',
@@ -309,6 +316,7 @@ export default function CodeEditor({
         editor.layout?.();
         if (!cancelled) setEditorState('ready');
       } catch (error) {
+        overflowWidgetsNode?.remove();
         if (!cancelled) {
           setEditorState('error');
           setNotice(
@@ -333,6 +341,7 @@ export default function CodeEditor({
       modelsRef.current.forEach((model) => model.dispose?.());
       modelsRef.current.clear();
       editorRef.current?.dispose?.();
+      overflowWidgetsNode?.remove();
       editorRef.current = null;
       monacoRef.current = null;
       ignoreModelChangeRef.current = false;

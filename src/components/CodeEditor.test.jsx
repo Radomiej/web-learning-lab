@@ -9,6 +9,7 @@ const fallbackMonacoLoader = async () => {
 let fakeCreateModel;
 let fakeActiveModel;
 let fakeRegisterCompletionProvider;
+let fakeEditorCreate;
 
 function createFakeMonacoLoader() {
   const models = [];
@@ -73,6 +74,7 @@ function createFakeMonacoLoader() {
       }),
     },
   };
+  fakeEditorCreate = monaco.editor.create;
 
   return async () => ({ monaco, EditorWorker: class FakeWorker {} });
 }
@@ -81,6 +83,17 @@ function Editor({ initial = 'one\ntwo\nthree', fileKey = 'js', ...props }) {
   const [value, setValue] = useState(initial);
   return <CodeEditor fileKey={fileKey} fileLabel="script.js" value={value} onChange={setValue} monacoLoader={fallbackMonacoLoader} {...props} />;
 }
+
+test('places Monaco popups outside clipping containers and removes the layer on unmount', async () => {
+  const { unmount } = render(<CodeEditor fileKey="script.js" fileLabel="script.js" value="const x = 1;" onChange={() => {}} monacoLoader={createFakeMonacoLoader()} />);
+  await screen.findByTestId('monaco-editor');
+  const options = fakeEditorCreate.mock.calls[0][1];
+  expect(options.fixedOverflowWidgets).toBe(true);
+  expect(options.overflowWidgetsDomNode.parentElement).toBe(document.body);
+  expect(options.overflowWidgetsDomNode).toHaveClass('monaco-overflow-layer');
+  unmount();
+  expect(document.querySelector('.monaco-overflow-layer')).toBeNull();
+});
 
 test('Tab indents selected lines, Shift+Tab outdents and undo restores the edit', async () => {
   render(<Editor />);
