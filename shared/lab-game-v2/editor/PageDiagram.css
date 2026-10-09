@@ -8,4 +8,11 @@
 .page-diagram-flow li > span { display: grid; place-items: center; border-radius: 50%; background: #d7ece2; width: 28px; height: 28px; color: #245e4c; }
 .page-diagram-flow strong { font-size: 16px; overflow-wrap: anywhere; }
 .page-diagram-flow b { position: absolute; bottom: -21px; left: 50%; font-size: 20px; color: #328779; z-index: 1; }
+.page-diagram-flow--decision { grid-template-columns: 1fr 1fr; gap: 24px 12px; }
+.page-diagram-flow--decision li:first-child { grid-column: 1 / -1; }
+.page-diagram-flow--decision li:not(:first-child)::before { content: ''; position: absolute; height: 24px; width: 2px; top: -25px; left: 50%; background: #328779; }
+.page-diagram-flow--decision li:nth-child(2) { border-color: #328779; }
+.page-diagram-flow--decision li:nth-child(3) { border-color: #ce8054; }
+.page-diagram-flow--parallel { gap: 10px; border-left: 3px solid #69a08c; padding-left: 14px; }
+@container (max-width: 400px) { .page-diagram-flow--decision { grid-template-columns: 1fr; } .page-diagram-flow--decision li:first-child { grid-column: auto; } }
 @media (max-width: 450px) { .page-diagram { padding: 12px; } .page-diagram-flow li { padding: 12px; } }

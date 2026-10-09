@@ -72,6 +72,8 @@ export function withConceptVisuals(lesson, pages) {
     const nodes = objective ? [concepts[0][0], concepts[0][1], concepts[1][2]] : recap ? [concepts[0][2], 'połącz obie zasady', concepts[1][2]] : concepts[conceptIndex];
     const kind = !objective && !recap && lesson.id==='css-box-model' ? 'box-model'
       : !objective && !recap && /^(flex-axis|flex-wrap-gap|flex-patterns|grid-basics|responsive-layouts)$/.test(lesson.id) ? 'layout' : 'flow';
-    return { ...page, visual: { kind, variant: conceptIndex, nodes, note: objective ? 'Mapa pojęć tej lekcji.' : recap ? 'Te reguły stosujemy razem w zadaniu.' : nodes.join(' → ') } };
+    const parallel = !objective && !recap && conceptIndex===0 && ['html-three-layers','html-document','html-lists','html-semantics','css-display-position'].includes(lesson.id);
+    const decision = /^(true|tak):/i.test(nodes[1]) && /^(false|nie):/i.test(nodes[2]);
+    return { ...page, visual: { kind, variant: conceptIndex, nodes, relation: parallel ? 'parallel' : 'sequence', note: objective ? 'Mapa pojęć tej lekcji.' : recap ? 'Te reguły stosujemy razem w zadaniu.' : nodes.join(parallel || decision ? ' • ' : ' → ') } };
   });
 }

@@ -17,12 +17,16 @@ function Bar({ x, y, value, label, color = '#dc5b64', width = 155 }) {
 }
 export default function PageDiagram({ page }) {
   const marker = useId().replaceAll(':', '');
-  const { kind, variant = 0, nodes = [], note } = page.visual;
+  const { kind, variant = 0, nodes = [], note, relation } = page.visual;
   const arrow = (x1,y1,x2,y2,color='#328779') => <path d={`M${x1} ${y1} L${x2} ${y2}`} fill="none" stroke={color} strokeWidth="3" markerEnd={`url(#${marker})`}/>;
-  if (kind === 'flow') return <figure className="page-diagram" data-visual={kind}>
-    <figcaption>{page.title}</figcaption><ol className="page-diagram-flow">{nodes.map((node, i) => <li key={`${i}:${node}`}><span>{i+1}</span><strong>{node}</strong>{i<nodes.length-1&&<b aria-hidden="true">↓</b>}</li>)}</ol>
+  if (kind === 'flow') {
+    const decision = /^(true|tak):/i.test(nodes[1] || '') && /^(false|nie):/i.test(nodes[2] || '');
+    const layout = decision ? 'decision' : relation || 'sequence';
+    return <figure className="page-diagram" data-visual={`${kind}:${layout}`}>
+    <figcaption>{page.title}</figcaption><ol className={`page-diagram-flow page-diagram-flow--${layout}`}>{nodes.map((node, i) => <li key={`${i}:${node}`}><span>{decision ? ['?', 'A', 'B'][i] : relation==='parallel' ? '•' : i+1}</span><strong>{node}</strong>{layout==='sequence'&&i<nodes.length-1&&<b aria-hidden="true">↓</b>}</li>)}</ol>
     {note&&<p>{note}</p>}<small>Przykład zasady • diagram relacji</small>
   </figure>;
+  }
   let content;
   switch (kind) {
     case 'box-model': content = <>
