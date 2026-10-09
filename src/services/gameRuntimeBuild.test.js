@@ -1,11 +1,10 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
-import { transformSync } from 'esbuild';
+import { buildSync } from 'esbuild';
 import { JSDOM } from 'jsdom';
 
 test('minified production engine still serializes into a self-contained iframe script', () => {
-  const source = readFileSync(new URL('./gameRuntime.js', import.meta.url), 'utf8');
-  const { code } = transformSync(source, { minify: true, format: 'cjs', target: 'es2020' });
+  const code = buildSync({ entryPoints: [new URL('./gameRuntime.js', import.meta.url).pathname.replace(/^\/(\w:)/, '$1')], bundle: true, write: false, minify: true, format: 'cjs', target: 'es2020' }).outputFiles[0].text;
   const module = { exports: {} };
   new Function('module', 'exports', code)(module, module.exports);
   const context = new Proxy({}, { get: (target, key) => target[key] || (() => {}) });
@@ -18,11 +17,14 @@ test('minified production engine still serializes into a self-contained iframe s
   try {
     new Function('window', 'document', module.exports.getGameRuntimeScript())(isolated, document);
     const lab = isolated.GameLab;
+    for(const name of ['TopDownCharacterController2D','PlatformerCharacterController2D','ObstacleAvoidance2D'])expect(new lab[name]()).toBeInstanceOf(lab.Component);
+    for(const name of ['FollowTarget2D','FleeTarget2D','FlankTarget2D'])expect(new lab[name](null)).toBeInstanceOf(lab.Component);
+    expect(new lab.KeyDoublePressed('e',()=>{}).maxDelaySeconds).toBe(.3);
     class Scene extends lab.Game {
-      onCreate() { this.createObject('Player').setPosition(40, 40).addComponent(new lab.ShapeRenderer()); }
+      onCreate() { const player=this.createObject('Player').setPosition(40,40);player.addComponent(new lab.ShapeRenderer());player.addComponent(new lab.TopDownCharacterController2D()); }
     }
     lab.run(Scene);
-    expect(lab.evaluateScenario().objects[0].components).toEqual(['ShapeRenderer']);
+    expect(lab.evaluateScenario().objects[0].components).toEqual(['ShapeRenderer','TopDownCharacterController2D']);
     expect(lab.snapshot().commands[1].x).toBe(40);
     lab.dispose();
   } finally { spy.mockRestore(); dom.window.close(); }

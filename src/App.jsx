@@ -185,7 +185,7 @@ export default function App() {
           if (!snapshot || snapshot.revision !== projectRevision) throw new Error('Projekt został zastąpiony. Poproś o nową propozycję.');
           const next = applyTutorProposal(files, snapshot.project, proposal);
           updateFiles(activeTask.id, next);
-          setActiveFile(proposal.path);
+          setActiveFile(proposal.operation === 'delete' ? next.entry : proposal.path);
         }}
         lesson={selectedLesson}
         activeTask={activeTask}

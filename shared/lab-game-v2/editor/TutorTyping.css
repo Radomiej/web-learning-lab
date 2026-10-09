@@ -1,0 +1,10 @@
+.game-tutor-history .tutor-typing { margin-left: 0; margin-right: auto; background: #f0f4f6; }
+.tutor-typing-dots { display: flex; gap: 5px; padding: 10px 0 4px; }
+.tutor-typing-dots i { width: 7px; height: 7px; border-radius: 50%; background: #597889; animation: tutor-dot 1.2s ease-in-out infinite; }
+.tutor-typing-dots i:nth-child(2) { animation-delay: .15s; }
+.tutor-typing-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes tutor-dot { 0%, 60%, 100% { opacity: .4; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tutor-typing-dots i { animation: none; opacity: .7; } }.tutor-edit-before, .tutor-edit-after { margin-top: 10px; padding: 8px; border-radius: 6px; border-left: 3px solid; }
+.tutor-edit-before { background: #fff0ed; border-color: #bc5745; }
+.tutor-edit-after { background: #e8f5ee; border-color: #32805c; }
+.game-tutor-proposal pre { max-width: 100%; overflow-x: auto; }

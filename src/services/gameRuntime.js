@@ -1,9 +1,18 @@
-// Self-contained so the identical implementation can run inside the iframe.
-export function createGameLab(environment = {}) {
+import { Assets, assetManifest } from '../../shared/lab-game-v2/assets/Assets.js';
+import { SpatialHash } from '../../shared/lab-game-v2/spatialHash.js';
+import { createPhysics } from '../../shared/lab-game-v2/physics.js';
+import { createRenderer } from '../../shared/lab-game-v2/renderer.js';
+import { createAddons } from '../../shared/lab-game-v2/addons.js';
+// Dependencies are passed explicitly when serialized into the iframe.
+export function createGameLab(environment = {}, shared = { Assets, assetManifest, SpatialHash, createPhysics, createRenderer, createAddons }) {
+  const { Assets, assetManifest, SpatialHash, createPhysics, createRenderer, createAddons } = shared;
   const win = environment.window || window;
   const doc = environment.document || win.document;
   const raf = environment.requestAnimationFrame || win.requestAnimationFrame.bind(win);
   const caf = environment.cancelAnimationFrame || win.cancelAnimationFrame.bind(win);
+  const renderer = createRenderer(assetManifest);
+  const assetsReady = environment.skipAssetLoading ? Promise.resolve() : renderer.load(win);
+  assetsReady.catch(error => win.dispatchEvent(new win.ErrorEvent('error', { error, message: error.message })));
   const finite = (value, label) => {
     if (!Number.isFinite(value)) throw new Error(`${label}: oczekiwano skończonej liczby.`);
     return value;
@@ -17,48 +26,103 @@ export function createGameLab(environment = {}) {
     wall: ['#889aa9', '#405563'],
   };
   class Transform {
-    constructor() { this.x = 0; this.y = 0; this.rotation = 0; this.scale = { x: 1, y: 1 }; this.visualOffset = { x: 0, y: 0 }; }
+    constructor(invalidate = () => {}) {
+      let x = 0, y = 0;
+      Object.defineProperties(this, { x: { enumerable: true, get: () => x, set: value => { finite(value, 'Transform x'); if (x !== value) { x = value; invalidate(); } } }, y: { enumerable: true, get: () => y, set: value => { finite(value, 'Transform y'); if (y !== value) { y = value; invalidate(); } } } });
+      this.rotation = 0; this.scale = new Vector2(1, 1); this.visualOffset = new Vector2();
+    }
   }
   class Component {
-    constructor() { this.enabled = true; this.gameObject = null; this.created = false; this.destroyed = false; }
+    constructor() { let enabled = true; Object.defineProperty(this,'enabled',{ enumerable:true,get:()=>enabled,set:value=>{ if (enabled !== Boolean(value)) { enabled=Boolean(value); if(!enabled && this instanceof Button)this.blur(); if(this.gameObject)this.gameObject.game.spatialRevision++; } } }); this.gameObject = null; this.created = false; this.destroyed = false; this.updateMode = 'WORLD'; }
     get transform() { return this.gameObject.transform; }
+    setEnabled(value) { this.enabled = Boolean(value); }
     get game() { return this.gameObject.game; }
     getComponent(type) { return this.gameObject.getComponent(type); }
+    getComponents(type) { return this.gameObject.getComponents(type); }
+    hasComponent(type) { return this.gameObject.hasComponent(type); }
+    requireComponent(type) { return this.gameObject.requireComponent(type); }
+    removeComponents(type) { return this.gameObject.removeComponents(type); }
+    getGame() { return this.game; }
+    onComponentChange() {}
     onCreate() {}
     onUpdate() {}
+    onLateUpdate() {}
+    onDrawBackground() {}
     onDrawUI() {}
     onDestroy() {}
     onCollision() {}
     onTrigger() {}
   }
   class ShapeRenderer extends Component {
-    constructor({ width = 32, height = 32, color = '#76b9f2' } = {}) {
+    constructor(width = 32, height = 32, color = '#76b9f2') {
+      if (typeof width === 'object') ({ width = 32, height = 32, color = '#76b9f2' } = width);
       super(); this.width = width; this.height = height; this.color = color;
+      this.space = 'world'; this.layer = 0; this.order = 0;
     }
   }
   class Sprite extends ShapeRenderer {
     constructor(texture = 'player', width = 32, height = 32) {
-      if (!textures[texture]) throw new Error(`Brak tekstury: ${texture}. Dostępne: ${Object.keys(textures).join(', ')}.`);
+      if (!assetManifest.assets.some(a => a.key === texture) && !textures[texture]) throw new Error(`Brak tekstury: ${texture}.`);
       super({ width, height }); this.texture = texture;
+      this.flipX = false; this.flipY = false;
     }
   }
   class TextRenderer extends Component {
-    constructor(text = '', x = 10, y = 24, color = '#ffffff') {
-      super(); this.text = text; this.x = finite(x, 'Tekst x'); this.y = finite(y, 'Tekst y'); this.color = color;
+    constructor(text = '', fontSize = 16, color = '#ffffff') {
+      super(); this.text = text; this.fontSize = fontSize; this.color = color; this.space = 'world'; this.align = 'center'; this.baseline = 'middle'; this.layer = 0; this.order = 0;
     }
     onDrawUI() {
       const text = typeof this.text === 'function' ? this.text() : this.text;
-      if (text !== null && text !== undefined) this.game.canvas.drawText(text, this.x, this.y, this.color);
+      const ui=this.getComponent(UITransform), center=ui?.enabled?ui.getCenter():this.transform;
+      const view = ui?.enabled || this.space === 'screen' ? { x: 0, y: 0 } : this.game.cameraView;
+      if (text !== null && text !== undefined) this.game.canvas.drawText(text, center.x-view.x, center.y-view.y, this.fontSize, this.color, this.align, this.baseline);
     }
   }
   class ControlsHint extends TextRenderer {
     constructor(text = 'Kliknij planszę, aby sterować.') { super(text); }
     onDrawUI() {
       if (doc.activeElement !== this.game.canvas.element) {
-        this.y = this.game.canvas.height - 12;
-        super.onDrawUI();
+        this.game.canvas.drawText(this.text, this.game.canvas.width/2, this.game.canvas.height-12, 16, this.color);
       }
     }
+  }
+  const UIAnchor = Object.freeze(Object.fromEntries(['TOP_LEFT','TOP_CENTER','TOP_RIGHT','CENTER_LEFT','CENTER','CENTER_RIGHT','BOTTOM_LEFT','BOTTOM_CENTER','BOTTOM_RIGHT'].map(a => [a,a])));
+  class UITransform extends Component {
+    constructor(width = 100, height = 30) { super(); this.updateMode = 'UI'; this.width = width; this.height = height; this.anchor = 'CENTER'; this.pivot = null; }
+    getBounds() {
+      const x = this.anchor.endsWith('LEFT') ? 0 : this.anchor.endsWith('RIGHT') ? 1 : .5;
+      const y = this.anchor.startsWith('TOP') ? 0 : this.anchor.startsWith('BOTTOM') ? 1 : .5;
+      const p = this.pivot || { x, y };
+      const left = this.game.getViewportWidth()*x + this.transform.x - this.width*p.x, top = this.game.getViewportHeight()*y + this.transform.y - this.height*p.y;
+      return { left, top, right: left+this.width, bottom: top+this.height };
+    }
+    getCenter() { const b = this.getBounds(); return new Vector2((b.left+b.right)/2,(b.top+b.bottom)/2); }
+  }
+  function uiRect(component) { const ui = component.getComponent(UITransform); if (ui?.enabled) { const b = ui.getBounds(); return { x: (b.left+b.right)/2, y: (b.top+b.bottom)/2, width: b.right-b.left, height: b.bottom-b.top }; } return { x: component.transform.x, y: component.transform.y, width: component.width, height: component.height }; }
+  class ProgressBar extends Component {
+    constructor(width = 200, height = 20) { super(); this.updateMode = 'UI'; this.width = width; this.height = height; this.progress = 0; this.frame = Assets.UI_BAR_HEALTH_FRAME; this.track = Assets.UI_BAR_HEALTH_TRACK; this.fill = Assets.UI_BAR_HEALTH_FILL; }
+    setProgress(percent) { finite(percent, 'Postęp'); this.progress = Math.max(0, Math.min(100, percent)); }
+    getProgress() { return this.progress; }
+    setValue(value, max) { finite(value, 'Wartość'); finite(max, 'Maksimum'); this.setProgress(max <= 0 ? 0 : value / max * 100); }
+    onDrawUI() { const r = uiRect(this); this.game.canvas.drawProgressBar(r.x, r.y, r.width, r.height, this.progress, this.frame, this.track, this.fill); }
+  }
+  class Button extends Component {
+    constructor(width = 160, height = 44) { super(); this.updateMode = 'UI'; this.width = width; this.height = height; this.texture = Assets.UI_BUTTON_BLUE; this.border = 8; this.text = ''; this.onClick = null; this.focused = false; }
+    activate() { if (this.enabled && this.gameObject.active && !this.gameObject.destroyed) this.onClick?.(); }
+    focus() { if(!this.created||!this.enabled||!this.gameObject?.active||this.gameObject.destroyed||this.destroyed)return false;for(const o of this.game.getObjects())for(const b of o.getComponents(Button))if(b!==this)b.blur();this.focused=true;return true; }
+    blur() { this.focused=false;this.pointerArmed=false;this.keyArmed=null; }
+    isFocused() { return this.focused&&this.enabled&&this.gameObject.active&&!this.gameObject.destroyed; }
+    onUpdate() {
+      const input = this.game.input, p = input.getPointerPosition();
+      const r = uiRect(this), inside = p && Math.abs(p.x-r.x) <= r.width/2 && Math.abs(p.y-r.y) <= r.height/2;
+      if (input.isMousePressed(0)) { this.pointerArmed = Boolean(inside);if(inside){this.focus();input.consumeMouse(0);} }
+      if (input.isMouseReleased(0)) { if (this.pointerArmed){input.consumeMouse(0);if(inside)this.activate();} this.pointerArmed = false; }
+      for(const key of ['Enter','Space']) {
+        if(this.focused&&input.isKeyPressed(key)){this.keyArmed=key;input.consumeKey(key);}
+        if(this.keyArmed===key&&input.isKeyReleased(key)){this.keyArmed=null;if(this.isFocused()){input.consumeKey(key);this.activate();}}
+      }
+    }
+    onDrawUI() { const r=uiRect(this); this.game.canvas.drawNinePatch(this.texture,r.x,r.y,r.width,r.height,this.border); this.game.canvas.drawText(this.text,r.x,r.y,16,'#ffffff'); }
   }
   class Camera2D extends Component {
     constructor() { super(); this.offsetX = 0; this.offsetY = 0; this.target = null; this.shakeStrength = 0; this.shakeRemaining = 0; this.shakeElapsed = 0; }
@@ -67,6 +131,8 @@ export function createGameLab(environment = {}) {
       this.target = target;
     }
     stopFollowing() { this.target = null; }
+    worldToScreen(point) { const view = this.getView(); return new Vector2(point.x-view.x,point.y-view.y); }
+    screenToWorld(point) { const view = this.getView(); return new Vector2(point.x+view.x,point.y+view.y); }
     shake(strength, seconds) {
       finite(strength, 'Siła shake'); finite(seconds, 'Czas shake');
       if (strength < 0 || seconds < 0) throw new Error('Siła i czas shake nie mogą być ujemne.');
@@ -90,24 +156,27 @@ export function createGameLab(environment = {}) {
       if (!['grass', 'sand'].includes(texture)) throw new Error('TileMap obsługuje tekstury grass i sand.');
       finite(tileSize, 'Rozmiar kafelka');
       if (tileSize < 8) throw new Error('Kafelek TileMap musi mieć co najmniej 8 px.');
-      this.texture = texture; this.tileSize = tileSize;
+      this.texture = texture; this.tileSize = tileSize; this.layer = -100; this.order = 0;
     }
   }
-  class Tween {
+  class Tween extends Component {
     constructor(object, property, from, to, duration) {
+      super();
       this.object = object; this.property = property; this.from = from; this.to = to;
       this.duration = finite(duration, 'Czas tweena'); this.elapsed = 0; this.easing = 'linear';
-      this.completed = false; this.cancelled = false;
-      this.easing = 'smooth';
+      this.completed = false; this.cancelled = false; this.callbacks = []; this.offset = new Vector2();
       if (duration < 0) throw new Error('Czas tweena nie może być ujemny.');
       if (duration === 0) { this.apply(1); this.completed = true; }
     }
     apply(progress) {
+      if (!['linear', 'smooth'].includes(this.easing)) throw new Error('Easing: linear lub smooth');
       const t = this.easing === 'smooth' ? progress * progress * (3 - 2 * progress) : progress;
       if (this.property === 'shake') {
         const strength = this.from * (1 - t);
-        this.object.transform.visualOffset.x = Math.sin(this.elapsed * 47) * strength;
-        this.object.transform.visualOffset.y = Math.cos(this.elapsed * 39) * strength;
+        this.clearOffset();
+        this.offset.set(Math.sin(this.elapsed * 47) * strength, Math.cos(this.elapsed * 39) * strength);
+        this.object.transform.visualOffset.x += this.offset.x;
+        this.object.transform.visualOffset.y += this.offset.y;
       } else if (typeof this.from === 'number') {
         this.object.transform[this.property] = this.from + (this.to - this.from) * t;
       } else {
@@ -123,17 +192,23 @@ export function createGameLab(environment = {}) {
       this.elapsed = Math.min(this.duration, this.elapsed + delta);
       this.apply(this.duration ? this.elapsed / this.duration : 1);
       this.completed = this.elapsed >= this.duration;
-      if (this.completed && this.property === 'shake') this.object.transform.visualOffset = { x: 0, y: 0 };
+      if (this.completed) { this.clearOffset(); const callbacks = this.callbacks.splice(0); this.gameObject?.removeComponent(this); for (const callback of callbacks) callback(); }
       return !this.completed;
     }
+    onUpdate(delta) { this.update(delta); }
+    onComplete(callback) { if (typeof callback !== 'function') throw new Error('onComplete wymaga funkcji'); if (this.completed) callback(); else if (!this.cancelled) this.callbacks.push(callback); return this; }
+    clearOffset() { this.object.transform.visualOffset.x -= this.offset.x; this.object.transform.visualOffset.y -= this.offset.y; this.offset.set(0, 0); }
     cancel() {
+      if (this.completed || this.cancelled) return;
       this.cancelled = true;
-      if (this.property === 'shake') this.object.transform.visualOffset = { x: 0, y: 0 };
+      this.clearOffset(); this.callbacks = []; this.gameObject?.removeComponent(this);
     }
+    onDestroy() { this.clearOffset(); if (!this.completed) { this.cancelled = true; this.callbacks = []; } }
   }
   class Tweens {
     static start(object, property, to, seconds) {
       if (!object || object.destroyed) throw new Error('Tween wymaga aktywnego obiektu.');
+      if (property === 'rotation' || property === 'shake') finite(to, 'Cel tweena'); else { finite(to.x, 'Cel tweena x'); finite(to.y, 'Cel tweena y'); }
       const from = property === 'shake' ? to : property === 'rotation' ? object.transform.rotation : property === 'position' ? { x: object.transform.x, y: object.transform.y } : { ...object.transform[property] };
       const target = property === 'shake' ? 0 : property === 'rotation' ? to : { x: to.x, y: to.y };
       const tween = new Tween(object, property, from, target, seconds);
@@ -145,33 +220,76 @@ export function createGameLab(environment = {}) {
     static rotation(object, radians, seconds) { return this.start(object, 'rotation', radians, seconds); }
     static shake(object, strength, seconds) { return this.start(object, 'shake', strength, seconds); }
   }
-  class Collider2D extends Component {}
-  class Trigger2D extends Collider2D {}
+  class Collider2D extends Component {
+    onContactEnter(type,callback) { if(typeof type!=='function'||(type!==Component&&!(type.prototype instanceof Component))||typeof callback!=='function')throw new Error('Oczekiwano typu komponentu i funkcji');if(!this.contactListeners)this.contactListeners=new Set();const listener={type,callback};this.contactListeners.add(listener);return ()=>this.contactListeners.delete(listener); }
+    fireContactEnter(other) { for(const listener of [...(this.contactListeners||[])]){if(this.destroyed||this.gameObject.destroyed||other.destroyed)break;if(other.hasComponent(listener.type))listener.callback(other);} }
+    constructor(width = 32, height = 32) { super(); if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) throw new Error('Niepoprawny rozmiar collidera'); this.geometryField('width',width); this.geometryField('height',height); this.layer = 1; this.mask = 0x7fffffff; this.isTrigger = false; }
+    geometryField(name,initial) { let value=initial; Object.defineProperty(this,name,{enumerable:true,get:()=>value,set:next=>{if(!Number.isFinite(next)||next<=0)throw new Error('Niepoprawna geometria');if(next!==value){value=next;if(this.gameObject)this.gameObject.game.spatialRevision++;}}}); }
+  }
+  class CircleCollider2D extends Collider2D {
+    constructor(radius) { super(); if (!Number.isFinite(radius) || radius <= 0) throw new Error('Niepoprawny promień'); this.geometryField('radius',radius); }
+  }
+  class Trigger2D extends Collider2D { constructor(width = 32, height = 32) { super(width, height); this.isTrigger = true; } }
+  class Projectile2D extends Component {
+    constructor(dx, dy, speed = 300, lifetime = 2, owner = null) { super();if(![dx,dy,speed,lifetime].every(Number.isFinite)||speed<0||lifetime<0)throw new Error('Niepoprawny pocisk'); this.direction = new Vector2(dx, dy).normalized(); this.speed = speed; this.remainingLifetime = lifetime; this.owner = owner; this.maxHits = 1; this.hits = 0; this.hitLayers = 0x7fffffff; this.hitObjects = new Set(); }
+    onCreate() { if (!this.getComponent(Collider2D)) { const c = this.gameObject.addComponent(new CircleCollider2D(4)); c.isTrigger = true; } if (!this.getComponent(CharacterController2D)) this.gameObject.addComponent(new CharacterController2D());this.getComponent(CharacterController2D).constrainToBounds=false; }
+    onUpdate() { if(![this.speed,this.remainingLifetime].every(Number.isFinite)||this.speed<0||this.remainingLifetime<0)throw new Error('Niepoprawny pocisk');if(this.remainingLifetime===0){this.gameObject.destroy();return;}this.getComponent(CharacterController2D).move(this.direction.x, this.direction.y, this.speed); }
+  }
+  class Vector2 {
+    constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+    set(x, y) { this.x = finite(x, 'Vector x'); this.y = finite(y, 'Vector y'); return this; }
+    copy() { return new Vector2(this.x, this.y); }
+    lengthSquared() { return this.x * this.x + this.y * this.y; }
+    length() { return Math.hypot(this.x, this.y); }
+    normalized() { const n = this.length(); return n ? new Vector2(this.x / n, this.y / n) : new Vector2(); }
+  }
+  class Random {
+    constructor(seed = 1) { this.setSeed(seed); }
+    setSeed(seed) { if(!Number.isInteger(seed))throw new Error('Seed musi być liczbą całkowitą');this.state=seed|0||1; }
+    next() { let x = this.state; x ^= x << 13; x ^= x >>> 17; x ^= x << 5; this.state = x; return (x >>> 0) / 4294967296; }
+    nextInt(min, max) { if (!Number.isInteger(min) || !Number.isInteger(max) || min >= max) throw new Error('Niepoprawny zakres'); return min + Math.floor(this.next() * (max - min)); }
+    range(min, max) { if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) throw new Error('Niepoprawny zakres'); return min + this.next() * (max - min); }
+  }
   class CharacterController2D extends Component {
-    constructor() { super(); this.velocity = { x: 0, y: 0 }; this.collideWorldBounds = true; }
+    constructor() { super(); this.velocity = { x: 0, y: 0 }; this.constrainToBounds = true; }
+    onAfterMove() {}
     move(x, y, speed = 120) {
       finite(x, 'Kierunek x'); finite(y, 'Kierunek y'); finite(speed, 'Prędkość');
+      if(speed<0)throw new Error('Prędkość nie może być ujemna.');
       const length = Math.hypot(x, y);
       this.velocity.x = length ? x / length * speed : 0;
       this.velocity.y = length ? y / length * speed : 0;
     }
   }
   class GameObject {
-    constructor(game, name) { this.game = game; this.name = name; this.transform = new Transform(); this.active = true; this.destroyed = false; this.components = []; }
+    setActive(value) { this.active=Boolean(value);if(!this.active)for(const b of this.getComponents(Button))b.blur();return this; }
+    constructor(game, name) { this.game = game; this.id = game.nextObjectId++; this.name = name; this.transform = new Transform(()=>game.spatialRevision++); let active=true;Object.defineProperty(this,'active',{enumerable:true,get:()=>active,set:value=>{if(active!==Boolean(value)){active=Boolean(value);game.spatialRevision++;}}});this.destroyed = false; this.components = []; this.listeners = new Set(); }
     setPosition(x, y) { this.transform.x = finite(x, 'Pozycja x'); this.transform.y = finite(y, 'Pozycja y'); return this; }
     addComponent(component) {
       if (!(component instanceof Component) || component.gameObject || this.destroyed) throw new Error('Dodaj nowy komponent do aktywnego obiektu.');
-      component.gameObject = this; this.components.push(component); return component;
+      component.gameObject = this; this.components.push(component); this.game.spatialRevision++; this.game.updateComponentIndex(this);this.notifyChange('added',component); return component;
     }
-    getComponent(type) { return this.components.find(c => c instanceof type && !c.destroyed); }
+    getComponent(type) { return this.components.find(c => c instanceof type && !c.destroyed) ?? null; }
+    getComponents(type) { return this.components.filter(c => !c.destroyed && (!type || c instanceof type)); }
+    hasComponent(type) { return this.getComponent(type) !== null; }
+    requireComponent(type) { const c = this.getComponent(type); if (!c) throw new Error(`${this.name}: brak ${type.name}`); return c; }
+    onComponentChange(listener) { this.listeners.add(listener);return ()=>this.listeners.delete(listener); }
+    notifyChange(type,component) { const change={type,component,object:this};for(const listener of [...this.listeners])listener(change);for(const observer of this.getComponents())if(observer.created&&observer.enabled)observer.onComponentChange(change); }
+    addTag(tag) { if(typeof tag!=='string'||!tag.trim())throw new Error('Tag musi być niepustym tekstem');if(!this.tags)this.tags=new Set();this.tags.add(tag);this.game.updateTagIndex(this,tag,true);return this; }
+    removeTag(tag) { const removed=this.tags?.delete(tag)??false;if(removed)this.game.updateTagIndex(this,tag,false);return removed; }
+    hasTag(tag) { return this.tags?.has(tag)??false; }
+    getTags() { return [...(this.tags||[])]; }
+    removeComponents(type) { let n=0;for(const c of this.getComponents(type)){this.removeComponent(c);n++;}return n; }
     removeComponent(component) {
-      if (!this.components.includes(component) || component.destroyed) return;
-      component.destroyed = true; component.onDestroy(); this.components = this.components.filter(c => c !== component);
+      if(typeof component==='function')component=this.getComponent(component);
+      if (!this.components.includes(component) || component.destroyed) return false;
+      component.destroyed = true; this.game.spatialRevision++;this.components = this.components.filter(c => c !== component);this.game.updateComponentIndex(this);if (component.created) component.onDestroy();this.notifyChange('removed',component);return true;
     }
     destroy() {
       if (this.destroyed) return;
       this.destroyed = true; this.active = false;
       for (const component of [...this.components]) this.removeComponent(component);
+      for(const tag of this.getTags())this.removeTag(tag);this.listeners.clear();
     }
   }
   const componentNames = new Map([
@@ -179,16 +297,30 @@ export function createGameLab(environment = {}) {
     [Trigger2D, 'Trigger2D'], [CharacterController2D, 'CharacterController2D'],
   ]);
   class Input {
-    constructor() { this.down = new Set(); this.pressed = new Set(); }
+    static get MOUSE_LEFT() { return 0; }
+    static get MOUSE_MIDDLE() { return 1; }
+    static get MOUSE_RIGHT() { return 2; }
+    static get MOUSE_BACK() { return 3; }
+    static get MOUSE_FORWARD() { return 4; }
+    constructor() { this.down = new Set(); this.pressed = new Set(); this.released = new Set(); this.consumed = new Set(); this.pointer = null; this.mouseDown = new Set(); this.mousePressed = new Set(); this.mouseReleased = new Set(); }
+    setPointer(x, y) { this.pointer = { x: finite(x, 'Pointer x'), y: finite(y, 'Pointer y') }; }
+    setMouseButton(button, down) { if (!Number.isInteger(button) || button < 0 || button > 4) throw new Error('Niepoprawny przycisk myszy'); if (down) { if (!this.mouseDown.has(button)) this.mousePressed.add(button); this.mouseDown.add(button); } else { if (this.mouseDown.has(button)) this.mouseReleased.add(button); this.mouseDown.delete(button); } }
+    consumeMouse(button = 0) { (this.mouseConsumed ||= new Set()).add(button); }
+    isMouseDown(button = 0) { return !this.mouseConsumed?.has(button) && this.mouseDown.has(button); }
+    isMousePressed(button = 0) { return !this.mouseConsumed?.has(button) && this.mousePressed.has(button); }
+    isMouseReleased(button = 0) { return !this.mouseConsumed?.has(button) && this.mouseReleased.has(button); }
     setKey(key, down) {
       key = normalizeKey(key);
       if (down) { if (!this.down.has(key)) this.pressed.add(key); this.down.add(key); }
-      else this.down.delete(key);
+      else { if (this.down.has(key)) this.released.add(key); this.down.delete(key); }
     }
-    isKeyDown(key) { return this.down.has(normalizeKey(key)); }
-    isKeyPressed(key) { return this.pressed.has(normalizeKey(key)); }
-    endFrame() { this.pressed.clear(); }
-    clear() { this.down.clear(); this.pressed.clear(); }
+    isKeyDown(key) { return !this.consumed.has(normalizeKey(key)) && this.down.has(normalizeKey(key)); }
+    isKeyPressed(key) { return !this.consumed.has(normalizeKey(key)) && this.pressed.has(normalizeKey(key)); }
+    isKeyReleased(key) { return !this.consumed.has(normalizeKey(key)) && this.released.has(normalizeKey(key)); }
+    consumeKey(key) { this.consumed.add(normalizeKey(key)); }
+    getPointerPosition() { return this.pointer ? { ...this.pointer } : null; }
+    endFrame() { this.pressed.clear(); this.released.clear(); this.consumed.clear(); this.mousePressed.clear(); this.mouseReleased.clear();this.mouseConsumed?.clear(); }
+    clear() { this.down.clear(); this.pressed.clear(); this.released.clear(); this.consumed.clear(); this.mouseDown.clear(); this.mousePressed.clear(); this.mouseReleased.clear();this.mouseConsumed?.clear(); }
   }
   class Canvas {
     constructor(element) {
@@ -207,59 +339,29 @@ export function createGameLab(environment = {}) {
     }
     drawRect(x, y, width, height, color = '#76b9f2', rotation = 0, scale = { x: 1, y: 1 }) {
       [x, y, width, height, rotation, scale.x, scale.y].forEach(v => finite(v, 'Rysowanie'));
-      this.commands.push({ op: 'rect', x, y, screenX: x - this.view.x, screenY: y - this.view.y, width, height, color });
-      const ctx = this.context; ctx.save(); ctx.translate(x - this.view.x, y - this.view.y); ctx.rotate(rotation); ctx.scale(scale.x, scale.y);
-      ctx.fillStyle = color; ctx.fillRect(-width / 2, -height / 2, width, height); ctx.restore();
+      const command={ op: 'rect', x, y, screenX: x - this.view.x, screenY: y - this.view.y, width, height, color,rotation,scaleX:scale.x,scaleY:scale.y };this.commands.push(command);
+      renderer.draw(this.context,{...command,x:command.screenX,y:command.screenY});
     }
-    drawText(text, x, y, color = '#ffffff') {
+    drawText(text, x, y, fontSize = 16, color = '#ffffff', align = 'center', baseline = 'middle') {
+      if (typeof fontSize === 'string') { color = fontSize; fontSize = 16; }
       finite(x, 'Tekst x'); finite(y, 'Tekst y');
-      this.commands.push({ op: 'text', text: String(text), x, y, color });
-      this.context.fillStyle = color; this.context.font = '16px monospace'; this.context.fillText(String(text), x, y);
+      const command={ op: 'text', text: String(text), x, y, color, fontSize, align, baseline };this.commands.push(command);renderer.draw(this.context,command);
     }
+    drawProgressBar(x, y, width, height, progress, frame, track, fill) { const command = { op: 'progress', x, y, width, height, progress, frame, track, fill }; this.commands.push(command); renderer.drawProgress(this.context, command); }
+    drawNinePatch(texture, x, y, width, height, border = 8) { const command = { op: 'ninepatch', texture, x, y, width, height, border }; this.commands.push(command); renderer.drawNinePatch(this.context, command); }
     drawTileMap(texture, tileSize) {
-      const columns = Math.ceil(this.width / tileSize), rows = Math.ceil(this.height / tileSize);
+      const columns = Math.ceil(this.width / tileSize) + 1, rows = Math.ceil(this.height / tileSize) + 1;
       this.commands.push({ op: 'tilemap', texture, tileSize, columns, rows });
-      const ctx = this.context;
       const firstColumn = Math.floor(this.view.x / tileSize), firstRow = Math.floor(this.view.y / tileSize);
       for (let row = firstRow; row <= firstRow + rows; row++) for (let column = firstColumn; column <= firstColumn + columns; column++) {
-        const seed = ((column * 17 + row * 31 + (column * row * 7)) % 5 + 5) % 5;
-        const x = column * tileSize - this.view.x, y = row * tileSize - this.view.y;
-        ctx.fillStyle = texture === 'grass'
-          ? ['#355b3f', '#395f42', '#3c6245', '#34583d', '#416848'][seed]
-          : ['#9a7950', '#a18156', '#a8875b', '#98764d', '#b08d60'][seed];
-        ctx.fillRect(x, y, tileSize, tileSize);
-        ctx.fillStyle = texture === 'grass' ? '#739455' : '#d1b27b';
-        const inset = 4 + seed * 2;
-        ctx.fillRect(x + inset, y + tileSize / 2, 2, 3);
-        ctx.fillRect(x + tileSize - inset, y + 8 + seed, 2, 3);
+        const variant = (column * 31 + row * 17 + column * row * 7) & 3, grass = texture === 'grass';
+        renderer.drawSprite(this.context, { texture, x: (column + .5) * tileSize - this.view.x, y: (row + .5) * tileSize - this.view.y, width: tileSize, height: tileSize, rotation: 0, scaleX: grass && (variant & 1) ? -1 : 1, scaleY: grass && (variant & 2) ? -1 : 1 });
       }
     }
     drawSprite(sprite, transform) {
-      const [color, detail] = textures[sprite.texture];
-      const ctx = this.context;
-      ctx.save(); ctx.translate(transform.x - this.view.x + transform.visualOffset.x, transform.y - this.view.y + transform.visualOffset.y); ctx.rotate(transform.rotation); ctx.scale(transform.scale.x, transform.scale.y);
-      ctx.fillStyle = color; ctx.fillRect(-sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
-      ctx.fillStyle = detail;
-      if (sprite.texture === 'gem') {
-        ctx.beginPath(); ctx.moveTo(0, -sprite.height / 3); ctx.lineTo(sprite.width / 3, 0); ctx.lineTo(0, sprite.height / 3); ctx.lineTo(-sprite.width / 3, 0); ctx.closePath(); ctx.fill();
-      } else if (sprite.texture === 'coin') {
-        ctx.beginPath(); ctx.arc(0, 0, Math.min(sprite.width, sprite.height) / 3, 0, Math.PI * 2); ctx.fill();
-      } else if (sprite.texture === 'chest') {
-        ctx.fillRect(-sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height / 3);
-        ctx.fillStyle = '#f6ce72'; ctx.fillRect(-2, -sprite.height / 2, 4, sprite.height);
-      } else if (sprite.texture === 'bat') {
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-sprite.width / 2, -sprite.height / 2); ctx.lineTo(-sprite.width / 3, sprite.height / 3); ctx.lineTo(0, sprite.height / 5); ctx.lineTo(sprite.width / 3, sprite.height / 3); ctx.lineTo(sprite.width / 2, -sprite.height / 2); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(-5, -2, 2, 2); ctx.fillRect(3, -2, 2, 2);
-      } else if (sprite.texture === 'projectile') {
-        ctx.beginPath(); ctx.arc(0, 0, Math.min(sprite.width, sprite.height) / 2, 0, Math.PI * 2); ctx.fill();
-      } else if (sprite.texture === 'heart') {
-        ctx.beginPath(); ctx.moveTo(0, sprite.height / 3); ctx.bezierCurveTo(-sprite.width, -sprite.height / 4, -sprite.width / 3, -sprite.height / 2, 0, -sprite.height / 4); ctx.bezierCurveTo(sprite.width / 3, -sprite.height / 2, sprite.width, -sprite.height / 4, 0, sprite.height / 3); ctx.fill();
-      } else {
-        ctx.fillRect(-sprite.width / 4, -sprite.height / 6, sprite.width / 8, sprite.height / 8);
-        ctx.fillRect(sprite.width / 8, -sprite.height / 6, sprite.width / 8, sprite.height / 8);
-      }
-      ctx.restore();
-      this.commands.push({ op: 'sprite', texture: sprite.texture, x: transform.x, y: transform.y, screenX: transform.x - this.view.x, screenY: transform.y - this.view.y, width: sprite.width, height: sprite.height });
+      const command = { op: 'sprite', texture: sprite.texture, x: transform.x, y: transform.y, screenX: transform.x - this.view.x, screenY: transform.y - this.view.y, width: sprite.width, height: sprite.height, rotation: transform.rotation, scaleX: transform.scale.x * (sprite.flipX ? -1 : 1), scaleY: transform.scale.y * (sprite.flipY ? -1 : 1) };
+      renderer.drawSprite(this.context, { ...command, x: command.screenX + transform.visualOffset.x, y: command.screenY + transform.visualOffset.y });
+      this.commands.push(command);
     }
   }
   const size = object => {
@@ -272,23 +374,47 @@ export function createGameLab(environment = {}) {
   };
   class Game {
     constructor() {
-      this.objects = []; this.input = new Input(); this.time = { deltaTime: 0, elapsed: 0 };
+      this.objects = []; this.nextObjectId = 1; this.spatialRevision=0;this.input = new Input(); this.time = { deltaTime: 0, elapsed: 0, unscaledDeltaTime: 0, unscaledElapsed: 0 }; this.paused = false; this.worldBounds = null; this.random = new Random(1);
+      this.physics = createPhysics(this, { Collider2D, CircleCollider2D, CharacterController2D, Projectile2D }, SpatialHash);
+      this.componentIndex=new Map();this.tagIndex=new Map();
       this.background = '#0b2033'; this.started = false; this.disposed = false; this.canvas = null; this.tweens = []; this.cameraView = { x: 0, y: 0 };
     }
     onCreate() {}
     onUpdate() {}
     onDrawUI() {}
     onDestroy() {}
+    pause() { this.paused = true; }
+    resume() { this.paused = false; }
+    isPaused() { return this.paused; }
+    navigateUI() {
+      const buttons=this.objects.filter(o=>o.active&&!o.destroyed).flatMap(o=>o.getComponents(Button)).filter(b=>b.enabled&&b.created);
+      if(!this.input.isKeyPressed('Tab')||!buttons.length)return;
+      const current=buttons.findIndex(b=>b.isFocused()), direction=this.input.isKeyDown('Shift')?-1:1;
+      buttons[(current<0?(direction>0?0:buttons.length-1):(current+direction+buttons.length)%buttons.length)].focus();this.input.consumeKey('Tab');
+    }
+    getObjects() { return [...this.objects]; }
+    updateComponentIndex(object) { for(const [type,objects] of this.componentIndex){if(!object.destroyed&&object.hasComponent(type))objects.add(object);else objects.delete(object);} }
+    updateTagIndex(object,tag,added) { if(added&&!object.destroyed){if(!this.tagIndex.has(tag))this.tagIndex.set(tag,new Set());this.tagIndex.get(tag).add(object);}else{const objects=this.tagIndex.get(tag);objects?.delete(object);if(objects?.size===0)this.tagIndex.delete(tag);} }
+    getObjectsWith(...types) {
+      if(types.some(type=>typeof type!=='function'||(type!==Component&&!(type.prototype instanceof Component))))throw new Error('Oczekiwano klas komponentów');
+      if(!types.length)return this.getObjects().filter(o=>!o.destroyed);
+      const sets=types.map(type=>{if(!this.componentIndex.has(type))this.componentIndex.set(type,new Set(this.objects.filter(o=>!o.destroyed&&o.hasComponent(type))));return this.componentIndex.get(type);}).sort((a,b)=>a.size-b.size);
+      return [...sets[0]].filter(o=>!o.destroyed&&sets.every(set=>set.has(o))).sort((a,b)=>a.id-b.id);
+    }
+    getObjectsWithTag(tag) { return [...(this.tagIndex.get(tag)||[])].filter(o=>!o.destroyed).sort((a,b)=>a.id-b.id); }
+    getViewportWidth() { return this.canvas?.width ?? 640; }
+    getViewportHeight() { return this.canvas?.height ?? 360; }
+    setWorldBounds(x, y, width, height) { [x, y, width, height].forEach(v => finite(v, 'Granice świata')); if (width <= 0 || height <= 0) throw new Error('Niepoprawne granice'); this.worldBounds = { x, y, width, height }; }
+    clearWorldBounds() { this.worldBounds = null; }
     createObject(name = 'Object') {
       if (this.disposed) throw new Error('Gra jest zamknięta.');
-      if (this.objects.length >= 1000) throw new Error('Limit 1000 obiektów w scenie.');
-      const object = new GameObject(this, name); this.objects.push(object); return object;
+      if (this.objects.length >= 10000) throw new Error('Limit 10000 obiektów w scenie.');
+      const object = new GameObject(this, name); this.objects.push(object); this.spatialRevision++;return object;
     }
-    find(name) { return this.objects.find(o => o.name === name && !o.destroyed); }
+    find(name) { return this.objects.find(o => o.name === name && !o.destroyed) ?? null; }
     addTween(tween) {
-      for (const existing of this.tweens) if (existing.object === tween.object && existing.property === tween.property) existing.cancel();
-      this.tweens = this.tweens.filter(existing => !existing.cancelled && !existing.completed);
-      if (!tween.completed) this.tweens.push(tween);
+      for (const existing of tween.object.getComponents(Tween)) if (existing.property === tween.property) existing.cancel();
+      if (!tween.completed) tween.object.addComponent(tween);
       return tween;
     }
     initialize() {
@@ -296,7 +422,7 @@ export function createGameLab(environment = {}) {
         let pending = false;
         for (const object of [...this.objects]) for (const component of [...object.components]) {
           if (!object.destroyed && !component.destroyed && !component.created) {
-            pending = true; component.created = true; component.onCreate();
+            pending = true; component.created = true; this.spatialRevision++;component.onCreate();
           }
         }
         if (!pending) return;
@@ -312,72 +438,48 @@ export function createGameLab(environment = {}) {
         .find(c => c instanceof Camera2D && c.enabled && c.created && !c.destroyed);
       this.cameraView = camera ? camera.getView() : { x: 0, y: 0 };
       this.canvas.view = this.cameraView;
-      for (const object of this.objects) if (object.active && !object.destroyed) {
-        for (const tileMap of object.components) if (tileMap instanceof TileMap && tileMap.enabled && tileMap.created && !tileMap.destroyed) this.canvas.drawTileMap(tileMap.texture, tileMap.tileSize);
-      }
-      for (const object of this.objects) {
-        if (!object.active || object.destroyed) continue;
-        for (const renderer of object.components) if (renderer instanceof ShapeRenderer && renderer.enabled && renderer.created && !renderer.destroyed) {
-          if (renderer instanceof Sprite) this.canvas.drawSprite(renderer, object.transform);
-          else this.canvas.drawRect(object.transform.x + object.transform.visualOffset.x, object.transform.y + object.transform.visualOffset.y, renderer.width, renderer.height, renderer.color, object.transform.rotation, object.transform.scale);
-        }
+      const tiles = this.objects.filter(o => o.active && !o.destroyed).flatMap(o => o.components)
+        .filter(c => c instanceof TileMap && c.enabled && c.created && !c.destroyed).sort((a,b) => a.layer-b.layer || a.order-b.order);
+      for (const tileMap of tiles) this.canvas.drawTileMap(tileMap.texture, tileMap.tileSize);
+      const space = component => component.getComponent(UITransform)?.enabled || component.space === 'screen' ? 1 : 0;
+      const renderers = this.objects.filter(o => o.active && !o.destroyed).flatMap(o => o.components)
+        .filter(c => (c instanceof ShapeRenderer || c instanceof TextRenderer) && c.enabled && c.created && !c.destroyed)
+        .sort((a, b) => space(a) - space(b) || a.layer - b.layer || a.order - b.order);
+      for (const component of renderers) {
+        this.canvas.view = space(component) ? { x: 0, y: 0 } : this.cameraView;
+        const transform = component.transform, ui = component.getComponent(UITransform);
+        const position = ui?.enabled ? ui.getCenter() : transform;
+        if (component instanceof TextRenderer) component.onDrawUI();
+        else if (component instanceof Sprite) this.canvas.drawSprite(component, { x: position.x, y: position.y, rotation: transform.rotation, scale: transform.scale, visualOffset: transform.visualOffset });
+        else this.canvas.drawRect(position.x + transform.visualOffset.x, position.y + transform.visualOffset.y, component.width, component.height, component.color, transform.rotation, transform.scale);
       }
       this.canvas.view = { x: 0, y: 0 };
       this.onDrawUI();
       for (const object of this.objects) if (object.active && !object.destroyed) {
-        for (const component of object.components) if (component.enabled && component.created && !component.destroyed) component.onDrawUI();
+        for (const component of object.components) if (!(component instanceof TextRenderer) && component.enabled && component.created && !component.destroyed) component.onDrawUI();
       }
     }
     step(delta) {
       if (!this.started || this.disposed) return;
       finite(delta, 'Czas klatki'); if (delta < 0) throw new Error('Czas klatki nie może być ujemny.');
-      delta = Math.min(delta, 0.1); this.time.deltaTime = delta; this.time.elapsed += delta;
+      delta = Math.min(delta, 0.1); this.time.unscaledDeltaTime = delta; this.time.unscaledElapsed += delta; this.time.deltaTime = this.paused ? 0 : delta;
       try {
         this.initialize(); this.canvas.clear(this.background);
-        this.tweens = this.tweens.filter(tween => tween.update(delta));
         for (const o of this.objects) { const c = o.getComponent(CharacterController2D); if (c) c.velocity = { x: 0, y: 0 }; }
-        this.onUpdate(delta);
         const snapshot = [...this.objects];
-        for (const o of snapshot) if (o.active && !o.destroyed) for (const c of [...o.components]) {
-          if (c.enabled && c.created && !c.destroyed && !o.destroyed) c.onUpdate(delta);
-        }
-        const contacts = [];
-        for (const o of snapshot) {
-          const controller = o.getComponent(CharacterController2D);
-          if (!o.active || o.destroyed || !controller?.enabled) continue;
-          const dimensions = size(o);
-          for (const axis of ['x', 'y']) {
-            const previous = o.transform[axis]; o.transform[axis] += controller.velocity[axis] * delta;
-            for (const other of snapshot) {
-              const collider = other.getComponent(Collider2D);
-              if (other === o || !other.active || other.destroyed || !collider?.enabled || collider instanceof Trigger2D) continue;
-              if (overlaps(o, other)) {
-                const extent = (axis === 'x' ? dimensions.width + size(other).width : dimensions.height + size(other).height) / 2;
-                o.transform[axis] = controller.velocity[axis] > 0 ? other.transform[axis] - extent : controller.velocity[axis] < 0 ? other.transform[axis] + extent : previous;
-                contacts.push([o, other, false]);
-              }
-            }
-          }
-          if (controller.collideWorldBounds) {
-            o.transform.x = Math.max(dimensions.width / 2, Math.min(this.canvas.width - dimensions.width / 2, o.transform.x));
-            o.transform.y = Math.max(dimensions.height / 2, Math.min(this.canvas.height - dimensions.height / 2, o.transform.y));
+        for(const o of snapshot)for(const b of o.getComponents(Button))if(!b.enabled||!o.active||o.destroyed||b.destroyed)b.blur();
+        this.navigateUI();
+        for (const mode of ['UI', 'WORLD']) {
+          if(mode==='WORLD'){this.time.deltaTime=this.paused?0:delta;this.time.elapsed+=this.time.deltaTime;}
+          if (mode === 'WORLD' && this.paused) continue;
+          if (mode === 'WORLD') this.onUpdate(delta);
+          for (const o of snapshot) if (o.active && !o.destroyed) for (const c of o.getComponents()) {
+            if (c.enabled && c.created && !c.destroyed && !o.destroyed && c.updateMode === mode) c.onUpdate(delta);
           }
         }
-        for (let i = 0; i < snapshot.length; i++) for (let j = i + 1; j < snapshot.length; j++) {
-          const a = snapshot[i], b = snapshot[j];
-          const ca = a.getComponent(Collider2D), cb = b.getComponent(Collider2D);
-          if (a.active && b.active && !a.destroyed && !b.destroyed && (ca?.enabled || a.getComponent(CharacterController2D)?.enabled) && (cb?.enabled || b.getComponent(CharacterController2D)?.enabled) && overlaps(a, b)) {
-            contacts.push([a, b, ca instanceof Trigger2D || cb instanceof Trigger2D]);
-          }
-        }
-        const dispatched = new Set();
-        for (const [a, b, trigger] of contacts) {
-          const key = `${snapshot.indexOf(a)}:${snapshot.indexOf(b)}:${trigger}`;
-          if (dispatched.has(key) || a.destroyed || b.destroyed) continue;
-          dispatched.add(key);
-          for (const [owner, other] of [[a, b], [b, a]]) for (const c of [...owner.components]) {
-            if (c.enabled && !c.destroyed) c[trigger ? 'onTrigger' : 'onCollision'](other);
-          }
+        if (!this.paused) this.physics.step(delta);
+        for (const o of snapshot) if (o.active && !o.destroyed) for (const c of o.getComponents()) {
+          if (c.enabled && c.created && !c.destroyed && (c.updateMode === 'UI' || !this.paused)) c.onLateUpdate(c.updateMode === 'UI' ? delta : this.time.deltaTime);
         }
         this.objects = this.objects.filter(o => !o.destroyed); this.render();
       } finally { this.input.endFrame(); }
@@ -390,24 +492,29 @@ export function createGameLab(environment = {}) {
     }
   }
   let current = null, factory = null, frame = null, cleanup = () => {}, lastTime = null;
+  assetsReady.then(() => { if (current && !current.disposed) current.render(); });
   function stopLoop() { if (frame !== null) caf(frame); frame = null; lastTime = null; }
   function dispose() { stopLoop(); cleanup(); cleanup = () => {}; current?.dispose(); current = null; }
   function snapshot(game = current) {
     if (!game) return null;
-    return {
-      width: game.canvas.width, height: game.canvas.height, elapsed: game.time.elapsed, camera: { ...game.cameraView },
+    const result = {
+      width: game.canvas.width, height: game.canvas.height, elapsed: game.time.elapsed, unscaledElapsed: game.time.unscaledElapsed, paused: game.paused, camera: { ...game.cameraView },
       objects: game.objects.filter(o => !o.destroyed).map(o => {
         const renderer = o.getComponent(ShapeRenderer);
         return {
           name: o.name, x: o.transform.x, y: o.transform.y, hp: o.hp ?? null,
           rotation: o.transform.rotation, scaleX: o.transform.scale.x, scaleY: o.transform.scale.y, active: o.active,
           components: o.components.map(c => componentNames.get(c.constructor) || c.constructor.name),
+          componentState: Object.fromEntries(o.getComponents().map(c => [componentNames.get(c.constructor) || c.constructor.name, Object.fromEntries(Object.entries(c).filter(([key,value]) => !['gameObject','created','destroyed'].includes(key) && (['number','boolean','string'].includes(typeof value) || value instanceof Vector2)).map(([key,value]) => [key,value instanceof Vector2 ? {x:value.x,y:value.y} : value]))])),
           visualOffsetX: o.transform.visualOffset.x, visualOffsetY: o.transform.visualOffset.y,
           renderer: renderer ? { kind: componentNames.get(renderer.constructor) || renderer.constructor.name, width: renderer.width, height: renderer.height, color: renderer.color, texture: renderer.texture ?? null } : null,
         };
       }),
       commands: game.canvas.commands.map(c => ({ ...c })),
     };
+    result.objectsByName = {};
+    for (const object of result.objects) if (!Object.hasOwn(result.objectsByName, object.name)) Object.defineProperty(result.objectsByName, object.name, {value:object,enumerable:true});
+    return result;
   }
   function createScene(canvas) {
     const game = new factory();
@@ -425,20 +532,27 @@ export function createGameLab(environment = {}) {
     const up = event => game.input.setKey(event.key, false);
     const blur = () => game.input.clear();
     const focus = () => element.focus();
+    const pointer = event => { const rect = element.getBoundingClientRect(); game.input.setPointer(event.clientX-rect.left, event.clientY-rect.top); };
+    const pointerDown = event => { pointer(event); game.input.setMouseButton(event.button, true); element.setPointerCapture?.(event.pointerId); };
+    const pointerUp = event => { pointer(event); game.input.setMouseButton(event.button, false); };
+    element.addEventListener('pointermove', pointer); element.addEventListener('pointerdown', pointerDown); element.addEventListener('pointerup', pointerUp); element.addEventListener('pointercancel', blur);
     element.tabIndex = 0; element.addEventListener('pointerdown', focus); element.addEventListener('keydown', down); element.addEventListener('keyup', up); element.addEventListener('blur', blur);
     win.addEventListener('blur', blur); win.addEventListener('resize', resize);
     const observer = win.ResizeObserver ? new win.ResizeObserver(resize) : null; observer?.observe(element);
     cleanup = () => {
+      element.removeEventListener('pointermove', pointer); element.removeEventListener('pointerdown', pointerDown); element.removeEventListener('pointerup', pointerUp); element.removeEventListener('pointercancel', blur);
       observer?.disconnect(); element.removeEventListener('pointerdown', focus); element.removeEventListener('keydown', down); element.removeEventListener('keyup', up); element.removeEventListener('blur', blur);
       win.removeEventListener('blur', blur); win.removeEventListener('resize', resize);
     };
-    try { resize(); game.start(); game.step(0); } catch (error) { dispose(); throw error; }
     const tick = now => {
       if (game !== current || game.disposed) return;
       try { game.step(lastTime === null ? 0 : (now - lastTime) / 1000); lastTime = now; frame = raf(tick); }
       catch (error) { stopLoop(); win.dispatchEvent(new win.ErrorEvent('error', { error, message: error.message })); }
     };
-    frame = raf(tick); return game;
+    const start = () => { if(game!==current||game.disposed)return game;resize();game.start();game.step(0);frame=raf(tick);return game; };
+    if(environment.skipAssetLoading||!win.Image) { try {start();game.ready=Promise.resolve(game);}catch(error){dispose();throw error;} }
+    else { game.ready=assetsReady.then(start);game.ready.catch(error=>{if(game===current){dispose();win.dispatchEvent(new win.ErrorEvent('error',{error,message:error.message}));}}); }
+    return game;
   }
   function evaluateScenario(scenario = {}) {
     if (!factory || !current) throw new Error('Uruchom scenę przez GameLab.run(YourGame).');
@@ -446,10 +560,22 @@ export function createGameLab(environment = {}) {
     const game = createScene(doc.createElement('canvas'));
     try {
       game.canvas.resize(scenario.width ?? 640, scenario.height ?? 360); game.start(); game.step(0);
+      const applyActions = actions => {
+        for (const action of actions || []) {
+          const object = action.object == null ? game : game.find(action.object);
+          const target = action.component === 'input' && object === game ? game.input : action.component ? object?.getComponents().find(c => (componentNames.get(c.constructor) || c.constructor.name) === action.component) : object;
+          if (!target || ['constructor','__proto__','prototype'].includes(action.method) || typeof target[action.method] !== 'function') throw new Error(`Niepoprawna akcja scenariusza: ${action.method}`);
+          target[action.method](...(action.args || []));
+        }
+      };
+      applyActions(scenario.actions);
       const phases = scenario.phases || [{ keys: scenario.keys || [], steps: scenario.steps ?? 1, delta: scenario.delta ?? 0.1 }];
       for (const phase of phases) {
+        applyActions(phase.actions);
         for (const key of [...game.input.down]) if (!(phase.keys || []).map(normalizeKey).includes(key)) game.input.setKey(key, false);
         for (const key of phase.keys || []) game.input.setKey(key, true);
+        if (phase.pointer) game.input.setPointer(phase.pointer.x, phase.pointer.y);
+        for (let button = 0; button <= 4; button++) game.input.setMouseButton(button, (phase.mouseButtons || []).includes(button));
         if (phase.width !== undefined || phase.height !== undefined) game.canvas.resize(phase.width ?? game.canvas.width, phase.height ?? game.canvas.height);
         const steps = phase.steps ?? 1;
         if (!Number.isInteger(steps) || steps < 0 || steps > 500) throw new Error('Scenariusz może mieć 0–500 kroków.');
@@ -459,9 +585,11 @@ export function createGameLab(environment = {}) {
     } finally { game.dispose(); }
   }
   win.addEventListener('pagehide', dispose);
-  return { Game, GameObject, Component, Transform, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, Trigger2D, CharacterController2D, run, dispose, snapshot, evaluateScenario, get current() { return current; } };
+  const addons=createAddons({Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D,Trigger2D});
+  for(const [name,type] of Object.entries(addons))componentNames.set(type,name);
+  return { ...addons, Assets, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Trigger2D, CharacterController2D, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
 }
 
 export function getGameRuntimeScript() {
-  return `window.GameLab = (${createGameLab.toString()})();`;
+  return `window.GameLab = (${createGameLab.toString()})({}, {Assets:Object.freeze(${JSON.stringify(Assets)}),assetManifest:${JSON.stringify(assetManifest)},SpatialHash:(${SpatialHash.toString()}),createPhysics:(${createPhysics.toString()}),createRenderer:(${createRenderer.toString()}),createAddons:(${createAddons.toString()})});`;
 }

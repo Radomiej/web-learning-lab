@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { editSelection, formatCode } from '../services/codeEditing.js';
+import { EditorIcon } from '../../shared/lab-game-v2/editor/EditorUI.jsx';
 import { createEditorUri, getEditorLanguage } from '../services/editorLanguage.js';
 import { createEditorActions } from '../services/monacoEditorCommands.js';
-import { createGameLabCompletionProvider } from '../services/gameLabCompletions.js';
+import { createGameLabCompletionProvider,createGameLabSignatureProvider } from '../services/gameLabCompletions.js';
 import { loadMonaco } from '../services/monacoRuntime.js';
 import EditorHelp from './EditorHelp.jsx';
 
@@ -308,6 +309,7 @@ export default function CodeEditor({
           .map((action) => editor.addAction(action))
           .filter(Boolean);
         if (gameDev && monaco.languages.registerCompletionItemProvider) {
+          if(monaco.languages.registerSignatureHelpProvider)editorActionsRef.current.push(monaco.languages.registerSignatureHelpProvider('javascript',createGameLabSignatureProvider(workspaceKeyRef.current)));
           completionProviderRef.current = monaco.languages.registerCompletionItemProvider(
             'javascript',
             createGameLabCompletionProvider(monaco, workspaceKeyRef.current),
@@ -385,9 +387,10 @@ export default function CodeEditor({
             type="button"
             onClick={() => handleFormat()}
             disabled={formatting || editorState === 'loading'}
-            title="Shift+Alt+F"
+            title="Formatuj kod (Shift+Alt+F)"
+            aria-label="Formatuj kod"
           >
-            Formatuj kod
+            <EditorIcon action="format" />
           </button>
           <EditorHelp />
         </div>
@@ -443,9 +446,9 @@ export default function CodeEditor({
         {editorState === 'loading' ? 'Ładowanie edytora…' : notice}
       </p>
       <div className="editor-actions">
-        <button className="button button--primary" type="button" onClick={() => onRun?.()}><span aria-hidden="true">▶</span> Uruchom</button>
-        <button className="button button--ghost" type="button" onClick={() => onReset?.()}>{resetLabel}</button>
-        {onSolution && <button className="button button--ghost button--solution" type="button" onClick={onSolution}>Pokaż rozwiązanie</button>}
+        <button className="button button--primary" type="button" onClick={() => onRun?.()} aria-label="Uruchom" title="Uruchom (Ctrl+S)"><EditorIcon action="run" /></button>
+        <button className="button button--ghost" type="button" onClick={() => onReset?.()} aria-label={resetLabel} title={resetLabel}><EditorIcon action="reset" /></button>
+        {onSolution && <button className="button button--ghost button--solution" type="button" onClick={onSolution} aria-label="Pokaż rozwiązanie" title="Pokaż rozwiązanie"><EditorIcon action="solution" /></button>}
       </div>
     </section>
   );

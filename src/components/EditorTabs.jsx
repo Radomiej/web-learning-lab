@@ -1,12 +1,5 @@
 import FileTypeIcon, { getFileTypeFromPath } from "./FileTypeIcon.jsx";
-
-function AddFileIcon() {
-  return (
-    <svg aria-hidden="true" className="editor-tab-add-icon" viewBox="0 0 20 20">
-      <path d="M10 4v12M4 10h12" />
-    </svg>
-  );
-}
+import { EditorIcon, useEditorTabs } from '../../shared/lab-game-v2/editor/EditorUI.jsx';
 
 export default function EditorTabs({
   files,
@@ -14,9 +7,11 @@ export default function EditorTabs({
   onFileChange,
   onAddFile,
   runtime,
+  workspaceKey,
 }) {
   const reactProject = runtime?.kind?.startsWith("react") ?? false;
-  const tabs = Object.keys(files).map((path) => ({ key: path, label: path }));
+  const tabLayout = useEditorTabs(Object.keys(files), workspaceKey);
+  const tabs = tabLayout.order.map((path) => ({ key: path, label: path }));
   return (
     <div
       className="editor-tabs"
@@ -36,6 +31,7 @@ export default function EditorTabs({
             aria-label={tab.label}
             aria-selected={activeFile === tab.key}
             key={tab.key}
+            {...tabLayout.tabProps(tab.key)}
             onClick={() => onFileChange(tab.key)}
           >
             <FileTypeIcon
@@ -50,9 +46,10 @@ export default function EditorTabs({
         className="editor-tab editor-tab--add"
         type="button"
         onClick={onAddFile}
+        aria-label="Dodaj plik"
+        title="Dodaj plik"
       >
-        <AddFileIcon />
-        Dodaj plik
+        <EditorIcon action="add" />
       </button>
     </div>
   );

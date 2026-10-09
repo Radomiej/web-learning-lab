@@ -1,0 +1,1066 @@
+{
+  "frames": {
+    "player": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "knight": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ranger": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "wizard": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "cleric": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "rogue": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 0,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "paladin": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 128,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "monk": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 256,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "vampire": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 384,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "warrior": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 512,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "slime": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "slime-blue": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 128,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "slime-red": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "slime-purple": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 384,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "bat": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 512,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ghost": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 0,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "skeleton": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 128,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "zombie": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 256,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "goblin": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 384,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "orc": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 512,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "spider": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "wolf": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 128,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "mushroom-monster": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "floating-eye": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 384,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "boss-demon": {
+      "image": "survival-characters.png",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "fireball": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ice-bolt": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "lightning-bolt": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "magic-orb": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "poison-ball": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "arrow": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 0,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "knife": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 128,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "stake": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 256,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "bomb": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 384,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "energy-wave": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 512,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "sword": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "axe": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 128,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "bow": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "wand": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 384,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "crossbow": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 512,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "spear": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 0,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "hammer": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 128,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "holy-cross": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 256,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "spell-book": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 384,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "shield": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 512,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "explosion": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "frost-burst": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 128,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "magic-burst": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "slash": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 384,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "impact": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "coin": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "gem": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "heart": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "potion": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "potion-mana": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "potion-poison": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 0,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "chest": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 128,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "chest-wood": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 256,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "key-silver": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 384,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "key-gold": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 512,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "tree": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "pine": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 128,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "tree-dead": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "bush": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 384,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "rock": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 512,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "boulder": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 0,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "barrel": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 128,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "crate": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 256,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "gravestone": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 384,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "fence": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 512,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "campfire": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "mushroom-red": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 128,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "mushroom-brown": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "grass-tuft": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 384,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "stone": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-panel-bronze": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 8,
+        "y": 10,
+        "w": 112,
+        "h": 108
+      }
+    },
+    "ui-panel-blue": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 136,
+        "y": 9,
+        "w": 112,
+        "h": 110
+      }
+    },
+    "ui-panel-wood": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 264,
+        "y": 9,
+        "w": 112,
+        "h": 110
+      }
+    },
+    "ui-panel-parchment": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 392,
+        "y": 8,
+        "w": 112,
+        "h": 111
+      }
+    },
+    "ui-button-red": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 520,
+        "y": 34,
+        "w": 112,
+        "h": 60
+      }
+    },
+    "ui-button-red-pressed": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 8,
+        "y": 162,
+        "w": 112,
+        "h": 59
+      }
+    },
+    "ui-button-blue": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 136,
+        "y": 159,
+        "w": 112,
+        "h": 65
+      }
+    },
+    "ui-button-blue-pressed": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 264,
+        "y": 162,
+        "w": 112,
+        "h": 59
+      }
+    },
+    "ui-button-green": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 392,
+        "y": 160,
+        "w": 112,
+        "h": 64
+      }
+    },
+    "ui-button-green-pressed": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 520,
+        "y": 162,
+        "w": 112,
+        "h": 59
+      }
+    },
+    "ui-button-gold": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 8,
+        "y": 264,
+        "w": 111,
+        "h": 112
+      }
+    },
+    "ui-button-gray": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 136,
+        "y": 264,
+        "w": 111,
+        "h": 112
+      }
+    },
+    "ui-slot-bronze": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 264,
+        "y": 264,
+        "w": 112,
+        "h": 111
+      }
+    },
+    "ui-slot-gold": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 392,
+        "y": 265,
+        "w": 112,
+        "h": 110
+      }
+    },
+    "ui-slot-purple": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 520,
+        "y": 265,
+        "w": 112,
+        "h": 109
+      }
+    },
+    "ui-bar-health": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 0,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-bar-experience": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 128,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-bar-gold": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 256,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-heart": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 384,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-star": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 512,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-gear": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-pause": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 128,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-play": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-close": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 384,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-upgrade": {
+      "image": "survival-ui.png",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "projectile": {
+      "image": "survival-combat.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "grass": {
+      "image": "terrain.svg",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "dirt": {
+      "image": "atlas.svg",
+      "frame": {
+        "x": 64,
+        "y": 64,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "sand": {
+      "image": "atlas.svg",
+      "frame": {
+        "x": 0,
+        "y": 96,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "wood": {
+      "image": "atlas.svg",
+      "frame": {
+        "x": 32,
+        "y": 96,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "leaves": {
+      "image": "atlas.svg",
+      "frame": {
+        "x": 64,
+        "y": 96,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "water": {
+      "image": "atlas.svg",
+      "frame": {
+        "x": 96,
+        "y": 96,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "coal-ore": {
+      "image": "atlas.svg",
+      "frame": {
+        "x": 0,
+        "y": 128,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "wall": {
+      "image": "survival-world.png",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ui-bar-health-frame": {
+      "image": "ui-bar-health-frame.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 112,
+        "h": 41
+      }
+    },
+    "ui-bar-health-fill": {
+      "image": "ui-bar-health-fill.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 29,
+        "h": 20
+      }
+    },
+    "ui-bar-health-track": {
+      "image": "ui-bar-health-track.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 7,
+        "h": 20
+      }
+    },
+    "ui-bar-experience-frame": {
+      "image": "ui-bar-experience-frame.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 112,
+        "h": 37
+      }
+    },
+    "ui-bar-experience-fill": {
+      "image": "ui-bar-experience-fill.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 29,
+        "h": 18
+      }
+    },
+    "ui-bar-experience-track": {
+      "image": "ui-bar-experience-track.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 7,
+        "h": 18
+      }
+    },
+    "ui-bar-gold-frame": {
+      "image": "ui-bar-gold-frame.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 112,
+        "h": 41
+      }
+    },
+    "ui-bar-gold-fill": {
+      "image": "ui-bar-gold-fill.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 29,
+        "h": 20
+      }
+    },
+    "ui-bar-gold-track": {
+      "image": "ui-bar-gold-track.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 7,
+        "h": 20
+      }
+    }
+  }
+}

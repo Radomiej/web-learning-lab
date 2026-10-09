@@ -1,0 +1,1233 @@
+{
+  "tolerance": 1e-06,
+  "scenarios": [
+    {
+      "id": "C01",
+      "title": "Środek prostokąta",
+      "area": "geometry",
+      "initial": {
+        "position": [
+          100,
+          80
+        ],
+        "size": [
+          40,
+          20
+        ],
+        "origin": [
+          0.5,
+          0.5
+        ]
+      },
+      "steps": [
+        "render"
+      ],
+      "expected": {
+        "bounds": {
+          "left": 80,
+          "top": 70,
+          "right": 120,
+          "bottom": 90
+        }
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C02",
+      "title": "Skala obrazu nie zmienia collidera",
+      "area": "geometry",
+      "initial": {
+        "position": [
+          100,
+          80
+        ],
+        "spriteSize": [
+          32,
+          32
+        ],
+        "colliderSize": [
+          32,
+          32
+        ]
+      },
+      "steps": [
+        "set visual scale to [2,2]",
+        "render and inspect geometry"
+      ],
+      "expected": {
+        "visualBounds": {
+          "left": 68,
+          "top": 48,
+          "right": 132,
+          "bottom": 112
+        },
+        "colliderBounds": {
+          "left": 84,
+          "top": 64,
+          "right": 116,
+          "bottom": 96
+        }
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C03",
+      "title": "Prędkość i czas",
+      "area": "movement",
+      "initial": {
+        "position": [
+          100,
+          100
+        ],
+        "defaultSpeed": 120,
+        "bounds": "disabled"
+      },
+      "steps": [
+        "move(1,0) each world update; ten steps of 0.1 seconds"
+      ],
+      "expected": {
+        "position": [
+          220,
+          100
+        ],
+        "worldElapsed": 1
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C04",
+      "title": "Normalizacja przekątnej",
+      "area": "movement",
+      "initial": {
+        "position": [
+          100,
+          100
+        ],
+        "defaultSpeed": 120,
+        "bounds": "disabled"
+      },
+      "steps": [
+        "move(1,1) each world update; ten steps of 0.1 seconds"
+      ],
+      "expected": {
+        "position": [
+          184.8528137423857,
+          184.8528137423857
+        ],
+        "travelDistance": 120
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C05",
+      "title": "Ograniczenie delta i walidacja",
+      "area": "time",
+      "initial": {
+        "started": true
+      },
+      "steps": [
+        "step(0.4)",
+        "in separate fresh runs try step(-1), step(NaN), step(Infinity)"
+      ],
+      "expected": {
+        "acceptedStepDelta": 0.1,
+        "acceptedUnscaledDelta": 0.1,
+        "acceptedElapsed": 0.1,
+        "invalidInputs": "descriptive errors without state mutation"
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C06",
+      "title": "Inicjalizacja przed kontaktem",
+      "area": "lifecycle",
+      "initial": {
+        "existingSensor": "ready",
+        "spawn": "overlapping target during Game.onUpdate",
+        "log": []
+      },
+      "steps": [
+        "step 1",
+        "step 2"
+      ],
+      "expected": {
+        "spawnedTargetStep1Log": [],
+        "spawnedTargetStep2Log": [
+          "onCreate",
+          "onTrigger"
+        ],
+        "spawnedTargetStep1Rendered": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C07",
+      "title": "Jedna para, jeden callback",
+      "area": "contacts",
+      "initial": {
+        "objects": "two initialized overlapping solid bodies with controllers; zero motion"
+      },
+      "steps": [
+        "step(0.1)"
+      ],
+      "expected": {
+        "onCollisionCounts": {
+          "A": 1,
+          "B": 1
+        },
+        "onTriggerCounts": {
+          "A": 0,
+          "B": 0
+        }
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C08",
+      "title": "Trigger nie blokuje ruchu",
+      "area": "contacts",
+      "initial": {
+        "sensor": {
+          "position": [
+            100,
+            100
+          ],
+          "size": [
+            32,
+            32
+          ],
+          "controller": true
+        },
+        "wall": {
+          "position": [
+            140,
+            100
+          ],
+          "size": [
+            32,
+            32
+          ]
+        }
+      },
+      "steps": [
+        "sensor.move(1,0,100) in update; step(0.1)"
+      ],
+      "expected": {
+        "sensorPosition": [
+          110,
+          100
+        ],
+        "sensorCollisionCount": 0,
+        "sensorTriggerCount": 1
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C09",
+      "title": "Maski wymagają wzajemnej zgody",
+      "area": "contacts",
+      "initial": {
+        "A": {
+          "layer": 1,
+          "mask": 2
+        },
+        "B": {
+          "layer": 2,
+          "mask": 0
+        },
+        "overlap": true
+      },
+      "steps": [
+        "step(0.1)"
+      ],
+      "expected": {
+        "contactCallbacks": 0,
+        "blockingResolution": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C10",
+      "title": "Granice należą do kształtu",
+      "area": "contacts",
+      "initial": {
+        "circleA": {
+          "center": [
+            0,
+            0
+          ],
+          "radius": 10
+        },
+        "circleB": {
+          "center": [
+            20,
+            0
+          ],
+          "radius": 10
+        },
+        "boxA": {
+          "center": [
+            0,
+            0
+          ],
+          "size": [
+            20,
+            20
+          ]
+        },
+        "boxB": {
+          "center": [
+            20,
+            0
+          ],
+          "size": [
+            20,
+            20
+          ]
+        }
+      },
+      "steps": [
+        "overlaps(circleA,circleB)",
+        "overlaps(boxA,boxB)"
+      ],
+      "expected": {
+        "circleContact": true,
+        "boxContact": true
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C11",
+      "title": "Zniszczenie natychmiast wyklucza",
+      "area": "lifecycle",
+      "initial": {
+        "target": "initialized; destroy invoked by first contact",
+        "furtherContacts": 2
+      },
+      "steps": [
+        "dispatch frame contacts",
+        "cleanup",
+        "step next frame"
+      ],
+      "expected": {
+        "subsequentTargetCallbacks": 0,
+        "onDestroyCountPerInitializedComponent": 1,
+        "targetInNextFrame": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C12",
+      "title": "Anulowanie przed onCreate",
+      "area": "lifecycle",
+      "initial": {
+        "target": "created then destroyed before initialization"
+      },
+      "steps": [
+        "step(0.1)"
+      ],
+      "expected": {
+        "onCreateCount": 0,
+        "onUpdateCount": 0,
+        "onDestroyCount": 0,
+        "renderCommandsForTarget": 0
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C13",
+      "title": "Follow po fizyce",
+      "area": "camera",
+      "initial": {
+        "target": [
+          600,
+          400
+        ],
+        "viewport": [
+          640,
+          360
+        ],
+        "baseOffset": [
+          0,
+          0
+        ],
+        "shake": [
+          0,
+          0
+        ]
+      },
+      "steps": [
+        "camera.follow(target)",
+        "update view"
+      ],
+      "expected": {
+        "viewTopLeft": [
+          280,
+          220
+        ],
+        "targetScreenPosition": [
+          320,
+          180
+        ]
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C14",
+      "title": "Konwersje i tło świata",
+      "area": "camera",
+      "initial": {
+        "viewTopLeft": [
+          280,
+          220
+        ],
+        "worldPoint": [
+          600,
+          400
+        ]
+      },
+      "steps": [
+        "worldToScreen(worldPoint)",
+        "screenToWorld([320,180])",
+        "render TileMap"
+      ],
+      "expected": {
+        "screen": [
+          320,
+          180
+        ],
+        "worldRoundtrip": [
+          600,
+          400
+        ],
+        "tilemapSpace": "world",
+        "hudSpace": "screen"
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C15",
+      "title": "Kotwica lewego górnego rogu",
+      "area": "ui",
+      "initial": {
+        "viewport": [
+          640,
+          360
+        ],
+        "anchor": "TOP_LEFT",
+        "position": [
+          12,
+          12
+        ],
+        "size": [
+          200,
+          18
+        ]
+      },
+      "steps": [
+        "layout",
+        "move camera",
+        "layout again"
+      ],
+      "expected": {
+        "bounds": {
+          "left": 12,
+          "top": 12,
+          "right": 212,
+          "bottom": 30
+        },
+        "center": [
+          112,
+          21
+        ],
+        "unchangedAfterCamera": true
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C16",
+      "title": "Kotwica przy zmianie rozmiaru",
+      "area": "ui",
+      "initial": {
+        "anchor": "TOP_RIGHT",
+        "position": [
+          -12,
+          12
+        ],
+        "size": [
+          100,
+          30
+        ]
+      },
+      "steps": [
+        "layout on [640,360]",
+        "layout on [800,450]"
+      ],
+      "expected": {
+        "firstBounds": {
+          "left": 528,
+          "top": 12,
+          "right": 628,
+          "bottom": 42
+        },
+        "secondBounds": {
+          "left": 688,
+          "top": 12,
+          "right": 788,
+          "bottom": 42
+        }
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C17",
+      "title": "Granice paska",
+      "area": "ui",
+      "initial": {
+        "component": "ProgressBar"
+      },
+      "steps": [
+        "setValue(3,5)",
+        "setValue(6,5)",
+        "setValue(-1,5)",
+        "setValue(3,0)"
+      ],
+      "expected": {
+        "fractions": [
+          0.6,
+          1,
+          0,
+          0
+        ]
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C18",
+      "title": "Zegar świata stoi, menu działa",
+      "area": "pause",
+      "initial": {
+        "worldElapsed": 1,
+        "unscaledElapsed": 1,
+        "hp": 3,
+        "invulnerabilityRemaining": 0.5,
+        "weaponRemaining": 0.3,
+        "gamePaused": true
+      },
+      "steps": [
+        "ten steps of 0.1 seconds with UI updates"
+      ],
+      "expected": {
+        "worldElapsed": 1,
+        "unscaledElapsed": 2,
+        "hp": 3,
+        "invulnerabilityRemaining": 0.5,
+        "weaponRemaining": 0.3,
+        "worldContactCallbacks": 0,
+        "uiUpdates": 10
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C19",
+      "title": "Linear jest domyślne",
+      "area": "tweens",
+      "initial": {
+        "position": [
+          0,
+          0
+        ]
+      },
+      "steps": [
+        "start position tween to [100,0] for 1 second",
+        "advance 0.25 seconds in steps <= 0.1"
+      ],
+      "expected": {
+        "position": [
+          25,
+          0
+        ],
+        "completed": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C20",
+      "title": "Zastąpienie od bieżącej wartości",
+      "area": "tweens",
+      "initial": {
+        "position": [
+          25,
+          0
+        ],
+        "oldTween": "unfinished target [100,0]"
+      },
+      "steps": [
+        "replace with position tween to [200,0] for 1 second",
+        "advance 0.5 seconds"
+      ],
+      "expected": {
+        "position": [
+          112.5,
+          0
+        ],
+        "oldTweenCancelled": true,
+        "oldTweenCompletionCallbacks": 0
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C21",
+      "title": "Natychmiastowy wynik i callback",
+      "area": "tweens",
+      "initial": {
+        "position": [
+          0,
+          0
+        ]
+      },
+      "steps": [
+        "tween position to [100,40] for 0 seconds",
+        "register one onComplete listener",
+        "step(0.1)"
+      ],
+      "expected": {
+        "position": [
+          100,
+          40
+        ],
+        "completed": true,
+        "completionCallbackCount": 1
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C22",
+      "title": "Cancel i własność shake",
+      "area": "tweens",
+      "initial": {
+        "position": [
+          25,
+          0
+        ],
+        "baselineVisualOffset": [
+          3,
+          4
+        ],
+        "activePositionTween": true,
+        "activeShake": true
+      },
+      "steps": [
+        "cancel both tweens",
+        "advance 0.5 seconds"
+      ],
+      "expected": {
+        "position": [
+          25,
+          0
+        ],
+        "visualOffset": [
+          3,
+          4
+        ],
+        "completionCallbackCount": 0,
+        "colliderGeometry": "unchanged"
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C23",
+      "title": "Radiany i jawny łuk",
+      "area": "tweens",
+      "initial": {
+        "rotation": 0
+      },
+      "steps": [
+        "tween rotation to 6.283185307179586 for 1 second",
+        "advance 0.5 seconds"
+      ],
+      "expected": {
+        "rotation": 3.141592653589793
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C24",
+      "title": "Lokalna nietykalność wygasa",
+      "area": "health",
+      "initial": {
+        "maxHp": 3,
+        "invulnerabilityAfterHit": 0.5
+      },
+      "steps": [
+        "damage(1) at t=0",
+        "advance 0.49 seconds",
+        "damage(1)",
+        "advance 0.01 seconds",
+        "damage(1)"
+      ],
+      "expected": {
+        "damageAccepted": [
+          true,
+          false,
+          true
+        ],
+        "hpAfterAttempts": [
+          2,
+          2,
+          1
+        ]
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C25",
+      "title": "Dwie niezależne postacie",
+      "area": "health",
+      "initial": {
+        "A": {
+          "maxHp": 3,
+          "invulnerabilityAfterHit": 0.5
+        },
+        "B": {
+          "maxHp": 3,
+          "invulnerabilityAfterHit": 0.5
+        }
+      },
+      "steps": [
+        "A.damage(1)",
+        "B.damage(1) at same world time",
+        "A.damage(1) again"
+      ],
+      "expected": {
+        "A_Hp": 2,
+        "B_Hp": 2,
+        "accepted": [
+          true,
+          true,
+          false
+        ]
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C26",
+      "title": "Jedna śmierć i jeden drop",
+      "area": "health",
+      "initial": {
+        "hp": 1,
+        "maxHp": 3,
+        "dropXp": 5
+      },
+      "steps": [
+        "damage(2)",
+        "damage(2)",
+        "heal(3)"
+      ],
+      "expected": {
+        "hp": 0,
+        "isDead": true,
+        "deathEvents": 1,
+        "xpDrops": 1
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C27",
+      "title": "Szybki pocisk nie przelatuje przez cel",
+      "area": "projectiles",
+      "initial": {
+        "projectile": {
+          "start": [
+            20,
+            100
+          ],
+          "radius": 4,
+          "direction": [
+            1,
+            0
+          ],
+          "speed": 1200,
+          "maxHits": 1
+        },
+        "target": {
+          "center": [
+            100,
+            100
+          ],
+          "size": [
+            2,
+            32
+          ],
+          "hp": 3
+        },
+        "damageOnHit": 1
+      },
+      "steps": [
+        "step(0.1)"
+      ],
+      "expected": {
+        "targetHp": 2,
+        "hitCallbacks": 1,
+        "projectileDestroyed": true
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C28",
+      "title": "Dwa różne trafienia i pominięcie właściciela",
+      "area": "projectiles",
+      "initial": {
+        "projectile": {
+          "maxHits": 2,
+          "owner": "Player",
+          "hitLayers": [
+            "Enemy"
+          ]
+        },
+        "targets": "owner, pickup, enemyA and enemyB along sweep",
+        "damage": 1
+      },
+      "steps": [
+        "sweep through candidates in distance order"
+      ],
+      "expected": {
+        "ownerHits": 0,
+        "pickupHits": 0,
+        "enemyAHits": 1,
+        "enemyBHits": 1,
+        "projectileDestroyed": true,
+        "totalAcceptedHits": 2
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C29",
+      "title": "Ostatni częściowy krok życia",
+      "area": "projectiles",
+      "initial": {
+        "position": [
+          20,
+          100
+        ],
+        "speed": 100,
+        "direction": [
+          1,
+          0
+        ],
+        "remainingLifetime": 0.025,
+        "obstacles": []
+      },
+      "steps": [
+        "step(0.1)"
+      ],
+      "expected": {
+        "finalPosition": [
+          22.5,
+          100
+        ],
+        "destroyed": true
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C30",
+      "title": "Najbliższy cel i deterministyczny remis",
+      "area": "queries",
+      "initial": {
+        "query": [
+          0,
+          0,
+          20,
+          "Enemy"
+        ],
+        "targets": [
+          {
+            "id": 2,
+            "position": [
+              10,
+              0
+            ],
+            "active": true
+          },
+          {
+            "id": 3,
+            "position": [
+              -10,
+              0
+            ],
+            "active": true
+          },
+          {
+            "id": 1,
+            "position": [
+              1,
+              0
+            ],
+            "active": false
+          }
+        ]
+      },
+      "steps": [
+        "findNearest"
+      ],
+      "expected": {
+        "resultId": 2
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C31",
+      "title": "Dwa awanse z jednego przedmiotu",
+      "area": "experience",
+      "initial": {
+        "level": 1,
+        "xp": 0,
+        "thresholds": [
+          10,
+          20,
+          30
+        ],
+        "pendingChoices": 0
+      },
+      "steps": [
+        "grant 35 XP",
+        "choose one upgrade",
+        "choose second upgrade"
+      ],
+      "expected": {
+        "afterGrant": {
+          "level": 3,
+          "xp": 5,
+          "pendingChoices": 2,
+          "paused": true
+        },
+        "afterFirst": {
+          "pendingChoices": 1,
+          "paused": true
+        },
+        "afterSecond": {
+          "pendingChoices": 0,
+          "paused": false
+        }
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C32",
+      "title": "Jednorazowe zebranie",
+      "area": "pickups",
+      "initial": {
+        "pickupXp": 5,
+        "playerXp": 0
+      },
+      "steps": [
+        "same pickup receives two attempted player contacts"
+      ],
+      "expected": {
+        "playerXp": 5,
+        "pickupDestroyed": true,
+        "grantCount": 1
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C33",
+      "title": "Jedna aktywacja przycisku",
+      "area": "ui",
+      "initial": {
+        "button": "enabled and focused",
+        "gamePaused": true
+      },
+      "steps": [
+        "press and release pointer on same button",
+        "drain input queue",
+        "hold Enter for several browser key-repeat events",
+        "release Enter"
+      ],
+      "expected": {
+        "pointerActivations": 1,
+        "keyboardActivations": 1,
+        "worldAdvanced": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C34",
+      "title": "Stare zdarzenie po restarcie",
+      "area": "ui",
+      "initial": {
+        "currentSceneId": 2,
+        "queuedActivation": {
+          "sceneId": 1,
+          "objectId": 7
+        },
+        "currentObjectWithId7": true
+      },
+      "steps": [
+        "drain input queue"
+      ],
+      "expected": {
+        "activationCount": 0,
+        "newSceneState": "unchanged"
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C35",
+      "title": "Identyczna sekwencja losowa",
+      "area": "random",
+      "initial": {
+        "algorithm": "xorshift32",
+        "seed": 1,
+        "shifts": [
+          13,
+          17,
+          5
+        ]
+      },
+      "steps": [
+        "read five unsigned states and divide by 4294967296"
+      ],
+      "expected": {
+        "uint32": [
+          270369,
+          67634689,
+          2647435461,
+          307599695,
+          2398689233
+        ],
+        "numbers": [
+          6.295018829405308e-05,
+          0.015747428173199296,
+          0.6164041024167091,
+          0.07161863497458398,
+          0.5584883580449969
+        ]
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C36",
+      "title": "Te same klucze i grafika",
+      "area": "assets",
+      "initial": {
+        "manifests": "Java and JS common asset package"
+      },
+      "steps": [
+        "compare keys, alias targets and content hashes",
+        "resolve wall"
+      ],
+      "expected": {
+        "keysEqual": true,
+        "hashesEqual": true,
+        "wallResolvesTo": "stone",
+        "ghostPresent": true
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C37",
+      "title": "Zapis sprzed normalizacji",
+      "area": "migration",
+      "initial": {
+        "legacyFiles": "custom student code",
+        "legacyCompletedTasks": [
+          "old-task"
+        ],
+        "newTaskId": "g2d.scene.guided"
+      },
+      "steps": [
+        "migrate twice",
+        "export then import new project"
+      ],
+      "expected": {
+        "legacyArchive": "raw source preserved",
+        "legacySource": "unchanged",
+        "archiveCount": 1,
+        "newTaskAutomaticallyCompleted": false,
+        "engineApiVersionPreserved": true,
+        "starterFilesInjectedAcrossVersions": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C38",
+      "title": "Wynik pary rozwiązań",
+      "area": "portability",
+      "initial": {
+        "fixture": "same seed, scene, input timeline and delta sequence",
+        "implementations": [
+          "Java JDK",
+          "Java TeaVM",
+          "JavaScript"
+        ]
+      },
+      "steps": [
+        "run translated reference scene",
+        "normalize state, events and render commands"
+      ],
+      "expected": {
+        "gameplayStateEqualWithin": 1e-06,
+        "eventOrderEqual": true,
+        "renderCommandGeometryEqualWithin": 1e-06
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C39",
+      "title": "Cienka ściana i cały odcinek ruchu",
+      "area": "movement",
+      "initial": {
+        "player": {
+          "position": [
+            100,
+            100
+          ],
+          "radius": 12,
+          "speed": 600
+        },
+        "wall": {
+          "position": [
+            140,
+            110
+          ],
+          "size": [
+            2,
+            400
+          ]
+        },
+        "worldBounds": null
+      },
+      "steps": [
+        "move(1,0) in WORLD update; step(0.1)"
+      ],
+      "expected": {
+        "position": [
+          127,
+          100
+        ],
+        "crossedWall": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C40",
+      "title": "Ruch wzdłuż ściany",
+      "area": "movement",
+      "initial": {
+        "player": {
+          "position": [
+            100,
+            100
+          ],
+          "radius": 12,
+          "speed": 600
+        },
+        "wall": {
+          "position": [
+            140,
+            110
+          ],
+          "size": [
+            2,
+            400
+          ]
+        },
+        "worldBounds": null
+      },
+      "steps": [
+        "move(1,1) in WORLD update; step(0.1); resolve X then Y"
+      ],
+      "expected": {
+        "position": [
+          127,
+          142.42640687119285
+        ],
+        "crossedWall": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C41",
+      "title": "Fokus i przechwycenie klawisza menu",
+      "area": "ui",
+      "initial": {
+        "buttons": [
+          "A",
+          "B",
+          "C"
+        ],
+        "allInitializedEnabled": true,
+        "menuOpen": true,
+        "worldActionKey": "Enter"
+      },
+      "steps": [
+        "focus A",
+        "Tab",
+        "Tab",
+        "Tab",
+        "Shift+Tab",
+        "press and release Enter to close menu and resume world",
+        "step next frame"
+      ],
+      "expected": {
+        "focusSequence": [
+          "A",
+          "B",
+          "C",
+          "A",
+          "C"
+        ],
+        "chosenButton": "C",
+        "activationCount": 1,
+        "worldActionInClosingFrame": 0,
+        "closedButtonsFocused": false
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C42",
+      "title": "Śmierć w ostatniej klatce ma pierwszeństwo",
+      "area": "run-state",
+      "initial": {
+        "worldElapsed": 119.95,
+        "roundDuration": 120,
+        "playerHp": 1,
+        "state": "RUNNING"
+      },
+      "steps": [
+        "step(0.05) with lethal contact",
+        "resolve RunController in onLateUpdate or earlier onDeath"
+      ],
+      "expected": {
+        "state": "LOST",
+        "lostPanels": 1,
+        "wonPanels": 0,
+        "worldPaused": true
+      },
+      "status": "definition"
+    },
+    {
+      "id": "C43",
+      "title": "HUD pokazuje HP po kontaktach tej samej klatki",
+      "area": "ui",
+      "initial": {
+        "playerHp": 5,
+        "maxHp": 5,
+        "displayedHpFraction": 1
+      },
+      "steps": [
+        "contact damage 2 during physics",
+        "UI HealthView.onLateUpdate",
+        "render same frame"
+      ],
+      "expected": {
+        "playerHp": 3,
+        "displayedHpFraction": 0.6,
+        "extraFrameRequired": false
+      },
+      "status": "definition"
+    }
+  ]
+}

@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { gameLabApi, gameLabMemberDocs, gameLabMembers } from '../data/gameLabApi.js';
+import { callableMembers } from '../services/gameLabCompletions.js';
 
 const example = `class MyGame extends GameLab.Game {
   onCreate() {
     const player = this.createObject('Player');
     player.setPosition(90, 70);
-    player.addComponent(new GameLab.Sprite('player'));
+    player.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01));
+    player.addComponent(new GameLab.CircleCollider2D(12));
     player.addComponent(new GameLab.CharacterController2D());
   }
 
@@ -23,7 +25,7 @@ GameLab.run(MyGame);`;
 const memberEntries = Object.entries(gameLabMembers).flatMap(([owner, names]) => names.map(name => ({
   name,
   category: gameLabApi.find(item => item.name === owner)?.category ?? owner,
-  signature: `${owner}.${name}${['x', 'y', 'rotation', 'scale', 'visualOffset', 'velocity', 'collideWorldBounds', 'width', 'height', 'background', 'text', 'color', 'enabled', 'game', 'gameObject', 'transform', 'easing', 'completed', 'elapsed', 'duration', 'offsetX', 'offsetY', 'target', 'name', 'active', 'destroyed', 'canvas', 'input', 'time', 'objects'].includes(name) ? '' : '(...)'}`,
+  signature: `${owner}.${name}${callableMembers.has(name) && !(['rotation','scale'].includes(name) && owner === 'Transform') ? '(...)' : ''}`,
   description: gameLabMemberDocs[`${owner}.${name}`] ?? gameLabMemberDocs[name] ?? `Element API klasy ${owner}.`,
   example: '',
   kind: 'Method',

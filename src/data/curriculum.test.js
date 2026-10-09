@@ -3,7 +3,7 @@ import { lessons } from './lessons.js';
 import { evaluateChecks } from '../services/lessonValidator.js';
 
 test('reserves a three-digit lesson range for every track', () => {
-  expect(allLessons).toHaveLength(60);
+  expect(allLessons).toHaveLength(72);
   const expected = {
     html: Array.from({ length: 9 }, (_, index) => 101 + index),
     css: Array.from({ length: 6 }, (_, index) => 201 + index),
@@ -11,7 +11,7 @@ test('reserves a three-digit lesson range for every track', () => {
     js: Array.from({ length: 8 }, (_, index) => 401 + index),
     react: Array.from({ length: 8 }, (_, index) => 501 + index),
     php: Array.from({ length: 8 }, (_, index) => 601 + index),
-    'game-dev': Array.from({ length: 12 }, (_, index) => 701 + index),
+    'game-dev': Array.from({ length: 24 }, (_, index) => 701 + index),
     playground: [801],
   };
 

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="32" viewBox="0 0 96 32" shape-rendering="crispEdges">
+  <!-- RPG adventurer: red cloak, silver armour, sword and shield. -->
+  <g transform="translate(0 0)">
+    <path d="M8 13h11v16H6V17h2z" fill="#292539"/>
+    <path d="M8 15h9v12H7V19h1z" fill="#b43c51"/>
+    <path d="M8 15h3v12H8z" fill="#ec6671"/>
+    <rect x="11" y="24" width="5" height="6" fill="#292539"/><rect x="18" y="24" width="5" height="6" fill="#292539"/>
+    <rect x="10" y="29" width="7" height="3" fill="#493846"/><rect x="18" y="29" width="7" height="3" fill="#493846"/>
+    <path d="M11 12h10v3h3v10H10V15h1z" fill="#292539"/>
+    <rect x="12" y="15" width="9" height="8" fill="#7196b3"/>
+    <rect x="12" y="15" width="3" height="6" fill="#c4d9df"/>
+    <rect x="10" y="14" width="4" height="4" fill="#dbe6e5"/><rect x="21" y="14" width="4" height="4" fill="#98b3c8"/>
+    <rect x="11" y="22" width="12" height="3" fill="#704b3d"/><rect x="16" y="22" width="3" height="3" fill="#f4d483"/>
+    <path d="M11 2h11v2h2v7h-2v3H11v-2H9V4h2z" fill="#292539"/>
+    <rect x="11" y="5" width="11" height="7" fill="#e5ae83"/>
+    <rect x="13" y="10" width="9" height="3" fill="#bd775e"/>
+    <path d="M11 3h10v2h2v2h-4V5h-7v3H10V4h1z" fill="#f1ca6b"/>
+    <rect x="11" y="3" width="7" height="2" fill="#fff0b0"/>
+    <rect x="18" y="7" width="2" height="2" fill="#292539"/><rect x="21" y="7" width="2" height="2" fill="#292539"/>
+    <path d="M4 17h6v9H8v2H6v-2H4z" fill="#292539"/>
+    <path d="M5 18h4v7H7v1H6v-1H5z" fill="#d4c194"/><rect x="6" y="19" width="2" height="5" fill="#a9534e"/>
+    <rect x="27" y="6" width="2" height="15" fill="#292539"/><rect x="27" y="7" width="1" height="12" fill="#f0f4e9"/>
+    <rect x="25" y="19" width="6" height="2" fill="#ecc777"/><rect x="27" y="21" width="2" height="5" fill="#79544a"/>
+  </g>
+  <g transform="translate(32 0)">
+    <path d="M10 6h12v2h4v4h3v13h-3v3H6v-3H3V12h3V8h4z" fill="#20283e"/>
+    <path d="M10 8h12v2h4v4h1v9h-3v3H8v-3H5v-9h1v-4h4z" fill="#3975c7"/>
+    <path d="M10 10h10v2H9v3H7v-3h3z" fill="#7acbfa"/>
+    <rect x="8" y="16" width="5" height="5" fill="#f6efdf"/><rect x="20" y="16" width="5" height="5" fill="#f6efdf"/>
+    <rect x="11" y="18" width="2" height="3" fill="#20283e"/><rect x="23" y="18" width="2" height="3" fill="#20283e"/>
+    <rect x="14" y="23" width="6" height="2" fill="#20283e"/><rect x="6" y="23" width="3" height="2" fill="#27528f"/>
+  </g>
+  <g transform="translate(64 0)">
+    <path d="M10 6h12v2h4v4h3v13h-3v3H6v-3H3V12h3V8h4z" fill="#352239"/>
+    <path d="M10 8h12v2h4v4h1v9h-3v3H8v-3H5v-9h1v-4h4z" fill="#cf4b60"/>
+    <path d="M10 10h10v2H9v3H7v-3h3z" fill="#ff9a91"/>
+    <rect x="8" y="16" width="5" height="5" fill="#fff0d6"/><rect x="20" y="16" width="5" height="5" fill="#fff0d6"/>
+    <rect x="11" y="18" width="2" height="3" fill="#352239"/><rect x="23" y="18" width="2" height="3" fill="#352239"/>
+    <rect x="14" y="23" width="6" height="2" fill="#352239"/><rect x="6" y="23" width="3" height="2" fill="#963451"/>
+  </g>
+</svg>

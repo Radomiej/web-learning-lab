@@ -1,0 +1,11 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+const root = new URL('../shared/lab-game-v2/assets/', import.meta.url);
+const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8'));
+const constants = Object.fromEntries(manifest.assets.map(asset => [asset.constant, asset.key]));
+for (const [name, key] of Object.entries(manifest.aliases)) constants[name] = key;
+writeFileSync(new URL('Assets.js', root), `// Generated from manifest.json. Run node scripts/generate-lab-assets.mjs.\nexport const assetManifest = ${JSON.stringify(manifest, null, 2)};\nexport const Assets = Object.freeze(${JSON.stringify(constants, null, 2)});\n`);
+const names = Object.entries(constants).map(([name, key]) => `    ${name}(${JSON.stringify(key)})`).join(',\n');
+const javaSource = `package engine;\n/** Generated from the shared asset manifest. */\npublic enum Assets {\n${names};\n    private final String key;\n    Assets(String key) { this.key = key; }\n    public String key() { return key; }\n}\n`;
+writeFileSync(new URL('Assets.java', root), javaSource);
+writeFileSync(new URL('AssetsJava.js', root), `// Generated Java source for the in-browser compiler.\nexport const assetsJavaSource = ${JSON.stringify(javaSource)};\n`);
+console.log(`Generated ${Object.keys(constants).length} Assets constants`);

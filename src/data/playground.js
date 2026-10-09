@@ -1,6 +1,7 @@
 import { createLesson } from './lessonFactories.js';
 
 export const playgroundProject = {
+  engineApiVersion: '2.0.0',
   entry: 'index.html', runtime: { kind: 'game-js' },
   files: {
     'index.html': `<!doctype html>

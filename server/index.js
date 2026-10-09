@@ -1,3 +1,4 @@
+import { sendTutorStream } from '../shared/lab-game-v2/tutorStream.js';
 import { createServer } from 'node:http';
 import { createTutorHandler } from './tutor.js';
 import { listFreeOpenRouterModels } from './freeModels.js';
@@ -34,6 +35,7 @@ export const server = createServer(async (req, res) => {
     }
     let payload;
     try { payload = JSON.parse(Buffer.concat(chunks).toString()); } catch { return send(res, 400, { message: 'Nieprawidłowy JSON.' }); }
+    if (payload.stream === true) return await sendTutorStream(res, handler, payload, controller.signal);
     const result = await handler(payload, controller.signal);
     if (!res.destroyed) send(res, result.status, result.body);
   } catch {

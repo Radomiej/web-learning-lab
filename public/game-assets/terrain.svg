@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="32" viewBox="0 0 64 32" shape-rendering="crispEdges">
+  <!-- Seamless ground: all four edges have the same base colour. -->
+  <g>
+    <rect width="32" height="32" fill="#354c35"/>
+    <path d="M4 6h2v2H4zM20 4h2v2h-2zM12 20h2v2h-2zM26 24h2v2h-2zM6 26h2v2H6z" fill="#3c553a"/>
+    <path d="M8 12h2v4H8zM10 14h2v2h-2zM22 14h2v4h-2zM24 16h2v2h-2zM16 26h2v2h-2z" fill="#45613e"/>
+    <path d="M14 8h2v2h-2zM4 20h2v2H4zM18 18h2v2h-2zM26 8h2v2h-2z" fill="#304630"/>
+  </g>
+  <g transform="translate(32 0)">
+    <rect x="3" y="26" width="26" height="3" fill="#26352b"/>
+    <path d="M4 10h2V6h20v4h2v16H4z" fill="#251f26"/>
+    <path d="M6 10V8h20v2h-2v6H8v-6z" fill="#b88345"/>
+    <rect x="6" y="17" width="20" height="7" fill="#805434"/>
+    <path d="M8 8h2v16H8zM22 8h2v16h-2zM6 14h20v3H6z" fill="#d1ae64"/>
+    <rect x="14" y="13" width="4" height="6" fill="#f2cd71"/>
+    <rect x="15" y="15" width="2" height="2" fill="#4b392e"/>
+  </g>
+</svg>

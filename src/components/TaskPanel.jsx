@@ -1,4 +1,5 @@
 import TaskList from './TaskList.jsx';
+import MovementHint from '../../shared/lab-game-v2/editor/MovementHint.jsx';
 
 export default function TaskPanel({ lesson, activeTask, completedTasks, onTaskChange }) {
   return (
@@ -18,6 +19,7 @@ export default function TaskPanel({ lesson, activeTask, completedTasks, onTaskCh
       <div className="task-prompt">
         <span className="prompt-label">{activeTask.mode === 'challenge' ? 'Wyzwanie' : 'Cel zadania'}</span>
         <p>{activeTask.prompt}</p>
+        <MovementHint key={activeTask.id} taskId={activeTask.id} language="js" />
         <ol aria-label="Wymagania zadania">{activeTask.checks.filter(check => check.type !== 'runtimeError').map(check => <li key={check.id}>{check.label}</li>)}</ol>
         {activeTask.hint && <p className="task-hint"><strong>Podpowiedź:</strong> {activeTask.hint}</p>}
       </div>

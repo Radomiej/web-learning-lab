@@ -1,0 +1,1902 @@
+{
+  "engineApiVersion": "2.0.0",
+  "languages": [
+    "Java",
+    "JavaScript"
+  ],
+  "coordinates": {
+    "position": "object center",
+    "units": "pixels",
+    "positiveY": "down",
+    "rotation": "radians",
+    "input": "canvas CSS pixels"
+  },
+  "frame": {
+    "maximumDeltaSeconds": 0.1,
+    "phases": [
+      "create",
+      "UI update",
+      "WORLD update",
+      "physics",
+      "late update",
+      "world render",
+      "UI render",
+      "input edges clear"
+    ],
+    "pause": "WORLD and world time stop; UI and unscaled time continue"
+  },
+  "types": [
+    {
+      "name": "Game",
+      "category": "Scena",
+      "signature": "class Game",
+      "description": "Bazowa klasa sceny. Nadpisz hooki onCreate/onUpdate; stan gry trzymaj w scenie lub komponentach.",
+      "example": "class MyGame extends GameLab.Game {\n  onCreate() {\n    const player = this.createObject(\"Player\");\n  }\n}\nGameLab.run(MyGame);",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "canvas",
+          "description": null
+        },
+        {
+          "name": "input",
+          "description": null
+        },
+        {
+          "name": "time",
+          "description": null
+        },
+        {
+          "name": "physics",
+          "description": null
+        },
+        {
+          "name": "random",
+          "description": null
+        },
+        {
+          "name": "background",
+          "description": null
+        },
+        {
+          "name": "createObject",
+          "description": "Tworzy obiekt sceny: createObject(name?) → GameObject."
+        },
+        {
+          "name": "find",
+          "description": "Znajduje pierwszy nieusunięty obiekt po nazwie: find(name) → GameObject | null."
+        },
+        {
+          "name": "getObjects",
+          "description": null
+        },
+        {
+          "name": "getObjectsWith",
+          "description": null
+        },
+        {
+          "name": "getObjectsWithTag",
+          "description": null
+        },
+        {
+          "name": "pause",
+          "description": null
+        },
+        {
+          "name": "resume",
+          "description": null
+        },
+        {
+          "name": "isPaused",
+          "description": null
+        },
+        {
+          "name": "setWorldBounds",
+          "description": null
+        },
+        {
+          "name": "clearWorldBounds",
+          "description": null
+        },
+        {
+          "name": "getViewportWidth",
+          "description": null
+        },
+        {
+          "name": "getViewportHeight",
+          "description": null
+        },
+        {
+          "name": "onCreate",
+          "description": "Hook uruchamiany raz po utworzeniu sceny/komponentu."
+        },
+        {
+          "name": "onUpdate",
+          "description": "Hook każdej klatki. delta to czas w sekundach; używaj jej do ruchu niezależnego od FPS."
+        },
+        {
+          "name": "onDrawUI",
+          "description": "Rysuje HUD nad światem. Użyj this.canvas w scenie."
+        },
+        {
+          "name": "onDestroy",
+          "description": "Hook sprzątający wywoływany przy niszczeniu."
+        }
+      ]
+    },
+    {
+      "name": "GameObject",
+      "category": "Obiekty",
+      "signature": "class GameObject",
+      "description": "Obiekt sceny z nazwą, pozycją, skalą i komponentami. Tworzy go Game.createObject().",
+      "example": "const enemy = this.createObject(\"Enemy\");\nenemy.setPosition(120, 80);",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "id",
+          "description": null
+        },
+        {
+          "name": "name",
+          "description": null
+        },
+        {
+          "name": "game",
+          "description": null
+        },
+        {
+          "name": "transform",
+          "description": null
+        },
+        {
+          "name": "active",
+          "description": null
+        },
+        {
+          "name": "destroyed",
+          "description": null
+        },
+        {
+          "name": "setPosition",
+          "description": "Ustawia pozycję środka obiektu w pikselach: setPosition(x, y). Zwraca obiekt."
+        },
+        {
+          "name": "setActive",
+          "description": null
+        },
+        {
+          "name": "addComponent",
+          "description": "Dodaje nową instancję Component do obiektu i zwraca komponent."
+        },
+        {
+          "name": "getComponent",
+          "description": "Zwraca pierwszy komponent danego typu albo null: getComponent(GameLab.Sprite)."
+        },
+        {
+          "name": "getComponents",
+          "description": null
+        },
+        {
+          "name": "requireComponent",
+          "description": null
+        },
+        {
+          "name": "hasComponent",
+          "description": null
+        },
+        {
+          "name": "removeComponent",
+          "description": null
+        },
+        {
+          "name": "removeComponents",
+          "description": null
+        },
+        {
+          "name": "onComponentChange",
+          "description": null
+        },
+        {
+          "name": "addTag",
+          "description": null
+        },
+        {
+          "name": "removeTag",
+          "description": null
+        },
+        {
+          "name": "hasTag",
+          "description": null
+        },
+        {
+          "name": "getTags",
+          "description": null
+        },
+        {
+          "name": "destroy",
+          "description": "Usuwa obiekt i uruchamia onDestroy() jego komponentów."
+        }
+      ]
+    },
+    {
+      "name": "Component",
+      "category": "Komponenty",
+      "signature": "class Component",
+      "description": "Bazowa klasa własnych zachowań. this.gameObject wskazuje właściciela, a this.game zwraca scenę.",
+      "example": "class PlayerMove extends GameLab.Component {\n  onUpdate(delta) {\n    this.transform.x += 80 * delta;\n  }\n}",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "game",
+          "description": null
+        },
+        {
+          "name": "gameObject",
+          "description": null
+        },
+        {
+          "name": "transform",
+          "description": null
+        },
+        {
+          "name": "enabled",
+          "description": null
+        },
+        {
+          "name": "setEnabled",
+          "description": null
+        },
+        {
+          "name": "updateMode",
+          "description": null
+        },
+        {
+          "name": "onCreate",
+          "description": "Hook uruchamiany raz po utworzeniu sceny/komponentu."
+        },
+        {
+          "name": "onUpdate",
+          "description": "Hook każdej klatki. delta to czas w sekundach; używaj jej do ruchu niezależnego od FPS."
+        },
+        {
+          "name": "onLateUpdate",
+          "description": null
+        },
+        {
+          "name": "onDrawUI",
+          "description": "Rysuje HUD nad światem. Użyj this.canvas w scenie."
+        },
+        {
+          "name": "onDestroy",
+          "description": "Hook sprzątający wywoływany przy niszczeniu."
+        },
+        {
+          "name": "onCollision",
+          "description": "Reakcja na fizyczny kontakt z innym GameObject."
+        },
+        {
+          "name": "onTrigger",
+          "description": "Reakcja na kontakt z obszarem Trigger2D bez blokowania ruchu."
+        },
+        {
+          "name": "onComponentChange",
+          "description": null
+        },
+        {
+          "name": "getComponent",
+          "description": "Zwraca pierwszy komponent danego typu albo null: getComponent(GameLab.Sprite)."
+        },
+        {
+          "name": "getComponents",
+          "description": null
+        },
+        {
+          "name": "requireComponent",
+          "description": null
+        },
+        {
+          "name": "hasComponent",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Transform",
+      "category": "Obiekty",
+      "signature": "class Transform",
+      "description": "Pozycja x/y (środek w pikselach), rotation w radianach, scale oraz visualOffset.",
+      "example": "player.transform.x = 120;\nplayer.transform.scale.x = 1.2;",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "x",
+          "description": "Pozycja pozioma środka obiektu w pikselach."
+        },
+        {
+          "name": "y",
+          "description": "Pozycja pionowa środka obiektu w pikselach; dodatni kierunek biegnie w dół."
+        },
+        {
+          "name": "rotation",
+          "description": "Obrót w radianach."
+        },
+        {
+          "name": "scale",
+          "description": "Skala grafiki w osiach x/y; nie zmienia rozmiaru kolizji."
+        },
+        {
+          "name": "visualOffset",
+          "description": "Tymczasowe przesunięcie grafiki, np. shake; nie zmienia fizycznej pozycji."
+        }
+      ]
+    },
+    {
+      "name": "ShapeRenderer",
+      "category": "Grafika i UI",
+      "signature": "new ShapeRenderer(width?, height?, color?)",
+      "description": "Rysuje prostokąt wyśrodkowany na obiekcie. Domyślnie 32×32 px.",
+      "example": "object.addComponent(new GameLab.ShapeRenderer(48, 32, \"#70c994\"));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        },
+        {
+          "name": "color",
+          "description": null
+        },
+        {
+          "name": "space",
+          "description": null
+        },
+        {
+          "name": "layer",
+          "description": null
+        },
+        {
+          "name": "order",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Sprite",
+      "category": "Grafika i UI",
+      "signature": "new Sprite(texture, width?, height?)",
+      "description": "Rysuje teksturę ze wspólnego katalogu Assets: postacie, przeciwnicy, pociski, świat i UI.",
+      "example": "object.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01, 32, 32));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "texture",
+          "description": null
+        },
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        },
+        {
+          "name": "flipX",
+          "description": null
+        },
+        {
+          "name": "flipY",
+          "description": null
+        },
+        {
+          "name": "space",
+          "description": null
+        },
+        {
+          "name": "layer",
+          "description": null
+        },
+        {
+          "name": "order",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "TextRenderer",
+      "category": "Grafika i UI",
+      "signature": "new TextRenderer(text, fontSize?, color?)",
+      "description": "Tekst w pozycji obiektu. Domyślnie world; space=\"screen\" lub UITransform tworzy HUD. text może być funkcją.",
+      "example": "const hud=this.createObject(\"HUD\").setPosition(10,24);\nhud.addComponent(new GameLab.TextRenderer(() => `Punkty: ${this.points}`)).space=\"screen\";",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "text",
+          "description": "Napis albo funkcja zwracająca aktualny tekst; null oznacza ukrycie napisu."
+        },
+        {
+          "name": "fontSize",
+          "description": null
+        },
+        {
+          "name": "color",
+          "description": null
+        },
+        {
+          "name": "enabled",
+          "description": null
+        },
+        {
+          "name": "space",
+          "description": null
+        },
+        {
+          "name": "layer",
+          "description": null
+        },
+        {
+          "name": "order",
+          "description": null
+        },
+        {
+          "name": "align",
+          "description": null
+        },
+        {
+          "name": "baseline",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "ControlsHint",
+      "category": "Grafika i UI",
+      "signature": "new ControlsHint(text?)",
+      "description": "Opcjonalna instrukcja na dole canvasu. Znika po kliknięciu planszy, wraca po utracie fokusu. Bez dodania komponentu instrukcja nie jest wyświetlana.",
+      "example": "player.addComponent(new GameLab.ControlsHint(\"Kliknij planszę. WASD: ruch\"));",
+      "kind": "Constructor",
+      "members": []
+    },
+    {
+      "name": "Camera2D",
+      "category": "Grafika i UI",
+      "signature": "new Camera2D()",
+      "description": "Pierwsza aktywna kamera przesuwa świat. offsetX/Y to przesunięcie widoku; follow(target) utrzymuje gracza w środku ekranu. Fizyczne pozycje i HUD pozostają niezależne od widoku.",
+      "example": "const cameraObject = this.createObject(\"Camera\");\nconst camera = cameraObject.addComponent(new GameLab.Camera2D());\ncamera.follow(player);\ncamera.shake(4, 0.2);",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "offsetX",
+          "description": "Przesunięcie kamery w osi X, w pikselach świata."
+        },
+        {
+          "name": "offsetY",
+          "description": "Przesunięcie kamery w osi Y, w pikselach świata."
+        },
+        {
+          "name": "follow",
+          "description": "follow(target) — utrzymuje obiekt z tej samej sceny na środku canvasu."
+        },
+        {
+          "name": "stopFollowing",
+          "description": "stopFollowing() — odłącza cel; widok korzysta z offsetX/Y."
+        },
+        {
+          "name": "shake",
+          "description": "shake(strength, seconds) — drżenie widoku kamery, bez zmiany fizycznej pozycji obiektów."
+        },
+        {
+          "name": "stopShake",
+          "description": "stopShake() — kończy drżenie kamery."
+        },
+        {
+          "name": "getView",
+          "description": null
+        },
+        {
+          "name": "worldToScreen",
+          "description": null
+        },
+        {
+          "name": "screenToWorld",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "TileMap",
+      "category": "Grafika i UI",
+      "signature": "new TileMap(\"grass\" | \"sand\", tileSize?)",
+      "description": "Kafelkowe tło świata; przesuwa się z kamerą. Nie tworzy kolizji.",
+      "example": "const ground = this.createObject(\"Ground\");\nground.addComponent(new GameLab.TileMap(\"grass\", 32));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "texture",
+          "description": null
+        },
+        {
+          "name": "tileSize",
+          "description": null
+        },
+        {
+          "name": "layer",
+          "description": null
+        },
+        {
+          "name": "order",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "InputManager",
+      "category": "Wejście",
+      "signature": "class InputManager",
+      "description": "Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach CSS canvas; naciśnięcie i zwolnienie trwają jedną klatkę.",
+      "example": "if (this.game.input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {\n  const p=this.game.input.getPointerPosition();\n}",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "isKeyDown",
+          "description": "Sprawdza, czy klawisz jest trzymany. Np. isKeyDown(\"w\")."
+        },
+        {
+          "name": "isKeyPressed",
+          "description": "Sprawdza nowe naciśnięcie w bieżącej klatce. Np. isKeyPressed(\"Space\")."
+        },
+        {
+          "name": "isKeyReleased",
+          "description": null
+        },
+        {
+          "name": "consumeKey",
+          "description": null
+        },
+        {
+          "name": "getPointerPosition",
+          "description": null
+        },
+        {
+          "name": "isMouseDown",
+          "description": null
+        },
+        {
+          "name": "isMousePressed",
+          "description": null
+        },
+        {
+          "name": "isMouseReleased",
+          "description": null
+        },
+        {
+          "name": "consumeMouse",
+          "description": null
+        },
+        {
+          "name": "MOUSE_LEFT",
+          "description": null
+        },
+        {
+          "name": "MOUSE_MIDDLE",
+          "description": null
+        },
+        {
+          "name": "MOUSE_RIGHT",
+          "description": null
+        },
+        {
+          "name": "MOUSE_BACK",
+          "description": null
+        },
+        {
+          "name": "MOUSE_FORWARD",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Canvas",
+      "category": "Grafika i UI",
+      "signature": "class Canvas",
+      "description": "Dostęp przez this.canvas. Rozmiar planszy jest dostępny jako width/height. Rysuj elementy HUD w onDrawUI().",
+      "example": "this.canvas.drawText(\"Punkty: 0\", 12, 24, 16, \"white\");",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "drawRect",
+          "description": "Rysuje prostokąt ze środkiem w (x, y): drawRect(x, y, width, height, color?)."
+        },
+        {
+          "name": "drawText",
+          "description": "Rysuje tekst: drawText(text, x, y, fontSize?, color?, align?, baseline?). Domyślnie wyśrodkowany."
+        },
+        {
+          "name": "drawTileMap",
+          "description": "Wewnętrzna operacja rendererowa do rysowania kafelków."
+        },
+        {
+          "name": "drawSprite",
+          "description": "Wewnętrzna operacja rendererowa. Do użycia w kursie dodaj GameLab.Sprite."
+        },
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "CharacterController2D",
+      "category": "Ruch i kolizje",
+      "signature": "move(x, y, speed = 120)",
+      "description": "Ustawia prędkość w px/s, normalizuje ruch po przekątnej. Wywołuj w każdej klatce onUpdate().",
+      "example": "this.gameObject.addComponent(new GameLab.CharacterController2D());\ncontroller.move(1, 0, 120);",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "move",
+          "description": "Ustawia wektor ruchu na tę klatkę: move(x, y, speed?). Kierunek jest normalizowany."
+        },
+        {
+          "name": "velocity",
+          "description": "Bieżąca prędkość w pikselach na sekundę."
+        },
+        {
+          "name": "constrainToBounds",
+          "description": "Gdy true, ruch jest ograniczony jawnymi Game.setWorldBounds; canvas nie wyznacza granic świata."
+        },
+        {
+          "name": "onAfterMove",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Collider2D",
+      "category": "Ruch i kolizje",
+      "signature": "new Collider2D(width?, height?)",
+      "description": "Jawna prostokątna bryła 32×32. Rozmiar kolizji nie zależy od sprite ani skali grafiki. layer/mask filtrują kontakty.",
+      "example": "wall.addComponent(new GameLab.Collider2D(40,80));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        },
+        {
+          "name": "layer",
+          "description": null
+        },
+        {
+          "name": "mask",
+          "description": null
+        },
+        {
+          "name": "isTrigger",
+          "description": null
+        },
+        {
+          "name": "onContactEnter",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "CircleCollider2D",
+      "category": "Ruch i kolizje",
+      "signature": "new CircleCollider2D(radius)",
+      "description": "Jawna kołowa bryła o promieniu w pikselach świata.",
+      "example": "player.addComponent(new GameLab.CircleCollider2D(12));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "radius",
+          "description": "Promień kołowego collidera albo dystans obiegania FlankTarget2D, w pikselach świata."
+        },
+        {
+          "name": "layer",
+          "description": null
+        },
+        {
+          "name": "mask",
+          "description": null
+        },
+        {
+          "name": "isTrigger",
+          "description": null
+        },
+        {
+          "name": "onContactEnter",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Projectile2D",
+      "category": "Ruch i kolizje",
+      "signature": "new Projectile2D(dx, dy, speed?, lifetime?, owner?)",
+      "description": "Pocisk wykrywa cele na całej drodze ruchu. owner, hitLayers i maxHits wybierają trafienia.",
+      "example": "shot.addComponent(new GameLab.Projectile2D(1,0,300,2,player));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "direction",
+          "description": null
+        },
+        {
+          "name": "speed",
+          "description": "Prędkość AI w pikselach na sekundę; skończona i nieujemna."
+        },
+        {
+          "name": "remainingLifetime",
+          "description": null
+        },
+        {
+          "name": "owner",
+          "description": null
+        },
+        {
+          "name": "maxHits",
+          "description": null
+        },
+        {
+          "name": "hitLayers",
+          "description": null
+        },
+        {
+          "name": "hits",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Assets",
+      "category": "Zasoby",
+      "signature": "GameLab.Assets.PLAYER01",
+      "description": "Wspólny katalog sprite i UI. Java używa enum Assets, JavaScript zamrożonych stałych o tych samych nazwach.",
+      "example": "player.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01));",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "PLAYER01",
+          "description": null
+        },
+        {
+          "name": "KNIGHT",
+          "description": null
+        },
+        {
+          "name": "RANGER",
+          "description": null
+        },
+        {
+          "name": "WIZARD",
+          "description": null
+        },
+        {
+          "name": "CLERIC",
+          "description": null
+        },
+        {
+          "name": "ROGUE",
+          "description": null
+        },
+        {
+          "name": "PALADIN",
+          "description": null
+        },
+        {
+          "name": "MONK",
+          "description": null
+        },
+        {
+          "name": "VAMPIRE",
+          "description": null
+        },
+        {
+          "name": "WARRIOR",
+          "description": null
+        },
+        {
+          "name": "SLIME",
+          "description": null
+        },
+        {
+          "name": "SLIME_BLUE",
+          "description": null
+        },
+        {
+          "name": "SLIME_RED",
+          "description": null
+        },
+        {
+          "name": "SLIME_PURPLE",
+          "description": null
+        },
+        {
+          "name": "BAT",
+          "description": null
+        },
+        {
+          "name": "GHOST",
+          "description": null
+        },
+        {
+          "name": "SKELETON",
+          "description": null
+        },
+        {
+          "name": "ZOMBIE",
+          "description": null
+        },
+        {
+          "name": "GOBLIN",
+          "description": null
+        },
+        {
+          "name": "ORC",
+          "description": null
+        },
+        {
+          "name": "SPIDER",
+          "description": null
+        },
+        {
+          "name": "WOLF",
+          "description": null
+        },
+        {
+          "name": "MUSHROOM_MONSTER",
+          "description": null
+        },
+        {
+          "name": "FLOATING_EYE",
+          "description": null
+        },
+        {
+          "name": "BOSS_DEMON",
+          "description": null
+        },
+        {
+          "name": "FIREBALL",
+          "description": null
+        },
+        {
+          "name": "ICE_BOLT",
+          "description": null
+        },
+        {
+          "name": "LIGHTNING_BOLT",
+          "description": null
+        },
+        {
+          "name": "MAGIC_ORB",
+          "description": null
+        },
+        {
+          "name": "POISON_BALL",
+          "description": null
+        },
+        {
+          "name": "ARROW",
+          "description": null
+        },
+        {
+          "name": "KNIFE",
+          "description": null
+        },
+        {
+          "name": "STAKE",
+          "description": null
+        },
+        {
+          "name": "BOMB",
+          "description": null
+        },
+        {
+          "name": "ENERGY_WAVE",
+          "description": null
+        },
+        {
+          "name": "SWORD",
+          "description": null
+        },
+        {
+          "name": "AXE",
+          "description": null
+        },
+        {
+          "name": "BOW",
+          "description": null
+        },
+        {
+          "name": "WAND",
+          "description": null
+        },
+        {
+          "name": "CROSSBOW",
+          "description": null
+        },
+        {
+          "name": "SPEAR",
+          "description": null
+        },
+        {
+          "name": "HAMMER",
+          "description": null
+        },
+        {
+          "name": "HOLY_CROSS",
+          "description": null
+        },
+        {
+          "name": "SPELL_BOOK",
+          "description": null
+        },
+        {
+          "name": "SHIELD",
+          "description": null
+        },
+        {
+          "name": "EXPLOSION",
+          "description": null
+        },
+        {
+          "name": "FROST_BURST",
+          "description": null
+        },
+        {
+          "name": "MAGIC_BURST",
+          "description": null
+        },
+        {
+          "name": "SLASH",
+          "description": null
+        },
+        {
+          "name": "IMPACT",
+          "description": null
+        },
+        {
+          "name": "COIN",
+          "description": null
+        },
+        {
+          "name": "GEM",
+          "description": null
+        },
+        {
+          "name": "HEART",
+          "description": null
+        },
+        {
+          "name": "POTION",
+          "description": null
+        },
+        {
+          "name": "POTION_MANA",
+          "description": null
+        },
+        {
+          "name": "POTION_POISON",
+          "description": null
+        },
+        {
+          "name": "CHEST",
+          "description": null
+        },
+        {
+          "name": "CHEST_WOOD",
+          "description": null
+        },
+        {
+          "name": "KEY_SILVER",
+          "description": null
+        },
+        {
+          "name": "KEY_GOLD",
+          "description": null
+        },
+        {
+          "name": "TREE",
+          "description": null
+        },
+        {
+          "name": "PINE",
+          "description": null
+        },
+        {
+          "name": "TREE_DEAD",
+          "description": null
+        },
+        {
+          "name": "BUSH",
+          "description": null
+        },
+        {
+          "name": "ROCK",
+          "description": null
+        },
+        {
+          "name": "BOULDER",
+          "description": null
+        },
+        {
+          "name": "BARREL",
+          "description": null
+        },
+        {
+          "name": "CRATE",
+          "description": null
+        },
+        {
+          "name": "GRAVESTONE",
+          "description": null
+        },
+        {
+          "name": "FENCE",
+          "description": null
+        },
+        {
+          "name": "CAMPFIRE",
+          "description": null
+        },
+        {
+          "name": "MUSHROOM_RED",
+          "description": null
+        },
+        {
+          "name": "MUSHROOM_BROWN",
+          "description": null
+        },
+        {
+          "name": "GRASS_TUFT",
+          "description": null
+        },
+        {
+          "name": "STONE",
+          "description": null
+        },
+        {
+          "name": "UI_PANEL_BRONZE",
+          "description": null
+        },
+        {
+          "name": "UI_PANEL_BLUE",
+          "description": null
+        },
+        {
+          "name": "UI_PANEL_WOOD",
+          "description": null
+        },
+        {
+          "name": "UI_PANEL_PARCHMENT",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_RED",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_RED_PRESSED",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_BLUE",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_BLUE_PRESSED",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_GREEN",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_GREEN_PRESSED",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_GOLD",
+          "description": null
+        },
+        {
+          "name": "UI_BUTTON_GRAY",
+          "description": null
+        },
+        {
+          "name": "UI_SLOT_BRONZE",
+          "description": null
+        },
+        {
+          "name": "UI_SLOT_GOLD",
+          "description": null
+        },
+        {
+          "name": "UI_SLOT_PURPLE",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_HEALTH",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_EXPERIENCE",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_GOLD",
+          "description": null
+        },
+        {
+          "name": "UI_HEART",
+          "description": null
+        },
+        {
+          "name": "UI_STAR",
+          "description": null
+        },
+        {
+          "name": "UI_GEAR",
+          "description": null
+        },
+        {
+          "name": "UI_PAUSE",
+          "description": null
+        },
+        {
+          "name": "UI_PLAY",
+          "description": null
+        },
+        {
+          "name": "UI_CLOSE",
+          "description": null
+        },
+        {
+          "name": "UI_UPGRADE",
+          "description": null
+        },
+        {
+          "name": "PROJECTILE",
+          "description": null
+        },
+        {
+          "name": "GRASS",
+          "description": null
+        },
+        {
+          "name": "DIRT",
+          "description": null
+        },
+        {
+          "name": "SAND",
+          "description": null
+        },
+        {
+          "name": "WOOD",
+          "description": null
+        },
+        {
+          "name": "LEAVES",
+          "description": null
+        },
+        {
+          "name": "WATER",
+          "description": null
+        },
+        {
+          "name": "COAL_ORE",
+          "description": null
+        },
+        {
+          "name": "WALL",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_HEALTH_FRAME",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_HEALTH_FILL",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_HEALTH_TRACK",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_EXPERIENCE_FRAME",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_EXPERIENCE_FILL",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_EXPERIENCE_TRACK",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_GOLD_FRAME",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_GOLD_FILL",
+          "description": null
+        },
+        {
+          "name": "UI_BAR_GOLD_TRACK",
+          "description": null
+        },
+        {
+          "name": "PLAYER",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "UITransform",
+      "category": "Grafika i UI",
+      "signature": "new UITransform(width?, height?)",
+      "description": "Wymiary, kotwica i pivot UI. Pozycja obiektu wyznacza margines od kotwicy.",
+      "example": "const ui=panel.addComponent(new GameLab.UITransform(200,30));\nui.anchor=GameLab.UIAnchor.TOP_LEFT;",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        },
+        {
+          "name": "anchor",
+          "description": null
+        },
+        {
+          "name": "pivot",
+          "description": null
+        },
+        {
+          "name": "getBounds",
+          "description": null
+        },
+        {
+          "name": "getCenter",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "UIAnchor",
+      "category": "Grafika i UI",
+      "signature": "GameLab.UIAnchor.TOP_LEFT",
+      "description": "Kotwice: TOP_LEFT, TOP_CENTER, TOP_RIGHT, CENTER_LEFT, CENTER, CENTER_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT.",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "TOP_LEFT",
+          "description": null
+        },
+        {
+          "name": "TOP_CENTER",
+          "description": null
+        },
+        {
+          "name": "TOP_RIGHT",
+          "description": null
+        },
+        {
+          "name": "CENTER_LEFT",
+          "description": null
+        },
+        {
+          "name": "CENTER",
+          "description": null
+        },
+        {
+          "name": "CENTER_RIGHT",
+          "description": null
+        },
+        {
+          "name": "BOTTOM_LEFT",
+          "description": null
+        },
+        {
+          "name": "BOTTOM_CENTER",
+          "description": null
+        },
+        {
+          "name": "BOTTOM_RIGHT",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "ProgressBar",
+      "category": "Grafika i UI",
+      "signature": "new ProgressBar(width?, height?)",
+      "description": "Osobne frame/track/fill z atlasu. setProgress(50) przyjmuje procent, setValue(value,max) przelicza wartość.",
+      "example": "const pb=hud.addComponent(new GameLab.ProgressBar(200,20));\npb.setProgress(50);",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "setProgress",
+          "description": null
+        },
+        {
+          "name": "getProgress",
+          "description": null
+        },
+        {
+          "name": "setValue",
+          "description": null
+        },
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        },
+        {
+          "name": "frame",
+          "description": null
+        },
+        {
+          "name": "track",
+          "description": null
+        },
+        {
+          "name": "fill",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "category": "Grafika i UI",
+      "signature": "new Button(width?, height?)",
+      "description": "Rozciągana grafika 9patch, onClick, fokus i klawiatura. Aktywacja po zwolnieniu myszy lub Enter/Space.",
+      "example": "const button=menu.addComponent(new GameLab.Button(160,44));\nbutton.text=\"Start\";button.onClick=()=>this.resume();",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
+        },
+        {
+          "name": "texture",
+          "description": null
+        },
+        {
+          "name": "border",
+          "description": null
+        },
+        {
+          "name": "text",
+          "description": "Napis albo funkcja zwracająca aktualny tekst; null oznacza ukrycie napisu."
+        },
+        {
+          "name": "onClick",
+          "description": null
+        },
+        {
+          "name": "activate",
+          "description": null
+        },
+        {
+          "name": "focus",
+          "description": null
+        },
+        {
+          "name": "blur",
+          "description": null
+        },
+        {
+          "name": "isFocused",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Vector2",
+      "category": "Matematyka",
+      "signature": "new Vector2(x?, y?)",
+      "description": "Wektor x/y; set, copy, length i normalized.",
+      "example": "const direction=new GameLab.Vector2(1,1).normalized();",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "x",
+          "description": "Pozycja pozioma środka obiektu w pikselach."
+        },
+        {
+          "name": "y",
+          "description": "Pozycja pionowa środka obiektu w pikselach; dodatni kierunek biegnie w dół."
+        },
+        {
+          "name": "set",
+          "description": null
+        },
+        {
+          "name": "copy",
+          "description": null
+        },
+        {
+          "name": "length",
+          "description": null
+        },
+        {
+          "name": "lengthSquared",
+          "description": null
+        },
+        {
+          "name": "normalized",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Random",
+      "category": "Matematyka",
+      "signature": "new Random(seed?)",
+      "description": "Deterministyczny generator identyczny w obu językach.",
+      "example": "const random=new GameLab.Random(42);\nconst x=random.range(0,640);",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "setSeed",
+          "description": null
+        },
+        {
+          "name": "next",
+          "description": null
+        },
+        {
+          "name": "nextInt",
+          "description": null
+        },
+        {
+          "name": "range",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Trigger2D",
+      "category": "Ruch i kolizje",
+      "signature": "class Trigger2D extends Collider2D",
+      "description": "Kontakt nie blokuje ruchu; uruchamia onTrigger(other) na komponentach obiektów.",
+      "example": "chest.addComponent(new GameLab.Trigger2D());",
+      "kind": "Constructor",
+      "members": []
+    },
+    {
+      "name": "Tween",
+      "category": "Animacje",
+      "signature": "class Tween",
+      "description": "Uchwyt animacji zwrócony przez GameLab.Tweens. Ma elapsed, duration, easing, completed i cancel().",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "cancel",
+          "description": "Zatrzymuje tween bez onComplete; shake usuwa tylko swój wkład do visualOffset."
+        },
+        {
+          "name": "onComplete",
+          "description": null
+        },
+        {
+          "name": "updateMode",
+          "description": null
+        },
+        {
+          "name": "easing",
+          "description": "Krzywa animacji: \"linear\" albo \"smooth\"."
+        },
+        {
+          "name": "completed",
+          "description": "Czy animacja zakończyła się."
+        },
+        {
+          "name": "cancelled",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Tweens",
+      "category": "Animacje",
+      "signature": "static position/scale/rotation/shake(...)",
+      "description": "Animuje Transform przez zadany czas w sekundach. Nowa animacja tej samej właściwości zastępuje poprzednią.",
+      "example": "GameLab.Tweens.scale(object, 1.2, 1.2, 0.3).easing = \"smooth\";\nGameLab.Tweens.shake(object, 6, 0.2);",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "position",
+          "description": "Animuje pozycję: position(object, x, y, seconds) → Tween."
+        },
+        {
+          "name": "scale",
+          "description": "Skala grafiki w osiach x/y; nie zmienia rozmiaru kolizji."
+        },
+        {
+          "name": "rotation",
+          "description": "Obrót w radianach."
+        },
+        {
+          "name": "shake",
+          "description": "Animuje drżenie grafiki: shake(object, strength, seconds) → Tween."
+        }
+      ]
+    },
+    {
+      "name": "run",
+      "category": "Uruchamianie",
+      "signature": "GameLab.run(GameClass, { canvas? })",
+      "description": "Tworzy scenę, podpina klawiaturę i uruchamia pętlę. Domyślnie szuka canvasu #game.",
+      "example": "GameLab.run(MyGame, { canvas: \"#game\" });",
+      "kind": "Function",
+      "members": []
+    },
+    {
+      "name": "dispose",
+      "category": "Uruchamianie",
+      "signature": "GameLab.dispose()",
+      "description": "Zatrzymuje pętlę, odłącza zdarzenia i niszczy aktywną scenę.",
+      "example": "GameLab.dispose();",
+      "kind": "Function",
+      "members": []
+    },
+    {
+      "name": "Steering2D",
+      "category": "AI",
+      "signature": "class Steering2D extends Component",
+      "description": "Baza generatora kierunku AI. Wymaga CharacterController2D; jeden aktywny generator na obiekt. Podklasa implementuje direction(x,y,distance).",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "target",
+          "description": "Cel AI z tej samej sceny. Nieaktywny, zniszczony lub obcy cel zatrzymuje ruch."
+        },
+        {
+          "name": "speed",
+          "description": "Prędkość AI w pikselach na sekundę; skończona i nieujemna."
+        }
+      ]
+    },
+    {
+      "name": "FollowTarget2D",
+      "category": "AI",
+      "signature": "new FollowTarget2D(target)",
+      "description": "Podąża za celem tej samej sceny. speed=100 px/s, stopDistance=32 px; brak aktywnego celu zatrzymuje ruch.",
+      "example": "enemy.addComponent(new GameLab.FollowTarget2D(player)).speed=60;",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "target",
+          "description": "Cel AI z tej samej sceny. Nieaktywny, zniszczony lub obcy cel zatrzymuje ruch."
+        },
+        {
+          "name": "speed",
+          "description": "Prędkość AI w pikselach na sekundę; skończona i nieujemna."
+        },
+        {
+          "name": "stopDistance",
+          "description": "Dystans od środka celu, przy którym FollowTarget2D zatrzymuje ruch; domyślnie 32 px."
+        }
+      ]
+    },
+    {
+      "name": "FleeTarget2D",
+      "category": "AI",
+      "signature": "new FleeTarget2D(target)",
+      "description": "Ucieka od zagrożenia do safeDistance=200 px. Przy wspólnym środku wybiera kierunek w prawo.",
+      "example": "enemy.addComponent(new GameLab.FleeTarget2D(player));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "target",
+          "description": "Cel AI z tej samej sceny. Nieaktywny, zniszczony lub obcy cel zatrzymuje ruch."
+        },
+        {
+          "name": "speed",
+          "description": "Prędkość AI w pikselach na sekundę; skończona i nieujemna."
+        },
+        {
+          "name": "safeDistance",
+          "description": "Dystans bezpieczeństwa FleeTarget2D; domyślnie 200 px."
+        }
+      ]
+    },
+    {
+      "name": "FlankTarget2D",
+      "category": "AI",
+      "signature": "new FlankTarget2D(target)",
+      "description": "Zbliża się do radius=100 px i obiega cel. clockwise wybiera kierunek; speed jest w px/s.",
+      "example": "const ai=enemy.addComponent(new GameLab.FlankTarget2D(player));\nai.clockwise=false;",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "target",
+          "description": "Cel AI z tej samej sceny. Nieaktywny, zniszczony lub obcy cel zatrzymuje ruch."
+        },
+        {
+          "name": "speed",
+          "description": "Prędkość AI w pikselach na sekundę; skończona i nieujemna."
+        },
+        {
+          "name": "radius",
+          "description": "Promień kołowego collidera albo dystans obiegania FlankTarget2D, w pikselach świata."
+        },
+        {
+          "name": "clockwise",
+          "description": "Boolean wybierający kierunek obiegania celu."
+        }
+      ]
+    },
+    {
+      "name": "ObstacleAvoidance2D",
+      "category": "AI",
+      "signature": "new ObstacleAvoidance2D()",
+      "description": "Koryguje kierunek lokalnie przez zapytania przestrzenne. lookAhead=80 px, weight=2. Ignoruje triggery; nie wyszukuje drogi w labiryncie.",
+      "example": "enemy.addComponent(new GameLab.ObstacleAvoidance2D());",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "lookAhead",
+          "description": "Zasięg lokalnego omijania; skończona dodatnia liczba w pikselach."
+        },
+        {
+          "name": "weight",
+          "description": "Nieujemna waga korekty kierunku omijania."
+        },
+        {
+          "name": "steer",
+          "description": "steer(x,y) → Vector2; koryguje kierunek przez lokalne queryRadius i pomija triggery."
+        }
+      ]
+    },
+    {
+      "name": "TopDownCharacterController2D",
+      "category": "Ruch i kolizje",
+      "signature": "new TopDownCharacterController2D()",
+      "description": "Ruch bez grawitacji i odczytu klawiszy. walkSpeed=120, runSpeed=240 px/s, automatyczne flipX sprite. Zastępuje CharacterController2D na postaci.",
+      "example": "controller.walk(1,0);\ncontroller.run(-1,0);",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "move",
+          "description": "Ustawia wektor ruchu na tę klatkę: move(x, y, speed?). Kierunek jest normalizowany."
+        },
+        {
+          "name": "velocity",
+          "description": "Bieżąca prędkość w pikselach na sekundę."
+        },
+        {
+          "name": "constrainToBounds",
+          "description": "Gdy true, ruch jest ograniczony jawnymi Game.setWorldBounds; canvas nie wyznacza granic świata."
+        },
+        {
+          "name": "onAfterMove",
+          "description": null
+        },
+        {
+          "name": "walkSpeed",
+          "description": "Prędkość chodzenia, domyślnie 120 px/s."
+        },
+        {
+          "name": "runSpeed",
+          "description": "Prędkość biegu, domyślnie 240 px/s."
+        },
+        {
+          "name": "walk",
+          "description": "walk(x,y) normalizuje kierunek i używa walkSpeed."
+        },
+        {
+          "name": "run",
+          "description": "run(x,y) normalizuje kierunek i używa runSpeed."
+        },
+        {
+          "name": "stop",
+          "description": "Zeruje zadany ruch. Grawitacja platformera pozostaje aktywna."
+        },
+        {
+          "name": "setRunning",
+          "description": "setRunning(boolean) wybiera prędkość chodzenia/biegu i przelicza zadaną prędkość."
+        },
+        {
+          "name": "isWalk",
+          "description": "Czy aktywny kontroler ma zadany ruch chodzenia. Platformer sprawdza ruch poziomy."
+        },
+        {
+          "name": "isRunning",
+          "description": "Czy aktywny kontroler ma zadany ruch biegu. Sama blokada ścianą nie zmienia tego stanu."
+        }
+      ]
+    },
+    {
+      "name": "PlatformerCharacterController2D",
+      "category": "Ruch i kolizje",
+      "signature": "new PlatformerCharacterController2D()",
+      "description": "Ruch poziomy, grawitacja i pojedynczy skok z podłoża. Użyj prostokątnego collidera; gravity=900, jumpSpeed=340, maxFallSpeed=600.",
+      "example": "controller.walk(1);\nif(this.game.input.isKeyPressed(\"Space\"))controller.jump();",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "move",
+          "description": "Ustawia wektor ruchu na tę klatkę: move(x, y, speed?). Kierunek jest normalizowany."
+        },
+        {
+          "name": "velocity",
+          "description": "Bieżąca prędkość w pikselach na sekundę."
+        },
+        {
+          "name": "constrainToBounds",
+          "description": "Gdy true, ruch jest ograniczony jawnymi Game.setWorldBounds; canvas nie wyznacza granic świata."
+        },
+        {
+          "name": "onAfterMove",
+          "description": null
+        },
+        {
+          "name": "walkSpeed",
+          "description": "Prędkość chodzenia, domyślnie 120 px/s."
+        },
+        {
+          "name": "runSpeed",
+          "description": "Prędkość biegu, domyślnie 240 px/s."
+        },
+        {
+          "name": "walk",
+          "description": "walk(x) porusza poziomo z walkSpeed."
+        },
+        {
+          "name": "run",
+          "description": "run(x) porusza poziomo z runSpeed."
+        },
+        {
+          "name": "stop",
+          "description": "Zeruje zadany ruch. Grawitacja platformera pozostaje aktywna."
+        },
+        {
+          "name": "setRunning",
+          "description": "setRunning(boolean) wybiera prędkość chodzenia/biegu i przelicza zadaną prędkość."
+        },
+        {
+          "name": "isWalk",
+          "description": "Czy aktywny kontroler ma zadany ruch chodzenia. Platformer sprawdza ruch poziomy."
+        },
+        {
+          "name": "isRunning",
+          "description": "Czy aktywny kontroler ma zadany ruch biegu. Sama blokada ścianą nie zmienia tego stanu."
+        },
+        {
+          "name": "gravity",
+          "description": "Przyspieszenie platformera w dół, domyślnie 900 px/s²."
+        },
+        {
+          "name": "jumpSpeed",
+          "description": "Początkowa prędkość skoku w górę, domyślnie 340 px/s."
+        },
+        {
+          "name": "maxFallSpeed",
+          "description": "Maksymalna prędkość spadania, domyślnie 600 px/s."
+        },
+        {
+          "name": "jump",
+          "description": "jump() → boolean. Rozpoczyna skok tylko przy aktywnym kontrolerze na podłożu."
+        },
+        {
+          "name": "isGrounded",
+          "description": "isGrounded() → boolean; sprawdza kontakt ze stałą bryłą lub dolną granicą świata."
+        }
+      ]
+    },
+    {
+      "name": "KeyPressed",
+      "category": "Wejście",
+      "signature": "new KeyPressed(key, action)",
+      "description": "Wywołuje callback raz na nowe naciśnięcie klawisza wejścia swojej sceny; powtórzenia systemowe nie tworzą nowych naciśnięć.",
+      "example": "player.addComponent(new GameLab.KeyPressed(\"W\",()=>{this.debug=true;}));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "key",
+          "description": "Nazwa klawisza bindingu, np. W albo Space."
+        },
+        {
+          "name": "action",
+          "description": "Callback bindingu wywoływany przez wejście danej sceny."
+        }
+      ]
+    },
+    {
+      "name": "KeyDoublePressed",
+      "category": "Wejście",
+      "signature": "new KeyDoublePressed(key, action)",
+      "description": "Callback po dwóch naciśnięciach z puszczeniem pomiędzy. maxDelaySeconds=0.3 s czasu symulacji; udana para resetuje uzbrojenie.",
+      "example": "player.addComponent(new GameLab.KeyDoublePressed(\"D\",()=>controller.setRunning(true)));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "key",
+          "description": "Nazwa klawisza bindingu, np. W albo Space."
+        },
+        {
+          "name": "action",
+          "description": "Callback bindingu wywoływany przez wejście danej sceny."
+        },
+        {
+          "name": "maxDelaySeconds",
+          "description": "Dodatnie skończone okno dwóch naciśnięć; domyślnie 0.3 s czasu gry."
+        }
+      ]
+    },
+    {
+      "name": "NoneOfKeysPressed",
+      "category": "Wejście",
+      "signature": "new NoneOfKeysPressed(keys, action)",
+      "description": "Callback w każdej aktualizacji, gdy żaden klawisz z kopii tablicy nie jest trzymany.",
+      "example": "player.addComponent(new GameLab.NoneOfKeysPressed([\"W\",\"A\",\"S\",\"D\"],()=>controller.setRunning(false)));",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "keys",
+          "description": "Kopia niepustej tablicy klawiszy NoneOfKeysPressed."
+        },
+        {
+          "name": "action",
+          "description": "Callback bindingu wywoływany przez wejście danej sceny."
+        }
+      ]
+    }
+  ],
+  "query": {
+    "components": "intersection; inheritance; inactive included; destroyed excluded; ordered by ID; snapshot",
+    "tags": "scene index; snapshot"
+  },
+  "collision": {
+    "broadPhase": "spatial hash",
+    "cellSize": 64,
+    "narrowPhase": "swept rectangle, circle and rounded rectangle",
+    "axisOrder": [
+      "x",
+      "y"
+    ],
+    "tolerance": 0.000001,
+    "layerMask": "both colliders must accept the other layer",
+    "onContactEnter": "once per contact; reentry after separation"
+  },
+  "languageDifferences": {
+    "componentType": {
+      "Java": "Player.class",
+      "JavaScript": "Player"
+    },
+    "assets": {
+      "Java": "enum Assets",
+      "JavaScript": "Object.freeze(Assets)"
+    },
+    "directTransformQueries": "Java: physics.refresh() after direct field mutations within WORLD update; setPosition invalidates automatically. JavaScript: position accessors invalidate automatically."
+  }
+}

@@ -9,7 +9,7 @@ function fixture() {
   document.body.append(canvas);
   const requestAnimationFrame = vi.fn(() => 42);
   const cancelAnimationFrame = vi.fn();
-  const lab = createGameLab({ window, document, requestAnimationFrame, cancelAnimationFrame });
+  const lab = createGameLab({ window, document, requestAnimationFrame, cancelAnimationFrame, skipAssetLoading: true });
   return { lab, canvas, requestAnimationFrame, cancelAnimationFrame };
 }
 
@@ -31,7 +31,7 @@ test('camera follows a moving world object, handles resize and leaves HUD in scr
       const player = this.createObject('Player'); player.setPosition(100, 80);
       player.addComponent(new lab.Sprite('player'));
       player.addComponent(new Move());
-      player.addComponent(new lab.TextRenderer(() => `X: ${player.transform.x}`, 10, 24));
+      const hud = this.createObject('HUD').setPosition(10,24).addComponent(new lab.TextRenderer(() => `X: ${player.transform.x}`));hud.space='screen';
       const cameraObject = this.createObject('Camera');
       this.camera = cameraObject.addComponent(new lab.Camera2D()); this.camera.follow(player);
     }
@@ -125,11 +125,13 @@ test('controller respects boundaries and triggers destroy a coin only once', () 
       this.points = 0;
       const player = this.createObject('Player').setPosition(30, 50);
       player.addComponent(new lab.ShapeRenderer({ width: 20, height: 20 }));
+      player.addComponent(new lab.Collider2D(20,20));
       player.addComponent(new lab.CharacterController2D());
       player.addComponent(new Move());
       const coin = this.createObject('Coin').setPosition(60, 50);
       coin.addComponent(new lab.ShapeRenderer({ width: 20, height: 20 }));
       coin.addComponent(new lab.Trigger2D());
+      this.setWorldBounds(0,0,100,100);
     }
     onUpdate() { this.canvas.drawText(`Punkty: ${this.points}`, 10, 20); }
   }

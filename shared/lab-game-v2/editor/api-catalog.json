@@ -1,0 +1,3012 @@
+{
+  "Vector2": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "set",
+        "signature": "public Vector2 set(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "copy",
+        "signature": "public Vector2 copy()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "lengthSquared",
+        "signature": "public double lengthSquared()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "length",
+        "signature": "public double length()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "normalized",
+        "signature": "public Vector2 normalized()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "Vector2",
+        "signature": "public Vector2()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Vector2",
+        "signature": "public Vector2(double x, double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "y",
+        "signature": "double x, y",
+        "kind": "field"
+      }
+    ]
+  },
+  "Sprite": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "Sprite",
+        "signature": "public Sprite()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Sprite",
+        "signature": "public Sprite(String texture)",
+        "parameters": [
+          "String texture"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "Sprite",
+        "signature": "public Sprite(Assets asset)",
+        "parameters": [
+          "Assets asset"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "Sprite",
+        "signature": "public Sprite(Assets asset,double width,double height)",
+        "parameters": [
+          "Assets asset",
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "Sprite",
+        "signature": "public Sprite(String texture, double width, double height)",
+        "parameters": [
+          "String texture",
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "texture",
+        "signature": "String texture",
+        "kind": "field"
+      },
+      {
+        "name": "height",
+        "signature": "double width, height",
+        "kind": "field"
+      },
+      {
+        "name": "flipY",
+        "signature": "boolean flipX, flipY",
+        "kind": "field"
+      },
+      {
+        "name": "space",
+        "signature": "String space",
+        "kind": "field"
+      }
+    ]
+  },
+  "Collider2D": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onContactEnter",
+        "signature": "public Runnable onContactEnter(Class<?> type,Runnable callback)",
+        "parameters": [
+          "Class<?> type",
+          "Runnable callback"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onContactEnter",
+        "signature": "public Runnable onContactEnter(Class<?> type,java.util.function.Consumer<GameObject> callback)",
+        "parameters": [
+          "Class<?> type",
+          "java.util.function.Consumer<GameObject> callback"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "Collider2D",
+        "signature": "public Collider2D()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Collider2D",
+        "signature": "public Collider2D(double width,double height)",
+        "parameters": [
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "isTrigger",
+        "signature": "boolean isTrigger",
+        "kind": "field"
+      },
+      {
+        "name": "layer",
+        "signature": "int layer",
+        "kind": "field"
+      }
+    ]
+  },
+  "Trigger2D": {
+    "constructible": true,
+    "parent": "Collider2D",
+    "members": [
+      {
+        "name": "Trigger2D",
+        "signature": "public Trigger2D()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Trigger2D",
+        "signature": "public Trigger2D(double width,double height)",
+        "parameters": [
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      }
+    ]
+  },
+  "CharacterController2D": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onAfterMove",
+        "signature": "public void onAfterMove(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "move",
+        "signature": "public void move(double x, double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "move",
+        "signature": "public void move(double x, double y, double speed)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double speed"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "velocity",
+        "signature": "Vector2 velocity",
+        "kind": "field"
+      },
+      {
+        "name": "constrainToBounds",
+        "signature": "boolean constrainToBounds",
+        "kind": "field"
+      }
+    ]
+  },
+  "Component": {
+    "constructible": false,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "attach",
+        "signature": "public final void attach(GameObject owner)",
+        "parameters": [
+          "GameObject owner"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setEnabled",
+        "signature": "public void setEnabled(boolean value)",
+        "parameters": [
+          "boolean value"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onCreate",
+        "signature": "public void onCreate()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onLateUpdate",
+        "signature": "public void onLateUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onDestroy",
+        "signature": "public void onDestroy()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onCollision",
+        "signature": "public void onCollision(GameObject other)",
+        "parameters": [
+          "GameObject other"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onTrigger",
+        "signature": "public void onTrigger(GameObject other)",
+        "parameters": [
+          "GameObject other"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onComponentChange",
+        "signature": "public void onComponentChange(ComponentChange change)",
+        "parameters": [
+          "ComponentChange change"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onDrawBackground",
+        "signature": "public void onDrawBackground()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onDrawUI",
+        "signature": "public void onDrawUI()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getGame",
+        "signature": "public final Game getGame()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getComponent",
+        "signature": "public final <T extends Component> T getComponent(Class<T> type)",
+        "parameters": [
+          "Class<T> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getComponents",
+        "signature": "public final java.util.ArrayList<Component> getComponents()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getComponents",
+        "signature": "public final <T extends Component> java.util.ArrayList<T> getComponents(Class<T> type)",
+        "parameters": [
+          "Class<T> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "hasComponent",
+        "signature": "public final boolean hasComponent(Class<?> type)",
+        "parameters": [
+          "Class<?> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "removeComponents",
+        "signature": "public final int removeComponents(Class<?> type)",
+        "parameters": [
+          "Class<?> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "requireComponent",
+        "signature": "public final <T extends Component> T requireComponent(Class<T> type)",
+        "parameters": [
+          "Class<T> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "gameObject",
+        "signature": "GameObject gameObject",
+        "kind": "field"
+      },
+      {
+        "name": "transform",
+        "signature": "Transform transform",
+        "kind": "field"
+      },
+      {
+        "name": "enabled",
+        "signature": "boolean enabled",
+        "kind": "field"
+      },
+      {
+        "name": "updateMode",
+        "signature": "String updateMode",
+        "kind": "field"
+      }
+    ]
+  },
+  "ComponentChange": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "type",
+        "signature": "String type",
+        "kind": "field"
+      },
+      {
+        "name": "component",
+        "signature": "Component component",
+        "kind": "field"
+      },
+      {
+        "name": "object",
+        "signature": "GameObject object",
+        "kind": "field"
+      }
+    ]
+  },
+  "ComponentChangeListener": {
+    "constructible": false,
+    "members": []
+  },
+  "Game": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "getObjectsWith",
+        "signature": "public final java.util.ArrayList<GameObject> getObjectsWith(Class<?>... types)",
+        "parameters": [
+          "Class<?>... types"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getObjectsWithTag",
+        "signature": "public final java.util.ArrayList<GameObject> getObjectsWithTag(String tag)",
+        "parameters": [
+          "String tag"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getCameraView",
+        "signature": "public final Vector2 getCameraView()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "allocateObjectId",
+        "signature": "public final int allocateObjectId()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "pause",
+        "signature": "public final void pause()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "resume",
+        "signature": "public final void resume()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isPaused",
+        "signature": "public final boolean isPaused()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getViewportWidth",
+        "signature": "public final double getViewportWidth()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getViewportHeight",
+        "signature": "public final double getViewportHeight()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onDrawUI",
+        "signature": "public void onDrawUI()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "find",
+        "signature": "public final GameObject find(String name)",
+        "parameters": [
+          "String name"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setWorldBounds",
+        "signature": "public final void setWorldBounds(double x,double y,double width,double height)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double width",
+          "double height"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "clearWorldBounds",
+        "signature": "public final void clearWorldBounds()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onCreate",
+        "signature": "public void onCreate()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onDestroy",
+        "signature": "public void onDestroy()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "createObject",
+        "signature": "public final GameObject createObject(String name)",
+        "parameters": [
+          "String name"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "createObject",
+        "signature": "public final GameObject createObject()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getObjects",
+        "signature": "public final java.util.ArrayList<GameObject> getObjects()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isDisposed",
+        "signature": "public final boolean isDisposed()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "start",
+        "signature": "public final void start()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "step",
+        "signature": "public final void step(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "dispatchContact",
+        "signature": "public final void dispatchContact(GameObject first, GameObject second, boolean trigger)",
+        "parameters": [
+          "GameObject first",
+          "GameObject second",
+          "boolean trigger"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "dispose",
+        "signature": "public final void dispose()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "time",
+        "signature": "Time time",
+        "kind": "field"
+      },
+      {
+        "name": "input",
+        "signature": "InputManager input",
+        "kind": "field"
+      },
+      {
+        "name": "canvas",
+        "signature": "Canvas canvas",
+        "kind": "field"
+      },
+      {
+        "name": "physics",
+        "signature": "Physics2D physics",
+        "kind": "field"
+      },
+      {
+        "name": "random",
+        "signature": "Random random",
+        "kind": "field"
+      },
+      {
+        "name": "worldBounds",
+        "signature": "double[] worldBounds",
+        "kind": "field"
+      },
+      {
+        "name": "background",
+        "signature": "String background",
+        "kind": "field"
+      },
+      {
+        "name": "debug",
+        "signature": "boolean debug",
+        "kind": "field"
+      }
+    ]
+  },
+  "GameCanvas": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "getWidth",
+        "signature": "public static double getWidth()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getHeight",
+        "signature": "public static double getHeight()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "setSize",
+        "signature": "public static void setSize(double nextWidth, double nextHeight)",
+        "parameters": [
+          "double nextWidth",
+          "double nextHeight"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "clear",
+        "signature": "public static void clear(String color)",
+        "parameters": [
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawRect",
+        "signature": "public static void drawRect(double x, double y, double width, double height, String color)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawText",
+        "signature": "public static void drawText(String text, double x, double y, String color)",
+        "parameters": [
+          "String text",
+          "double x",
+          "double y",
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawText",
+        "signature": "public static void drawText(String text,double x,double y,double fontSize,String color,String align,String baseline)",
+        "parameters": [
+          "String text",
+          "double x",
+          "double y",
+          "double fontSize",
+          "String color",
+          "String align",
+          "String baseline"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawCenteredText",
+        "signature": "public static void drawCenteredText(String text, double x, double y, String color)",
+        "parameters": [
+          "String text",
+          "double x",
+          "double y",
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawShape",
+        "signature": "public static void drawShape(double x,double y,double width,double height,String color,double rotation,double scaleX,double scaleY)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "String color",
+          "double rotation",
+          "double scaleX",
+          "double scaleY"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "frame",
+        "signature": "public static String frame()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "drawProgressBar",
+        "signature": "public static void drawProgressBar(double x,double y,double width,double height,double progress,String border,String track,String fill)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "double progress",
+          "String border",
+          "String track",
+          "String fill"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawNinePatch",
+        "signature": "public static void drawNinePatch(String asset,double x,double y,double width,double height,double border)",
+        "parameters": [
+          "String asset",
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "double border"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawDebugState",
+        "signature": "public static void drawDebugState(boolean enabled)",
+        "parameters": [
+          "boolean enabled"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawCollider",
+        "signature": "public static void drawCollider(String shape,double x,double y,double width,double height,boolean trigger)",
+        "parameters": [
+          "String shape",
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "boolean trigger"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawSprite",
+        "signature": "public static void drawSprite(String texture, double x, double y, double width, double height)",
+        "parameters": [
+          "String texture",
+          "double x",
+          "double y",
+          "double width",
+          "double height"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawSprite",
+        "signature": "public static void drawSprite(String texture, double x, double y, double width, double height, double rotation, double scaleX, double scaleY)",
+        "parameters": [
+          "String texture",
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "double rotation",
+          "double scaleX",
+          "double scaleY"
+        ],
+        "kind": "method"
+      }
+    ]
+  },
+  "Input": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "bind",
+        "signature": "public static void bind(InputManager input)",
+        "parameters": [
+          "InputManager input"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isKeyDown",
+        "signature": "public static boolean isKeyDown(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isKeyPressed",
+        "signature": "public static boolean isKeyPressed(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isKeyReleased",
+        "signature": "public static boolean isKeyReleased(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setKey",
+        "signature": "public static void setKey(String key,boolean pressed)",
+        "parameters": [
+          "String key",
+          "boolean pressed"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "endFrame",
+        "signature": "public static void endFrame()",
+        "parameters": [],
+        "kind": "method"
+      }
+    ]
+  },
+  "Transform": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "Transform",
+        "signature": "public Transform(double x, double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "x",
+        "signature": "double x",
+        "kind": "field"
+      },
+      {
+        "name": "y",
+        "signature": "double y",
+        "kind": "field"
+      },
+      {
+        "name": "rotation",
+        "signature": "double rotation",
+        "kind": "field"
+      },
+      {
+        "name": "scale",
+        "signature": "Vector2 scale",
+        "kind": "field"
+      },
+      {
+        "name": "visualOffset",
+        "signature": "Vector2 visualOffset",
+        "kind": "field"
+      }
+    ]
+  },
+  "GameObject": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "addTag",
+        "signature": "public GameObject addTag(String tag)",
+        "parameters": [
+          "String tag"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "removeTag",
+        "signature": "public boolean removeTag(String tag)",
+        "parameters": [
+          "String tag"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "hasTag",
+        "signature": "public boolean hasTag(String tag)",
+        "parameters": [
+          "String tag"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getTags",
+        "signature": "public java.util.ArrayList<String> getTags()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "setPosition",
+        "signature": "public GameObject setPosition(double x, double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setActive",
+        "signature": "public GameObject setActive(boolean value)",
+        "parameters": [
+          "boolean value"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "addComponent",
+        "signature": "public <T extends Component> T addComponent(T component)",
+        "parameters": [
+          "T component"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getComponent",
+        "signature": "public <T extends Component> T getComponent(Class<T> type)",
+        "parameters": [
+          "Class<T> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "requireComponent",
+        "signature": "public <T extends Component> T requireComponent(Class<T> type)",
+        "parameters": [
+          "Class<T> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getComponents",
+        "signature": "public java.util.ArrayList<Component> getComponents()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getComponents",
+        "signature": "public <T extends Component> java.util.ArrayList<T> getComponents(Class<T> type)",
+        "parameters": [
+          "Class<T> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "hasComponent",
+        "signature": "public boolean hasComponent(Class<?> type)",
+        "parameters": [
+          "Class<?> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "removeComponent",
+        "signature": "public boolean removeComponent(Component component)",
+        "parameters": [
+          "Component component"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "removeComponent",
+        "signature": "public boolean removeComponent(Class<?> type)",
+        "parameters": [
+          "Class<?> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "removeComponents",
+        "signature": "public int removeComponents(Class<?> type)",
+        "parameters": [
+          "Class<?> type"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onComponentChange",
+        "signature": "public Runnable onComponentChange(ComponentChangeListener listener)",
+        "parameters": [
+          "ComponentChangeListener listener"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "destroy",
+        "signature": "public void destroy()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "update",
+        "signature": "public void update(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "draw",
+        "signature": "public void draw(String color)",
+        "parameters": [
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "GameObject",
+        "signature": "public GameObject(String name, double x, double y)",
+        "parameters": [
+          "String name",
+          "double x",
+          "double y"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "id",
+        "signature": "int id",
+        "kind": "field"
+      },
+      {
+        "name": "transform",
+        "signature": "Transform transform",
+        "kind": "field"
+      },
+      {
+        "name": "name",
+        "signature": "String name",
+        "kind": "field"
+      },
+      {
+        "name": "active",
+        "signature": "boolean active",
+        "kind": "field"
+      },
+      {
+        "name": "destroyed",
+        "signature": "boolean destroyed",
+        "kind": "field"
+      },
+      {
+        "name": "game",
+        "signature": "Game game",
+        "kind": "field"
+      }
+    ]
+  },
+  "CircleCollider2D": {
+    "constructible": true,
+    "parent": "Collider2D",
+    "members": [
+      {
+        "name": "CircleCollider2D",
+        "signature": "public CircleCollider2D(double radius)",
+        "parameters": [
+          "double radius"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "radius",
+        "signature": "double radius",
+        "kind": "field"
+      }
+    ]
+  },
+  "TileMap": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onDrawBackground",
+        "signature": "public void onDrawBackground()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "TileMap",
+        "signature": "public TileMap(Assets asset,double tileSize)",
+        "parameters": [
+          "Assets asset",
+          "double tileSize"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "TileMap",
+        "signature": "public TileMap(String texture, double tileSize)",
+        "parameters": [
+          "String texture",
+          "double tileSize"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "texture",
+        "signature": "String texture",
+        "kind": "field"
+      },
+      {
+        "name": "tileSize",
+        "signature": "double tileSize",
+        "kind": "field"
+      },
+      {
+        "name": "layer",
+        "signature": "int layer",
+        "kind": "field"
+      }
+    ]
+  },
+  "Steering2D": {
+    "constructible": false,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "target",
+        "signature": "GameObject target",
+        "kind": "field"
+      },
+      {
+        "name": "speed",
+        "signature": "double speed",
+        "kind": "field"
+      }
+    ]
+  },
+  "FollowTarget2D": {
+    "constructible": true,
+    "parent": "Steering2D",
+    "members": [
+      {
+        "name": "FollowTarget2D",
+        "signature": "public FollowTarget2D(GameObject target)",
+        "parameters": [
+          "GameObject target"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "stopDistance",
+        "signature": "double stopDistance",
+        "kind": "field"
+      }
+    ]
+  },
+  "FleeTarget2D": {
+    "constructible": true,
+    "parent": "Steering2D",
+    "members": [
+      {
+        "name": "FleeTarget2D",
+        "signature": "public FleeTarget2D(GameObject target)",
+        "parameters": [
+          "GameObject target"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "safeDistance",
+        "signature": "double safeDistance",
+        "kind": "field"
+      }
+    ]
+  },
+  "FlankTarget2D": {
+    "constructible": true,
+    "parent": "Steering2D",
+    "members": [
+      {
+        "name": "FlankTarget2D",
+        "signature": "public FlankTarget2D(GameObject target)",
+        "parameters": [
+          "GameObject target"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "radius",
+        "signature": "double radius",
+        "kind": "field"
+      },
+      {
+        "name": "clockwise",
+        "signature": "boolean clockwise",
+        "kind": "field"
+      }
+    ]
+  },
+  "ObstacleAvoidance2D": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "steer",
+        "signature": "public Vector2 steer(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "lookAhead",
+        "signature": "double lookAhead",
+        "kind": "field"
+      },
+      {
+        "name": "weight",
+        "signature": "double weight",
+        "kind": "field"
+      }
+    ]
+  },
+  "Projectile2D": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onCreate",
+        "signature": "public void onCreate()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "Projectile2D",
+        "signature": "public Projectile2D(double x,double y,double speed,double lifetime,GameObject owner)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double speed",
+          "double lifetime",
+          "GameObject owner"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "maxHits",
+        "signature": "int maxHits",
+        "kind": "field"
+      },
+      {
+        "name": "direction",
+        "signature": "Vector2 direction",
+        "kind": "field"
+      },
+      {
+        "name": "remainingLifetime",
+        "signature": "double speed, remainingLifetime",
+        "kind": "field"
+      },
+      {
+        "name": "owner",
+        "signature": "GameObject owner",
+        "kind": "field"
+      }
+    ]
+  },
+  "Tween": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onComplete",
+        "signature": "public Tween onComplete(Runnable callback)",
+        "parameters": [
+          "Runnable callback"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "cancel",
+        "signature": "public void cancel()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onDestroy",
+        "signature": "public void onDestroy()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "property",
+        "signature": "String property",
+        "kind": "field"
+      },
+      {
+        "name": "easing",
+        "signature": "String easing",
+        "kind": "field"
+      },
+      {
+        "name": "completed",
+        "signature": "boolean completed",
+        "kind": "field"
+      },
+      {
+        "name": "cancelled",
+        "signature": "boolean cancelled",
+        "kind": "field"
+      }
+    ]
+  },
+  "Tweens": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "position",
+        "signature": "public static Tween position(GameObject object,double x,double y,double seconds)",
+        "parameters": [
+          "GameObject object",
+          "double x",
+          "double y",
+          "double seconds"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "scale",
+        "signature": "public static Tween scale(GameObject object,double x,double y,double seconds)",
+        "parameters": [
+          "GameObject object",
+          "double x",
+          "double y",
+          "double seconds"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "rotation",
+        "signature": "public static Tween rotation(GameObject object,double radians,double seconds)",
+        "parameters": [
+          "GameObject object",
+          "double radians",
+          "double seconds"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "shake",
+        "signature": "public static Tween shake(GameObject object,double strength,double seconds)",
+        "parameters": [
+          "GameObject object",
+          "double strength",
+          "double seconds"
+        ],
+        "kind": "method"
+      }
+    ]
+  },
+  "Camera2D": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "follow",
+        "signature": "public void follow(GameObject target)",
+        "parameters": [
+          "GameObject target"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "stopFollowing",
+        "signature": "public void stopFollowing()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getView",
+        "signature": "public Vector2 getView()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "worldToScreen",
+        "signature": "public Vector2 worldToScreen(Vector2 p)",
+        "parameters": [
+          "Vector2 p"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "screenToWorld",
+        "signature": "public Vector2 screenToWorld(Vector2 p)",
+        "parameters": [
+          "Vector2 p"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "shake",
+        "signature": "public void shake(double strength,double seconds)",
+        "parameters": [
+          "double strength",
+          "double seconds"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "stopShake",
+        "signature": "public void stopShake()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "offsetY",
+        "signature": "double offsetX, offsetY",
+        "kind": "field"
+      }
+    ]
+  },
+  "Physics2D": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "refresh",
+        "signature": "public void refresh()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "extent",
+        "signature": "public static double extent(GameObject o,boolean x)",
+        "parameters": [
+          "GameObject o",
+          "boolean x"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "overlaps",
+        "signature": "public static boolean overlaps(GameObject a,GameObject b)",
+        "parameters": [
+          "GameObject a",
+          "GameObject b"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "queryRadius",
+        "signature": "public java.util.ArrayList<GameObject> queryRadius(double x,double y,double radius,int layer)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double radius",
+          "int layer"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "findNearest",
+        "signature": "public GameObject findNearest(double x,double y,double radius,int layer)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double radius",
+          "int layer"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "Physics2D",
+        "signature": "public Physics2D(Game game)",
+        "parameters": [
+          "Game game"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "stats",
+        "signature": "Stats stats",
+        "kind": "field"
+      }
+    ]
+  },
+  "TopDownCharacterController2D": {
+    "constructible": true,
+    "parent": "CharacterController2D",
+    "members": [
+      {
+        "name": "move",
+        "signature": "public void move(double x, double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "move",
+        "signature": "public void move(double x, double y, double speed)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double speed"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "walk",
+        "signature": "public void walk(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "run",
+        "signature": "public void run(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "stop",
+        "signature": "public void stop()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "setRunning",
+        "signature": "public void setRunning(boolean value)",
+        "parameters": [
+          "boolean value"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isWalk",
+        "signature": "public boolean isWalk()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isRunning",
+        "signature": "public boolean isRunning()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "walkSpeed",
+        "signature": "double walkSpeed",
+        "kind": "field"
+      },
+      {
+        "name": "runSpeed",
+        "signature": "double runSpeed",
+        "kind": "field"
+      }
+    ]
+  },
+  "PlatformerCharacterController2D": {
+    "constructible": true,
+    "parent": "TopDownCharacterController2D",
+    "members": [
+      {
+        "name": "onCreate",
+        "signature": "public void onCreate()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "move",
+        "signature": "public void move(double x,double y,double speed)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double speed"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "walk",
+        "signature": "public void walk(double x)",
+        "parameters": [
+          "double x"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "run",
+        "signature": "public void run(double x)",
+        "parameters": [
+          "double x"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "jump",
+        "signature": "public boolean jump()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isGrounded",
+        "signature": "public boolean isGrounded()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isWalk",
+        "signature": "public boolean isWalk()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isRunning",
+        "signature": "public boolean isRunning()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onAfterMove",
+        "signature": "public void onAfterMove(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "gravity",
+        "signature": "double gravity",
+        "kind": "field"
+      },
+      {
+        "name": "jumpSpeed",
+        "signature": "double jumpSpeed",
+        "kind": "field"
+      },
+      {
+        "name": "maxFallSpeed",
+        "signature": "double maxFallSpeed",
+        "kind": "field"
+      }
+    ]
+  },
+  "KeyPressed": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "KeyPressed",
+        "signature": "public KeyPressed(String key,Runnable action)",
+        "parameters": [
+          "String key",
+          "Runnable action"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "key",
+        "signature": "String key",
+        "kind": "field"
+      },
+      {
+        "name": "action",
+        "signature": "Runnable action",
+        "kind": "field"
+      }
+    ]
+  },
+  "KeyDoublePressed": {
+    "constructible": true,
+    "parent": "KeyPressed",
+    "members": [
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "KeyDoublePressed",
+        "signature": "public KeyDoublePressed(String key,Runnable action)",
+        "parameters": [
+          "String key",
+          "Runnable action"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "maxDelaySeconds",
+        "signature": "double maxDelaySeconds",
+        "kind": "field"
+      }
+    ]
+  },
+  "NoneOfKeysPressed": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "NoneOfKeysPressed",
+        "signature": "public NoneOfKeysPressed(String[] keys,Runnable action)",
+        "parameters": [
+          "String[] keys",
+          "Runnable action"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "keys",
+        "signature": "String[] keys",
+        "kind": "field"
+      },
+      {
+        "name": "action",
+        "signature": "Runnable action",
+        "kind": "field"
+      }
+    ]
+  },
+  "UIAnchor": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "TOP_LEFT",
+        "signature": "String TOP_LEFT",
+        "kind": "field"
+      }
+    ]
+  },
+  "UIBounds": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "centerX",
+        "signature": "public double centerX()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "centerY",
+        "signature": "public double centerY()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "UIBounds",
+        "signature": "public UIBounds(double left,double top,double right,double bottom)",
+        "parameters": [
+          "double left",
+          "double top",
+          "double right",
+          "double bottom"
+        ],
+        "kind": "constructor"
+      }
+    ]
+  },
+  "UITransform": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "getBounds",
+        "signature": "public UIBounds getBounds()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getCenter",
+        "signature": "public Vector2 getCenter()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "bounds",
+        "signature": "public static UIBounds bounds(Component c,double width,double height)",
+        "parameters": [
+          "Component c",
+          "double width",
+          "double height"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "UITransform",
+        "signature": "public UITransform()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "UITransform",
+        "signature": "public UITransform(double width,double height)",
+        "parameters": [
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "anchor",
+        "signature": "String anchor",
+        "kind": "field"
+      },
+      {
+        "name": "pivot",
+        "signature": "Vector2 pivot",
+        "kind": "field"
+      }
+    ]
+  },
+  "ShapeRenderer": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "ShapeRenderer",
+        "signature": "public ShapeRenderer()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "ShapeRenderer",
+        "signature": "public ShapeRenderer(double width,double height,String color)",
+        "parameters": [
+          "double width",
+          "double height",
+          "String color"
+        ],
+        "kind": "constructor"
+      }
+    ]
+  },
+  "TextRenderer": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "onDrawUI",
+        "signature": "public void onDrawUI()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "TextRenderer",
+        "signature": "public TextRenderer(String text)",
+        "parameters": [
+          "String text"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "TextRenderer",
+        "signature": "public TextRenderer(String text,double fontSize,String color)",
+        "parameters": [
+          "String text",
+          "double fontSize",
+          "String color"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "fontSize",
+        "signature": "double fontSize",
+        "kind": "field"
+      }
+    ]
+  },
+  "Canvas": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "getWidth",
+        "signature": "public double getWidth()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getHeight",
+        "signature": "public double getHeight()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "drawRect",
+        "signature": "public void drawRect(double x,double y,double width,double height,String color)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double width",
+          "double height",
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawText",
+        "signature": "public void drawText(String text,double x,double y)",
+        "parameters": [
+          "String text",
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawText",
+        "signature": "public void drawText(String text,double x,double y,double fontSize,String color)",
+        "parameters": [
+          "String text",
+          "double x",
+          "double y",
+          "double fontSize",
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawText",
+        "signature": "public void drawText(String text,double x,double y,double fontSize,String color,String align,String baseline)",
+        "parameters": [
+          "String text",
+          "double x",
+          "double y",
+          "double fontSize",
+          "String color",
+          "String align",
+          "String baseline"
+        ],
+        "kind": "method"
+      }
+    ]
+  },
+  "InputManager": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "setKey",
+        "signature": "public void setKey(String key,boolean value)",
+        "parameters": [
+          "String key",
+          "boolean value"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isKeyDown",
+        "signature": "public boolean isKeyDown(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isKeyPressed",
+        "signature": "public boolean isKeyPressed(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isKeyReleased",
+        "signature": "public boolean isKeyReleased(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "consumeKey",
+        "signature": "public void consumeKey(String key)",
+        "parameters": [
+          "String key"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setPointer",
+        "signature": "public void setPointer(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getPointerPosition",
+        "signature": "public Vector2 getPointerPosition()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "setMouseButton",
+        "signature": "public void setMouseButton(int button,boolean value)",
+        "parameters": [
+          "int button",
+          "boolean value"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "consumeMouse",
+        "signature": "public void consumeMouse()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "consumeMouse",
+        "signature": "public void consumeMouse(int button)",
+        "parameters": [
+          "int button"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isMouseDown",
+        "signature": "public boolean isMouseDown(int button)",
+        "parameters": [
+          "int button"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isMousePressed",
+        "signature": "public boolean isMousePressed(int button)",
+        "parameters": [
+          "int button"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isMouseReleased",
+        "signature": "public boolean isMouseReleased(int button)",
+        "parameters": [
+          "int button"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "isMouseDown",
+        "signature": "public boolean isMouseDown()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isMousePressed",
+        "signature": "public boolean isMousePressed()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isMouseReleased",
+        "signature": "public boolean isMouseReleased()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "endFrame",
+        "signature": "public void endFrame()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "clear",
+        "signature": "public void clear()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "MOUSE_LEFT",
+        "signature": "int MOUSE_LEFT",
+        "kind": "field"
+      }
+    ]
+  },
+  "Time": {
+    "constructible": true,
+    "members": []
+  },
+  "Random": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "setSeed",
+        "signature": "public void setSeed(int seed)",
+        "parameters": [
+          "int seed"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "next",
+        "signature": "public double next()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "nextInt",
+        "signature": "public int nextInt(int min,int max)",
+        "parameters": [
+          "int min",
+          "int max"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "range",
+        "signature": "public double range(double min,double max)",
+        "parameters": [
+          "double min",
+          "double max"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "Random",
+        "signature": "public Random()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Random",
+        "signature": "public Random(int seed)",
+        "parameters": [
+          "int seed"
+        ],
+        "kind": "constructor"
+      }
+    ]
+  },
+  "ProgressBar": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "setProgress",
+        "signature": "public void setProgress(double percent)",
+        "parameters": [
+          "double percent"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getProgress",
+        "signature": "public double getProgress()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "setValue",
+        "signature": "public void setValue(double value,double max)",
+        "parameters": [
+          "double value",
+          "double max"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onDrawUI",
+        "signature": "public void onDrawUI()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "ProgressBar",
+        "signature": "public ProgressBar()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "ProgressBar",
+        "signature": "public ProgressBar(double width,double height)",
+        "parameters": [
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "frame",
+        "signature": "Assets frame",
+        "kind": "field"
+      }
+    ]
+  },
+  "Button": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "activate",
+        "signature": "public void activate()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "focus",
+        "signature": "public boolean focus()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "blur",
+        "signature": "public void blur()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "isFocused",
+        "signature": "public boolean isFocused()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "onDrawUI",
+        "signature": "public void onDrawUI()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "Button",
+        "signature": "public Button()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Button",
+        "signature": "public Button(double width,double height)",
+        "parameters": [
+          "double width",
+          "double height"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "texture",
+        "signature": "Assets texture",
+        "kind": "field"
+      },
+      {
+        "name": "text",
+        "signature": "String text",
+        "kind": "field"
+      },
+      {
+        "name": "border",
+        "signature": "double border",
+        "kind": "field"
+      },
+      {
+        "name": "onClick",
+        "signature": "Runnable onClick",
+        "kind": "field"
+      },
+      {
+        "name": "focused",
+        "signature": "boolean focused",
+        "kind": "field"
+      }
+    ]
+  },
+  "SpatialHash2D": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "remove",
+        "signature": "public void remove(GameObject o)",
+        "parameters": [
+          "GameObject o"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "update",
+        "signature": "public void update(GameObject o)",
+        "parameters": [
+          "GameObject o"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "query",
+        "signature": "public ArrayList<GameObject> query(double left,double top,double right,double bottom)",
+        "parameters": [
+          "double left",
+          "double top",
+          "double right",
+          "double bottom"
+        ],
+        "kind": "method"
+      }
+    ]
+  },
+  "Assets": {
+    "constructible": false,
+    "members": [
+      {
+        "name": "key",
+        "signature": "public String key()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "PLAYER01",
+        "signature": "Assets.PLAYER01",
+        "kind": "field"
+      },
+      {
+        "name": "KNIGHT",
+        "signature": "Assets.KNIGHT",
+        "kind": "field"
+      },
+      {
+        "name": "RANGER",
+        "signature": "Assets.RANGER",
+        "kind": "field"
+      },
+      {
+        "name": "WIZARD",
+        "signature": "Assets.WIZARD",
+        "kind": "field"
+      },
+      {
+        "name": "CLERIC",
+        "signature": "Assets.CLERIC",
+        "kind": "field"
+      },
+      {
+        "name": "ROGUE",
+        "signature": "Assets.ROGUE",
+        "kind": "field"
+      },
+      {
+        "name": "PALADIN",
+        "signature": "Assets.PALADIN",
+        "kind": "field"
+      },
+      {
+        "name": "MONK",
+        "signature": "Assets.MONK",
+        "kind": "field"
+      },
+      {
+        "name": "VAMPIRE",
+        "signature": "Assets.VAMPIRE",
+        "kind": "field"
+      },
+      {
+        "name": "WARRIOR",
+        "signature": "Assets.WARRIOR",
+        "kind": "field"
+      },
+      {
+        "name": "SLIME",
+        "signature": "Assets.SLIME",
+        "kind": "field"
+      },
+      {
+        "name": "SLIME_BLUE",
+        "signature": "Assets.SLIME_BLUE",
+        "kind": "field"
+      },
+      {
+        "name": "SLIME_RED",
+        "signature": "Assets.SLIME_RED",
+        "kind": "field"
+      },
+      {
+        "name": "SLIME_PURPLE",
+        "signature": "Assets.SLIME_PURPLE",
+        "kind": "field"
+      },
+      {
+        "name": "BAT",
+        "signature": "Assets.BAT",
+        "kind": "field"
+      },
+      {
+        "name": "GHOST",
+        "signature": "Assets.GHOST",
+        "kind": "field"
+      },
+      {
+        "name": "SKELETON",
+        "signature": "Assets.SKELETON",
+        "kind": "field"
+      },
+      {
+        "name": "ZOMBIE",
+        "signature": "Assets.ZOMBIE",
+        "kind": "field"
+      },
+      {
+        "name": "GOBLIN",
+        "signature": "Assets.GOBLIN",
+        "kind": "field"
+      },
+      {
+        "name": "ORC",
+        "signature": "Assets.ORC",
+        "kind": "field"
+      },
+      {
+        "name": "SPIDER",
+        "signature": "Assets.SPIDER",
+        "kind": "field"
+      },
+      {
+        "name": "WOLF",
+        "signature": "Assets.WOLF",
+        "kind": "field"
+      },
+      {
+        "name": "MUSHROOM_MONSTER",
+        "signature": "Assets.MUSHROOM_MONSTER",
+        "kind": "field"
+      },
+      {
+        "name": "FLOATING_EYE",
+        "signature": "Assets.FLOATING_EYE",
+        "kind": "field"
+      },
+      {
+        "name": "BOSS_DEMON",
+        "signature": "Assets.BOSS_DEMON",
+        "kind": "field"
+      },
+      {
+        "name": "FIREBALL",
+        "signature": "Assets.FIREBALL",
+        "kind": "field"
+      },
+      {
+        "name": "ICE_BOLT",
+        "signature": "Assets.ICE_BOLT",
+        "kind": "field"
+      },
+      {
+        "name": "LIGHTNING_BOLT",
+        "signature": "Assets.LIGHTNING_BOLT",
+        "kind": "field"
+      },
+      {
+        "name": "MAGIC_ORB",
+        "signature": "Assets.MAGIC_ORB",
+        "kind": "field"
+      },
+      {
+        "name": "POISON_BALL",
+        "signature": "Assets.POISON_BALL",
+        "kind": "field"
+      },
+      {
+        "name": "ARROW",
+        "signature": "Assets.ARROW",
+        "kind": "field"
+      },
+      {
+        "name": "KNIFE",
+        "signature": "Assets.KNIFE",
+        "kind": "field"
+      },
+      {
+        "name": "STAKE",
+        "signature": "Assets.STAKE",
+        "kind": "field"
+      },
+      {
+        "name": "BOMB",
+        "signature": "Assets.BOMB",
+        "kind": "field"
+      },
+      {
+        "name": "ENERGY_WAVE",
+        "signature": "Assets.ENERGY_WAVE",
+        "kind": "field"
+      },
+      {
+        "name": "SWORD",
+        "signature": "Assets.SWORD",
+        "kind": "field"
+      },
+      {
+        "name": "AXE",
+        "signature": "Assets.AXE",
+        "kind": "field"
+      },
+      {
+        "name": "BOW",
+        "signature": "Assets.BOW",
+        "kind": "field"
+      },
+      {
+        "name": "WAND",
+        "signature": "Assets.WAND",
+        "kind": "field"
+      },
+      {
+        "name": "CROSSBOW",
+        "signature": "Assets.CROSSBOW",
+        "kind": "field"
+      },
+      {
+        "name": "SPEAR",
+        "signature": "Assets.SPEAR",
+        "kind": "field"
+      },
+      {
+        "name": "HAMMER",
+        "signature": "Assets.HAMMER",
+        "kind": "field"
+      },
+      {
+        "name": "HOLY_CROSS",
+        "signature": "Assets.HOLY_CROSS",
+        "kind": "field"
+      },
+      {
+        "name": "SPELL_BOOK",
+        "signature": "Assets.SPELL_BOOK",
+        "kind": "field"
+      },
+      {
+        "name": "SHIELD",
+        "signature": "Assets.SHIELD",
+        "kind": "field"
+      },
+      {
+        "name": "EXPLOSION",
+        "signature": "Assets.EXPLOSION",
+        "kind": "field"
+      },
+      {
+        "name": "FROST_BURST",
+        "signature": "Assets.FROST_BURST",
+        "kind": "field"
+      },
+      {
+        "name": "MAGIC_BURST",
+        "signature": "Assets.MAGIC_BURST",
+        "kind": "field"
+      },
+      {
+        "name": "SLASH",
+        "signature": "Assets.SLASH",
+        "kind": "field"
+      },
+      {
+        "name": "IMPACT",
+        "signature": "Assets.IMPACT",
+        "kind": "field"
+      },
+      {
+        "name": "COIN",
+        "signature": "Assets.COIN",
+        "kind": "field"
+      },
+      {
+        "name": "GEM",
+        "signature": "Assets.GEM",
+        "kind": "field"
+      },
+      {
+        "name": "HEART",
+        "signature": "Assets.HEART",
+        "kind": "field"
+      },
+      {
+        "name": "POTION",
+        "signature": "Assets.POTION",
+        "kind": "field"
+      },
+      {
+        "name": "POTION_MANA",
+        "signature": "Assets.POTION_MANA",
+        "kind": "field"
+      },
+      {
+        "name": "POTION_POISON",
+        "signature": "Assets.POTION_POISON",
+        "kind": "field"
+      },
+      {
+        "name": "CHEST",
+        "signature": "Assets.CHEST",
+        "kind": "field"
+      },
+      {
+        "name": "CHEST_WOOD",
+        "signature": "Assets.CHEST_WOOD",
+        "kind": "field"
+      },
+      {
+        "name": "KEY_SILVER",
+        "signature": "Assets.KEY_SILVER",
+        "kind": "field"
+      },
+      {
+        "name": "KEY_GOLD",
+        "signature": "Assets.KEY_GOLD",
+        "kind": "field"
+      },
+      {
+        "name": "TREE",
+        "signature": "Assets.TREE",
+        "kind": "field"
+      },
+      {
+        "name": "PINE",
+        "signature": "Assets.PINE",
+        "kind": "field"
+      },
+      {
+        "name": "TREE_DEAD",
+        "signature": "Assets.TREE_DEAD",
+        "kind": "field"
+      },
+      {
+        "name": "BUSH",
+        "signature": "Assets.BUSH",
+        "kind": "field"
+      },
+      {
+        "name": "ROCK",
+        "signature": "Assets.ROCK",
+        "kind": "field"
+      },
+      {
+        "name": "BOULDER",
+        "signature": "Assets.BOULDER",
+        "kind": "field"
+      },
+      {
+        "name": "BARREL",
+        "signature": "Assets.BARREL",
+        "kind": "field"
+      },
+      {
+        "name": "CRATE",
+        "signature": "Assets.CRATE",
+        "kind": "field"
+      },
+      {
+        "name": "GRAVESTONE",
+        "signature": "Assets.GRAVESTONE",
+        "kind": "field"
+      },
+      {
+        "name": "FENCE",
+        "signature": "Assets.FENCE",
+        "kind": "field"
+      },
+      {
+        "name": "CAMPFIRE",
+        "signature": "Assets.CAMPFIRE",
+        "kind": "field"
+      },
+      {
+        "name": "MUSHROOM_RED",
+        "signature": "Assets.MUSHROOM_RED",
+        "kind": "field"
+      },
+      {
+        "name": "MUSHROOM_BROWN",
+        "signature": "Assets.MUSHROOM_BROWN",
+        "kind": "field"
+      },
+      {
+        "name": "GRASS_TUFT",
+        "signature": "Assets.GRASS_TUFT",
+        "kind": "field"
+      },
+      {
+        "name": "STONE",
+        "signature": "Assets.STONE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_PANEL_BRONZE",
+        "signature": "Assets.UI_PANEL_BRONZE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_PANEL_BLUE",
+        "signature": "Assets.UI_PANEL_BLUE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_PANEL_WOOD",
+        "signature": "Assets.UI_PANEL_WOOD",
+        "kind": "field"
+      },
+      {
+        "name": "UI_PANEL_PARCHMENT",
+        "signature": "Assets.UI_PANEL_PARCHMENT",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_RED",
+        "signature": "Assets.UI_BUTTON_RED",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_RED_PRESSED",
+        "signature": "Assets.UI_BUTTON_RED_PRESSED",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_BLUE",
+        "signature": "Assets.UI_BUTTON_BLUE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_BLUE_PRESSED",
+        "signature": "Assets.UI_BUTTON_BLUE_PRESSED",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_GREEN",
+        "signature": "Assets.UI_BUTTON_GREEN",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_GREEN_PRESSED",
+        "signature": "Assets.UI_BUTTON_GREEN_PRESSED",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_GOLD",
+        "signature": "Assets.UI_BUTTON_GOLD",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BUTTON_GRAY",
+        "signature": "Assets.UI_BUTTON_GRAY",
+        "kind": "field"
+      },
+      {
+        "name": "UI_SLOT_BRONZE",
+        "signature": "Assets.UI_SLOT_BRONZE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_SLOT_GOLD",
+        "signature": "Assets.UI_SLOT_GOLD",
+        "kind": "field"
+      },
+      {
+        "name": "UI_SLOT_PURPLE",
+        "signature": "Assets.UI_SLOT_PURPLE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_HEALTH",
+        "signature": "Assets.UI_BAR_HEALTH",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_EXPERIENCE",
+        "signature": "Assets.UI_BAR_EXPERIENCE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_GOLD",
+        "signature": "Assets.UI_BAR_GOLD",
+        "kind": "field"
+      },
+      {
+        "name": "UI_HEART",
+        "signature": "Assets.UI_HEART",
+        "kind": "field"
+      },
+      {
+        "name": "UI_STAR",
+        "signature": "Assets.UI_STAR",
+        "kind": "field"
+      },
+      {
+        "name": "UI_GEAR",
+        "signature": "Assets.UI_GEAR",
+        "kind": "field"
+      },
+      {
+        "name": "UI_PAUSE",
+        "signature": "Assets.UI_PAUSE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_PLAY",
+        "signature": "Assets.UI_PLAY",
+        "kind": "field"
+      },
+      {
+        "name": "UI_CLOSE",
+        "signature": "Assets.UI_CLOSE",
+        "kind": "field"
+      },
+      {
+        "name": "UI_UPGRADE",
+        "signature": "Assets.UI_UPGRADE",
+        "kind": "field"
+      },
+      {
+        "name": "PROJECTILE",
+        "signature": "Assets.PROJECTILE",
+        "kind": "field"
+      },
+      {
+        "name": "GRASS",
+        "signature": "Assets.GRASS",
+        "kind": "field"
+      },
+      {
+        "name": "DIRT",
+        "signature": "Assets.DIRT",
+        "kind": "field"
+      },
+      {
+        "name": "SAND",
+        "signature": "Assets.SAND",
+        "kind": "field"
+      },
+      {
+        "name": "WOOD",
+        "signature": "Assets.WOOD",
+        "kind": "field"
+      },
+      {
+        "name": "LEAVES",
+        "signature": "Assets.LEAVES",
+        "kind": "field"
+      },
+      {
+        "name": "WATER",
+        "signature": "Assets.WATER",
+        "kind": "field"
+      },
+      {
+        "name": "COAL_ORE",
+        "signature": "Assets.COAL_ORE",
+        "kind": "field"
+      },
+      {
+        "name": "WALL",
+        "signature": "Assets.WALL",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_HEALTH_FRAME",
+        "signature": "Assets.UI_BAR_HEALTH_FRAME",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_HEALTH_FILL",
+        "signature": "Assets.UI_BAR_HEALTH_FILL",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_HEALTH_TRACK",
+        "signature": "Assets.UI_BAR_HEALTH_TRACK",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_EXPERIENCE_FRAME",
+        "signature": "Assets.UI_BAR_EXPERIENCE_FRAME",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_EXPERIENCE_FILL",
+        "signature": "Assets.UI_BAR_EXPERIENCE_FILL",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_EXPERIENCE_TRACK",
+        "signature": "Assets.UI_BAR_EXPERIENCE_TRACK",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_GOLD_FRAME",
+        "signature": "Assets.UI_BAR_GOLD_FRAME",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_GOLD_FILL",
+        "signature": "Assets.UI_BAR_GOLD_FILL",
+        "kind": "field"
+      },
+      {
+        "name": "UI_BAR_GOLD_TRACK",
+        "signature": "Assets.UI_BAR_GOLD_TRACK",
+        "kind": "field"
+      },
+      {
+        "name": "PLAYER",
+        "signature": "Assets.PLAYER",
+        "kind": "field"
+      }
+    ]
+  }
+}

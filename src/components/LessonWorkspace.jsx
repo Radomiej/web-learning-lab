@@ -6,6 +6,7 @@ import TaskPanel from "./TaskPanel.jsx";
 import RuntimeConsole from './RuntimeConsole.jsx';
 import PlaygroundTools from './PlaygroundTools.jsx';
 import GameTutor from './GameTutor.jsx';
+import GameCoursePdf from './GameCoursePdf.jsx';
 
 export default function LessonWorkspace({
   lesson,
@@ -38,6 +39,7 @@ export default function LessonWorkspace({
   return (
     <div className="lesson-workspace">
       {playground ? <section className="lesson-overview"><p className="eyebrow">Playground · GameLab</p><h1>{lesson.title}</h1><p className="lesson-summary">{lesson.summary}</p><PlaygroundTools project={files} onImport={onImportProject} /></section> : <LessonOverview lesson={lesson} />}
+      {(playground || lesson.id === 'game-dev-701') && <GameCoursePdf key={lesson.id} />}
       {playground && <GameTutor key={`${activeTask.id}:${projectRevision}`} project={files} projectRevision={projectRevision} onApply={onTutorApply} />}
       {!playground && <TaskPanel
         lesson={lesson}
@@ -53,6 +55,7 @@ export default function LessonWorkspace({
         </div>
         <div className="editor-shell">
           <EditorTabs
+            workspaceKey={activeTask.id}
             files={files.files}
             activeFile={path}
             onFileChange={onFileChange}

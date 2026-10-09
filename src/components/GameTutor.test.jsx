@@ -9,7 +9,7 @@ test('includes code only after consent and shows configuration failure', async (
   await screen.findByText('Test model');
   fireEvent.click(screen.getByRole('button', { name: 'Wybierz model' }));
   fireEvent.change(screen.getByLabelText('Darmowy model OpenRouter'), { target: { value: 'test' } });
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Dołącz kod aktualnego projektu' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Edytuj kod' }));
   fireEvent.change(screen.getByLabelText('Twoje pytanie'), { target: { value: 'Sprawdź kod' } });
   fireEvent.click(screen.getByRole('button', { name: 'Wyślij pytanie' }));
   await screen.findByText('Gotowe');
@@ -17,7 +17,7 @@ test('includes code only after consent and shows configuration failure', async (
 });
 test('does not share code by default and applies only on explicit click', async () => {
   let payload; const apply = vi.fn();
-  render(<GameTutor project={project} projectRevision={0} onApply={apply} loadConfig={loadConfig} sendMessage={async value => { payload = value; return { message: 'Wyjaśnienie', proposals: [{ path: 'components/Move.js', content: 'export class Move {}', reason: 'ruch' }] }; }} />);
+  render(<GameTutor project={project} projectRevision={0} onApply={apply} loadConfig={loadConfig} sendMessage={async value => { payload = value; return { message: 'Wyjaśnienie', proposals: value.allowEdits ? [{ path: 'components/Move.js', content: 'export class Move {}', reason: 'ruch' }] : [] }; }} />);
   fireEvent.click(screen.getByRole('button', { name: 'Pomoc AI' }));
   await screen.findByText('Test model');
   fireEvent.click(screen.getByRole('button', { name: 'Wybierz model' }));
@@ -25,9 +25,8 @@ test('does not share code by default and applies only on explicit click', async 
   fireEvent.change(screen.getByLabelText('Twoje pytanie'), { target: { value: 'Pomóż z ruchem' } });
   fireEvent.click(screen.getByRole('button', { name: 'Wyślij pytanie' }));
   await screen.findByText('Wyjaśnienie');
-  expect(payload.project).toBeUndefined();
+  expect(payload.project).toEqual(project); expect(payload.allowEdits).toBe(false);
   expect(payload.model).toBe('test');
   expect(apply).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: /Zastosuj/ }));
-  await waitFor(() => expect(apply).toHaveBeenCalled());
+  expect(screen.queryByRole('button', { name: /Zastosuj/ })).not.toBeInTheDocument();
 });

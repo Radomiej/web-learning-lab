@@ -1,0 +1,14 @@
+.chat-message-text { min-width: 0; overflow-wrap: anywhere; }
+.chat-message-text > p, .game-tutor-history .chat-message-text p { white-space: normal; line-height: 1.6; margin: 8px 0; }
+.chat-message-text > :first-child { margin-top: 0; }
+.chat-message-text > :last-child { margin-bottom: 0; }
+.chat-message-text h1, .chat-message-text h2, .chat-message-text h3, .chat-message-text h4, .chat-message-text h5, .chat-message-text h6 { margin: 16px 0 8px; font-size: 1.1em; line-height: 1.35; }
+.chat-message-text ul, .chat-message-text ol { margin: 8px 0; padding-left: 24px; }
+.chat-message-text li { margin: 5px 0; line-height: 1.55; }
+.chat-message-text li > p { margin: 4px 0; }
+.chat-message-text :not(pre) > code { padding: 2px 4px; border-radius: 4px; background: rgb(0 0 0 / 6%); font-family: var(--mono, monospace); font-size: .9em; }
+.chat-message-text blockquote { margin: 10px 0; padding-left: 12px; border-left: 3px solid #7897a8; }
+.chat-message-text a { text-decoration: underline; }
+.chat-markdown-table { max-width: 100%; overflow-x: auto; margin: 12px 0; }
+.chat-markdown-table table { border-collapse: collapse; font-size: .9em; }
+.chat-markdown-table th, .chat-markdown-table td { padding: 6px 10px; border: 1px solid var(--line, #ccd8e0); text-align: left; }

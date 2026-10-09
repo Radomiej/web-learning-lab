@@ -1,0 +1,20 @@
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import {afterEach,expect,it,vi} from 'vitest';
+import EditorTabs from './EditorTabs.jsx';
+afterEach(cleanup);
+it('reorders dragged tabs without selecting another file and resets for another workspace',()=>{
+  const onFileChange=vi.fn(),files={'a.js':'a','b.js':'b','c.js':'c'};
+  const props={files,activeFile:'b.js',onFileChange,onAddFile:vi.fn(),workspaceKey:'one'};
+  const view=render(<EditorTabs {...props}/>);
+  const dataTransfer={setData:vi.fn()};
+  fireEvent.dragStart(screen.getByRole('tab',{name:'c.js'}),{dataTransfer});
+  fireEvent.dragOver(screen.getByRole('tab',{name:'a.js'}),{dataTransfer});
+  fireEvent.drop(screen.getByRole('tab',{name:'a.js'}),{dataTransfer});
+  expect(screen.getAllByRole('tab').map(tab=>tab.getAttribute('aria-label'))).toEqual(['c.js','a.js','b.js']);
+  expect(screen.getByRole('tab',{name:'b.js'})).toHaveAttribute('aria-selected','true');
+  expect(onFileChange).not.toHaveBeenCalled();
+  fireEvent.keyDown(screen.getByRole('tab',{name:'c.js'}),{altKey:true,key:'ArrowRight'});
+  expect(screen.getAllByRole('tab').map(tab=>tab.getAttribute('aria-label'))).toEqual(['a.js','c.js','b.js']);
+  view.rerender(<EditorTabs {...props} workspaceKey="two"/>);
+  expect(screen.getAllByRole('tab').map(tab=>tab.getAttribute('aria-label'))).toEqual(['a.js','b.js','c.js']);
+});

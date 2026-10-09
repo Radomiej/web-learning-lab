@@ -1,4 +1,4 @@
-import { provideGameLabCompletions } from './gameLabCompletions.js';
+import { provideGameLabCompletions,createGameLabSignatureProvider } from './gameLabCompletions.js';
 
 const monaco = {
   Range: class Range {
@@ -63,4 +63,22 @@ test('infers the camera and controller variables used in course examples', () =>
   expect(labels('const player = this.createObject("Player"); player.').map(item => item.label))
     .toContain('setPosition');
   expect(labels('GameLab.Camera2D.')).toEqual([]);
+});
+
+test('exposes shared Assets constants, mouse input and scene queries', () => {
+ expect(labels('GameLab.Assets.').map(item=>item.label)).toEqual(expect.arrayContaining(['PLAYER01','FIREBALL','UI_BUTTON_BLUE']));
+ expect(labels('this.game.input.').map(item=>item.label)).toEqual(expect.arrayContaining(['getPointerPosition','isMousePressed','isMouseReleased']));
+ expect(labels('GameLab.InputManager.').map(item=>item.label)).toContain('MOUSE_RIGHT');
+ expect(labels('this.game.').map(item=>item.label)).toEqual(expect.arrayContaining(['getObjectsWith','getObjectsWithTag','pause','resume']));
+});
+
+test('inserts named arguments and shows the active API parameter',()=>{
+ const source='const player = this.createObject("Player"); player.';
+ expect(labels(source).find(item=>item.label==='setPosition').insertText).toBe('setPosition(${1:x}, ${2:y})');
+ const call='const controller = new GameLab.CharacterController2D(); controller.move(1, 1,';
+ const result=createGameLabSignatureProvider('game-dev-701-guided').provideSignatureHelp(modelFor(call),{lineNumber:1,column:call.length+1});
+ expect(result.value.activeParameter).toBe(2);
+ expect(result.value.signatures[result.value.activeSignature].label).toBe('move(x, y, speed)');
+ const ctor='new GameLab.Sprite(GameLab.Assets.PLAYER01,';
+ expect(createGameLabSignatureProvider('game-dev-701-guided').provideSignatureHelp(modelFor(ctor),{lineNumber:1,column:ctor.length+1}).value.signatures.length).toBeGreaterThan(0);
 });
