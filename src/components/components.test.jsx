@@ -200,7 +200,7 @@ test('opens Game Dev with its three files, engine guide, and console below the e
   const { container } = render(<App />);
   await user.click(screen.getByLabelText('Wybierz ścieżkę'));
   await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
-  expect(screen.getByRole('heading', { name: 'Scena, obiekt i środek grafiki' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Scena, obiekt i pozycja w świecie' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();
   expect(screen.getByTitle('Podgląd gry ucznia')).toHaveAttribute('sandbox', 'allow-scripts');
   expect(container.querySelector('.editor-shell')).toContainElement(screen.getByRole('heading', { name: 'Konsola' }));
