@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import LessonInfographic from './LessonInfographic.jsx';
+import PageDiagram from './PageDiagram.jsx';
+import { gameExplanationPages } from './lessonVisuals.js';
+import { withConceptVisuals } from './lessonConcepts.js';
 import './LessonExplanation.css';
 
 export function explanationPages(lesson) {
+  const gamePages = gameExplanationPages[lesson.id?.replace(/^g2d\./, '')];
+  if (gamePages && lesson.id?.startsWith('g2d.')) return gamePages;
   const blocks = (lesson.theory || []).map((block, index) => typeof block === 'string'
     ? { title: `Zasada ${index + 1}`, text: block }
     : block);
@@ -19,7 +24,7 @@ export function explanationPages(lesson) {
   if (objective && pages.length) pages.unshift({ title: 'Czego się nauczysz', text: objective });
   if (!pages.length) pages.push({ title: 'Cel lekcji', text: lesson.objective || lesson.objectives?.join(' ') || lesson.title });
   if (lesson.tips?.length) pages.push({ title: 'Zapamiętaj', text: lesson.tips.join(' ') });
-  return pages;
+  return withConceptVisuals(lesson, pages);
 }
 
 function ExplanationPages({ lesson, language }) {
@@ -32,7 +37,7 @@ function ExplanationPages({ lesson, language }) {
       <h2>{page.title}</h2><p>{page.text}</p>
       {page.code && <pre><code>{page.code}</code></pre>}
     </article>
-    <div className="explanation-visual"><LessonInfographic lesson={{ ...lesson, theory: [page], tips: [page.text] }} language={language} /></div>
+    <div className="explanation-visual">{page.visual ? <PageDiagram page={page} /> : <LessonInfographic lesson={{ ...lesson, theory: [page], tips: [page.text] }} language={language} />}</div>
     <nav className="explanation-pagination" aria-label="Strony wyjaśnienia">
       <button type="button" aria-label="Poprzedni krok" title="Poprzedni krok" disabled={index === 0} onClick={() => setIndex(index - 1)}><Arrow back /></button>
       <div className="explanation-pages">{pages.map((_, number) => <button type="button" key={number} aria-label={`Krok ${number + 1}`} aria-current={index === number ? 'step' : undefined} onClick={() => setIndex(number)}>{number + 1}</button>)}</div>
