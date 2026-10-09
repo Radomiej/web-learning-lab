@@ -39,7 +39,7 @@ export const gameExplanationPages = {
   ],
   camera: [
     picture('Świat i ekran', 'Kamera wybiera fragment świata. Obiekt pozostaje w (80,180). Gdy początek widoku przesuniemy z (0,0) do (60,150), ekranowa pozycja zmieni się z (80,180) na (20,30).', 'camera', 0),
-    picture('Śledzenie gracza i stały HUD', 'follow(player) przesuwa widok za graczem. Tło przesuwa się na ekranie, lecz pozycja świata i kolizje pozostają niezależne. HUD używa współrzędnych ekranu.', 'camera', 1),
+    picture('Śledzenie gracza i stały HUD', 'follow(player) przesuwa widok za graczem. Gdy gracz idzie 60 jednostek w prawo, kamera także przesuwa początek widoku o 60. Gracz pozostaje na ekranie w (85,82), a tło się przesuwa. HUD używa współrzędnych ekranu.', 'camera', 1),
     picture('Kliknięcie ekranu na mapie świata', 'screenToWorld odwraca przeliczenie. Ekran (20,30) + początek widoku (60,150) daje świat (80,180). Sprawdź null przed użyciem pozycji kursora.', 'camera', 2),
   ],
   'canvas-ui': [

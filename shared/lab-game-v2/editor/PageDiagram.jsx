@@ -67,11 +67,11 @@ export default function PageDiagram({ page }) {
     </>; break;
     case 'camera': content = <>
       {[35,240].map((x,i)=><g key={x}><rect x={x} y="70" width="170" height="165" rx="12" fill="#edf7ed" stroke="#57967b" strokeWidth="2"/>
-        <path d={`M${x} 120h170M${x} 170h170M${x+55} 70v165M${x+110} 70v165`} stroke="#cbdccc"/>
-        <rect x={x+8} y="78" width="80" height="24" rx="5" fill="#fff"/><Label x={x+48} y={97}>HP 5/5</Label>
-        <Sprite x={x+(i===0?60:10)} y={i===0?180:110} size={40}/>
-        <Label x={x+85} y={45}>{i===0?'Widok (0,0)':'Widok (60,150)'}</Label>
-        <Label x={x+85} y={265}>{i===0?'ekran (80,180)':'ekran (20,30)'}</Label></g>)}
+        <path d={`M${x} 120h170M${x} 170h170M${x+55-(variant===1?i*30:0)} 70v165M${x+110-(variant===1?i*30:0)} 70v165`} stroke="#cbdccc"/>
+        {variant===1&&<><rect x={x+8} y="78" width="80" height="24" rx="5" fill="#fff"/><Label x={x+48} y={97}>HP 5/5</Label></>}
+        {variant===2&&i===1?<><circle cx={x+14} cy="91" r="8" fill="#d85158"/><path d={`M${x+14} 84v14M${x+7} 91h14`} stroke="#fff" strokeWidth="2"/></>:<Sprite x={variant===1?x+65:x+(i===0?56:14)-20} y={variant===1?132:70+(i===0?126:21)-20} size={40}/>}
+        <Label x={x+85} y={45}>{variant===1?(i===0?'Widok (100,100)':'Widok (160,100)'):(i===0?'Widok (0,0)':'Widok (60,150)')}</Label>
+        <Label x={x+85} y={265}>{variant===1?(i===0?'świat (185,182)':'świat (245,182)'):(i===0?'ekran (80,180)':'ekran (20,30)')}</Label></g>)}
       <Label x={220} y={300}>{variant===2?'ekran + widok = świat':variant===1?'HUD: to samo miejsce ekranu':'Świat: zawsze (80,180)'}</Label>
     </>; break;
     case 'contact': content = <>
