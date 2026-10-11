@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import LessonInfographic from './LessonInfographic.jsx';
 import PageDiagram from './PageDiagram.jsx';
+import CodeExample from './CodeExample.jsx';
 import { gameExplanationPages } from './lessonVisuals.js';
 import { withConceptVisuals } from './lessonConcepts.js';
 import './LessonExplanation.css';
@@ -31,11 +32,12 @@ function ExplanationPages({ lesson, language }) {
   const pages = explanationPages(lesson);
   const [index, setIndex] = useState(0);
   const page = pages[index];
+  const code = typeof page.code === 'object' ? page.code?.[language] : page.code;
   return <section className="lesson-explanation" aria-label="Wyjaśnienie zagadnienia">
     <header className="explanation-header"><span>POZNAJ ZASADĘ</span><span aria-live="polite">{index + 1} / {pages.length}</span></header>
     <article className="explanation-copy" aria-live="polite" aria-atomic="true">
       <h2>{page.title}</h2><p>{page.text}</p>
-      {page.code && <pre><code>{page.code}</code></pre>}
+      {code && <CodeExample key={code} code={code} />}
     </article>
     <div className="explanation-visual">{page.visual ? <PageDiagram page={page} /> : <LessonInfographic lesson={{ ...lesson, theory: [page], tips: [page.text] }} language={language} />}</div>
     <nav className="explanation-pagination" aria-label="Strony wyjaśnienia">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CodeExample from './CodeExample.jsx';
 import { assetManifest } from '../assets/Assets.js';
 import './LessonInfographic.css';
 
@@ -64,7 +65,7 @@ export default function LessonInfographic({ lesson, language='java' }) {
   <div className="lesson-infographic-flow">
    <article><span className="lesson-step-number">1</span><h3>Reguła</h3><p>{input}</p></article>
    <span className="lesson-flow-arrow" aria-hidden="true">→</span>
-   <article><span className="lesson-step-number">2</span><h3>Kod / API</h3><pre><code>{code}</code></pre><small>Fragment ilustruje zasadę; nazwy zmiennych dopasuj do swojego komponentu.</small></article>
+   <article><span className="lesson-step-number">2</span><h3>Kod / API</h3><CodeExample key={code} code={code}/><small>Fragment ilustruje zasadę; nazwy zmiennych dopasuj do swojego komponentu.</small></article>
    <span className="lesson-flow-arrow" aria-hidden="true">→</span>
    <article><span className="lesson-step-number">3</span><h3>Co obserwować</h3><PixelIcon asset={diagram?.[0]||'knight'}/><p>{output}</p></article>
   </div>

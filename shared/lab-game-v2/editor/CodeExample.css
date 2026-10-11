@@ -1,0 +1,8 @@
+.lesson-code-example { margin: 16px 0; border-radius: 10px; background: #132d42; color: #a3eef0; overflow: hidden; }
+.lesson-code-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid #ffffff20; font-size: 12px; }
+.lesson-code-toolbar button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; border: 1px solid #ffffff35; border-radius: 7px; background: transparent; color: inherit; cursor: pointer; }
+.lesson-code-toolbar button:hover { background: #ffffff15; }
+.lesson-code-toolbar button:focus-visible, .lesson-code-example pre:focus-visible { outline: 2px solid #65d9e4; outline-offset: -3px; }
+.lesson-code-example pre, .explanation-copy .lesson-code-example pre { margin: 0; padding: 16px; border-radius: 0; background: transparent; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.65; user-select: text; }
+.lesson-code-status { display: block; padding: 0 12px 8px; font-size: 12px; }
+.lesson-code-status:empty { display: none; }

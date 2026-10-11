@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { editSelection, formatCode } from '../services/codeEditing.js';
 import { EditorIcon } from '../../shared/lab-game-v2/editor/EditorUI.jsx';
+import CopyCodeButton from '../../shared/lab-game-v2/editor/CopyCodeButton.jsx';
 import { createEditorUri, getEditorLanguage } from '../services/editorLanguage.js';
 import { createEditorActions } from '../services/monacoEditorCommands.js';
 import { createGameLabCompletionProvider,createGameLabSignatureProvider } from '../services/gameLabCompletions.js';
@@ -294,6 +295,10 @@ export default function CodeEditor({
           tabSize: 2,
           scrollBeyondLastLine: false,
           wordWrap: 'off',
+          editContext: false,
+          emptySelectionClipboard: true,
+          multiCursorModifier: 'alt',
+          multiCursorPaste: 'spread',
         });
         editorRef.current = editor;
         monacoRef.current = monaco;
@@ -382,6 +387,7 @@ export default function CodeEditor({
         </div>
         <div className="editor-card-heading-actions">
           <span className="editor-language">{languageLabel}</span>
+          <CopyCodeButton code={value} fileName={fileLabel} />
           <button
             className="button button--ghost"
             type="button"

@@ -1,0 +1,4 @@
+.editor-copy-control { display: inline-flex; align-items: center; position: relative; flex-shrink: 0; }
+.editor-copy-control button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 7px; }
+.editor-copy-control svg { flex-shrink: 0; }
+.editor-copy-status:not(:empty) { position: absolute; z-index: 5; top: calc(100% + 6px); right: 0; width: max-content; max-width: 220px; padding: 7px 10px; border-radius: 8px; background: #15394a; color: white; box-shadow: 0 4px 12px #0002; font-size: 12px; line-height: 1.4; pointer-events: none; }

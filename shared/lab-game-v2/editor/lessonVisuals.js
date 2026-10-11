@@ -48,7 +48,10 @@ export const gameExplanationPages = {
     picture('Pasek pokazuje proporcję', 'ProgressBar zamienia wartość procentową na długość wypełnienia. setProgress(50) daje połowę paska. Używaj tej samej skali w danych i w UI.', 'bars', 0),
   ],
   health: [
-    picture('Trafienie odejmuje HP', 'Health należy do konkretnej jednostki. Przykładowe damage(1) zmienia HP z 5/5 na 4/5. heal nie przekracza maksimum.', 'bars', 1),
+    { ...picture('Trafienie odejmuje HP', 'Health należy do konkretnej jednostki. Przykładowe damage(1) zmienia HP z 5/5 na 4/5. W zadaniu „Dwa zagrożenia, jedno trafienie” ContactDamage przeciwnika reaguje na kolizję i wywołuje damage na Health drugiego obiektu. Poniżej metoda tego komponentu; Health jest klasą z projektu lekcji.', 'bars', 1), code: {
+      java: '@Override\npublic void onCollision(GameObject other) {\n    Health health = other.getComponent(Health.class);\n    if (health != null) {\n        health.damage(1);\n    }\n}',
+      javascript: 'onCollision(other) {\n    const health = other.getComponent(Health);\n    if (health) {\n        health.damage(1);\n    }\n}',
+    } },
     picture('Nietykalność odrzuca kolejny cios', 'Po przyjętym trafieniu odliczamy czas ochrony. Cios podczas ochrony pozostawia 4 HP. Timer należy do tej jednostki, nie do globalnego stanu gry.', 'timeline', 0),
     flow('Śmierć uruchamia się raz', 'Gdy zdrowie spadnie do zera, onDeath uruchamia reakcję. Usunięcie jednostki i utworzenie łupu to osobne decyzje. Nie przyznawaj łupu wielokrotnie.', ['HP = 0', 'onDeath • raz', 'łup / usunięcie'], 'Zdrowie jednostki nie jest stanem całej rundy.'),
   ],

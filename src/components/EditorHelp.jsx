@@ -7,6 +7,12 @@ const GROUPS = [
     title: "Pisanie kodu",
     icon: "edit",
     shortcuts: [
+      [["Ctrl", "C"], "Kopiuj zaznaczenie lub całą linię bez zaznaczenia"],
+      [["Ctrl", "V"], "Wklej kod ze schowka"],
+      [["Ctrl", "X"], "Wytnij zaznaczenie lub całą linię"],
+      [["Shift", "↑"], "Zaznaczaj kilka linii (także Shift + ↓)"],
+      [["Ctrl", "D"], "Zaznacz kolejne wystąpienie słowa"],
+      [["Alt", "klik"], "Dodaj kolejny kursor"],
       [["Tab"], "Zwiększ wcięcie zaznaczenia"],
       [["Shift", "Tab"], "Zmniejsz wcięcie zaznaczenia"],
       [["Enter"], "Zacznij nową linię z tym samym wcięciem"],
