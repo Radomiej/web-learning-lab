@@ -1,3 +1,4 @@
+import { trackLabEvent, setLabContext } from './services/labAnalytics.js';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { allLessons, trackOrder, tracks } from "./data/curriculum.js";
 import { useCourseProgress } from "./hooks/useCourseProgress.js";
@@ -54,6 +55,11 @@ export default function App() {
   const activeTask =
     selectedLesson.tasks.find((task) => task.id === activeTaskId) ||
     selectedLesson.tasks[0];
+  useEffect(() => {
+    setLabContext({track_id:selectedLesson.track, lesson_id:selectedLesson.id, task_id:activeTask.id});
+    trackLabEvent('task_open');
+  }, [selectedLesson.track, selectedLesson.id, activeTask.id]);
+  useEffect(() => { trackLabEvent('lesson_open', {lesson_id:selectedLesson.id,track_id:selectedLesson.track}); }, [selectedLesson.id,selectedLesson.track]);
   const files = useMemo(
     () =>
       normalizeProject(filesByTask[activeTask.id] || activeTask.starter, {
@@ -76,6 +82,7 @@ export default function App() {
     const signature = JSON.stringify([activeTask.id, previewRuntime.runId, state.checkResults, state.errors.length]);
     if (loggedResultRef.current === signature) return;
     loggedResultRef.current = signature;
+    trackLabEvent('task_run_result', {passed:state.checkResults.length > 0 && state.checkResults.every(item => item.passed), total:state.checkResults.length, error_count:state.errors.length});
     recordWorkEvent({ type: 'result', taskId: activeTask.id, runId: previewRuntime.runId, passed: state.checkResults.filter(item => item.passed).length, total: state.checkResults.length, errorCount: state.errors.length });
   }, [activeTask.id, previewRuntime.runId, previewRuntime.runtimeState]);
   const runtimeLabel =
@@ -113,6 +120,7 @@ export default function App() {
   ]);
 
   const handleReset = () => {
+    trackLabEvent('task_reset');
     setProjectRevision(value => value + 1);
     setDialog(null);
     const starter = normalizeProject(activeTask.starter, {
@@ -125,6 +133,7 @@ export default function App() {
   };
 
   const handleSolution = () => {
+    trackLabEvent('solution_open');
     if (activeTask.mode !== "guided") return;
     const solution = normalizeProject(activeTask.solution, {
       track: selectedLesson.track,
@@ -151,6 +160,7 @@ export default function App() {
       completedTasks={completedTasks}
       isOpen={sidebarOpen}
       onTrackChange={(trackId) => {
+        trackLabEvent('topic_change', {track_id:trackId});
         selectTrack(trackId);
         setSidebarOpen(false);
       }}
@@ -202,6 +212,7 @@ export default function App() {
           updateFiles(activeTask.id, { [fileKey]: value });
         }}
         onRun={() => {
+          trackLabEvent('task_run_started');
           recordWorkEvent({ type: 'run', taskId: activeTask.id });
           if (selectedLesson.track === 'playground') previewRuntime.runPreview();
           else previewRuntime.checkPreview();
@@ -209,7 +220,7 @@ export default function App() {
         onSave={() => previewRuntime.savePreview()}
         onReset={() => setDialog("reset")}
         onAddFile={() => setDialog("add")}
-        onCheck={previewRuntime.checkPreview}
+        onCheck={() => { trackLabEvent('task_check_started'); previewRuntime.checkPreview(); }}
         onSolution={handleSolution}
         onImportProject={(project) => {
           setProjectRevision(value => value + 1);
