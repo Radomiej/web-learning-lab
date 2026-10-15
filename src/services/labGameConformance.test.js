@@ -1,3 +1,4 @@
+import {resolve} from 'node:path';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import definitions from '../../shared/lab-game-v2/conformance/scenarios.json';
@@ -45,8 +46,8 @@ test('C34: transport discards queued activation from a replaced scene with a reu
 });
 test('C36: both packages contain the same actual sprite bytes and keys',()=>{
   const lab=environment();try{for(const asset of assets.assets)expect(lab.Assets[asset.constant]).toBe(assets.aliases[asset.constant]??asset.key);expect(lab.Assets.WALL).toBe('stone');expect(Object.isFrozen(lab.Assets)).toBe(true);}finally{lab.dispose();}
-  const other=JSON.parse(readFileSync('C:/Nauka/java-lab/shared/lab-game-v2/assets/manifest.json','utf8'));
-  const hash=(repo,source)=>createHash('sha256').update(readFileSync(`C:/Nauka/${repo}/public/game-assets/${source}`)).digest('hex');
+  const other=JSON.parse(readFileSync(resolve('../java-lab/shared/lab-game-v2/assets/manifest.json'),'utf8'));
+  const hash=(repo,source)=>createHash('sha256').update(readFileSync(resolve(`../${repo}/public/game-assets/${source}`))).digest('hex');
   compare({keysEqual:JSON.stringify(assets.assets.map(a=>a.key))===JSON.stringify(other.assets.map(a=>a.key)),hashesEqual:assets.assets.every(a=>hash('web-learning-lab',a.source)===hash('java-lab',a.source)),wallResolvesTo:assets.aliases.WALL,ghostPresent:assets.assets.some(a=>a.key==='ghost')},definitions.scenarios.find(s=>s.id==='C36').expected);
 });
 test('C37: explicit user override rejects legacy API without mutating its source',()=>{
@@ -61,8 +62,8 @@ test('C37: explicit user override rejects legacy API without mutating its source
 // C38 requires independently executed JDK and TeaVM results. It must not be
 // reported as executed merely by comparing a JS scene to a second JS scene.
 test('C38: JavaScript matches independently executed JDK and TeaVM gameplay, events and geometry',()=>{
- const jdk=JSON.parse(readFileSync('C:/Nauka/java-lab/artifacts/lab-game-c38-jdk.json','utf8'));
- const teavm=JSON.parse(readFileSync('C:/Nauka/java-lab/artifacts/lab-game-c38-teavm.json','utf8'));
+ const jdk=JSON.parse(readFileSync(resolve('../java-lab/artifacts/lab-game-c38-jdk.json'),'utf8'));
+ const teavm=JSON.parse(readFileSync(resolve('../java-lab/artifacts/lab-game-c38-teavm.json'),'utf8'));
  const lab=environment();try {
   const actual=runConformance(lab,courseClasses(lab,buildCourseProject('javascript','survivor','independent').files),'C38');
   for(const [runtime,evidence]of[['JDK',jdk],['TeaVM',teavm]]){compare(actual.position,evidence.position,`${runtime} gameplay`);compare(actual.geometry,evidence.geometry,`${runtime} geometry`);expect(actual.events).toEqual(evidence.events);}

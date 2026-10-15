@@ -15,7 +15,7 @@ test('a live scene waits for all atlas images before creating gameplay objects',
   vi.stubGlobal('Image',class{set src(value){this.source=value;images.push(this);}});
   const canvas=document.createElement('canvas');document.body.append(canvas);
   const lab=createGameLab({window,document,requestAnimationFrame:()=>1,cancelAnimationFrame:()=>{}});
-  class Scene extends lab.Game{onCreate(){creates++;this.createObject('Player').addComponent(new lab.Sprite(lab.Assets.PLAYER01));}}
+  class Scene extends lab.Game{onCreate(){creates++;this.createObject('Player').addComponent(new lab.Sprite(lab.Assets.PLAYER01));}onDrawUI(){if(!this.find('Player'))throw new Error('HUD before Player');}}
   try {
     const game=lab.run(Scene,{canvas});expect(creates).toBe(0);expect(images.length).toBeGreaterThan(4);
     images.slice(0,-1).forEach(image=>image.onload());await Promise.resolve();expect(creates).toBe(0);

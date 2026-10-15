@@ -1,11 +1,11 @@
 export const courseManifest = {
   "engineApiVersion": 2,
-  "contentVersion": 2,
+  "contentVersion": 3,
   "chapters": [
     {
       "id": "g2d.scene",
       "order": 1,
-      "title": "Scena, obiekt i pozycja w świecie",
+      "title": "Scena, obiekty i komponenty",
       "objectives": [
         "Rozróżniasz obiekt, jego Transform i komponent wyglądu. Tworzysz dwie niezależne instancje i odczytujesz pozycję obiektu na mapie."
       ],
@@ -14,45 +14,283 @@ export const courseManifest = {
           "id": "g2d.scene.guided",
           "mode": "guided",
           "title": "Pierwszy obiekt",
-          "prompt": "W onCreate utwórz Player w (80,90), dodaj ShapeRenderer 40×30 w kolorze #76b9f2 i uruchom scenę.",
+          "prompt": "Masz gotowy Player w (80,90). Dodaj mu tylko ShapeRenderer 40×30 w kolorze #76b9f2. Uruchom: niewidoczny dotąd obiekt stanie się widoczny.",
           "objective": "Utworzyć GameObject i dodać renderer w oddzielnych czytelnych instrukcjach.",
           "criteria": [
             "Istnieje jeden aktywny Player z własnym Transform i ShapeRenderer.",
             "Obraz prostokąta obejmuje x=60..100 i y=75..105; pozycja obiektu pozostaje (80,90).",
             "Po 20 aktualizacjach liczba obiektów nadal wynosi 1 i pozycja się nie zmienia."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "GameObject już istnieje i ma pozycję. Dodanie ShapeRenderer nadaje mu widoczny wygląd. Komponenty określają, co obiekt potrafi: renderer rysuje, kontroler porusza, collider wykrywa kontakt."
         },
         {
           "id": "g2d.scene.modified",
           "mode": "modified",
           "title": "Dwie osobne platformy",
-          "prompt": "Utwórz PlatformA w (120,180), 100×20, kolor #70c994 oraz PlatformB w (300,120), 80×20, kolor #ffd166. Przesuń tylko PlatformB o 40 px w prawo.",
+          "prompt": "Masz dwie widoczne platformy. Samodzielnie dopisz przesunięcie tylko PlatformB o 40 px w prawo. PlatformA ma pozostać bez zmian.",
           "objective": "Wykazać niezależność instancji.",
           "criteria": [
             "Istnieją dwa różne obiekty i dwa różne Transform.",
             "PlatformA ma środek (120,180) i granice x=70..170; PlatformB ma środek (340,120) i granice x=300..380.",
             "Zmiana koloru lub pozycji PlatformB nie zmienia PlatformA."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.scene.independent",
           "mode": "independent",
           "title": "Mała arena",
-          "prompt": "Utwórz Player ze Sprite player 32×32 w (100,100), Enemy ze Sprite slime 32×32 w (280,100) i Coin ze Sprite coin 16×16 w (180,180).",
+          "prompt": "Gracz i pozycje obiektów są gotowe. Samodzielnie dodaj Enemy wygląd slime 32×32, a Coin wygląd coin 16×16. Nie twórz kolejnych obiektów.",
           "objective": "Złożyć czytelną scenę z kilku instancji.",
           "criteria": [
             "Scena zawiera dokładnie trzy wskazane obiekty i odpowiadające im tekstury.",
             "Player zajmuje x=84..116,y=84..116; Coin x=172..188,y=172..188.",
             "Zmiana pozycji Coin na (200,180) nie przesuwa gracza ani przeciwnika.",
             "Po sekundzie sceny bez zachowań pozycje pozostają stałe."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
-      "prerequisites": []
+      "prerequisites": [],
+      "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
+    },
+    {
+      "id": "g2d.input",
+      "order": 2,
+      "title": "Sterowanie i kierunek postaci",
+      "objectives": [
+        "Rozróżniasz przytrzymanie klawisza i pojedyncze naciśnięcie. Oddzielasz odczyt input od wykonania ruchu przez CharacterController2D.",
+        "Odczytujesz ostatni niezerowy kierunek z CharacterController2D.getDirection(), także po zatrzymaniu postaci."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.input.guided",
+          "mode": "guided",
+          "title": "Ruch WASD i strzałkami",
+          "prompt": "Gracz, kontroler i odczyt WASD/strzałek są gotowe. Dopisz jedno wywołanie move(x, y, speed) w PlayerController. Po uruchomieniu D ma przesuwać gracza w prawo, a brak klawiszy zatrzymywać.",
+          "objective": "Wywołać kontroler ruchem wynikającym z wejścia.",
+          "criteria": [
+            "D trzymane 0.5 s przesuwa Player do (160,100); ArrowRight daje identyczny wynik.",
+            "Przez 0.5 s bez wejścia pozycja pozostaje (100,100).",
+            "A+D oraz W+S dają zerowy ruch na danej osi.",
+            "S+D przez sekundę daje dystans 120 px, z zachowaniem równych składowych."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Gotowy kod odczytuje WASD i strzałki. Jedno wywołanie move przekazuje kierunek i prędkość kontrolerowi. Kontroler uwzględnia czas oraz normalizuje przekątną — nie mnożymy speed ponownie przez delta."
+        },
+        {
+          "id": "g2d.input.modified",
+          "mode": "modified",
+          "title": "Sprint",
+          "prompt": "Gotowy gracz porusza się z prędkością 100. Samodzielnie zmień parametr move: Shift daje 200 px/s, bez Shift 100. Nie kopiuj logiki kierunku.",
+          "objective": "Przekazywać zmienny parametr bez kopiowania logiki ruchu.",
+          "criteria": [
+            "D+Shift przez 0.5 s ze startu x=100 daje x=200.",
+            "D przez kolejne 0.5 s po puszczeniu Shift daje x=250.",
+            "W+D+Shift przez 0.5 s daje dystans 100 px.",
+            "Sam Shift nie porusza postaci."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.input.independent",
+          "mode": "independent",
+          "title": "Jedna akcja na naciśnięcie",
+          "prompt": "Ruch jest gotowy. Uzupełnij ActionCounter tak, aby jedno nowe naciśnięcie Space zwiększało actions raz. Przytrzymanie nie może naliczać kolejnych akcji.",
+          "objective": "Obsłużyć zbocze klawisza w osobnym komponencie.",
+          "criteria": [
+            "Trzymanie Space przez 10 kolejnych aktualizacji daje actions=1.",
+            "Puszczenie na jedną aktualizację i ponowne naciśnięcie daje actions=2.",
+            "Działa jednoczesny ruch z D i akcja Space; prędkość pozostaje 120 px/s.",
+            "Ponowne wejście focus do planszy nie tworzy fikcyjnego naciśnięcia ani zablokowanego klawisza."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.scene"
+      ],
+      "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
+    },
+    {
+      "id": "g2d.collisions",
+      "order": 3,
+      "title": "Collidery, przeszkody i granice świata",
+      "objectives": [
+        "Odróżniasz renderer od fizycznego kształtu i triggera. Używasz kontrolera do blokowania ruchu i ślizgania przy przeszkodach."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.collisions.guided",
+          "mode": "guided",
+          "title": "Ściana zatrzymuje gracza",
+          "prompt": "Gracz i widoczna ściana są gotowe. Dodaj ścianie tylko Collider2D(20,200). Uruchom i przytrzymaj D: gracz ma zatrzymać się przed ścianą na x=174.",
+          "objective": "Dodać dwa jawne collidery.",
+          "criteria": [
+            "Po sekundzie D środek Player zatrzymuje się na x=174, y=180; prawa krawędź dotyka x=190.",
+            "Bez collidera na ścianie ten sam ruch dochodzi do x=220.",
+            "Sprite ściany i collider mają niezależnie ustawione wymiary; sam Sprite nie blokuje ruchu."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Widoczna ściana sama nie blokuje ruchu. Dodanie Collider2D o wymiarach 20×200 daje kontrolerowi fizyczną przeszkodę. Gracz o połowie szerokości 16 zatrzyma środek na x=174."
+        },
+        {
+          "id": "g2d.collisions.modified",
+          "mode": "modified",
+          "title": "Koło i skala wizualna",
+          "prompt": "Samodzielnie zamień box gracza na CircleCollider2D(12) oraz ustaw skalę grafiki na (2,2). Ściana jest gotowa; D ma zatrzymać środek gracza na x=178.",
+          "objective": "Stosować promień niezależny od Sprite.",
+          "criteria": [
+            "Przy tej samej ścianie Player zatrzymuje się na x=178.",
+            "Po zmianie scale=(2,2) punkt zatrzymania nadal wynosi x=178.",
+            "Jawna zmiana promienia na 20 zmienia punkt zatrzymania na x=170; sama skala tego nie robi."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.collisions.independent",
+          "mode": "independent",
+          "title": "Korytarz i granice świata",
+          "prompt": "Gotowe są ruch, gracz i widoczne ściany korytarza. Samodzielnie dodaj ścianom collidery i ustaw granice świata 640×360. Sprawdź blokowanie ruchu i ślizganie po ścianie.",
+          "objective": "Złożyć obszar z nieprzenikalnymi ścianami.",
+          "criteria": [
+            "Ruch w lewo zatrzymuje środek na x=192, w prawo na x=268.",
+            "Podczas ruchu ukośnego wzdłuż ściany x nie przekracza ograniczenia, a y nadal rośnie.",
+            "Na granicach świata środek koła pozostaje w x=12..628,y=12..348.",
+            "Krok 0.1 s przy speed=600 nie przenosi gracza na drugą stronę ściany."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.input"
+      ],
+      "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
+    },
+    {
+      "id": "g2d.enemy-ai",
+      "order": 4,
+      "title": "Pierwszy przeciwnik i pościg",
+      "objectives": [
+        "Uruchamiasz pościg za graczem przez komponent EnemyAI. Obliczasz kierunek do celu, korzystając z gotowego kontrolera; następnie samodzielnie piszesz pościg i ucieczkę."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.enemy-ai.guided",
+          "mode": "guided",
+          "title": "Pościg za graczem",
+          "prompt": "Gracz, Slime, cel i obliczenie dx/dy są gotowe. Dopisz jedno wywołanie move(dx,dy,speed) w EnemyAI. Wróg ma zacząć pościg z prędkością 60.",
+          "objective": "Napisać własny komponent pościgu.",
+          "criteria": [
+            "Po sekundzie Slime ma pozycję (160,100) na pustej scenie.",
+            "Dla celu po przekątnej Slime pokonuje 60 px w sekundę.",
+            "Jeżeli Slime i target są w tym samym punkcie, nie powstaje NaN ani niekontrolowany ruch.",
+            "Zniszczenie celu lub target=null zatrzymuje AI bez błędu."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Cel, kierunek i kontroler są gotowe. Wywołanie move(dx, dy, speed) uruchamia pościg. Kierunek liczymy jako pozycja celu minus pozycja przeciwnika; kontroler normalizuje wektor."
+        },
+        {
+          "id": "g2d.enemy-ai.modified",
+          "mode": "modified",
+          "title": "Dwa tempa pościgu",
+          "prompt": "Slime i Bat mają własne prędkości 40 i 80 oraz referencję do gracza. Samodzielnie napisz onUpdate wspólnego EnemyAI: oblicz kierunek do celu i wywołaj kontroler.",
+          "objective": "Użyć jednej klasy dla różnych instancji.",
+          "criteria": [
+            "Na osobnych prostych odcinkach po 0.5 s Slime przebywa 20 px, a Bat 40 px.",
+            "Zmiana name gracza nie zatrzymuje obu AI.",
+            "Po przeniesieniu celu na drugą stronę przeciwnicy zmieniają kierunek następnego kroku.",
+            "Oba sprite’y pozostają pionowo; wygląd może się odbijać przez flipX, rotation pozostaje 0."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.enemy-ai.independent",
+          "mode": "independent",
+          "title": "Przeciwnik utrzymuje dystans",
+          "prompt": "Masz gotową scenę, ruch gracza i komponent FleeAI. Samodzielnie napisz ucieczkę: przy odległości <120 oddalaj się z prędkością 60; poza zasięgiem stój.",
+          "objective": "Samodzielnie zaprogramować prostą regułę AI.",
+          "criteria": [
+            "Dla target=(300,100),enemy=(250,100) po 0.5 s wróg znajduje się w (220,100).",
+            "Gdy odległość wynosi 120 lub więcej, następny krok nie oddala przeciwnika.",
+            "Przy tym samym położeniu celu i wroga stosujesz jawny kierunek awaryjny (1,0), bez NaN.",
+            "FleeAI jednego wroga nie zmienia parametrów EnemyAI drugiego; do jednego obiektu podłączony jest tylko jeden aktywny autor kierunku ruchu."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.collisions"
+      ],
+      "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
+    },
+    {
+      "id": "g2d.projectiles",
+      "order": 5,
+      "title": "Pociski, HP i pierwsza pętla walki",
+      "objectives": [
+        "Strzelasz zgodnie z ostatnim kierunkiem ruchu, odczytanym z CharacterController2D.getDirection(). Pocisk odbiera HP, przeciwnik znika po śmierci, a kontakt wroga odbiera HP graczowi. Gotowe komponenty później rozbudujesz."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.projectiles.guided",
+          "mode": "guided",
+          "title": "Prawdziwy lot pocisku",
+          "prompt": "Lot pocisku, trigger, filtrowanie celu i Health są gotowe. Dopisz tylko hp.damage(damage) w ProjectileHit. Po trafieniu HP celu spadnie z 3 do 2; pocisk zniknie.",
+          "objective": "Zadać obrażenia dopiero po kontakcie.",
+          "criteria": [
+            "Po 0.2 s pocisk jest w (140,100), cel nadal ma 3 HP.",
+            "Po dotarciu odcinka ruchu do zakresu kontaktu cel ma 2 HP, a pocisk jest wycofany.",
+            "Po kolejnych krokach cel nadal ma 2 HP; jeden pocisk nie nalicza trafienia wielokrotnie.",
+            "Pozycja celu nie jest celem tweena, który odejmuje HP już w momencie wystrzału.",
+            "Po uruchomieniu WASD/strzałki poruszają graczem, a Space tworzy pocisk w ostatnim kierunku ruchu.",
+            "Trzy trafienia po 1 obrażeniu pokonują przeciwnika z HP=3; kontakt wroga odbiera HP graczowi z ochroną między trafieniami."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Lot, trigger i Health są gotową bazą. hp.damage(damage) odejmuje zdrowie trafionemu celowi. Guard spent i usunięcie pocisku zapewniają jedno trafienie; owner chroni właściciela."
+        },
+        {
+          "id": "g2d.projectiles.modified",
+          "mode": "modified",
+          "title": "Właściciel i czas życia",
+          "prompt": "Pocisk już lata i trafia. Samodzielnie zmień jego lifetime z 2 do 0.5 sekundy; zachowaj owner=Player i jedno trafienie. Sprawdź cel oraz zniknięcie pocisku.",
+          "objective": "Odrzucać samouszkodzenie i usuwać nietrafione pociski.",
+          "criteria": [
+            "Zaraz po utworzeniu w środku Player jego Health nie maleje.",
+            "Pocisk lecący obok wszystkich celów istnieje po 0.4 s i znika po 0.5 s.",
+            "Dwa pociski utworzone w różnych chwilach mają własne czasy życia.",
+            "Po wygaśnięciu pocisk nie rysuje się, nie bierze udziału w kontaktach i nie ma aktywnej aktualizacji.",
+            "Po uruchomieniu WASD/strzałki poruszają graczem, a Space tworzy pocisk w ostatnim kierunku ruchu.",
+            "Trzy trafienia po 1 obrażeniu pokonują przeciwnika z HP=3; kontakt wroga odbiera HP graczowi z ochroną między trafieniami."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.projectiles.independent",
+          "mode": "independent",
+          "title": "Szybki pocisk i pierwszy cel",
+          "prompt": "Trafienie i obiekty sceny są gotowe. Samodzielnie dodaj pociskowi Projectile2D(1,0,3000,1,player) i ustaw hitLayers=2. Ma trafić pierwszego wroga, ignorując sojusznika i właściciela.",
+          "objective": "Użyć ciągłego wykrywania kontaktu silnika.",
+          "criteria": [
+            "Przy kroku 0.1 s pocisk wykrywa cel r=8 między swoim startem a końcem kroku, mimo braku nakładania w pozycji końcowej.",
+            "Przy dwóch celach na tej samej linii obrażenia otrzymuje tylko bliższy.",
+            "Sojusznik znajdujący się przed Enemy nie zużywa pocisku ani nie traci HP.",
+            "Nie powstają powtórne obrażenia po destroy; wynik trafienia jest taki sam przy krokach 0.1 s i 0.05 s dla tego nieruchomego układu.",
+            "Po uruchomieniu WASD/strzałki poruszają graczem, a Space tworzy pocisk w ostatnim kierunku ruchu.",
+            "Trzy trafienia po 1 obrażeniu pokonują przeciwnika z HP=3; kontakt wroga odbiera HP graczowi z ochroną między trafieniami."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.enemy-ai"
+      ],
+      "scaffolding": "Gotowe Health, FireWeapon, ContactDamage i EnemyAI pozwalają grać. W tej lekcji zmieniasz trafienie; Health rozbudujesz w lekcji 10, Weapon w 11, AI w 14, a efekty w 19."
     },
     {
       "id": "g2d.components",
-      "order": 2,
+      "order": 6,
       "title": "Własna klasa komponentu i cykl życia",
       "objectives": [
         "Piszesz klasę dziedziczącą po Component i dodajesz jej instancję do obiektu. Odróżniasz stan instancji od wspólnego stanu oraz tworzenie od aktualizacji i usuwania."
@@ -62,13 +300,15 @@ export const courseManifest = {
           "id": "g2d.components.guided",
           "mode": "guided",
           "title": "Licznik aktualizacji",
-          "prompt": "Napisz Counter z counts=0; każda aktualizacja zwiększa counts o 1. Dodaj go do Player. Inicjalizacja ma wykonać się tylko raz.",
+          "prompt": "Masz gotową klasę Counter i scenę. Dopisz zwiększenie counts o 1 w onUpdate.",
           "objective": "Uzupełnić pola i metodę własnego komponentu.",
           "criteria": [
             "Po uruchomieniu counts=0; po trzech aktualizacjach counts=3.",
             "Znacznik inicjalizacji ma wartość 1 również po trzeciej aktualizacji.",
             "Komponent ma poprawnego właściciela Player; nie tworzysz kolejnych Player w onUpdate."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Pole counts należy do instancji komponentu. counts++ zapisuje kolejną aktualizację; tworzenie obiektu i inicjalizacja pozostają poza pętlą."
         },
         {
           "id": "g2d.components.modified",
@@ -80,7 +320,8 @@ export const courseManifest = {
             "Po pierwszych dwóch aktualizacjach oba liczniki wynoszą 2.",
             "Po wyłączeniu B i trzech aktualizacjach A=5,B=2.",
             "Ponowne włączenie B i jedna aktualizacja daje A=6,B=3, bez ponownej inicjalizacji."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.components.independent",
@@ -93,16 +334,17 @@ export const courseManifest = {
             "cleanup wzrasta dokładnie raz także po kolejnych aktualizacjach i powtórnym żądaniu destroy.",
             "Dwa Spark utworzone w różnych chwilach mają niezależny remaining.",
             "Zniszczony Spark nie jest aktualizowany ani rysowany."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.scene"
+        "g2d.projectiles"
       ]
     },
     {
       "id": "g2d.time",
-      "order": 3,
+      "order": 7,
       "title": "Czas, wektory i stała prędkość",
       "objectives": [
         "Liczysz przesunięcie jako prędkość razy czas. Normalizujesz wektor kierunku i obsługujesz wektor zerowy."
@@ -112,13 +354,15 @@ export const courseManifest = {
           "id": "g2d.time.guided",
           "mode": "guided",
           "title": "80 pikseli na sekundę",
-          "prompt": "Uzupełnij Mover: obiekt w (100,80) porusza się w prawo z prędkością 80 px/s. Nie resetuj pozycji w onUpdate.",
+          "prompt": "Masz gotowy Mover z velocityX=80 i delta. Dopisz przesunięcie transform.x o velocityX*delta.",
           "objective": "Zastosować delta w ruchu.",
           "criteria": [
             "Po 0.5 s pozycja wynosi (140,80), po 1 s (180,80).",
             "10 kroków po 0.1 s i 20 kroków po 0.05 s daje tę samą pozycję końcową.",
             "Krok o delta=0 nie zmienia pozycji."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Prędkość jest w px/s, a delta w sekundach. Ich iloczyn daje przesunięcie w tej aktualizacji, niezależne od liczby klatek."
         },
         {
           "id": "g2d.time.modified",
@@ -130,7 +374,8 @@ export const courseManifest = {
             "Po 0.5 s Drop=(200,70),Spark=(0,40).",
             "Po 1 s Drop=(200,100),Spark=(-20,50), bez automatycznego ograniczania tych obiektów do ekranu.",
             "Zmiana prędkości Drop nie zmienia prędkości Spark."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.time.independent",
@@ -143,7 +388,8 @@ export const courseManifest = {
             "Dla (1,1) długość przesunięcia po sekundzie wynosi 100, nie około 141.421.",
             "Dla (0,0) pozycja jest stała i wszystkie współrzędne są skończone.",
             "Zmiana kierunku na przeciwny odwraca ruch bez zmiany jego prędkości."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
@@ -151,60 +397,8 @@ export const courseManifest = {
       ]
     },
     {
-      "id": "g2d.input",
-      "order": 4,
-      "title": "Sterowanie i PlayerController",
-      "objectives": [
-        "Rozróżniasz przytrzymanie klawisza i pojedyncze naciśnięcie. Oddzielasz odczyt input od wykonania ruchu przez CharacterController2D."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.input.guided",
-          "mode": "guided",
-          "title": "Ruch WASD i strzałkami",
-          "prompt": "Napisz PlayerController: WASD i strzałki sterują Player w (100,100), speed=120. Bez klawiszy gracz stoi; nie mnożysz prędkości przez delta przed move.",
-          "objective": "Wywołać kontroler ruchem wynikającym z wejścia.",
-          "criteria": [
-            "D trzymane 0.5 s przesuwa Player do (160,100); ArrowRight daje identyczny wynik.",
-            "Przez 0.5 s bez wejścia pozycja pozostaje (100,100).",
-            "A+D oraz W+S dają zerowy ruch na danej osi.",
-            "S+D przez sekundę daje dystans 120 px, z zachowaniem równych składowych."
-          ]
-        },
-        {
-          "id": "g2d.input.modified",
-          "mode": "modified",
-          "title": "Sprint",
-          "prompt": "Ustaw zwykłą prędkość 100, a sprint z Shift na 200 px/s. Sprint po przekątnej ma zachować tę samą prędkość.",
-          "objective": "Przekazywać zmienny parametr bez kopiowania logiki ruchu.",
-          "criteria": [
-            "D+Shift przez 0.5 s ze startu x=100 daje x=200.",
-            "D przez kolejne 0.5 s po puszczeniu Shift daje x=250.",
-            "W+D+Shift przez 0.5 s daje dystans 100 px.",
-            "Sam Shift nie porusza postaci."
-          ]
-        },
-        {
-          "id": "g2d.input.independent",
-          "mode": "independent",
-          "title": "Jedna akcja na naciśnięcie",
-          "prompt": "Dodaj ActionCounter, który zwiększa actions po nowym naciśnięciu Space; PlayerController nadal reaguje na przytrzymanie ruchu.",
-          "objective": "Obsłużyć zbocze klawisza w osobnym komponencie.",
-          "criteria": [
-            "Trzymanie Space przez 10 kolejnych aktualizacji daje actions=1.",
-            "Puszczenie na jedną aktualizację i ponowne naciśnięcie daje actions=2.",
-            "Działa jednoczesny ruch z D i akcja Space; prędkość pozostaje 120 px/s.",
-            "Ponowne wejście focus do planszy nie tworzy fikcyjnego naciśnięcia ani zablokowanego klawisza."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.time"
-      ]
-    },
-    {
       "id": "g2d.graphics",
-      "order": 5,
+      "order": 8,
       "title": "Sprite, kafelki, odbicie i warstwy",
       "objectives": [
         "Dobierasz tekstury i jawne wymiary; układasz tło i obiekty. Odbijasz wygląd bez obrotu lub zmiany kolizji."
@@ -214,13 +408,15 @@ export const courseManifest = {
           "id": "g2d.graphics.guided",
           "mode": "guided",
           "title": "Łąka pod postacią",
-          "prompt": "Dodaj Ground z TileMap grass o kafelku 32 oraz Player ze Sprite player 32×32 w (100,100).",
+          "prompt": "Ground i gracz są gotowe. Dodaj Ground komponent TileMap z grass i kafelkiem 32.",
           "objective": "Wypełnić tło bez setek GameObjectów.",
           "criteria": [
             "Ground i Player są dwoma obiektami; kafelki nie są osobnymi obiektami.",
             "Tło grass wypełnia viewport 640×360, a także viewport 320×200 po zmianie rozmiaru.",
             "Player jest rysowany po tle, ze środkiem (100,100) i wymiarami 32×32."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "TileMap wypełnia tło kafelkami. To jeden komponent jednego obiektu, a nie setki obiektów sceny."
         },
         {
           "id": "g2d.graphics.modified",
@@ -232,7 +428,8 @@ export const courseManifest = {
             "Render tła używa sand i kafelka 48, bez resztek grass.",
             "Po A sprite.flipX=true; bez klawiszy pozostaje true; po D=false.",
             "Transform.rotation=0, scale.x=1 i rozmiar collidera nie zmieniają się podczas odbicia."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.graphics.independent",
@@ -245,216 +442,69 @@ export const courseManifest = {
             "Ścieżka zajmuje x=120..520,y=164..196 i nie tworzy przeszkody bez collidera.",
             "Zmiana skali dekoracji nie przesuwa jej środka ani Player.",
             "Tło nadal składa się z jednego obiektu TileMap."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.input"
+        "g2d.time"
       ]
     },
     {
-      "id": "g2d.collisions",
-      "order": 6,
-      "title": "Ruch i collidery o jawnych rozmiarach",
+      "id": "g2d.waves",
+      "order": 9,
+      "title": "Fale, konfiguracja i powtarzalny spawn",
       "objectives": [
-        "Odróżniasz renderer od fizycznego kształtu i triggera. Używasz kontrolera do blokowania ruchu i ślizgania przy przeszkodach."
+        "Tworzysz obiekty według harmonogramu czasu symulacji. Używasz jawnych danych fali, wspólnego seeda i limitu żywych przeciwników."
       ],
       "tasks": [
         {
-          "id": "g2d.collisions.guided",
+          "id": "g2d.waves.guided",
           "mode": "guided",
-          "title": "Ściana zatrzymuje gracza",
-          "prompt": "Player w (100,180) ma box collider 32×32. Ściana w (200,180) ma box collider 20×200. Gracz idzie w prawo 120 px/s.",
-          "objective": "Dodać dwa jawne collidery.",
+          "title": "Trzy pojawienia w czasie",
+          "prompt": "Masz gotowy harmonogram [1,2,3] i WaveSpawner. Dopisz elapsed+=delta, aby czas uruchamiał kolejne spawny.",
+          "objective": "Utworzyć WaveSpawner zamiast instrukcji w każdej klatce.",
           "criteria": [
-            "Po sekundzie D środek Player zatrzymuje się na x=174, y=180; prawa krawędź dotyka x=190.",
-            "Bez collidera na ścianie ten sam ruch dochodzi do x=220.",
-            "Sprite ściany i collider mają niezależnie ustawione wymiary; sam Sprite nie blokuje ruchu."
-          ]
+            "W t=0.99 liczba utworzonych wrogów wynosi 0; w t=1 wynosi 1; w t=2 wynosi 2; w t=3 wynosi 3.",
+            "Do t=5 nadal utworzono łącznie 3, a nie jednego wroga na klatkę.",
+            "Każdy wróg ma Sprite, jawny collider, Health i EnemyAI o właściwej konfiguracji.",
+            "10×0.1 s i 20×0.05 s odtwarzają tę samą pierwszą granicę spawnu."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Timer odmierza czas symulacji. Bez zwiększania elapsed momenty zapisane w harmonogramie nigdy nie nadejdą."
         },
         {
-          "id": "g2d.collisions.modified",
+          "id": "g2d.waves.modified",
           "mode": "modified",
-          "title": "Koło i skala wizualna",
-          "prompt": "Zmień collider Player na koło r=12. Podwój skalę sprite’a; collider ma nadal promień 12.",
-          "objective": "Stosować promień niezależny od Sprite.",
+          "title": "Dwie fale z danych",
+          "prompt": "Fala 1: start=0,interval=1,count=3,hp=2,speed=40. Fala 2: start=5,interval=0.5,count=4,hp=3,speed=60. Pierwszy spawn każdej fali jest po jednym interwale od jej startu.",
+          "objective": "Oddzielić definicję fali od kodu tworzenia.",
           "criteria": [
-            "Przy tej samej ścianie Player zatrzymuje się na x=178.",
-            "Po zmianie scale=(2,2) punkt zatrzymania nadal wynosi x=178.",
-            "Jawna zmiana promienia na 20 zmienia punkt zatrzymania na x=170; sama skala tego nie robi."
-          ]
+            "Fala 1 tworzy wrogów w t=1,2,3; Fala 2 w t=5.5,6,6.5,7.",
+            "Do t=4 są utworzone trzy jednostki pierwszej fali; do t=7 cztery drugiej.",
+            "Jednostki fali 1 mają HP=2,speed=40; fali 2 HP=3,speed=60; zmiana danych drugiej nie modyfikuje już żyjących jednostek pierwszej.",
+            "Numer fali przełącza się na 2 w t=5, nawet przed pierwszym jej spawnem."
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
-          "id": "g2d.collisions.independent",
+          "id": "g2d.waves.independent",
           "mode": "independent",
-          "title": "Korytarz i granice świata",
-          "prompt": "Zbuduj korytarz między pionowymi ścianami o wewnętrznych krawędziach x=180 i x=280. Player ma r=12, start (230,100). Ustaw granice przez Game.setWorldBounds(0,0,640,360); kontroler zachowuje constrainToBounds=true.",
-          "objective": "Złożyć obszar z nieprzenikalnymi ścianami.",
+          "title": "Pojawienie poza widokiem",
+          "prompt": "Losuj kąty ze wspólnego generatora o seed=42. Dla gracza w środku dużego świata spawnuj na okręgu r=0.5×hypot(game.getViewportWidth(),game.getViewportHeight())+40. Maksymalnie 100 żywych przeciwników; brak miejsca w limicie pomija dany spawn bez odkładania nieograniczonej kolejki.",
+          "objective": "Zbudować deterministyczny i ograniczony spawner.",
           "criteria": [
-            "Ruch w lewo zatrzymuje środek na x=192, w prawo na x=268.",
-            "Podczas ruchu ukośnego wzdłuż ściany x nie przekracza ograniczenia, a y nadal rośnie.",
-            "Na granicach świata środek koła pozostaje w x=12..628,y=12..348.",
-            "Krok 0.1 s przy speed=600 nie przenosi gracza na drugą stronę ściany."
-          ]
+            "Dla tego samego seeda pierwsze 20 pozycji jest powtarzalne, a wyniki Java i JS są równoważne.",
+            "Wszystkie punkty spawnu leżą poza viewportem i na zadanym promieniu z tolerancją 1e-6.",
+            "Zmiana viewportu z 320×200 na 640×360 przelicza promień, nie tworząc wrogów na widocznej planszy.",
+            "Przy 100 żywych wrogach nowy termin nie zwiększa liczby; po usunięciu jednego następny termin może utworzyć jednego.",
+            "Restart z seed=42 odtwarza pierwszą sekwencję bez użycia czasu systemowego."
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
         "g2d.graphics"
-      ]
-    },
-    {
-      "id": "g2d.triggers",
-      "order": 7,
-      "title": "Triggery, monety i własny Wallet",
-      "objectives": [
-        "Rozróżniasz kontakt wykrywający od kontaktu blokującego. Przyznajesz nagrodę raz i przechowujesz walutę we właściwym komponencie."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.triggers.guided",
-          "mode": "guided",
-          "title": "Zbierz jedną monetę",
-          "prompt": "Dodaj graczowi Wallet z gold=0, a Coin w (160,100) nadaj trigger r=10 i wartość 1. Kontakt gracza dodaje nagrodę i usuwa monetę.",
-          "objective": "Zmienić stan Wallet w odpowiedzi na kontakt.",
-          "criteria": [
-            "Przed kontaktem gold=0 i Coin istnieje.",
-            "Wejście gracza w Coin daje gold=1 i usuwa Coin po bieżącej fazie kontaktów.",
-            "Dziesięć dalszych kroków, ponowny kontakt i powtórne żądanie zebrania nie zmieniają gold=1.",
-            "Moneta nie blokuje ruchu gracza."
-          ]
-        },
-        {
-          "id": "g2d.triggers.modified",
-          "mode": "modified",
-          "title": "Różne wartości przedmiotów",
-          "prompt": "Utwórz CoinA wartości 5 i CoinB wartości 10. Pickup przyjmuje gracza mającego Wallet; przeciwnik nie ma Wallet i nie zbiera nagrody.",
-          "objective": "Konfigurować instancje i filtrować odbiorcę.",
-          "criteria": [
-            "Kontakt Enemy z CoinA nie zmienia stanu monety ani Wallet gracza.",
-            "Zebranie CoinB i potem CoinA daje kolejno gold=10 i gold=15.",
-            "Zmiana wartości CoinA na 7 daje w tej samej sekwencji gold=17 bez zmiany kodu logiki.",
-            "Nakładanie się obu triggerów daje sumę nagród dokładnie raz."
-          ]
-        },
-        {
-          "id": "g2d.triggers.independent",
-          "mode": "independent",
-          "title": "Skrzynia otwiera się raz",
-          "prompt": "Napisz Chest: pierwsze wejście gracza daje 20 złota i ustawia opened=true. Skrzynia pozostaje widoczna jako otwarta dekoracja.",
-          "objective": "Utrzymywać stan obiektu po przyznaniu nagrody.",
-          "criteria": [
-            "Przed kontaktem opened=false,gold=0; po kontakcie opened=true,gold=20.",
-            "Wyjście i ponowne wejście oraz 20 kroków pozostawiają gold=20.",
-            "Enemy nie otwiera skrzyni; po jego kontakcie gracz nadal może odebrać nagrodę.",
-            "Dwie skrzynie mają niezależne opened i razem dają 40 złota."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.collisions"
-      ]
-    },
-    {
-      "id": "g2d.camera",
-      "order": 8,
-      "title": "Kamera i przestrzenie współrzędnych",
-      "objectives": [
-        "Odróżniasz pozycję świata, ekran i współrzędne kursora. Śledzisz gracza kamerą bez wpływu na kolizje lub pozycję świata."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.camera.guided",
-          "mode": "guided",
-          "title": "Przesunięty widok",
-          "prompt": "Ustaw widok tak, by jego lewy górny punkt świata wynosił (80,40). Player pozostaje w świecie (100,100).",
-          "objective": "Obliczyć wynik przesunięcia kamery.",
-          "criteria": [
-            "Player ma transform=(100,100), a środek renderu ekranowego=(20,60).",
-            "Punkt świata (80,40) jest widoczny w lewym górnym rogu (0,0).",
-            "Dodanie i przesunięcie kamery nie zmienia współrzędnych colliderów ani wyników kontaktu."
-          ]
-        },
-        {
-          "id": "g2d.camera.modified",
-          "mode": "modified",
-          "title": "Kamera śledzi gracza",
-          "prompt": "Wywołaj Game.setWorldBounds(0,0,2000,1200), ustaw Player=(400,300), Camera2D.follow(player). Poruszaj gracza po świecie większym niż ekran.",
-          "objective": "Oddzielić granice świata od rozmiaru viewportu.",
-          "criteria": [
-            "Na viewport 320×200 Player jest rysowany w (160,100), podczas gdy jego world position zmienia się.",
-            "Na viewport 500×300 środek gracza na ekranie to (250,150).",
-            "Po przejściu Player za x=640 kamera nadal śledzi go bez ograniczenia do starej szerokości ekranu.",
-            "Nie ma zmiany prędkości ruchu przy zmianie rozmiaru viewportu."
-          ]
-        },
-        {
-          "id": "g2d.camera.independent",
-          "mode": "independent",
-          "title": "Wskaż punkt świata",
-          "prompt": "Napisz CursorMarker: pobierz game.input.getPointerPosition(), sprawdź null przed pierwszym zdarzeniem, przelicz punkt przez Camera2D.screenToWorld i ustaw tam marker świata. Widok ma origin=(60,150).",
-          "objective": "Przeliczyć wejście myszy/touch na świat.",
-          "criteria": [
-            "Wskaźnik screen=(220,100) ustawia marker world=(280,250).",
-            "Po zmianie origin na (100,200) ten sam screen point daje world=(320,300).",
-            "Ponowne przeliczenie world→screen daje pierwotne (220,100) z tolerancją 1e-6.",
-            "Marker nie przesuwa kamery ani gracza; kliknięcie UI w późniejszych rozdziałach może być odfiltrowane bez zmiany przeliczenia."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.triggers"
-      ]
-    },
-    {
-      "id": "g2d.canvas-ui",
-      "order": 9,
-      "title": "Canvas, ręczne rysowanie i HUD",
-      "objectives": [
-        "Wiesz, kiedy użyć renderera, a kiedy własnych komend Canvas. Stosujesz centrowane figury, jawne wyrównanie tekstu i UI niezależne od kamery."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.canvas-ui.guided",
-          "mode": "guided",
-          "title": "HUD w rogu ekranu",
-          "prompt": "Utwórz obiekt HUD z UITransform TOP_LEFT, rozmiar 200×18 i transform=(12,12). Wyświetl TextRenderer „Złoto: 0”; domyślne wyrównanie tekstu jest center/middle.",
-          "objective": "Umieścić element UI według anchor i pivot.",
-          "criteria": [
-            "Prostokąt UI ma lewy górny róg (12,12) i środek (112,21).",
-            "Środek tekstu to (112,21), a jego domyślne align=center,baseline=middle.",
-            "Przesunięcie kamery i resize viewportu nie zmieniają offsetu HUD od lewego górnego rogu.",
-            "Zmiana Wallet.gold na 5 aktualizuje tekst do „Złoto: 5” bez tworzenia nowego HUD."
-          ]
-        },
-        {
-          "id": "g2d.canvas-ui.modified",
-          "mode": "modified",
-          "title": "Ten sam prostokąt w Canvas",
-          "prompt": "W onDrawUI narysuj Canvas.drawRect o środku (80,90), rozmiarach 40×30 i kolorze #76b9f2. Napis „Start” umieść jako center/middle w (80,140).",
-          "objective": "Zrozumieć manualne komendy bez obiektów fizycznych.",
-          "criteria": [
-            "Prostokąt ma granice x=60..100,y=75..105, a tekst środek (80,140).",
-            "Rysunek istnieje w każdej klatce także wtedy, gdy nie ma nowego input.",
-            "Wywołania rysowania nie tworzą GameObject, collidera ani komponentu zachowania.",
-            "Ruch kamery nie przesuwa manualnego HUD i styl pojedynczego rysunku nie przecieka do kolejnych komend."
-          ]
-        },
-        {
-          "id": "g2d.canvas-ui.independent",
-          "mode": "independent",
-          "title": "Pasek z nieruchomym lewym brzegiem",
-          "prompt": "Narysuj pasek o maksymalnej szerokości 200, wysokości 12 i lewym brzegu x=20,yCenter=40. Dla current=3,max=5 szerokość ma wynosić 120. Tekst akapitu pod paskiem wyrównaj jawnie do lewej.",
-          "objective": "Obliczyć geometrię HUD dla zmiennej wartości.",
-          "criteria": [
-            "Dla 3/5 szerokość=120,środek=(80,40),lewy brzeg=20.",
-            "Dla 0/5 pasek ma szerokość 0; dla 5/5 szerokość=200,środek=(120,40).",
-            "Wartości current<0 i current>max są wizualnie ograniczone do 0..200; max=0 nie daje NaN.",
-            "Tekst akapitu rozpoczyna się w x=20 dzięki jawnemu align=left; po ruchu kamery położenie HUD nie zmienia się."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.camera"
       ]
     },
     {
@@ -469,7 +519,7 @@ export const courseManifest = {
           "id": "g2d.health.guided",
           "mode": "guided",
           "title": "Zdrowie z kontrolowanymi metodami",
-          "prompt": "Napisz Health z maxHealth=5,currentHealth=5 i nietykalnością 0. Metody zadawania obrażeń i leczenia utrzymują zakres 0..max; śmierć jest zgłaszana tylko przy pierwszym dojściu do zera.",
+          "prompt": "Masz gotowe Health i reakcje na obrażenia. Uzupełnij currentHealth=Math.max(0,currentHealth-amount) w damage.",
           "objective": "Chronić zakres i skutki zmiany stanu.",
           "criteria": [
             "Obrażenia 2 zmieniają 5→3; leczenie 10 zmienia 3→5.",
@@ -477,7 +527,9 @@ export const courseManifest = {
             "damage(0) i heal(0) niczego nie zmieniają; ujemny lub niecałkowity argument jest odrzucony jako nieprawidłowy bez zmiany HP.",
             "Health drugiego obiektu nie zmienia się przy operacjach na pierwszym; zwykłe leczenie nie wskrzesza obiektu o zdrowiu 0.",
             "Health po śmierci pozostawia właściciela w scenie; usunięcie lub przejście LOST należy do podłączonego zachowania, nie do Health."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Odejmowanie zmienia zdrowie, a Math.max zatrzymuje wynik na zero. Istniejące reakcje mogą wtedy wykryć śmierć dokładnie raz."
         },
         {
           "id": "g2d.health.modified",
@@ -490,7 +542,8 @@ export const courseManifest = {
             "Trafienie w t=0.5 jest odrzucone; trafienie w t=0.75 jest przyjęte i daje zdrowie=3.",
             "Odrzucone trafienie w t=0.5 nie przesuwa końca pierwszej ochrony na t=1.25.",
             "Health przeciwnika z duration=0 przyjmuje kolejne trafienia niezależnie od ochrony gracza."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.health.independent",
@@ -504,120 +557,17 @@ export const courseManifest = {
             "Przy ciągłym kontakcie A przyjmuje następne trafienie dopiero po upływie własnego 0.75 s.",
             "Przy dojściu A do 0 zgłoszenie śmierci i usunięcie/wyłączenie zachowania są jednokrotne; B działa dalej.",
             "W stanie Game nie ma współdzielonego pola sterującego nietykalnością wszystkich graczy; pomiar dwóch instancji potwierdza niezależność."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.canvas-ui"
-      ]
-    },
-    {
-      "id": "g2d.enemy-ai",
-      "order": 11,
-      "title": "Uczeń pisze EnemyAI",
-      "objectives": [
-        "Wyznaczasz znormalizowany kierunek do celu i oddzielasz decyzję od ruchu. Tworzysz różne zachowania przez konfigurację i kompozycję."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.enemy-ai.guided",
-          "mode": "guided",
-          "title": "Pościg za graczem",
-          "prompt": "Napisz EnemyAI z referencją target i speed=60. Slime startuje w (100,100), nieruchomy gracz w (300,100). Do ruchu użyj kontrolera.",
-          "objective": "Napisać własny komponent pościgu.",
-          "criteria": [
-            "Po sekundzie Slime ma pozycję (160,100) na pustej scenie.",
-            "Dla celu po przekątnej Slime pokonuje 60 px w sekundę.",
-            "Jeżeli Slime i target są w tym samym punkcie, nie powstaje NaN ani niekontrolowany ruch.",
-            "Zniszczenie celu lub target=null zatrzymuje AI bez błędu."
-          ]
-        },
-        {
-          "id": "g2d.enemy-ai.modified",
-          "mode": "modified",
-          "title": "Dwa tempa pościgu",
-          "prompt": "Dodaj Slime speed=40 oraz Bat speed=80. Ich cele pozostają wskazane referencją; zmiana nazwy gracza nie może zepsuć pościgu.",
-          "objective": "Użyć jednej klasy dla różnych instancji.",
-          "criteria": [
-            "Na osobnych prostych odcinkach po 0.5 s Slime przebywa 20 px, a Bat 40 px.",
-            "Zmiana name gracza nie zatrzymuje obu AI.",
-            "Po przeniesieniu celu na drugą stronę przeciwnicy zmieniają kierunek następnego kroku.",
-            "Oba sprite’y pozostają pionowo; wygląd może się odbijać przez flipX, rotation pozostaje 0."
-          ]
-        },
-        {
-          "id": "g2d.enemy-ai.independent",
-          "mode": "independent",
-          "title": "Przeciwnik utrzymuje dystans",
-          "prompt": "Napisz FleeAI, które oddala obiekt od celu z prędkością 60 tylko przy odległości mniejszej niż 120. Przy wystarczającym dystansie stoi.",
-          "objective": "Samodzielnie zaprogramować prostą regułę AI.",
-          "criteria": [
-            "Dla target=(300,100),enemy=(250,100) po 0.5 s wróg znajduje się w (220,100).",
-            "Gdy odległość wynosi 120 lub więcej, następny krok nie oddala przeciwnika.",
-            "Przy tym samym położeniu celu i wroga stosujesz jawny kierunek awaryjny (1,0), bez NaN.",
-            "FleeAI jednego wroga nie zmienia parametrów EnemyAI drugiego; do jednego obiektu podłączony jest tylko jeden aktywny autor kierunku ruchu."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.health"
-      ]
-    },
-    {
-      "id": "g2d.projectiles",
-      "order": 12,
-      "title": "Pocisk jako obiekt i trafienie w świecie",
-      "objectives": [
-        "Oddzielasz lot, kontakt, obrażenia i czas życia pocisku. Rozumiesz właściciela, filtr kontaktu i zabezpieczenie przed wielokrotnym trafieniem."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.projectiles.guided",
-          "mode": "guided",
-          "title": "Prawdziwy lot pocisku",
-          "prompt": "Utwórz pocisk w (100,100), kierunek (1,0), speed=200,damage=1,trigger r=4. Cel ze zdrowiem 3 i kołem r=12 stoi w (200,100).",
-          "objective": "Zadać obrażenia dopiero po kontakcie.",
-          "criteria": [
-            "Po 0.2 s pocisk jest w (140,100), cel nadal ma 3 HP.",
-            "Po dotarciu odcinka ruchu do zakresu kontaktu cel ma 2 HP, a pocisk jest wycofany.",
-            "Po kolejnych krokach cel nadal ma 2 HP; jeden pocisk nie nalicza trafienia wielokrotnie.",
-            "Pozycja celu nie jest celem tweena, który odejmuje HP już w momencie wystrzału."
-          ]
-        },
-        {
-          "id": "g2d.projectiles.modified",
-          "mode": "modified",
-          "title": "Właściciel i czas życia",
-          "prompt": "Dodaj owner=Player i lifetime=0.5 s. Pocisk powstaje wewnątrz collidera właściciela, ale może trafić Enemy.",
-          "objective": "Odrzucać samouszkodzenie i usuwać nietrafione pociski.",
-          "criteria": [
-            "Zaraz po utworzeniu w środku Player jego Health nie maleje.",
-            "Pocisk lecący obok wszystkich celów istnieje po 0.4 s i znika po 0.5 s.",
-            "Dwa pociski utworzone w różnych chwilach mają własne czasy życia.",
-            "Po wygaśnięciu pocisk nie rysuje się, nie bierze udziału w kontaktach i nie ma aktywnej aktualizacji."
-          ]
-        },
-        {
-          "id": "g2d.projectiles.independent",
-          "mode": "independent",
-          "title": "Szybki pocisk i pierwszy cel",
-          "prompt": "W tym wariancie zastąp dydaktyczny ProjectileMotion silnikowym Projectile2D, który zapewnia sweep; zachowaj własny ProjectileHit. Pocisk speed=3000 leci w prawo; ma trafić pierwszego przeciwnika na odcinku, ignorować właściciela i sojuszników oraz zakończyć lot po jednym trafieniu.",
-          "objective": "Użyć ciągłego wykrywania kontaktu silnika.",
-          "criteria": [
-            "Przy kroku 0.1 s pocisk wykrywa cel r=8 między swoim startem a końcem kroku, mimo braku nakładania w pozycji końcowej.",
-            "Przy dwóch celach na tej samej linii obrażenia otrzymuje tylko bliższy.",
-            "Sojusznik znajdujący się przed Enemy nie zużywa pocisku ani nie traci HP.",
-            "Nie powstają powtórne obrażenia po destroy; wynik trafienia jest taki sam przy krokach 0.1 s i 0.05 s dla tego nieruchomego układu."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.enemy-ai"
+        "g2d.waves"
       ]
     },
     {
       "id": "g2d.weapons",
-      "order": 13,
+      "order": 11,
       "title": "Weapon, cooldown i automatyczny atak",
       "objectives": [
         "Piszesz Weapon jako komponent gracza korzystający z pocisku z poprzedniego rozdziału. Wybierasz poprawny cel i odmierzasz odstęp strzałów w czasie symulacji."
@@ -627,14 +577,16 @@ export const courseManifest = {
           "id": "g2d.weapons.guided",
           "mode": "guided",
           "title": "Broń uruchamiana spacją",
-          "prompt": "Napisz Weapon: nowe Space strzela w ostatnim kierunku ruchu; bez wcześniejszego ruchu jest to (1,0). cooldown=0.6 s. Pocisk dziedziczy aktualne damage=1.",
+          "prompt": "Broń już tworzy pocisk po Space. Dopisz timer=cooldown po strzale, aby rozpocząć oczekiwanie na kolejny atak.",
           "objective": "Połączyć naciśnięcie, timer i tworzenie pocisku.",
           "criteria": [
             "Pierwsze nowe Space tworzy jeden pocisk we właściwej pozycji z owner=Player.",
             "Trzymanie Space przez 10 aktualizacji nie tworzy kolejnych pocisków.",
             "Ponowne Space po 0.2 s jest blokowane; nowe naciśnięcie po 0.6 s od pierwszego jest przyjęte.",
             "Przy wcześniejszym ruchu w lewo pocisk leci w lewo; sam Player zachowuje rotation=0."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Ustawienie timera po strzale ogranicza tempo ataku. Kolejne aktualizacje zmniejszają go o delta."
         },
         {
           "id": "g2d.weapons.modified",
@@ -647,7 +599,8 @@ export const courseManifest = {
             "Brak celu przez 2 s daje zero pocisków; jego późniejsze pojawienie się powoduje najwyżej jeden natychmiastowy strzał, bez nadrabiania serii.",
             "Naciśnięcie lub trzymanie Space nie przyspiesza autoataku.",
             "Dwie instancje Weapon mają niezależne cooldowny i nie blokują się nawzajem."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.weapons.independent",
@@ -661,16 +614,73 @@ export const courseManifest = {
             "Cel z kołem r=10 i środkiem w odległości 210 dotyka obszaru zapytania r=200 i jest dopuszczalny; przy 210.01 nie jest. Bez poprawnego kandydata nie tworzy się pocisk.",
             "Dwa jednakowo oddalone poprawne cele dają deterministyczny wybór w Java i JS.",
             "Pocisk jedynie celuje przy wystrzale; HP zmniejsza rzeczywisty kontakt z rozdziału 12."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.projectiles"
+        "g2d.health"
+      ]
+    },
+    {
+      "id": "g2d.triggers",
+      "order": 12,
+      "title": "Triggery, monety i własny Wallet",
+      "objectives": [
+        "Rozróżniasz kontakt wykrywający od kontaktu blokującego. Przyznajesz nagrodę raz i przechowujesz walutę we właściwym komponencie."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.triggers.guided",
+          "mode": "guided",
+          "title": "Zbierz jedną monetę",
+          "prompt": "Masz gotowy Pickup i Wallet. Dopisz zwiększenie wallet.gold o wartość zebranej monety.",
+          "objective": "Zmienić stan Wallet w odpowiedzi na kontakt.",
+          "criteria": [
+            "Przed kontaktem gold=0 i Coin istnieje.",
+            "Wejście gracza w Coin daje gold=1 i usuwa Coin po bieżącej fazie kontaktów.",
+            "Dziesięć dalszych kroków, ponowny kontakt i powtórne żądanie zebrania nie zmieniają gold=1.",
+            "Moneta nie blokuje ruchu gracza."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Trigger wykrywa kontakt bez blokowania ruchu. Zapis nagrody zmienia stan portfela; gotowe usunięcie monety zapobiega podwójnej nagrodzie."
+        },
+        {
+          "id": "g2d.triggers.modified",
+          "mode": "modified",
+          "title": "Różne wartości przedmiotów",
+          "prompt": "Utwórz CoinA wartości 5 i CoinB wartości 10. Pickup przyjmuje gracza mającego Wallet; przeciwnik nie ma Wallet i nie zbiera nagrody.",
+          "objective": "Konfigurować instancje i filtrować odbiorcę.",
+          "criteria": [
+            "Kontakt Enemy z CoinA nie zmienia stanu monety ani Wallet gracza.",
+            "Zebranie CoinB i potem CoinA daje kolejno gold=10 i gold=15.",
+            "Zmiana wartości CoinA na 7 daje w tej samej sekwencji gold=17 bez zmiany kodu logiki.",
+            "Nakładanie się obu triggerów daje sumę nagród dokładnie raz."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.triggers.independent",
+          "mode": "independent",
+          "title": "Skrzynia otwiera się raz",
+          "prompt": "Napisz Chest: pierwsze wejście gracza daje 20 złota i ustawia opened=true. Skrzynia pozostaje widoczna jako otwarta dekoracja.",
+          "objective": "Utrzymywać stan obiektu po przyznaniu nagrody.",
+          "criteria": [
+            "Przed kontaktem opened=false,gold=0; po kontakcie opened=true,gold=20.",
+            "Wyjście i ponowne wejście oraz 20 kroków pozostawiają gold=20.",
+            "Enemy nie otwiera skrzyni; po jego kontakcie gracz nadal może odebrać nagrodę.",
+            "Dwie skrzynie mają niezależne opened i razem dają 40 złota."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.weapons"
       ]
     },
     {
       "id": "g2d.loot-xp",
-      "order": 14,
+      "order": 13,
       "title": "Śmierć przeciwnika, łup i doświadczenie",
       "objectives": [
         "Łączysz niezależne komponenty przez jednokrotny sygnał śmierci. Przechowujesz doświadczenie gracza i obliczasz wiele awansów bez utraty nadwyżki."
@@ -680,14 +690,16 @@ export const courseManifest = {
           "id": "g2d.loot-xp.guided",
           "mode": "guided",
           "title": "Przeciwnik zostawia łup",
-          "prompt": "Dodaj LootOnDeath: przeciwnik po pierwszej śmierci zwiększa RunStats.kills o 1 i tworzy XpOrb wartości 1 w swoim ostatnim położeniu. Podepnij reakcję przez Health.onDeath(listener), zachowaj zwrócone unsubscribe i odłącz listener przy usunięciu komponentu.",
+          "prompt": "Masz gotową reakcję na śmierć wroga i orb. Dodaj orb komponent XpOrb(1), aby przechowywał wartość nagrody.",
           "objective": "Obsłużyć skutek śmierci raz.",
           "criteria": [
             "Po śmierci Enemy w (220,120) powstaje jeden XpOrb w (220,120),kills=1.",
             "Powtórne obrażenia i kilka kontaktów pocisków w tej samej klatce nie tworzą kolejnych orbów.",
             "Po śmierci Enemy nie jest aktywnym celem broni i nie zadaje kontaktowych obrażeń.",
             "Śmierć innego Enemy daje drugi osobny orb i kills=2."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Wygląd orba nie jest jego wartością. Komponent XpOrb przechowuje XP, które później odbierze gracz."
         },
         {
           "id": "g2d.loot-xp.modified",
@@ -700,7 +712,8 @@ export const courseManifest = {
             "Wallet.gold pozostaje bez zmian; moneta zwiększa gold i nie zmienia xp.",
             "Kontakt przeciwnika z orbem go nie zbiera.",
             "Powtórne przetworzenie kontaktu z tym samym orbem nie dodaje ponownie XP."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.loot-xp.independent",
@@ -714,60 +727,58 @@ export const courseManifest = {
             "Przyznanie XP<=0 nie zmienia stanu.",
             "Dwa osobne wywołania 8 i 8 dają ten sam wynik co jedno 16.",
             "PendingChoices nie jest automatycznie kasowane przez następny update ani przez kolejne XP."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.weapons"
+        "g2d.triggers"
       ]
     },
     {
-      "id": "g2d.waves",
-      "order": 15,
-      "title": "Fale, konfiguracja i powtarzalny spawn",
+      "id": "g2d.enemy-tactics",
+      "order": 14,
+      "title": "AI: wykrywanie, flankowanie i ucieczka",
       "objectives": [
-        "Tworzysz obiekty według harmonogramu czasu symulacji. Używasz jawnych danych fali, wspólnego seeda i limitu żywych przeciwników."
+        "Konfigurujesz zasięg wykrywania. Obliczasz kierunek boczny do flankowania i rozbudowujesz ucieczkę."
       ],
       "tasks": [
         {
-          "id": "g2d.waves.guided",
+          "id": "g2d.enemy-tactics.guided",
           "mode": "guided",
-          "title": "Trzy pojawienia w czasie",
-          "prompt": "Napisz WaveSpawner tworzący po jednym Slime w t=1,2,3 s. Po trzech pojawieniach kończy ten harmonogram.",
-          "objective": "Utworzyć WaveSpawner zamiast instrukcji w każdej klatce.",
+          "title": "Zasięg wykrywania",
+          "prompt": "Pościg już działa. Dodaj warunek: jeśli Math.hypot(dx,dy)>150, wróć bez ruchu.",
+          "objective": "Napisać własny komponent pościgu.",
           "criteria": [
-            "W t=0.99 liczba utworzonych wrogów wynosi 0; w t=1 wynosi 1; w t=2 wynosi 2; w t=3 wynosi 3.",
-            "Do t=5 nadal utworzono łącznie 3, a nie jednego wroga na klatkę.",
-            "Każdy wróg ma Sprite, jawny collider, Health i EnemyAI o właściwej konfiguracji.",
-            "10×0.1 s i 20×0.05 s odtwarzają tę samą pierwszą granicę spawnu."
-          ]
+            "Po sekundzie poza zasięgiem Slime pozostaje na x=100.",
+            "Po przesunięciu gracza do (200,100), sekunda pościgu przesuwa Slime do x=160."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Odległość decyduje, czy wróg widzi cel. Poza zasięgiem brak move zatrzymuje go; w zasięgu używa gotowego pościgu."
         },
         {
-          "id": "g2d.waves.modified",
+          "id": "g2d.enemy-tactics.modified",
           "mode": "modified",
-          "title": "Dwie fale z danych",
-          "prompt": "Fala 1: start=0,interval=1,count=3,hp=2,speed=40. Fala 2: start=5,interval=0.5,count=4,hp=3,speed=60. Pierwszy spawn każdej fali jest po jednym interwale od jej startu.",
-          "objective": "Oddzielić definicję fali od kodu tworzenia.",
+          "title": "Podejście z boku",
+          "prompt": "Samodzielnie skieruj Slime do punktu 80 px obok gracza, w kierunku prostopadłym do kierunku pościgu. Gotowy kontroler realizuje ruch.",
+          "objective": "Użyć jednej klasy dla różnych instancji.",
           "criteria": [
-            "Fala 1 tworzy wrogów w t=1,2,3; Fala 2 w t=5.5,6,6.5,7.",
-            "Do t=4 są utworzone trzy jednostki pierwszej fali; do t=7 cztery drugiej.",
-            "Jednostki fali 1 mają HP=2,speed=40; fali 2 HP=3,speed=60; zmiana danych drugiej nie modyfikuje już żyjących jednostek pierwszej.",
-            "Numer fali przełącza się na 2 w t=5, nawet przed pierwszym jej spawnem."
-          ]
+            "Cel ruchu uwzględnia prostopadłe przesunięcie 80 px.",
+            "Slime i Bat zachowują niezależne prędkości 40 i 80."
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
-          "id": "g2d.waves.independent",
+          "id": "g2d.enemy-tactics.independent",
           "mode": "independent",
-          "title": "Pojawienie poza widokiem",
-          "prompt": "Losuj kąty ze wspólnego generatora o seed=42. Dla gracza w środku dużego świata spawnuj na okręgu r=0.5×hypot(game.getViewportWidth(),game.getViewportHeight())+40. Maksymalnie 100 żywych przeciwników; brak miejsca w limicie pomija dany spawn bez odkładania nieograniczonej kolejki.",
-          "objective": "Zbudować deterministyczny i ograniczony spawner.",
+          "title": "Ucieczka w zasięgu",
+          "prompt": "Napisz FleeAI: w zasięgu 120 uciekaj od gracza; poza zasięgiem zatrzymaj ruch.",
+          "objective": "Samodzielnie zaprogramować prostą regułę AI.",
           "criteria": [
-            "Dla tego samego seeda pierwsze 20 pozycji jest powtarzalne, a wyniki Java i JS są równoważne.",
-            "Wszystkie punkty spawnu leżą poza viewportem i na zadanym promieniu z tolerancją 1e-6.",
-            "Zmiana viewportu z 320×200 na 640×360 przelicza promień, nie tworząc wrogów na widocznej planszy.",
-            "Przy 100 żywych wrogach nowy termin nie zwiększa liczby; po usunięciu jednego następny termin może utworzyć jednego.",
-            "Restart z seed=42 odtwarza pierwszą sekwencję bez użycia czasu systemowego."
-          ]
+            "Slime w (240,100) oddala się od gracza w (300,100).",
+            "Po sekundzie Slime ma x=180; poza zasięgiem 120 stoi."
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
@@ -775,125 +786,129 @@ export const courseManifest = {
       ]
     },
     {
-      "id": "g2d.pause",
-      "order": 16,
-      "title": "Pełna pauza świata i działające UI",
+      "id": "g2d.camera",
+      "order": 15,
+      "title": "Kamera i przestrzenie współrzędnych",
       "objectives": [
-        "Rozróżniasz czas WORLD i UI. Zatrzymujesz całą symulację spójną regułą, zamiast wyłączać ręcznie wybrane klasy."
+        "Odróżniasz pozycję świata, ekran i współrzędne kursora. Śledzisz gracza kamerą bez wpływu na kolizje lub pozycję świata."
       ],
       "tasks": [
         {
-          "id": "g2d.pause.guided",
+          "id": "g2d.camera.guided",
           "mode": "guided",
-          "title": "Escape zatrzymuje świat",
-          "prompt": "Napisz PauseController działający w UI. Escape przełącza pauzę WORLD. Scena zawiera poruszającego się gracza i przeciwnika.",
-          "objective": "Przełączać pauzę jednym naciśnięciem.",
+          "title": "Przesunięty widok",
+          "prompt": "Masz gotową kamerę i obiekty. Ustaw camera.getComponent(Camera2D).offsetX na 80; offsetY=40 jest już ustawione.",
+          "objective": "Obliczyć wynik przesunięcia kamery.",
           "criteria": [
-            "Po nowym Escape ruch gracza i AI ustaje; ich pozycje są niezmienne przez 1 s czasu UI.",
-            "Trzymanie Escape przez 10 aktualizacji nie przełącza pauzy wielokrotnie.",
-            "Kolejne nowe Escape wznawia ruch od zachowanej pozycji.",
-            "Komunikat pauzy nadal jest rysowany i reaguje na klawisz mimo zamrożenia świata."
-          ]
+            "Player ma transform=(100,100), a środek renderu ekranowego=(20,60).",
+            "Punkt świata (80,40) jest widoczny w lewym górnym rogu (0,0).",
+            "Dodanie i przesunięcie kamery nie zmienia współrzędnych colliderów ani wyników kontaktu."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Przesunięcie widoku zmienia miejsce rysowania, a nie pozycje obiektów i colliderów w świecie."
         },
         {
-          "id": "g2d.pause.modified",
+          "id": "g2d.camera.modified",
           "mode": "modified",
-          "title": "Sprawdź wszystkie zegary",
-          "prompt": "Rozszerz scenę testową o auto Weapon, pocisk z Lifetime, Health z trwającą nietykalnością, WaveSpawner i tween WORLD. Zatrzymaj świat na 5 s czasu UI.",
-          "objective": "Udowodnić pełną pauzę na kilku systemach.",
+          "title": "Kamera śledzi gracza",
+          "prompt": "Wywołaj Game.setWorldBounds(0,0,2000,1200), ustaw Player=(400,300), Camera2D.follow(player). Poruszaj gracza po świecie większym niż ekran.",
+          "objective": "Oddzielić granice świata od rozmiaru viewportu.",
           "criteria": [
-            "Podczas pauzy nie zmieniają się: pozycje, HP, remaining ochrony, cooldown broni, lifetime pocisku, czas gry, faza tweena ani liczba spawnów.",
-            "Kontakty nie zadają obrażeń ani nie przyznają łupu podczas pauzy.",
-            "UI może zmienić tekst i wyświetlać własną animację niezależną od świata.",
-            "Po wznowieniu każdy timer kontynuuje od zachowanej wartości; nie następuje nadrabianie pięciu sekund, seria strzałów ani skok pozycji."
-          ]
+            "Na viewport 320×200 Player jest rysowany w (160,100), podczas gdy jego world position zmienia się.",
+            "Na viewport 500×300 środek gracza na ekranie to (250,150).",
+            "Po przejściu Player za x=640 kamera nadal śledzi go bez ograniczenia do starej szerokości ekranu.",
+            "Nie ma zmiany prędkości ruchu przy zmianie rozmiaru viewportu."
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
-          "id": "g2d.pause.independent",
+          "id": "g2d.camera.independent",
           "mode": "independent",
-          "title": "Dwie przyczyny pauzy",
-          "prompt": "PauseController przechowuje zbiór powodów manual i upgrade. request(reason) dodaje powód, release(reason) usuwa wskazany; pusty zbiór wznawia Game. Klawisz zamknięcia menu przechwyć przez game.input.consumeKey. Utrata focus czyści stan klawiszy ruchu.",
-          "objective": "Nie wznawiać gry, gdy pozostaje aktywne inne menu.",
+          "title": "Wskaż punkt świata",
+          "prompt": "Napisz CursorMarker: pobierz game.input.getPointerPosition(), sprawdź null przed pierwszym zdarzeniem, przelicz punkt przez Camera2D.screenToWorld i ustaw tam marker świata. Widok ma origin=(60,150).",
+          "objective": "Przeliczyć wejście myszy/touch na świat.",
           "criteria": [
-            "Dla aktywnych manual+upgrade usunięcie manual pozostawia świat zamrożony.",
-            "Dopiero usunięcie obu powodów pozwala wykonać następny krok WORLD.",
-            "Ten sam powód dodany dwa razy nie wymaga dwóch naciśnięć zamknięcia.",
-            "Po utracie focus i powrocie gracz nie porusza się bez rzeczywiście wciśniętego klawisza.",
-            "Input użyty do zamknięcia menu nie wykonuje równocześnie akcji świata w tej samej klatce."
-          ]
+            "Wskaźnik screen=(220,100) ustawia marker world=(280,250).",
+            "Po zmianie origin na (100,200) ten sam screen point daje world=(320,300).",
+            "Ponowne przeliczenie world→screen daje pierwotne (220,100) z tolerancją 1e-6.",
+            "Marker nie przesuwa kamery ani gracza; kliknięcie UI w późniejszych rozdziałach może być odfiltrowane bez zmiany przeliczenia."
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.waves"
+        "g2d.enemy-tactics"
       ]
     },
     {
-      "id": "g2d.upgrades",
-      "order": 17,
-      "title": "Wybór ulepszenia i własne reguły zakupów",
+      "id": "g2d.canvas-ui",
+      "order": 16,
+      "title": "Canvas, ręczne rysowanie i HUD",
       "objectives": [
-        "Łączysz awans z pauzą i jednorazowym wyborem. Zmieniasz parametry właściwych komponentów; rozróżniasz darmową nagrodę i płatny zakup."
+        "Wiesz, kiedy użyć renderera, a kiedy własnych komend Canvas. Stosujesz centrowane figury, jawne wyrównanie tekstu i UI niezależne od kamery."
       ],
       "tasks": [
         {
-          "id": "g2d.upgrades.guided",
+          "id": "g2d.canvas-ui.guided",
           "mode": "guided",
-          "title": "Awans daje wybór",
-          "prompt": "Gdy Experience.pendingChoices>0, pokaż menu i dodaj powód pauzy upgrade. Wybór 1 zwiększa PlayerController.speed o 30, zużywa dokładnie jeden pendingChoice.",
-          "objective": "Obsłużyć jeden pendingChoice i wrócić do gry.",
+          "title": "HUD w rogu ekranu",
+          "prompt": "Gotowy HUD ma tekst i UITransform. Ustaw jego anchor na TOP_LEFT, aby pozycja (12,12) była odsunięciem od lewego górnego rogu.",
+          "objective": "Umieścić element UI według anchor i pivot.",
           "criteria": [
-            "Przy speed=120,pendingChoices=1 menu się otwiera i świat stoi.",
-            "Nowe naciśnięcie 1 daje speed=150,pendingChoices=0, zamyka menu i usuwa tylko powód upgrade.",
-            "Trzymanie 1 przez kolejne aktualizacje nie dodaje następnych 30.",
-            "Przy pendingChoices=2 pierwszy wybór pozostawia menu aktywne z pendingChoices=1; drugie nowe naciśnięcie realizuje drugi wybór."
-          ]
+            "Prostokąt UI ma lewy górny róg (12,12) i środek (112,21).",
+            "Środek tekstu to (112,21), a jego domyślne align=center,baseline=middle.",
+            "Przesunięcie kamery i resize viewportu nie zmieniają offsetu HUD od lewego górnego rogu.",
+            "Zmiana Wallet.gold na 5 aktualizuje tekst do „Złoto: 5” bez tworzenia nowego HUD."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Anchor wskazuje punkt odniesienia na ekranie. HUD pozostaje przy nim po zmianie rozmiaru canvasu i ruchu kamery."
         },
         {
-          "id": "g2d.upgrades.modified",
+          "id": "g2d.canvas-ui.modified",
           "mode": "modified",
-          "title": "Trzy ulepszenia",
-          "prompt": "Dodaj wybór 2: Weapon.damage+1 oraz wybór 3: cooldown×0.8 z minimum 0.1 s. Wszystkie trzy opcje kosztują jeden pendingChoice.",
-          "objective": "Zmieniać broń przez dane bez obchodzenia jej działania.",
+          "title": "Ten sam prostokąt w Canvas",
+          "prompt": "W onDrawUI narysuj Canvas.drawRect o środku (80,90), rozmiarach 40×30 i kolorze #76b9f2. Napis „Start” umieść jako center/middle w (80,140).",
+          "objective": "Zrozumieć manualne komendy bez obiektów fizycznych.",
           "criteria": [
-            "Wybór 2 zmienia damage=1→2; następny utworzony pocisk zadaje 2 po rzeczywistym kontakcie.",
-            "Pocisk wystrzelony przed wyborem zachowuje wcześniejsze damage=1.",
-            "Wybór 3 zmienia cooldown=0.5→0.4; powtarzanie nigdy nie obniża go poniżej 0.1.",
-            "Niepoprawny klawisz i wybór przy zamkniętym menu nie zmieniają parametrów ani pendingChoices.",
-            "W jednej aktualizacji można przyznać tylko jedną opcję, nawet gdy naciśnięto 1 i 2 jednocześnie."
-          ]
+            "Prostokąt ma granice x=60..100,y=75..105, a tekst środek (80,140).",
+            "Rysunek istnieje w każdej klatce także wtedy, gdy nie ma nowego input.",
+            "Wywołania rysowania nie tworzą GameObject, collidera ani komponentu zachowania.",
+            "Ruch kamery nie przesuwa manualnego HUD i styl pojedynczego rysunku nie przecieka do kolejnych komend."
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
-          "id": "g2d.upgrades.independent",
+          "id": "g2d.canvas-ui.independent",
           "mode": "independent",
-          "title": "Sklep za złoto",
-          "prompt": "Dodaj tryb sklepu: zakup +1 damage kosztuje 20 złota. Sklep i awans korzystają z tej samej definicji efektu, ale awans jest darmowy i zużywa pendingChoice.",
-          "objective": "Współdzielić efekt ulepszenia przy odrębnej autoryzacji zakupu.",
+          "title": "Pasek z nieruchomym lewym brzegiem",
+          "prompt": "Narysuj pasek o maksymalnej szerokości 200, wysokości 12 i lewym brzegu x=20,yCenter=40. Dla current=3,max=5 szerokość ma wynosić 120. Tekst akapitu pod paskiem wyrównaj jawnie do lewej.",
+          "objective": "Obliczyć geometrię HUD dla zmiennej wartości.",
           "criteria": [
-            "Przy gold=19 próba zakupu nie zmienia damage ani gold, a sklep pozostaje otwarty z komunikatem braku złota.",
-            "Przy gold=20 zakup daje gold=0 i damage+1 dokładnie raz, po czym zamyka sklep.",
-            "Darmowy wybór awansu przy gold=0 nadal działa i nie tworzy ujemnego gold.",
-            "Wybór sklepu nie zużywa pendingChoice; darmowy awans nie wydaje gold.",
-            "Trzymanie przycisku zakupu i podwójny event UI nie dokonują ponownej transakcji."
-          ]
+            "Dla 3/5 szerokość=120,środek=(80,40),lewy brzeg=20.",
+            "Dla 0/5 pasek ma szerokość 0; dla 5/5 szerokość=200,środek=(120,40).",
+            "Wartości current<0 i current>max są wizualnie ograniczone do 0..200; max=0 nie daje NaN.",
+            "Tekst akapitu rozpoczyna się w x=20 dzięki jawnemu align=left; po ruchu kamery położenie HUD nie zmienia się."
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.pause"
+        "g2d.camera"
       ]
     },
     {
       "id": "g2d.ui-flow",
-      "order": 18,
-      "title": "Canvas UI: przyciski, paski i nawigacja",
+      "order": 17,
+      "title": "Pauza i działające menu",
       "objectives": [
-        "Budujesz UI z GameObject i gotowych komponentów UI. Zapewniasz jeden aktywny wybór, czytelny focus i poprawną reakcję po zmianie rozmiaru planszy."
+        "Zatrzymujesz czas świata, zachowując działające UI. Obsługujesz przyciski, focus, klawiaturę i mysz; UI zużywa obsłużone wejście."
       ],
       "tasks": [
         {
           "id": "g2d.ui-flow.guided",
           "mode": "guided",
           "title": "Przyciski wyboru",
-          "prompt": "Zamień tekstowe menu na Panel i trzy Button: Szybkość, Obrażenia, Tempo. Kliknięcie lub skrót 1/2/3 wywołuje odpowiedni wybór UpgradeController.",
+          "prompt": "Menu i wybór ulepszenia są gotowe. W MenuView dopisz ustawienie object.active=open dla przycisków, aby zamykały się razem z panelem.",
           "objective": "Podłączyć Button do już napisanej reguły ulepszenia.",
           "criteria": [
             "Kliknięcie środka przycisku Obrażenia przyznaje dokładnie jeden efekt wyboru 2.",
@@ -901,7 +916,9 @@ export const courseManifest = {
             "Podczas wyboru świat pozostaje zatrzymany do zakończenia menu.",
             "Kliknięcie UI jest zużyte; nie uruchamia równocześnie strzału lub akcji świata.",
             "Przy zamkniętym panelu jego przyciski nie przyjmują kliknięć."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Stan otwarcia menu steruje widocznością i aktywnością przycisków. Zamknięte menu nie może nadal odbierać wejścia."
         },
         {
           "id": "g2d.ui-flow.modified",
@@ -915,7 +932,8 @@ export const courseManifest = {
             "Na viewport 320×200 panel ma szerokość 288, mieści się w ekranie i pozostaje wycentrowany.",
             "Na viewport 640×360 panel ma szerokość 360; HUD zachowuje odległość 12 od lewego górnego rogu.",
             "Zmiana kamery nie przesuwa UI ani jego obszarów kliknięcia."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.ui-flow.independent",
@@ -929,47 +947,112 @@ export const courseManifest = {
             "Trzymanie Enter nie przyznaje kolejnych wyborów; nowy poziom wymaga nowego naciśnięcia.",
             "Naciśnięcie wskaźnika w przycisku i puszczenie poza nim nie kupuje ulepszenia.",
             "Po zamknięciu menu jego focus nie przechwytuje klawiatury gry; po ponownym otwarciu focus jest przewidywalny i widoczny."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.upgrades"
+        "g2d.canvas-ui"
+      ]
+    },
+    {
+      "id": "g2d.upgrades",
+      "order": 18,
+      "title": "Wybór ulepszenia i własne reguły zakupów",
+      "objectives": [
+        "Łączysz awans z pauzą i jednorazowym wyborem. Zmieniasz parametry właściwych komponentów; rozróżniasz darmową nagrodę i płatny zakup."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.upgrades.guided",
+          "mode": "guided",
+          "title": "Awans daje wybór",
+          "prompt": "Wybór ulepszenia i pauza są gotowe. Dopisz speed.speed+=30 w apply dla wyboru szybkości.",
+          "objective": "Obsłużyć jeden pendingChoice i wrócić do gry.",
+          "criteria": [
+            "Przy speed=120,pendingChoices=1 menu się otwiera i świat stoi.",
+            "Nowe naciśnięcie 1 daje speed=150,pendingChoices=0, zamyka menu i usuwa tylko powód upgrade.",
+            "Trzymanie 1 przez kolejne aktualizacje nie dodaje następnych 30.",
+            "Przy pendingChoices=2 pierwszy wybór pozostawia menu aktywne z pendingChoices=1; drugie nowe naciśnięcie realizuje drugi wybór."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Zmiana parametru istniejącego PlayerController wzmacnia tego gracza. Nie tworzymy drugiego kontrolera ani nowej postaci."
+        },
+        {
+          "id": "g2d.upgrades.modified",
+          "mode": "modified",
+          "title": "Trzy ulepszenia",
+          "prompt": "Dodaj wybór 2: Weapon.damage+1 oraz wybór 3: cooldown×0.8 z minimum 0.1 s. Wszystkie trzy opcje kosztują jeden pendingChoice.",
+          "objective": "Zmieniać broń przez dane bez obchodzenia jej działania.",
+          "criteria": [
+            "Wybór 2 zmienia damage=1→2; następny utworzony pocisk zadaje 2 po rzeczywistym kontakcie.",
+            "Pocisk wystrzelony przed wyborem zachowuje wcześniejsze damage=1.",
+            "Wybór 3 zmienia cooldown=0.5→0.4; powtarzanie nigdy nie obniża go poniżej 0.1.",
+            "Niepoprawny klawisz i wybór przy zamkniętym menu nie zmieniają parametrów ani pendingChoices.",
+            "W jednej aktualizacji można przyznać tylko jedną opcję, nawet gdy naciśnięto 1 i 2 jednocześnie."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.upgrades.independent",
+          "mode": "independent",
+          "title": "Sklep za złoto",
+          "prompt": "Dodaj tryb sklepu: zakup +1 damage kosztuje 20 złota. Sklep i awans korzystają z tej samej definicji efektu, ale awans jest darmowy i zużywa pendingChoice.",
+          "objective": "Współdzielić efekt ulepszenia przy odrębnej autoryzacji zakupu.",
+          "criteria": [
+            "Przy gold=19 próba zakupu nie zmienia damage ani gold, a sklep pozostaje otwarty z komunikatem braku złota.",
+            "Przy gold=20 zakup daje gold=0 i damage+1 dokładnie raz, po czym zamyka sklep.",
+            "Darmowy wybór awansu przy gold=0 nadal działa i nie tworzy ujemnego gold.",
+            "Wybór sklepu nie zużywa pendingChoice; darmowy awans nie wydaje gold.",
+            "Trzymanie przycisku zakupu i podwójny event UI nie dokonują ponownej transakcji."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.ui-flow"
       ]
     },
     {
       "id": "g2d.feedback",
       "order": 19,
-      "title": "Tweeny, efekty trafienia i shake",
+      "title": "Feedback trafienia, tweeny i floating text",
       "objectives": [
-        "Animujesz jawne właściwości bez ręcznego liczenia każdej klatki. Oddzielasz efekt wizualny od fizyki i rozumiesz zastępowanie oraz czas tweena."
+        "Animujesz jawne właściwości bez ręcznego liczenia każdej klatki. Oddzielasz efekt wizualny od fizyki i rozumiesz zastępowanie oraz czas tweena.",
+        "Tworzysz tekst obrażeń, animujesz jego pozycję i usuwasz po zakończeniu efektu."
       ],
       "tasks": [
         {
           "id": "g2d.feedback.guided",
           "mode": "guided",
           "title": "Liniowy lot dekoracji",
-          "prompt": "Dekoracyjna Coin bez collidera startuje w (160,160). Uruchom tween pozycji do (160,100) przez 1 s, z domyślnym linear.",
+          "prompt": "Moneta jest gotowa w (160,160). Dodaj Tweens.position(coin,160,100,1), aby w sekundę przesunęła się o 60 px w górę.",
           "objective": "Przewidzieć wartości interpolacji.",
           "criteria": [
             "W t=0.5 pozycja Coin wynosi (160,130); w t=1 wynosi (160,100).",
             "Po t=1.5 pozycja pozostaje (160,100).",
             "Pierwotny rozmiar i skala Coin nie zmieniają się.",
             "Ten sam czas daje te same pozycje w Java i JS; domyślne easing nie jest inne w jednym runtime."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Tween interpoluje pozycję w czasie. Przy halfway moneta jest na y=130; po sekundzie na y=100."
         },
         {
           "id": "g2d.feedback.modified",
           "mode": "modified",
           "title": "Shake bez zmiany kolizji",
-          "prompt": "HitFeedback reaguje tylko na przyjęte obrażenie Health: shake grafiki o sile 8 przez 0.3 s oraz niewielki shake Camera2D. Nie przesuwaj fizycznego Transform gracza.",
+          "prompt": "HitFeedback reaguje tylko na przyjęte obrażenie Health: shake grafiki o sile 8 przez 0.3 s oraz niewielki shake Camera2D. Nie przesuwaj fizycznego Transform gracza. Dodaj floating text po trafieniu: tekst „−1” unosi się o 40 px w 0.5 s, a potem znika.",
           "objective": "Dodać efekt przy przyjętym trafieniu.",
           "criteria": [
             "Podczas efektu współrzędne świata i collider gracza pozostają takie same jak bez efektu.",
             "Wizualny offset na każdej osi mieści się w -8..8 i nie jest stale zerowy w środku efektu.",
             "Po 0.3 s offset wraca do 0; efekt nie kumuluje trwałego przesunięcia.",
             "Trafienie odrzucone przez nietykalność nie uruchamia ponownie efektu.",
-            "HUD nie trzęsie się z kamerą, a działanie kontaktów jest niezmienione."
-          ]
+            "HUD nie trzęsie się z kamerą, a działanie kontaktów jest niezmienione.",
+            "Tylko zaakceptowane obrażenia tworzą DamageText.",
+            "Po zakończeniu tweenu DamageText jest usunięty."
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.feedback.independent",
@@ -984,16 +1067,69 @@ export const courseManifest = {
             "Podczas pauzy WORLD tween świata stoi, ale tween przycisku UI postępuje.",
             "Zniszczenie animowanego obiektu usuwa jego aktywne tweeny i nie wykonuje późniejszego zapisu do zniszczonego Transform.",
             "Włączenie lub wyłączenie losowego shake nie zmienia sekwencji typów/pozycji spawnów, ponieważ efekty mają oddzielny RNG."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.ui-flow"
+        "g2d.upgrades"
+      ]
+    },
+    {
+      "id": "g2d.projectile-types",
+      "order": 20,
+      "title": "Pociski naprowadzane i przebijające",
+      "objectives": [
+        "Rozbudowujesz lot pocisku: kierunek do celu, wiele trafień i sweep przy dużej prędkości. Oddzielasz zachowanie pocisku od broni."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.projectile-types.guided",
+          "mode": "guided",
+          "title": "Pocisk naprowadzany",
+          "prompt": "Kierunek do celu i Projectile2D są gotowe. W Homing zapisz obliczony d jako direction pocisku; w Javie użyj direction.set(d.x,d.y).",
+          "objective": "Zadać obrażenia dopiero po kontakcie.",
+          "criteria": [
+            "Pocisk ignoruje właściciela i zadaje obrażenia poprawnemu celowi.",
+            "Obiekt pocisku zostaje usunięty po końcu życia lub wykorzystaniu limitu trafień.",
+            "Zmiana kierunku w Homing kieruje pocisk do Enemy; po sekundzie HP celu wynosi 2."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Homing aktualizuje cel lotu, a Projectile2D wykonuje ruch i sweep. Aktualizacja wektora pozwala pociskowi zmieniać kierunek podczas lotu."
+        },
+        {
+          "id": "g2d.projectile-types.modified",
+          "mode": "modified",
+          "title": "Dwa trafienia",
+          "prompt": "Ustaw maxHits=2 i dopisz HitCount: każdy trafiony przeciwnik otrzymuje jedno obrażenie; pocisk trafia obu przeciwników i znika.",
+          "objective": "Odrzucać samouszkodzenie i usuwać nietrafione pociski.",
+          "criteria": [
+            "Pocisk ignoruje właściciela i zadaje obrażenia poprawnemu celowi.",
+            "Obiekt pocisku zostaje usunięty po końcu życia lub wykorzystaniu limitu trafień.",
+            "Enemy i EnemyB tracą po 1 HP; ten sam cel nie otrzymuje powtórnych obrażeń."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.projectile-types.independent",
+          "mode": "independent",
+          "title": "Szybki pocisk i pierwszy cel",
+          "prompt": "Dodaj Projectile2D o prędkości 3000 i ustaw hitLayers=2. W jednym kroku ma trafić pierwszego wroga i ominąć sojusznika.",
+          "objective": "Użyć ciągłego wykrywania kontaktu silnika.",
+          "criteria": [
+            "Pocisk ignoruje właściciela i zadaje obrażenia poprawnemu celowi.",
+            "Obiekt pocisku zostaje usunięty po końcu życia lub wykorzystaniu limitu trafień."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.feedback"
       ]
     },
     {
       "id": "g2d.composition",
-      "order": 20,
+      "order": 21,
       "title": "Kompozycja, fabryki i wyposażenie",
       "objectives": [
         "Budujesz różne jednostki z tych samych komponentów i danych. Przekazujesz referencje zamiast rozbudowywać Game o każdy parametr rozgrywki."
@@ -1003,14 +1139,16 @@ export const courseManifest = {
           "id": "g2d.composition.guided",
           "mode": "guided",
           "title": "Fabryka przeciwników",
-          "prompt": "Napisz EnemyFactory przyjmującą EnemySpec oraz pozycję. Slime: hp=3,speed=40,radius=12; Bat: hp=2,speed=80,radius=10. Każda instancja otrzymuje własne komponenty.",
+          "prompt": "Fabryka tworzy wygląd, zdrowie i kontroler wroga. Dopisz dodanie EnemyAI(target,spec.speed) do tworzonego enemy.",
           "objective": "Usunąć duplikację tworzenia bez współdzielenia stanu.",
           "criteria": [
             "Dwa Slime mają oddzielne Health,EnemyAI i collider; uszkodzenie pierwszego nie uszkadza drugiego.",
             "Bat otrzymuje HP=2,speed=80,radius=10 i właściwą teksturę.",
             "Zmiana hp żywej instancji nie zmienia EnemySpec ani przyszłej wartości początkowej.",
             "Scena tworzy oba typy przez tę samą fabrykę zamiast kopiować konfigurację do obsługi kolejnych fal."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Fabryka składa zachowania. Jeden dodatkowy komponent daje wszystkim jednostkom tworzonym według konfiguracji własny pościg."
         },
         {
           "id": "g2d.composition.modified",
@@ -1023,7 +1161,8 @@ export const courseManifest = {
             "Nazwanie instancji Ghost_17 zamiast Ghost nie wyklucza jej z celowania ani kontaktów.",
             "Zmiana danych Ghost nie zmienia zachowania Slime i Bat.",
             "Dodanie nowego typu wymaga nowej definicji danych i wywołania fabryki, bez dopisywania wyjątków w Weapon,Health oraz XpPickup."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.composition.independent",
@@ -1037,65 +1176,12 @@ export const courseManifest = {
             "Wyłączenie jednej broni nie wyłącza drugiej ani ruchu gracza.",
             "Ulepszenie obrażeń całego Loadout zwiększa przyszłe pociski obu broni o 1, bez zmiany już lecących.",
             "Bronie odczytują pozycję i Health właściciela przez referencję; parametrów obu broni nie przenosi się do globalnych pól Game."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.feedback"
-      ]
-    },
-    {
-      "id": "g2d.performance",
-      "order": 21,
-      "title": "Wydajność i ograniczony koszt symulacji",
-      "objectives": [
-        "Mierzysz liczbę aktywnych obiektów, wykonywane operacje i poprawność sprzątania. Optymalizujesz konkretny koszt, zachowując zasady rozgrywki."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.performance.guided",
-          "mode": "guided",
-          "title": "Pociski nie zostają na zawsze",
-          "prompt": "Przez 20 s strzelaj 5 pocisków/s z lifetime=1 s w pustą przestrzeń. Po zatrzymaniu broni poczekaj jeszcze 1.1 s czasu symulacji.",
-          "objective": "Wykazać ograniczoną liczbę obiektów.",
-          "criteria": [
-            "Po ustaleniu rytmu liczba żywych pocisków nie przekracza 6, mimo ponad 90 utworzonych łącznie.",
-            "Po 1.1 s od ostatniego strzału aktywnych pocisków jest 0.",
-            "Usunięte pociski nie pozostają w aktywnych kontaktach, aktualizacjach ani tweenach.",
-            "Po powtórzeniu całego scenariusza wynik liczby aktywnych obiektów jest taki sam."
-          ]
-        },
-        {
-          "id": "g2d.performance.modified",
-          "mode": "modified",
-          "title": "Celowanie jednym przejściem",
-          "prompt": "Wybieraj najbliższy poprawny cel jednym przejściem dopiero przy gotowej broni. Fixture testowe liczy oceny odległości.",
-          "objective": "Usunąć wielokrotne liczenie odległości i sortowanie całej listy.",
-          "criteria": [
-            "Dla 1000 poprawnych kandydatów jeden wybór ocenia najwyżej 1000 odległości.",
-            "Przy 10 wyborach limit wynosi 10000, a nie koszt wielokrotnego sortowania przy każdym update.",
-            "Wybrany cel jest identyczny jak w referencyjnym poprawnym algorytmie dla losowych i remisowych danych.",
-            "Podczas dodatniego cooldownu nie wykonujesz nowego pełnego wyszukiwania przy każdej klatce.",
-            "Martwe i nieaktywne obiekty nadal są odrzucane; optymalizacja nie zmienia reguł celowania."
-          ]
-        },
-        {
-          "id": "g2d.performance.independent",
-          "mode": "independent",
-          "title": "Minuta obciążenia bez narastania",
-          "prompt": "Przygotuj 60 s deterministycznego obciążenia: do 200 wrogów, maksymalnie 300 aktywnych pocisków i 200 orbów XP. Przy limicie XP połącz nagrody z zachowaniem ich sumy. Użyj profilu z tej samej definicji na obu runtime.",
-          "objective": "Złożyć grę z jawnymi limitami i zachować nagrody.",
-          "criteria": [
-            "Przez cały przebieg żaden limit aktywnych obiektów nie jest przekroczony po zakończeniu kroku.",
-            "Suma XP zebrana przez gracza plus XP pozostająca w świecie równa się XP wytworzonej przez zabitych wrogów; łączenie nie gubi nagród.",
-            "Po zatrzymaniu spawnera, zniszczeniu wrogów i zebraniu XP pozostają tylko obiekty bazowe; po maksymalnym lifetime nie ma pocisków.",
-            "Dziesięć startów i zakończeń nie zwiększa liczby aktywnych listenerów, timerów, kontaktów ani tweenów.",
-            "Raport zawiera liczby obiektów i operacji oraz opis urządzenia dla pomiaru FPS/p95; brak pomiaru FPS nie jest zastępowany zmyśloną wartością."
-          ]
-        }
-      ],
-      "prerequisites": [
-        "g2d.composition"
+        "g2d.projectile-types"
       ]
     },
     {
@@ -1110,14 +1196,16 @@ export const courseManifest = {
           "id": "g2d.run-state.guided",
           "mode": "guided",
           "title": "Ekran startowy",
-          "prompt": "Dodaj stany READY i RUNNING. READY pokazuje przycisk Start i instrukcję WASD. Start lub Enter tworzy gracza i uruchamia harmonogram fali.",
+          "prompt": "Gotowy start składa nową rundę. Dopisz state=\"RUNNING\" na końcu start, aby stan gry odpowiadał utworzonej scenie.",
           "objective": "Rozpocząć czas rozgrywki dopiero po świadomej akcji.",
           "criteria": [
             "W READY czas świata=0, brak aktywnej walki i spawnów mimo 5 s działania UI.",
             "Start przełącza do RUNNING dokładnie raz i tworzy jednego gracza z właściwą konfiguracją.",
             "Przytrzymanie Enter lub podwójny click nie uruchamia dwóch pętli ani dwóch graczy.",
             "Input ze Start nie staje się strzałem lub wyborem ulepszenia w tej samej klatce."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "RUNNING oznacza trwającą rundę. UI oraz reguły końca rundy korzystają z tego samego stanu, zamiast niezależnych flag."
         },
         {
           "id": "g2d.run-state.modified",
@@ -1130,7 +1218,8 @@ export const courseManifest = {
             "W LOST nie zmieniają się czas świata, fala, pociski ani wyniki walki.",
             "Panel pokazuje końcowe wartości RunStats i Experience zapisane przed zamrożeniem.",
             "UI nadal przyjmuje kliknięcie Restart i klawiaturę, choć symulacja stoi."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.run-state.independent",
@@ -1144,61 +1233,68 @@ export const courseManifest = {
             "Restart zeruje czas,falę,kills,gold,xp,pendingChoices,ulepszenia i przywraca bazowe HP/prędkość/bronie.",
             "Po trzech restartach istnieje tylko jeden aktywny zestaw gracza, spawnera, HUD oraz wejścia; stare tweeny i referencje są wycofane.",
             "Ponowny start z seed=42 odtwarza pierwsze pozycje spawnów; restart gry nie resetuje zapisanych prac ani zaliczeń kursu."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.performance"
+        "g2d.composition"
       ]
     },
     {
-      "id": "g2d.portability",
+      "id": "g2d.performance",
       "order": 23,
-      "title": "Kontrakt, eksport i przenośność projektu",
+      "title": "Wydajność, testowanie i zapis projektu",
       "objectives": [
-        "Rozpoznajesz wspólne reguły silnika niezależne od języka. Weryfikujesz i przenosisz cały projekt w swoim języku przez wspólny format oraz scenariusz."
+        "Mierzysz liczbę aktywnych obiektów, wykonywane operacje i poprawność sprzątania. Optymalizujesz konkretny koszt, zachowując zasady rozgrywki.",
+        "Eksportujesz cały projekt, sprawdzasz wersję i język przy imporcie; odtwarzasz działającą grę."
       ],
       "tasks": [
         {
-          "id": "g2d.portability.guided",
+          "id": "g2d.performance.guided",
           "mode": "guided",
-          "title": "Porównaj tę samą regułę w dwóch językach",
-          "prompt": "Przeczytaj parę przykładów PlayerController w Java i JS. Uzupełnij tylko wariant swojego języka, zachowując speed=120, centrowaną grafikę i wywołanie wspólnego kontrolera.",
-          "objective": "Odróżnić różnicę składni od zmiany zachowania.",
+          "title": "Pociski nie zostają na zawsze",
+          "prompt": "Test obciążenia już tworzy pociski. Dopisz shots++ po każdym faktycznie utworzonym pocisku, aby raport liczył operacje.",
+          "objective": "Wykazać ograniczoną liczbę obiektów.",
           "criteria": [
-            "D przez 0.5 s ze startu (100,100) daje (160,100) w wybranym runtime.",
-            "S+D przez 0.5 s daje dystans 60 i równe składowe.",
-            "Przeciwne klawisze oraz brak wejścia zatrzymują ruch; delta nie jest uwzględnione podwójnie.",
-            "Na porównaniu pary wskazujesz deklaracje typów/import/override jako różnice językowe; 120 px/s, sekundy i normalizacja pozostają wspólną regułą."
-          ]
+            "Po ustaleniu rytmu liczba żywych pocisków nie przekracza 6, mimo ponad 90 utworzonych łącznie.",
+            "Po 1.1 s od ostatniego strzału aktywnych pocisków jest 0.",
+            "Usunięte pociski nie pozostają w aktywnych kontaktach, aktualizacjach ani tweenach.",
+            "Po powtórzeniu całego scenariusza wynik liczby aktywnych obiektów jest taki sam."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Licznik mierzy to, co wykonano, a nie liczbę klatek. Razem z liczbą aktywnych obiektów pomaga ocenić koszt symulacji."
         },
         {
-          "id": "g2d.portability.modified",
+          "id": "g2d.performance.modified",
           "mode": "modified",
-          "title": "Usuń zależność od starego kontraktu",
-          "prompt": "W swoim języku popraw przygotowany przykład Health/ProjectileHit/HUD: ochrona trwa 0.75 s w Health gracza, prostokąt jest centrowany, a timery korzystają z czasu WORLD.",
-          "objective": "Naprawić kod oparty na milisekundach, innym środku lub stanie globalnym.",
+          "title": "Celowanie jednym przejściem",
+          "prompt": "Wybieraj najbliższy poprawny cel jednym przejściem dopiero przy gotowej broni. Fixture testowe liczy oceny odległości.",
+          "objective": "Usunąć wielokrotne liczenie odległości i sortowanie całej listy.",
           "criteria": [
-            "Sekwencja trafień t=0,0.5,0.75 dla Health(5) daje 4,4,3.",
-            "Drugi Health ma niezależny timer; nie dziedziczy ochrony pierwszego gracza.",
-            "Prostokąt środka (80,90),40×30 ma granice x=60..100,y=75..105.",
-            "Pauza WORLD przez 5 s UI nie skraca pozostałej ochrony lub lifetime pocisku.",
-            "Kod przechodzi ten sam językowo neutralny scenariusz referencyjny; zmiana wartości na 750 zamiast 0.75 jest wykrywana."
-          ]
+            "Dla 1000 poprawnych kandydatów jeden wybór ocenia najwyżej 1000 odległości.",
+            "Przy 10 wyborach limit wynosi 10000, a nie koszt wielokrotnego sortowania przy każdym update.",
+            "Wybrany cel jest identyczny jak w referencyjnym poprawnym algorytmie dla losowych i remisowych danych.",
+            "Podczas dodatniego cooldownu nie wykonujesz nowego pełnego wyszukiwania przy każdej klatce.",
+            "Martwe i nieaktywne obiekty nadal są odrzucane; optymalizacja nie zmienia reguł celowania."
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
-          "id": "g2d.portability.independent",
+          "id": "g2d.performance.independent",
           "mode": "independent",
-          "title": "Eksport, import i scenariusz referencyjny",
-          "prompt": "Wyeksportuj swój checkpoint z kamerą, EnemyAI, auto Weapon, XP, menu i restartem. Zaimportuj go w świeżej sesji tego samego Labu i uruchom udostępniony scenariusz 10 s z seed=42.",
-          "objective": "Odtworzyć projekt w świeżej sesji bez zmiany mechaniki.",
+          "title": "Minuta obciążenia bez narastania",
+          "prompt": "Przygotuj 60 s deterministycznego obciążenia: do 200 wrogów, maksymalnie 300 aktywnych pocisków i 200 orbów XP. Przy limicie XP połącz nagrody z zachowaniem ich sumy. Użyj profilu z tej samej definicji na obu runtime. Wyeksportuj pełny projekt, odtwórz go przez import i ponownie uruchom; zapisz wynik oraz pomiar w REPORT.md.",
+          "objective": "Złożyć grę z jawnymi limitami i zachować nagrody.",
           "criteria": [
-            "Eksport zawiera język,engineApiVersion=2.0.0,entry,wszystkie pliki komponentów i użyte referencje zasobów; import zachowuje te dane.",
-            "Projekt uruchamia się w świeżej sesji bez zależności od niezapisanych plików lub stanu poprzedniego edytora.",
-            "Ruch,HP,kills,XP,poziom,liczba strzałów i pauza zgadzają się z neutralnym scenariuszem; pozycje/timery w tolerancji 1e-6.",
-            "Wcześniejszy i ponownie zaimportowany projekt dają te same wyniki; plik o nieobsługiwanej wersji jest odrzucony czytelnym komunikatem bez nadpisania otwartej pracy.",
-            "Mechanika nie używa zegara systemowego lub browser-only timerów obchodzących WORLD; autorzy uruchamiają tę samą próbę także na drugim wariancie językowym."
-          ]
+            "Przez cały przebieg żaden limit aktywnych obiektów nie jest przekroczony po zakończeniu kroku.",
+            "Suma XP zebrana przez gracza plus XP pozostająca w świecie równa się XP wytworzonej przez zabitych wrogów; łączenie nie gubi nagród.",
+            "Po zatrzymaniu spawnera, zniszczeniu wrogów i zebraniu XP pozostają tylko obiekty bazowe; po maksymalnym lifetime nie ma pocisków.",
+            "Dziesięć startów i zakończeń nie zwiększa liczby aktywnych listenerów, timerów, kontaktów ani tweenów.",
+            "Raport zawiera liczby obiektów i operacji oraz opis urządzenia dla pomiaru FPS/p95; brak pomiaru FPS nie jest zastępowany zmyśloną wartością.",
+            "Eksport zawiera wszystkie pliki, język i wersję API; po imporcie projekt uruchamia się."
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
@@ -1217,7 +1313,7 @@ export const courseManifest = {
           "id": "g2d.survivor.guided",
           "mode": "guided",
           "title": "Działający rdzeń survivor",
-          "prompt": "Zbuduj trawiastą scenę z kamerą śledzącą: Player speed=120,Health=5,ochrona=0.75; Dagger auto cooldown=0.5,damage=1,speedPocisku=320,lifetime=2,range=240. Slime ma HP=2,speed=40,contactDamage=1 i zostawia 1 XP. Progi XP=5×level. Pierwszy Slime po 1.5 s, kolejne co 1.5 s.",
+          "prompt": "Gotowa arena ma ruch, walkę, fale i rozwój. Ustaw zasięg Weapon gracza na 240 px, uruchom rundę i sprawdź automatyczny atak.",
           "objective": "Złożyć pierwszą grywalną wersję z własnych komponentów.",
           "criteria": [
             "Player porusza się WASD/strzałkami w tempie 120, bez szybszej przekątnej; sprite i collider mają wspólny środek.",
@@ -1226,7 +1322,9 @@ export const courseManifest = {
             "Zebranie 5 XP daje level=2 i jeden pendingChoice; wybór szybkości zwiększa speed 120→150 raz.",
             "Health gracza chroni go 0.75 s między przyjętymi obrażeniami niezależnie od liczby stykających się wrogów.",
             "Kamera śledzi świat, HUD zdrowia/XP/poziomu pozostaje na ekranie."
-          ]
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Parametr range określa, które cele rozważa broń. Ta mała konfiguracja zmienia zasięg walki bez kopiowania mechaniki."
         },
         {
           "id": "g2d.survivor.modified",
@@ -1241,7 +1339,8 @@ export const courseManifest = {
             "Ulepszenia szybkość+30,damage+1,cooldown×0.8(min0.1) są stosowane raz do właściwych komponentów.",
             "HP=0 kończy rundę przegraną; 120 s przy żywym graczu kończy zwycięstwem; wyniki i przycisk Restart są widoczne.",
             "Po restarcie wszystkie parametry i zegary nowej rundy wracają do wartości początkowych."
-          ]
+          ],
+          "learningStage": "Samodzielnie"
         },
         {
           "id": "g2d.survivor.independent",
@@ -1257,11 +1356,12 @@ export const courseManifest = {
             "Próba obciążenia przestrzega limitów 200 wrogów,300 pocisków,200 orbów i zachowuje sumę XP; po restarcie nie pozostają aktywne obiekty poprzedniej rundy.",
             "Eksport projektu otwiera się w czystej sesji odpowiedniego Labu z engineApiVersion=2.0.0, wszystkimi własnymi plikami i instrukcją WASD/strzałki,Escape,1–3/kliknięcie,Restart; uczeń nie musi oddawać drugiej wersji językowej.",
             "Własny wygląd zachowuje czytelny HUD i kontrast celów; instrukcja określa dokładną zmienioną wartość balansu oraz porównuje jej zauważalne skutki w co najmniej dwóch przebiegach."
-          ]
+          ],
+          "learningStage": "Rozbudowa"
         }
       ],
       "prerequisites": [
-        "g2d.portability"
+        "g2d.performance"
       ]
     }
   ]

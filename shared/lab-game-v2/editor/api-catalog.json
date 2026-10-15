@@ -200,6 +200,12 @@
     "parent": "Component",
     "members": [
       {
+        "name": "getDirection",
+        "signature": "public Vector2 getDirection()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
         "name": "onAfterMove",
         "signature": "public void onAfterMove(double delta)",
         "parameters": [
@@ -718,6 +724,20 @@
           "double y",
           "double width",
           "double height",
+          "String color",
+          "double rotation",
+          "double scaleX",
+          "double scaleY"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawCircle",
+        "signature": "public static void drawCircle(double x,double y,double radius,String color,double rotation,double scaleX,double scaleY)",
+        "parameters": [
+          "double x",
+          "double y",
+          "double radius",
           "String color",
           "double rotation",
           "double scaleX",
@@ -1917,6 +1937,15 @@
     "parent": "Component",
     "members": [
       {
+        "name": "circle",
+        "signature": "public static ShapeRenderer circle(double radius,String color)",
+        "parameters": [
+          "double radius",
+          "String color"
+        ],
+        "kind": "method"
+      },
+      {
         "name": "ShapeRenderer",
         "signature": "public ShapeRenderer()",
         "parameters": [],
@@ -1931,6 +1960,11 @@
           "String color"
         ],
         "kind": "constructor"
+      },
+      {
+        "name": "radius",
+        "signature": "double radius",
+        "kind": "field"
       }
     ]
   },

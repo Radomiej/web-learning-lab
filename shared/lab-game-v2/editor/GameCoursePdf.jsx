@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import './GameCoursePdf.css';
 
-export const gameCoursePdfUrl = `${import.meta.env.BASE_URL}courses/kurs-gamedev-js.pdf`;
+export const gameCoursePdfUrl = `${import.meta.env.BASE_URL}courses/kurs-gamedev-js-v3.pdf`;
 const courses = [
-  { title: 'Podstawy GameDev JS', file: 'kurs-gamedev-js.pdf', pages: 8 },
+  { title: 'Start GameDev JS — program v3', file: 'kurs-gamedev-js-v3.pdf', pages: 11 },
   { title: 'Kamera, viewport i UI', file: 'kurs-gamedev-js-kamera-ui.pdf', pages: 5 },
   { title: 'Tweeny, PingPong i FadeOut', file: 'kurs-gamedev-js-tweeny.pdf', pages: 7 },
 ];
 
-export default function GameCoursePdf() {
+export default function GameCoursePdf({language='javascript'}) {
+  const currentCourses=language==='java'?[{title:'Start GameDev Java — program v3',file:'kurs-gamedev-java-v3.pdf',pages:11},...courses.slice(1)]:courses;
   const [open, setOpen] = useState(false);
   const [courseIndex, setCourseIndex] = useState(0);
   const [page, setPage] = useState(1);
-  const course = courses[courseIndex];
+  const course = currentCourses[courseIndex];
   const pdfUrl = `${import.meta.env.BASE_URL}courses/${course.file}`;
   const triggerRef = useRef(null);
   const dialogRef = useRef(null);
@@ -41,7 +42,7 @@ export default function GameCoursePdf() {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 5v15M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z" /></svg>
         Kurs GameDev · PDF
       </button>
-      <a className="button button--ghost" href={gameCoursePdfUrl} download="kurs-gamedev-js.pdf">
+      <a className="button button--ghost" href={pdfUrl} download={course.file}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg>
         Pobierz PDF
       </a>
@@ -52,7 +53,7 @@ export default function GameCoursePdf() {
         <button className="button button--ghost" type="button" aria-label="Zamknij kurs PDF" onClick={() => setOpen(false)}>Zamknij ×</button>
       </header>
       <div className="game-course-toolbar">
-        <label className="game-course-selector">Kurs<select aria-label="Kurs" value={courseIndex} onChange={event => { setCourseIndex(Number(event.target.value)); setPage(1); }}>{courses.map((item, index) => <option key={item.file} value={index}>{item.title}</option>)}</select></label>
+        <label className="game-course-selector">Kurs<select aria-label="Kurs" value={courseIndex} onChange={event => { setCourseIndex(Number(event.target.value)); setPage(1); }}>{currentCourses.map((item, index) => <option key={item.file} value={index}>{item.title}</option>)}</select></label>
 
         <a href={pdfUrl} target="_blank" rel="noopener noreferrer">Otwórz w nowej karcie</a>
         <a href={pdfUrl} download={course.file}>Pobierz PDF</a>

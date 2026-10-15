@@ -32,6 +32,7 @@ export default function CodeEditor({
   onSave,
   workspaceKey = 'lesson',
   gameDev = false,
+  highlight,
   resetLabel = 'Wyczyść',
   monacoLoader = loadMonaco,
 }) {
@@ -378,6 +379,16 @@ export default function CodeEditor({
   const editorId = `editor-${encodeURIComponent(fileKey)}`;
   const languageLabel = `${editorLanguageLabel(fileKey)} · Monaco`;
 
+  useEffect(()=>{
+    const editor=editorRef.current,monaco=monacoRef.current;
+    if(!editor?.createDecorationsCollection||!monaco)return;
+    const decorations=editor.createDecorationsCollection(highlight?[{
+      range:new monaco.Range(highlight.from.line,highlight.from.column,highlight.to.line,highlight.to.column),
+      options:{inlineClassName:'guided-change-code',linesDecorationsClassName:'guided-change-gutter',hoverMessage:{value:'Dodany kod uruchamia mechanikę opisaną w wyjaśnieniu zmiany.'}}
+    }]:[]);
+    if(highlight)editor.revealLineInCenter?.(highlight.from.line);
+    return ()=>decorations.clear();
+  },[highlight?.start,highlight?.end,fileKey,value,editorState]);
   return (
     <section className="editor-card">
       <div className="editor-card-heading">

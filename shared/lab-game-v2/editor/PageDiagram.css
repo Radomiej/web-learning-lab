@@ -16,3 +16,6 @@
 .page-diagram-flow--parallel { gap: 10px; border-left: 3px solid #69a08c; padding-left: 14px; }
 @container (max-width: 400px) { .page-diagram-flow--decision { grid-template-columns: 1fr; } .page-diagram-flow--decision li:first-child { grid-column: auto; } }
 @media (max-width: 450px) { .page-diagram { padding: 12px; } .page-diagram-flow li { padding: 12px; } }
+
+.scene-overview { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px; }.scene-overview .page-diagram {padding:16px;}.scene-overview .page-diagram p {font-size:13px;}
+@media(max-width:850px){.scene-overview{grid-template-columns:1fr;}}

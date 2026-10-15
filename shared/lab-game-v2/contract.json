@@ -334,10 +334,14 @@
       "name": "ShapeRenderer",
       "category": "Grafika i UI",
       "signature": "new ShapeRenderer(width?, height?, color?)",
-      "description": "Rysuje prostokąt wyśrodkowany na obiekcie. Domyślnie 32×32 px.",
+      "description": "Rysuje prostokąt (domyślnie 32×32 px) lub koło. GameLab.ShapeRenderer.circle(radius, color) tworzy koło; collider dodajesz osobno.",
       "example": "object.addComponent(new GameLab.ShapeRenderer(48, 32, \"#70c994\"));",
       "kind": "Constructor",
       "members": [
+        {
+          "name": "circle",
+          "description": null
+        },
         {
           "name": "width",
           "description": null
@@ -345,6 +349,14 @@
         {
           "name": "height",
           "description": null
+        },
+        {
+          "name": "shape",
+          "description": null
+        },
+        {
+          "name": "radius",
+          "description": "Promień kołowego collidera albo dystans obiegania FlankTarget2D, w pikselach świata."
         },
         {
           "name": "color",
@@ -637,10 +649,14 @@
       "name": "CharacterController2D",
       "category": "Ruch i kolizje",
       "signature": "move(x, y, speed = 120)",
-      "description": "Ustawia prędkość w px/s, normalizuje ruch po przekątnej. Wywołuj w każdej klatce onUpdate().",
+      "description": "Ustawia prędkość w px/s, normalizuje ruch po przekątnej. getDirection() zwraca kopię ostatniego niezerowego kierunku, także po zatrzymaniu. Wywołuj w każdej klatce onUpdate().",
       "example": "this.gameObject.addComponent(new GameLab.CharacterController2D());\ncontroller.move(1, 0, 120);",
       "kind": "Constructor",
       "members": [
+        {
+          "name": "getDirection",
+          "description": null
+        },
         {
           "name": "move",
           "description": "Ustawia wektor ruchu na tę klatkę: move(x, y, speed?). Kierunek jest normalizowany."
@@ -1686,6 +1702,10 @@
       "kind": "Constructor",
       "members": [
         {
+          "name": "getDirection",
+          "description": null
+        },
+        {
           "name": "move",
           "description": "Ustawia wektor ruchu na tę klatkę: move(x, y, speed?). Kierunek jest normalizowany."
         },
@@ -1743,6 +1763,10 @@
       "example": "controller.walk(1);\nif(this.game.input.isKeyPressed(\"Space\"))controller.jump();",
       "kind": "Constructor",
       "members": [
+        {
+          "name": "getDirection",
+          "description": null
+        },
         {
           "name": "move",
           "description": "Ustawia wektor ruchu na tę klatkę: move(x, y, speed?). Kierunek jest normalizowany."

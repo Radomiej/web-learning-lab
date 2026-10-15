@@ -3,9 +3,9 @@ const flow = (title, text, nodes, note) => ({ title, text, visual: { kind: 'flow
 const picture = (title, text, kind, variant = 0, note = '') => ({ title, text, visual: { kind, variant, note } });
 export const gameExplanationPages = {
   scene: [
-    flow('Z czego składa się scena?', 'Game przechowuje obiekty. GameObject ma pozycję i komponenty. Dopiero Sprite lub ShapeRenderer nadaje mu widoczny wygląd.', ['Game', 'GameObject', 'Transform + Sprite'], 'Obiekt bez renderera może istnieć, ale nie zobaczysz go na planszy.'),
+    picture('Z czego składa się scena?', 'Game przechowuje całą mapę i obiekty. GameObject jest kontenerem, Transform określa pozycję, a komponenty nadają mu wygląd i zachowania. Sprite lub ShapeRenderer rysuje obiekt; sam GameObject jest niewidoczny.', 'scene-map'),
     picture('Gdzie znajduje się obiekt?', 'Transform określa punkt obiektu w świecie. W tym silniku X rośnie w prawo, Y w dół. Przykład (100,150) oznacza 100 jednostek w prawo i 150 w dół od początku mapy.', 'position', 0, 'Czerwony X → w prawo. Niebieski Y ↓ w dół.'),
-    picture('Pozycja, wygląd i collider', 'Sprite i collider umieszczamy względem pozycji obiektu. Ich wymiary oraz przesunięcia są osobne. Transform nie określa środka widocznych pikseli grafiki.', 'position', 1, 'Punkt obiektu ≠ rozmiar grafiki. Collider ma własny kształt.'),
+    picture('Komponenty definiują obiekt', 'Sprite i collider umieszczamy względem pozycji obiektu. Ich wymiary oraz przesunięcia są osobne. Transform nie określa środka widocznych pikseli grafiki.', 'component-appearance', 0, 'Renderer rysuje. Kontroler porusza. Collider wykrywa kontakt. Każdy ma własną odpowiedzialność.'),
   ],
   components: [
     flow('Właściciel i zachowanie', 'Komponent należy do GameObject. Klasa opisuje zachowanie, a każda nowa instancja przechowuje własne dane. gameObject wskazuje właściciela komponentu.', ['GameObject', 'new Counter()', 'własne counts'], 'Do dwóch właścicieli dodaj dwie instancje.'),
@@ -20,7 +20,7 @@ export const gameExplanationPages = {
   input: [
     flow('Od klawisza do ruchu', 'PlayerController jest klasą ucznia. Odczytuje wejście i wybiera kierunek. CharacterController2D wykonuje ruch z uwzględnieniem czasu i przeszkód.', ['D / →', 'kierunek (1,0)', 'kontroler ruchu'], 'Kliknij planszę, aby skierować do niej klawiaturę.'),
     picture('Przytrzymanie czy nowe naciśnięcie?', 'Przytrzymanie służy do chodzenia. Nowe naciśnięcie wywołuje pojedynczą akcję. Trzy klatki przytrzymania nie powinny oznaczać trzech nowych naciśnięć.', 'input', 0),
-    flow('Mysz w przestrzeni ekranu', 'Pozycja myszy jest ekranowa i może być null przed pierwszym zdarzeniem. Kamera przelicza ją na świat. Obsłużone kliknięcie UI nie powinno również uruchamiać akcji świata.', ['mysz: ekran', 'screenToWorld', 'punkt w świecie'], 'Najpierw sprawdź, czy pozycja wskaźnika istnieje.'),
+    picture('Kierunek zostaje po zatrzymaniu', 'CharacterController2D.getDirection() zwraca kopię ostatniego niezerowego kierunku. Po ruchu w prawo i puszczeniu D gracz stoi, ale kierunek nadal wynosi (1,0). Broń w lekcji 5 użyje go do strzału.', 'direction'),
   ],
   graphics: [
     picture('Warstwy układają obraz', 'TileMap rysuje tło, Sprite postać. Podaj jawne wymiary. Niższa warstwa layer znajduje się pod wyższą.', 'layers', 0),
@@ -61,9 +61,20 @@ export const gameExplanationPages = {
     flow('Decyzja i wykonanie ruchu', 'EnemyAI wybiera kierunek. Kontroler wykonuje ruch i uwzględnia przeszkody. Parametry pozwalają uzyskać różne zachowania tej samej klasy.', ['cel', 'EnemyAI: kierunek', 'kontroler: ruch'], 'Nie kopiuj całej klasy tylko po to, aby zmienić prędkość.'),
   ],
   projectiles: [
-    flow('Pocisk to zestaw komponentów', 'GameObject pocisku łączy grafikę, collider, lot i reakcję na trafienie. Właściciel określa, kogo należy ignorować.', ['Sprite + collider', 'lot + właściciel', 'kontakt + obrażenia'], 'Lot i trafienie mają osobne odpowiedzialności.'),
+    picture('Pocisk i HP tworzą walkę', 'Space tworzy pocisk w kierunku CharacterController2D.getDirection(). Kontakt pocisku z wrogiem wywołuje Health.damage(1): HP 3 → 2. Przy HP=0 wróg znika. Kontakt wroga odbiera HP graczowi. Health jest teraz gotowe; w lekcji 10 napiszesz i rozbudujesz ten komponent.', 'combat-health'),
+    picture('Pocisk: wygląd, lot i trafienie', 'Sprite rysuje pocisk, Projectile2D albo ProjectileMotion wykonuje lot, a ProjectileHit zmienia HP celu. Owner wskazuje obiekt strzelający. Każdy komponent ma osobną odpowiedzialność.', 'projectile', 2),
     picture('Jedno trafienie zużywa pocisk', 'Poprawny cel otrzymuje obrażenia. Pocisk ignoruje właściciela i sojuszników. Flaga zużycia chroni przed drugim trafieniem tego samego pocisku.', 'projectile', 0),
-    picture('Chybiony pocisk też znika', 'Odliczaj czas życia w czasie symulacji. Po jego upływie usuń pocisk, nawet jeśli nie trafił celu. To ogranicza liczbę obiektów w scenie.', 'timeline', 1),
+
+  ],
+  'enemy-tactics': [
+    picture('Wróg widzi gracza w zasięgu', 'Porównaj odległość z detectionRange. Poza zasięgiem wróg stoi; po wejściu gracza w zasięg rozpoczyna pościg.', 'enemy-tactics'),
+    picture('Podejście z boku', 'Dodaj do celu przesunięcie prostopadłe do kierunku pościgu. Ten sam kontroler realizuje ruch w kierunku nowego punktu.', 'enemy-tactics', 1),
+    picture('Ucieczka', 'Odwróć kierunek do gracza i sprawdź dystans. Po osiągnięciu bezpiecznej odległości przestań przekazywać ruch.', 'motion', 3),
+  ],
+  'projectile-types': [
+    picture('Pocisk naprowadzany', 'W każdej aktualizacji wyznacz kierunek do celu i normalizuj go. Projectile2D wykonuje lot, a osobny komponent wybiera kierunek.', 'projectile'),
+    picture('Przebicie', 'maxHits=2 pozwala dotknąć dwóch celów. Pamięć trafionych obiektów nie pozwala wielokrotnie trafić tego samego wroga.', 'projectile', 1),
+    picture('Sweep przy dużej prędkości', 'Sprawdzaj cały odcinek lotu pocisku. Dzięki temu szybki pocisk trafia cel między pozycją poprzednią a następną.', 'contact', 2),
   ],
   weapons: [
     flow('Najpierw wybierz poprawny cel', 'Automatyczna broń szuka żywego celu. Bez celu nie tworzy pocisku. Przy równej odległości stosuj stałą regułę, np. ID.', ['żywe cele', 'najbliższy + ID', 'jeden wybrany cel'], 'Wybór celu jest oddzielony od ruchu gracza.'),
@@ -96,9 +107,9 @@ export const gameExplanationPages = {
     picture('Paski i rozciągane przyciski', 'ProgressBar rozdziela ramkę i wypełnienie. 9patch zachowuje narożniki przy rozciąganiu przycisku. Sprawdź układ po zmianie rozmiaru planszy.', 'ninepatch', 0),
   ],
   feedback: [
-    picture('Tween między dwiema wartościami', 'Tween płynnie zmienia wybraną właściwość od początku do końca. Przykładowe zanikanie zmienia alpha z 1 do 0; nie przesuwa collidera.', 'fade', 0),
+    picture('Liczba obrażeń nad celem', 'Trafienie tworzy osobny obiekt tekstu. Tween przesuwa go w górę, a po zakończeniu efektu usuwasz ten obiekt. Efekt wizualny nie zmienia collidera przeciwnika.', 'floating-text'),
     picture('Shake ma początek i koniec', 'Krótki wstrząs kamery daje informację o trafieniu. Po czasie efekt wraca do spokoju. Wybierz świadomie domenę czasu podczas pauzy.', 'timeline', 5),
-    flow('Nowy efekt tej samej właściwości', 'Określ, czy nowy tween zastępuje poprzedni. Dwa efekty zapisujące tę samą właściwość bez reguły mogą wzajemnie nadpisywać wynik.', ['efekt A: alpha', 'nowy efekt B', 'jedna reguła zastąpienia'], 'Wygląd i fizyka pozostają oddzielnymi odpowiedzialnościami.'),
+    flow('Nowy efekt tej samej właściwości', 'Określ, czy nowy tween zastępuje poprzedni. Dwa efekty zapisujące tę samą właściwość bez reguły mogą wzajemnie nadpisywać wynik.', ['efekt A: pozycja', 'nowy efekt B', 'jedna reguła zastąpienia'], 'Wygląd i fizyka pozostają oddzielnymi odpowiedzialnościami.'),
   ],
   composition: [
     flow('Fabryka składa jednostkę', 'Dane wybierają wygląd, zdrowie i zachowanie. Fabryka tworzy GameObject i dodaje potrzebne komponenty.', ['konfiguracja', 'fabryka', 'Sprite + Health + AI'], 'Różne dane mogą korzystać z tych samych klas.'),
@@ -126,3 +137,7 @@ export const gameExplanationPages = {
     flow('Sprawdź cały przebieg gry', 'Testy reguł nie zastępują ręcznej próby planszy. Sprawdź start, sterowanie, przeciwników, przegraną, restart i odtworzenie eksportu.', ['start + sterowanie', 'walka + koniec', 'restart + eksport'], 'W rozwiązaniu pierwsze Slime pojawiają się po 1.5 s.'),
   ],
 };
+
+// Pause is taught with UI flow; portability with performance and export.
+delete gameExplanationPages.pause;
+delete gameExplanationPages.portability;

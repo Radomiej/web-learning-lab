@@ -19,6 +19,29 @@ export default function PageDiagram({ page }) {
   const marker = useId().replaceAll(':', '');
   const { kind, variant = 0, nodes = [], note, relation } = page.visual;
   const arrow = (x1,y1,x2,y2,color='#328779') => <path d={`M${x1} ${y1} L${x2} ${y2}`} fill="none" stroke={color} strokeWidth="3" markerEnd={`url(#${marker})`}/>;
+  if(kind==='scene-map')return <div className="scene-overview">
+    <figure className="page-diagram"><figcaption>Scena wyprawy — cała mapa</figcaption>
+      <svg viewBox="0 0 320 220" role="img" aria-label="Mapa sceny: gracz w (100,150), skrzynka w (240,150)">
+        <rect x="1" y="1" width="318" height="218" rx="8" fill="#c9ddb2" stroke="#548350" />
+        {[40,80,120,160,200,240,280].map(x=><path key={x} d={`M${x} 0v220`} stroke="#afc898" />)}
+        {[40,80,120,160,200].map(y=><path key={y} d={`M0 ${y}h320`} stroke="#afc898" />)}
+        <path d="M80 0v150h160v70" fill="none" stroke="#dfc39a" strokeWidth="28" />
+        <Sprite x={84} y={134} size={32} /><Sprite asset="chest" x={224} y={134} size={32} />
+        <text x="100" y="122" textAnchor="middle" fontSize="12" fill="#24483e">Player (100,150)</text>
+        <text x="240" y="122" textAnchor="middle" fontSize="12" fill="#24483e">Chest (240,150)</text>
+        <text x="8" y="18" fontSize="11" fill="#24483e">(0,0)</text>
+      </svg><p>Game przechowuje całą scenę: mapę oraz niezależne obiekty z komponentami.</p>
+    </figure>
+    <figure className="page-diagram"><figcaption>Gracz na planszy — jeden obiekt</figcaption>
+      <svg viewBox="0 0 320 220" role="img" aria-label="Gracz: GameObject z pozycją Transform i wyglądem Sprite">
+        <rect x="55" y="12" width="210" height="196" rx="12" fill="#fff" stroke="#b5cfbd" />
+        <Sprite x={112} y={22} size={96}/>
+        <text x="160" y="145" textAnchor="middle" fontSize="15" fill="#24483e">GameObject: Player</text>
+        <text x="160" y="169" textAnchor="middle" fontSize="14" fill="#24483e">Transform: gdzie? (100,150)</text>
+        <text x="160" y="192" textAnchor="middle" fontSize="14" fill="#24483e">Sprite: jak wygląda?</text>
+      </svg><p>Obiekt jest kontenerem. Dodane komponenty określają jego wygląd i zachowania.</p>
+    </figure>
+  </div>;
   if (kind === 'flow') {
     const decision = /^(true|tak):/i.test(nodes[1] || '') && /^(false|nie):/i.test(nodes[2] || '');
     const layout = decision ? 'decision' : relation || 'sequence';
@@ -29,6 +52,46 @@ export default function PageDiagram({ page }) {
   }
   let content;
   switch (kind) {
+    case 'component-appearance': content=<>
+      <rect x="35" y="55" width="165" height="145" rx="12" fill="#fff" stroke="#90aaa0" strokeDasharray="5 5"/>
+      <circle cx="118" cy="125" r="4" fill="#d85158"/>
+      <rect x="240" y="55" width="165" height="145" rx="12" fill="#fff" stroke="#65967e"/>
+      <Sprite x={294} y={95} size={56}/>
+      <Label x={118} y={35}>Bez renderera</Label><Label x={323} y={35}>Ze Sprite</Label>
+      <text x="118" y="226" textAnchor="middle" fontSize="15" fill="#24483e">Obiekt istnieje; brak obrazu</text>
+      <text x="323" y="226" textAnchor="middle" fontSize="15" fill="#24483e">Komponent nadaje wygląd</text>
+      <Label x={220} y={282}>GameObject + Transform + komponenty</Label>
+    </>;break;
+    case 'direction': content=<>
+      <Sprite x={60} y={90} size={64}/><Sprite x={302} y={90} size={64}/>
+      {arrow(135,123,193,123)}{arrow(378,123,420,123)}
+      <Label x={92} y={48}>D: ruch w prawo</Label><Label x={335} y={48}>Puszczone D: stoi</Label>
+      <Label x={92} y={215}>kierunek (1,0)</Label><Label x={335} y={215}>kierunek (1,0)</Label>
+      <Label x={220} y={280}>getDirection() → celowanie po zatrzymaniu</Label>
+    </>;break;
+    case 'combat-health': content=<>
+      <Sprite x={30} y={112} size={64}/><Sprite asset="fireball" x={174} y={130} size={32}/><Sprite asset="slime" x={330} y={112} size={64}/>
+      {arrow(104,146,164,146)}{arrow(220,146,316,146)}
+      <Label x={220} y={40}>Space → pocisk → trafienie</Label>
+      <Bar x={282} y={77} width={145} value={2/3} label="HP: 3 → 2" />
+      <Label x={220} y={240}>HP = 0 → wróg znika</Label>
+      <text x="220" y="280" textAnchor="middle" fontSize="16" fill="#24483e">Kontakt wroga → obrażenia gracza</text>
+    </>;break;
+    case 'enemy-tactics': content=<>
+      <circle cx="235" cy="140" r="105" fill="#edf5e7" stroke="#6caa6b" strokeDasharray="6 5"/>
+      <Sprite x={212} y={116} size={48}/><Sprite asset="slime" x={58} y={116} size={48}/>
+      {variant===1?<path d="M115 140Q150 245 255 225" fill="none" stroke="#c08f2e" strokeWidth="3" markerEnd={`url(#${marker})`}/>:arrow(116,140,200,140)}
+      <Label x={220} y={30}>{variant===1?'Flankowanie: punkt obok celu':'Zasięg wykrywania'}</Label>
+      <Label x={220} y={280}>{variant===1?'Kierunek boczny jest prostopadły':'Poza zasięgiem wróg stoi'}</Label>
+    </>;break;
+    case 'floating-text': content=<>
+      <Sprite asset="slime" x={62} y={120} size={64}/><Sprite asset="slime" x={306} y={120} size={64}/>
+      <text x="94" y="110" textAnchor="middle" fontSize="30" fill="#b3483d">−1</text>
+      <text x="338" y="65" textAnchor="middle" fontSize="30" fill="#b3483d">−1</text>
+      {arrow(160,145,278,145)}<Label x={220} y={30}>Tekst trafienia</Label>
+      <Label x={220} y={240}>Tween: w górę, potem usunięcie</Label>
+      <text x="220" y="280" textAnchor="middle" fontSize="16" fill="#24483e">Po efekcie usuń obiekt tekstu</text>
+    </>;break;
     case 'box-model': content = <>
       <rect x="35" y="40" width="370" height="230" fill="#f0e4cf"/><Label x={220} y={65}>margin • na zewnątrz</Label>
       <rect x="70" y="85" width="300" height="150" fill="#7e98af"/><Label x={220} y={110} color="#fff">border • 2 px</Label>

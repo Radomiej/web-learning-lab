@@ -9,7 +9,7 @@ export const callableMembers = new Set([
   'walk', 'run', 'stop', 'setRunning', 'isWalk', 'isRunning', 'jump', 'isGrounded', 'steer',
   'createObject', 'find', 'setPosition', 'addComponent', 'getComponent', 'removeComponent',
   'destroy', 'onCreate', 'onUpdate', 'onDrawUI', 'onDestroy', 'onCollision', 'onTrigger',
-  'isKeyDown', 'isKeyPressed', 'drawRect', 'drawText', 'drawTileMap', 'drawSprite', 'move',
+  'circle', 'drawCircle', 'isKeyDown', 'isKeyPressed', 'drawRect', 'drawText', 'drawTileMap', 'drawSprite', 'move',
   'position', 'scale', 'rotation', 'shake', 'cancel', 'follow', 'stopFollowing', 'stopShake',
   'getObjects','getObjectsWith','getObjectsWithTag','pause','resume','isPaused','setWorldBounds','clearWorldBounds','getViewportWidth','getViewportHeight',
   'getComponents','requireComponent','hasComponent','removeComponents','onComponentChange','addTag','removeTag','hasTag','getTags','onLateUpdate',
@@ -44,7 +44,7 @@ function entryCompletion(monaco, model, position, item) {
 }
 
 function memberOwner(source, suffix) {
-  if (/\bGameLab\.(Assets|InputManager|UIAnchor)\.$/.test(suffix)) return suffix.match(/GameLab\.(\w+)\.$/)[1];
+  if (/\bGameLab\.(Assets|InputManager|UIAnchor|ShapeRenderer)\.$/.test(suffix)) return suffix.match(/GameLab\.(\w+)\.$/)[1];
   if (/\bGameLab\.Tweens\.$/.test(suffix)) return 'Tweens';
   if (/\.transform\.(?:scale|visualOffset)\.$/.test(suffix)) return 'Vector2';
   if (/\.transform\.$/.test(suffix)) return 'Transform';

@@ -1,0 +1,6 @@
+.guided-change { margin: 20px 0; padding: 20px; border: 1px solid #b78629; border-left: 5px solid #d9a62d; border-radius: 12px; background: #fff9e7; color: #493815; }
+.guided-change h3 { margin: 0 0 10px; }.guided-change p { line-height: 1.6; }.guided-change-key { font-size: 13px; }
+.guided-change pre { padding: 14px; background: #152b3c; color: #d5e4ef; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; }
+.guided-change mark { background: #f5ca64; color: #30250d; border-radius: 3px; padding: 2px 0; }
+.monaco-editor .guided-change-code { background: #f5ca643d; border-bottom: 2px solid #f5ca64; }
+.monaco-editor .guided-change-gutter { border-left: 3px solid #f5ca64; margin-left: 3px; }

@@ -1,0 +1,6 @@
+<!doctype html><html lang="pl"><head><meta charset="UTF-8"><title>ShapeRenderer: prostokąt i koło</title><style>body{margin:0;background:#f3f7fa;padding:24px}canvas{display:block;width:640px;height:360px;max-width:100%;border-radius:12px}</style></head><body><canvas id="game" tabindex="0" aria-label="Porównanie prostokąta i koła"></canvas><script type="module">
+import {createGameLab} from '../src/services/gameRuntime.js';
+const lab=createGameLab();
+class Shapes extends lab.Game{onCreate(){this.createObject('Rect').setPosition(90,110).addComponent(new lab.ShapeRenderer(70,44,'#76b9f2'));this.createObject('Circle').setPosition(220,110).addComponent(lab.ShapeRenderer.circle(28,'#ffd166'));}onDrawUI(){this.canvas.drawText('Prostokąt',90,180,14,'#76b9f2');this.canvas.drawText('Koło r=28',220,180,14,'#ffd166');}}
+lab.run(Shapes,{canvas:'#game'});
+</script></body></html>

@@ -4,10 +4,10 @@ import GameCoursePdf, { gameCoursePdfUrl } from './GameCoursePdf.jsx';
 test('opens PDF preview with download and restores focus after Escape', () => {
   render(<GameCoursePdf />);
   const trigger = screen.getByRole('button', { name: 'Kurs GameDev · PDF' });
-  expect(screen.getByRole('link', { name: 'Pobierz PDF' })).toHaveAttribute('download', 'kurs-gamedev-js.pdf');
+  expect(screen.getByRole('link', { name: 'Pobierz PDF' })).toHaveAttribute('download', 'kurs-gamedev-js-v3.pdf');
   fireEvent.click(trigger);
-  const dialog = screen.getByRole('dialog', { name: 'Podstawy GameDev JS' });
-  expect(screen.getByRole('img')).toHaveAttribute('src', '/courses/previews/kurs-gamedev-js/page-1.webp');
+  const dialog = screen.getByRole('dialog', { name: 'Start GameDev JS — program v3' });
+  expect(screen.getByRole('img')).toHaveAttribute('src', '/courses/previews/kurs-gamedev-js-v3/page-1.webp');
   expect(screen.getByRole('link', { name: 'Otwórz w nowej karcie' })).toHaveAttribute('href', gameCoursePdfUrl);
   expect(screen.getAllByRole('link', { name: 'Pobierz PDF' })).toHaveLength(2);
   fireEvent.change(screen.getByLabelText('Kurs'), { target: { value: '2' } });

@@ -16,11 +16,13 @@ export default function TaskPanel({ lesson, activeTask, completedTasks, onTaskCh
         completedTasks={completedTasks}
         onTaskChange={onTaskChange}
       />
+      {lesson.scaffolding && <p className="task-hint">{lesson.scaffolding}</p>}
       <div className="task-prompt">
         <span className="prompt-label">{activeTask.mode === 'challenge' ? 'Wyzwanie' : 'Cel zadania'}</span>
         <p>{activeTask.prompt}</p>
         <MovementHint key={activeTask.id} taskId={activeTask.id} language="js" />
         <ol aria-label="Wymagania zadania">{activeTask.checks.filter(check => check.type !== 'runtimeError').map(check => <li key={check.id}>{check.label}</li>)}</ol>
+        {activeTask.criteria?.length>0 && <><h3>Kryteria zaliczenia</h3><ul>{activeTask.criteria.map(c=><li key={c}>{c}</li>)}</ul></>}
         {activeTask.hint && <p className="task-hint"><strong>Podpowiedź:</strong> {activeTask.hint}</p>}
       </div>
     </section>

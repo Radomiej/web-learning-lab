@@ -50,6 +50,15 @@ export function createRenderer(manifest) {
       try {ctx.translate(command.x,command.y);ctx.rotate(command.rotation||0);ctx.scale(command.scaleX??1,command.scaleY??1);ctx.fillStyle=command.color||'#76b9f2';ctx.fillRect(-command.width/2,-command.height/2,command.width,command.height);}
       finally {ctx.restore();}
     }
+    if (command.op === 'circle') {
+      ctx.save();
+      try {
+        ctx.translate(command.x, command.y); ctx.rotate(command.rotation || 0);
+        ctx.scale(command.scaleX ?? 1, command.scaleY ?? 1);
+        ctx.fillStyle = command.color || '#76b9f2';
+        ctx.beginPath(); ctx.arc(0, 0, command.radius, 0, Math.PI * 2); ctx.fill();
+      } finally { ctx.restore(); }
+    }
     if (command.op === 'text') {
       ctx.fillStyle=command.color||'#ffffff';ctx.font=`${command.fontSize||16}px monospace`;ctx.textAlign=command.align||'center';ctx.textBaseline=command.baseline||'middle';ctx.fillText(String(command.text??''),command.x,command.y);
     }

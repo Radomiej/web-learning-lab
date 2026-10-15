@@ -19,7 +19,7 @@ export default function TaskList({ tasks = [], activeTaskId, completedTasks = []
           >
             <span className={`task-index task-index--${task.mode}`}>{completed ? '✓' : index + 1}</span>
             <span className="task-button-copy">
-              <small>{modeLabels[task.mode] || task.mode}</small>
+              <small>{task.learningStage || modeLabels[task.mode] || task.mode}</small>
               <strong>{task.title}</strong>
             </span>
             {completed && <span className="task-done-label">gotowe</span>}

@@ -1,0 +1,45 @@
+{
+  "java": {
+    "tests": 219,
+    "passed": 219,
+    "guidedStarterProjectsCompiled": 24,
+    "latestBundleAndVisualChecksPassed": 5
+  },
+  "javascript": {
+    "tests": 787,
+    "passed": 787
+  },
+  "teavm": {
+    "jdkConformance": true,
+    "ui": true,
+    "survivor": true,
+    "circle": true,
+    "persistentDirection": true
+  },
+  "browser": {
+    "lessonLanguagePairs": 10,
+    "pageErrors": 0,
+    "viewports": [
+      [
+        1600,
+        1000
+      ],
+      [
+        1366,
+        768
+      ],
+      [
+        390,
+        844
+      ]
+    ]
+  },
+  "pdf": {
+    "javaPages": 11,
+    "jsPages": 11
+  },
+  "builds": {
+    "java": "passed",
+    "javascript": "passed"
+  }
+}

@@ -35,7 +35,7 @@ test('scene positions and platform independence match source criteria',()=>{
  }finally{lab.dispose();}
 });
 test('normalized direction travels 100 px in one second and zero direction stops',()=>{
- const lab=execute(gameLessons[2].tasks[2]);try{
+ const lab=execute(gameLessons.find(l=>l.id==='g2d.time').tasks[2]);try{
  const object=lab.current.find('MoverObject');for(let i=0;i<10;i++)lab.current.step(0.1);expect(object.transform.x).toBeCloseTo(160);expect(object.transform.y).toBeCloseTo(160);
  const mover=object.components.find(c=>c.constructor.name==='DirectionMover');mover.direction={x:0,y:0};for(let i=0;i<10;i++)lab.current.step(0.1);expect(object.transform.x).toBeCloseTo(160);
  }finally{lab.dispose();}
@@ -121,5 +121,15 @@ test('XP conservation survives the bounded 60-second workload',()=>{
   const objects=lab.current.getObjects(),fixture=namedComponent(lab.current.find('LoadFixture'),'LoadFixture'),xp=namedComponent(lab.current.find('Player'),'Experience');
   const reward=objects.reduce((sum,object)=>sum+(namedComponent(object,'XpOrb')?.value??0),0);
   expect(objects.filter(o=>o.name==='Enemy').length).toBeLessThanOrEqual(200);expect(objects.filter(o=>o.name==='Projectile').length).toBeLessThanOrEqual(300);expect(objects.filter(o=>namedComponent(o,'XpOrb')).length).toBeLessThanOrEqual(200);expect(xp.totalXp+reward).toBe(fixture.reward);expect(fixture.reward).toBe(300);
+ }finally{lab.dispose();}
+});
+test('lesson five is playable: facing-based shots, enemy death and contact damage',()=>{
+ const lab=execute(task('g2d.projectiles.guided'));try{
+  const g=lab.current,p=g.find('Player'),enemy=g.find('Enemy');
+  expect(namedComponent(p,'Health').currentHealth).toBe(5);
+  g.input.setKey('w',true);g.step(.1);g.input.clear();g.input.setKey('Space',true);g.step(.1);g.input.clear();
+  const shot=g.getObjects().find(o=>o.name==='PlayerShot');expect(shot).toBeTruthy();expect(shot.getComponent(lab.Projectile2D).direction.y).toBe(-1);
+  const hp=namedComponent(enemy,'Health');hp.damage(99);g.step(0);expect(g.find('Enemy')).toBeNull();
+  namedComponent(p,'Health').damage(99);expect(namedComponent(p,'PlayerController').enabled).toBe(false);const x=p.transform.x;g.input.setKey('d',true);g.step(.1);expect(p.transform.x).toBe(x);
  }finally{lab.dispose();}
 });

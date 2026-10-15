@@ -37,7 +37,7 @@ export function courseScenario(chapter,mode) {
       if(mode==='independent') {expect(state('Ground','TileMap','layer'),-10);expect(state('Path','ShapeRenderer','layer'),-5);expect(state('Decoration','Sprite','layer'),5);}
       break;
     case 'collisions':
-      phases=[phase(10,mode==='independent'?['d']:[])];expect(object('Player','x'),mode==='guided'?174:mode==='modified'?178:268);
+      phases=[phase(10,['d'])];expect(object('Player','x'),mode==='guided'?174:mode==='modified'?178:268);
       if(mode!=='guided')expect(state('Player','CircleCollider2D','radius'),12);
       if(mode==='modified')expect(object('Player','scaleX'),2);
       break;
@@ -65,6 +65,16 @@ export function courseScenario(chapter,mode) {
     case 'projectiles':
       if(mode==='independent') {phases=[phase(1)];expect(state('Enemy','Health','currentHealth'),2);expect(state('EnemyB','Health','currentHealth'),3);expect(state('Ally','Health','currentHealth'),3);}
       else {phases=[phase(6)];expect(state('Enemy','Health','currentHealth'),2);expect('objects.length',2);sourceToken='spent';}
+      break;
+    case 'enemy-tactics':
+      phases=[phase(10)];
+      if(mode==='guided'){phases=[phase(10),phase(10,[],[action('Player',null,'setPosition',200,100)])];expect(object('Slime','x'),160);}
+      else if(mode==='independent')expect(object('Slime','x'),180);
+      else {expect(state('Slime','EnemyAI','speed'),40);expect(object('Slime','x'),137.2252560510844);expect(object('Slime','y'),114.63738640280462);}
+      break;
+    case 'projectile-types':
+      if(mode==='independent'){phases=[phase(1)];expect(state('Enemy','Health','currentHealth'),2);}
+      else {phases=[phase(10)];expect(state('Enemy','TargetHp','hp'),2);if(mode==='modified')expect(state('EnemyB','TargetHp','hp'),2);}
       break;
     case 'weapons':
       phases=[phase(mode==='guided'?1:5,mode==='guided'?['Space']:[])];expect('objects.length',mode==='independent'?4:3);expect(state('Player','Weapon','timer'),mode==='guided'?.6:.5);sourceToken=mode==='independent'?'candidate.id<target.id':undefined;
@@ -155,6 +165,7 @@ export function courseJavaTest(chapter,mode) {
     const label = path.replace('objectsByName.','').replace('.componentState.',' → ');
     body+=`check(${condition},${JSON.stringify(label+': oczekiwano '+String(value)+', otrzymano ')}+(${expression}));\n`;
   }
+  if(chapter==='projectiles' && mode==='modified')body+='game.dispose();game=new GameMain();game.start();game.step(0);game.find("Enemy").setPosition(1000,100);for(int i=0;i<6;i++)game.step(.1);check(game.find("Projectile")==null,"Chybiony pocisk znika po 0.5 s");\n';
   if(chapter==='camera' && mode==='independent')body+=`
 Camera2D camera=game.find("Camera").getComponent(Camera2D.class);
 GameObject marker=game.find("Marker"),player=game.find("Player");
@@ -179,6 +190,7 @@ public static void main(String[] args) {GameMain game=new GameMain();try {${body
 export function courseWebChecks(chapter,mode,id,files) {
   const {sourceToken,...scenario}=courseScenario(chapter,mode);
   const checks=[{type:'gameScenario',id:id+'.behavior',label:'Scenariusz zachowania zadania.',scenario:{phases:scenario.phases},expected:scenario.expected,tolerance:scenario.tolerance},{type:'runtimeError',id:id+'.runtime',label:'Scena uruchamia się bez błędów.'}];
+  if(chapter==='projectiles' && mode==='modified')checks.push({type:'gameScenario',id:id+'.lifetime',label:'Chybiony pocisk znika po 0.5 s.',scenario:{phases:[phase(6,[],[action('Enemy',null,'setPosition',1000,100)])]},expected:{'objects.length':2},tolerance:.02});
   if(sourceToken) {
     for(const token of sourceToken.split('|')) {
       const file=Object.entries(files).find(([name,source])=>name.endsWith('.js') && source.includes(token))?.[0];

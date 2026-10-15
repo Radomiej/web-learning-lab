@@ -11,6 +11,15 @@
     "clear": [
       "color"
     ],
+    "circle": [
+      "x",
+      "y",
+      "radius",
+      "color",
+      "rotation",
+      "scaleX",
+      "scaleY"
+    ],
     "rect": [
       "x",
       "y",

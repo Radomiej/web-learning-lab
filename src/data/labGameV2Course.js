@@ -1,8 +1,14 @@
+import {guidedStarter} from '../../shared/lab-game-v2/course/guidedStarters.js';
+import {earlyStarter} from '../../shared/lab-game-v2/course/earlyStarters.js';
 // Course source is deliberately separate from either editor's project adapter.
 // A missing recipe remains visibly unfinished; it must never masquerade as a solution.
 export function buildCourseProject(language, chapter, mode, solved = true) {
   if(!solved) {
     const solution=buildCourseProject(language,chapter,mode,true);
+    const scaffold=earlyStarter(language,chapter==='projectile-types'&&mode==='independent'?'projectiles':chapter,mode,solution);
+    if(scaffold)return scaffold;
+    const guided=guidedStarter(language,chapter,mode,solution);
+    if(guided)return guided;
     const files={...solution.files};
     const extension=language==='java'?'java':'js';
     const entry=language==='java'?'GameMain.java':'game.js';
@@ -17,6 +23,7 @@ export function buildCourseProject(language, chapter, mode, solved = true) {
       graphics:[mode==='modified'?`FacingVisual.${extension}`:entry,mode==='modified'?'onUpdate':'onCreate'],collisions:[entry,'onCreate'],
       triggers:[`${mode==='independent'?'Chest':'Pickup'}.${extension}`,'onTrigger'],camera:[mode==='independent'?`CursorMarker.${extension}`:entry,mode==='independent'?'onUpdate':'onCreate'],
       'canvas-ui':[entry,mode==='guided'?'onCreate':'onDrawUI'],health:[`Health.${extension}`,'damage'],
+      'enemy-tactics':[`${mode==='independent'?'FleeAI':'EnemyAI'}.${extension}`,'onUpdate'],'projectile-types':[mode==='guided'?`Homing.${extension}`:mode==='modified'?`HitCount.${extension}`:entry,mode==='guided'?'onUpdate':mode==='modified'?'onTrigger':'onCreate'],
       'enemy-ai':[`${mode==='independent'?'FleeAI':'EnemyAI'}.${extension}`,'onUpdate'],projectiles:[`ProjectileHit.${extension}`,'onTrigger'],weapons:[`Weapon.${extension}`,'onUpdate'],
       'loot-xp':[`${mode==='guided'?'LootOnDeath':'Experience'}.${extension}`,mode==='guided'?'onCreate':'add'],waves:[`WaveSpawner.${extension}`,'onUpdate'],
       pause:[`${mode==='modified'?'ResumeAfter':'PauseController'}.${extension}`,mode==='independent'?'request':'onUpdate'],upgrades:[`UpgradeController.${extension}`,'select'],
@@ -44,6 +51,30 @@ export function buildCourseProject(language, chapter, mode, solved = true) {
       }
     }
     return {files,ready:solution.ready};
+  }
+  if(chapter==='enemy-tactics') {
+    const project=buildCourseProject(language,'enemy-ai',mode,true),java=language==='java',ext=java?'java':'js';
+    if(mode!=='independent') {
+      const file=`EnemyAI.${ext}`;
+      if(mode==='guided')project.files[file]=project.files[file].replace(java?'requireComponent(CharacterController2D.class).move':'this.requireComponent(GameLab.CharacterController2D).move',`if(Math.hypot(dx,dy)>150)return; ${java?'requireComponent(CharacterController2D.class).move':'this.requireComponent(GameLab.CharacterController2D).move'}`);
+      else {project.files[file]=project.files[file].replace('move(dx,dy,','move(dx-dy/n*80,dy+dx/n*80,');project.files[file]=project.files[file].replace(java?'requireComponent(CharacterController2D.class).move':'this.requireComponent(GameLab.CharacterController2D).move', `${java?'double':'const'} n=Math.hypot(dx,dy);if(n===0)return; ${java?'requireComponent(CharacterController2D.class).move':'this.requireComponent(GameLab.CharacterController2D).move'}`.replace('n===0',java?'n==0':'n===0'));}
+    }
+    return project;
+  }
+  if(chapter==='projectile-types') {
+    if(mode==='independent')return buildCourseProject(language,'projectiles','independent',true);
+    const java=language==='java',ext=java?'java':'js',files={};
+    const klass=(name,js,j)=>files[`${name}.${ext}`]=java?`public class ${name} extends Component {${j}}`:`export default class ${name} extends GameLab.Component {${js}}`;
+    klass('TargetHp','hp=3;','public int hp=3;');
+    klass('HitCount','onTrigger(other){const hp=other.getComponent(TargetHp);if(hp)hp.hp--;}', '@Override public void onTrigger(GameObject other){TargetHp hp=other.getComponent(TargetHp.class);if(hp!=null)hp.hp--;}');
+    if(mode==='guided')klass('Homing','constructor(target){super();this.target=target;} onUpdate(){const d=new GameLab.Vector2(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y).normalized();this.requireComponent(GameLab.Projectile2D).direction=d;}','public GameObject target;public Homing(GameObject target){this.target=target;} @Override public void onUpdate(double delta){Vector2 d=new Vector2(target.transform.x-transform.x,target.transform.y-transform.y).normalized();requireComponent(Projectile2D.class).direction.set(d.x,d.y);}');
+    const prefix=java?'':'GameLab.';
+    let body=`${java?'GameObject':'const'} a=${java?'':'this.'}createObject("Enemy");a.setPosition(200,100);a.addComponent(new ${prefix}Sprite(${prefix}Assets.SLIME,32,32));a.addComponent(new ${prefix}CircleCollider2D(12));a.addComponent(new TargetHp());\n`;
+    if(mode==='modified')body+=`${java?'GameObject':'const'} b=${java?'':'this.'}createObject("EnemyB");b.setPosition(300,100);b.addComponent(new ${prefix}Sprite(${prefix}Assets.BAT,32,32));b.addComponent(new ${prefix}CircleCollider2D(12));b.addComponent(new TargetHp());\n`;
+    body+=`${java?'GameObject':'const'} shot=${java?'':'this.'}createObject("Projectile");shot.setPosition(100,100);shot.addComponent(new ${prefix}Sprite(${prefix}Assets.FIREBALL,12,12));${mode==='guided'?'shot.addComponent(new Homing(a));':''}shot.addComponent(new HitCount());${java?'Projectile2D':'const'} motion=shot.addComponent(new ${prefix}Projectile2D(${mode==='guided'?'0,1,200':'1,0,300'},2,null));${mode==='modified'?'motion.maxHits=2;':''}`;
+    if(java)files['GameMain.java']=`public class GameMain extends Game {@Override public void onCreate(){${body}}}`;
+    else {for(const name of Object.keys(files)){const deps=Object.keys(files).filter(n=>n!==name&&files[name].includes(n.slice(0,-3)));files[name]=deps.map(n=>`import ${n.slice(0,-3)} from './${n}';`).join('\n')+'\n'+files[name];}files['game.js']=Object.keys(files).map(n=>`import ${n.slice(0,-3)} from './${n}';`).join('\n')+`\nclass MyGame extends GameLab.Game {onCreate(){${body}}} GameLab.run(MyGame,{canvas:'#game'});`;files['index.html']='<!doctype html><html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lab Game 2D</title><link rel="stylesheet" href="styles.css"></head><body><canvas id="game" tabindex="0" style="width:100%;height:100%"></canvas><script type="module" src="game.js"></script></body></html>';files['styles.css']='html,body{margin:0;width:100%;height:100%;background:#10263a}#game{display:block;width:100%;height:100%;outline:none}';}
+    return {files,ready:true};
   }
   const java = language === 'java';
   const files = {};
@@ -184,7 +215,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       setup+=`player.addComponent(new ${mode==='guided'?'Collider2D(32,32)':'CircleCollider2D(12)'});\n`;
       if(mode==='modified') setup+='player.transform.scale.set(2,2);\n';
       if(mode==='independent') { object('LeftWall',170,180,[shape(20,360,'#70c994'),'Collider2D(20,360)']); object('RightWall',290,180,[shape(20,360,'#70c994'),'Collider2D(20,360)']); }
-      else { object('Wall',200,180,[shape(20,200,'#70c994'),'Collider2D(20,200)']); component('WalkRight','onUpdate() { this.requireComponent(GameLab.CharacterController2D).move(1,0,120); }','@Override public void onUpdate(double delta) { requireComponent(CharacterController2D.class).move(1,0,120); }'); setup+=`${get('player','PlayerController')}.enabled=false;\nplayer.addComponent(new WalkRight());\n`; }
+      else object('Wall',200,180,[shape(20,200,'#70c994'),'Collider2D(20,200)']);
       break;
     case 'camera':
       object('Ground',0,0,['TileMap(Assets.GRASS,32)']);
@@ -232,7 +263,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       else draw=`${declare('double','width','200 * 3.0 / 5.0')}\ncanvas.drawRect(20+width/2,40,width,12,"#70c994");\ncanvas.drawText("Zdrowie: 3 / 5",20,70,18,"#ffffff","left","middle");`;
       break;
     case 'enemy-ai': {
-      player(300,100); setup+=`${get('player','PlayerController')}.enabled=false;\n`;
+      player(300,100);
       component('EnemyAI',`constructor(target,speed=60) { super(); this.target=target; this.speed=speed; } onUpdate() { if(!this.target || this.target.destroyed)return; const dx=this.target.transform.x-this.transform.x,dy=this.target.transform.y-this.transform.y; ${mode==='independent'?'if(Math.hypot(dx,dy)>=120)return;':''} this.requireComponent(GameLab.CharacterController2D).move(${mode==='independent'?'-':''}dx,${mode==='independent'?'-':''}dy,this.speed); }`,`public GameObject target; public double speed; public EnemyAI(GameObject target,double speed) { this.target=target; this.speed=speed; } @Override public void onUpdate(double delta) { if(target==null || target.destroyed)return; double dx=target.transform.x-transform.x,dy=target.transform.y-transform.y; ${mode==='independent'?'if(Math.hypot(dx,dy)>=120)return;':''} requireComponent(CharacterController2D.class).move(${mode==='independent'?'-':''}dx,${mode==='independent'?'-':''}dy,speed); }`);
       object('Slime',mode==='independent'?240:100,100,[sprite('SLIME'),'CircleCollider2D(12)','CharacterController2D()',`EnemyAI(player,${mode==='modified'?40:60})`]);
       if(mode==='modified') object('Bat',100,160,[sprite('BAT'),'CircleCollider2D(10)','CharacterController2D()','EnemyAI(player,80)']);
@@ -247,6 +278,17 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
         object('Ally',150,100,[sprite('PLAYER01'),'CircleCollider2D(12)','Health(3,0)']);
         object('EnemyB',300,100,[sprite('BAT'),'CircleCollider2D(12)','Health(3,0)']);setup+=`${get('enemyB','CircleCollider2D')}.layer=2;\n`;
       } else setup+=`projectile.addComponent(new ProjectileMotion(1,0,200,${mode==='modified'?0.5:2}));\n${declare('CircleCollider2D','trigger','new CircleCollider2D(4)')}\ntrigger.isTrigger=true;projectile.addComponent(trigger);\n`;
+      // Ready combat components: students expand Health in lesson 10 and Weapon in lesson 11.
+      component('FireWeapon',
+        'timer=0; onUpdate(delta) {this.timer=Math.max(0,this.timer-delta);if(!this.game.input.isKeyPressed("Space")||this.timer>0||this.requireComponent(Health).dead)return;this.timer=.3;const d=this.requireComponent(GameLab.CharacterController2D).getDirection();const shot=this.game.createObject("PlayerShot");shot.setPosition(this.transform.x,this.transform.y);shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,12,12));shot.addComponent(new ProjectileHit(this.gameObject,1));const motion=shot.addComponent(new GameLab.Projectile2D(d.x,d.y,300,2,this.gameObject));motion.hitLayers=2;}',
+        'private double timer=0; @Override public void onUpdate(double delta) {timer=Math.max(0,timer-delta);if(!getGame().input.isKeyPressed("Space")||timer>0||requireComponent(Health.class).dead)return;timer=.3;Vector2 d=requireComponent(CharacterController2D.class).getDirection();GameObject shot=getGame().createObject("PlayerShot");shot.setPosition(transform.x,transform.y);shot.addComponent(new Sprite(Assets.FIREBALL,12,12));shot.addComponent(new ProjectileHit(gameObject,1));Projectile2D motion=shot.addComponent(new Projectile2D(d.x,d.y,300,2,gameObject));motion.hitLayers=2;}');
+      component('CombatEnemy',
+        'constructor(target) {super();this.target=target;} onCreate(){this.unsubscribe=this.requireComponent(Health).onDeath(()=>this.gameObject.destroy());} onUpdate(){if(this.target.destroyed||this.target.getComponent(Health).dead)return;this.requireComponent(GameLab.CharacterController2D).move(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y,40);} onTrigger(other){if(other===this.target)other.getComponent(Health).damage(1);} onDestroy(){this.unsubscribe?.();}',
+        'public GameObject target;private Runnable unsubscribe;public CombatEnemy(GameObject target){this.target=target;} @Override public void onCreate(){unsubscribe=requireComponent(Health.class).onDeath(()->gameObject.destroy());} @Override public void onUpdate(double delta){if(target.destroyed||target.getComponent(Health.class).dead)return;requireComponent(CharacterController2D.class).move(target.transform.x-transform.x,target.transform.y-transform.y,40);} @Override public void onTrigger(GameObject other){if(other==target)other.getComponent(Health.class).damage(1);} @Override public void onDestroy(){if(unsubscribe!=null)unsubscribe.run();}');
+      setup+='player.addComponent(new Health(5,0.75));\nplayer.addComponent(new FireWeapon());\nenemy.addComponent(new CharacterController2D());\nenemy.addComponent(new CombatEnemy(player));\n';
+      setup+=`${get('enemy','CircleCollider2D')}.isTrigger=true;\n${get('player','Health')}.onDeath(${java?'()->':'()=>'}${get('player','PlayerController')}.enabled=false);\n`;
+      draw=java?'GameObject p=find("Player"),e=find("Enemy");if(p==null)return;canvas.drawText("WASD / strzalki: ruch",12,20,12,"#ffffff","left","middle");canvas.drawText("Space: strzal w kierunku postaci",12,38,12,"#ffffff","left","middle");canvas.drawText("HP gracza: "+p.getComponent(Health.class).currentHealth,12,58,14,"#ffd166","left","middle");if(e!=null)canvas.drawText("HP: "+e.getComponent(Health.class).currentHealth,e.transform.x,e.transform.y-28,14,"#ffffff");else canvas.drawText("Przeciwnik pokonany!",canvas.getWidth()/2,110,16,"#ffd166");if(p.getComponent(Health.class).dead)canvas.drawText("Koniec gry — kliknij RUN",canvas.getWidth()/2,180,14,"#ffd166");':
+        'const p=this.find("Player"),e=this.find("Enemy");if(!p)return;canvas.drawText("WASD / strzałki: ruch",12,20,12,"#ffffff","left","middle");canvas.drawText("Space: strzał w kierunku postaci",12,38,12,"#ffffff","left","middle");canvas.drawText("HP gracza: "+p.getComponent(Health).currentHealth,12,58,14,"#ffd166","left","middle");if(e)canvas.drawText("HP: "+e.getComponent(Health).currentHealth,e.transform.x,e.transform.y-28,14,"#ffffff");else canvas.drawText("Przeciwnik pokonany!",canvas.width/2,110,16,"#ffd166");if(p.getComponent(Health).dead)canvas.drawText("Koniec gry — kliknij RUN",canvas.width/2,180,14,"#ffd166");';
       break;
     }
     case 'weapons':
@@ -293,7 +335,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       if(mode==='guided') {object('Coin',160,160,[sprite('COIN',16,16)]);setup+=`${java?'':'GameLab.'}Tweens.position(coin,160,100,1);\n`;}
       else if(mode==='modified') {
         health();player();setup+='player.addComponent(new Health(5,0.75));\n';object('Camera',0,0,['Camera2D()']);
-        component('HitFeedback','onCreate() {this.unsubscribe=this.requireComponent(Health).onDamage(()=>{GameLab.Tweens.shake(this.gameObject,8,0.3);const camera=this.game.find("Camera");if(camera)GameLab.Tweens.shake(camera,2,0.3);});} onDestroy() {this.unsubscribe?.();}','private Runnable unsubscribe;@Override public void onCreate() {unsubscribe=requireComponent(Health.class).onDamage(()->{Tweens.shake(gameObject,8,0.3);GameObject camera=getGame().find("Camera");if(camera!=null)Tweens.shake(camera,2,0.3);});} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();}');
+        component('HitFeedback','onCreate() {this.unsubscribe=this.requireComponent(Health).onDamage(()=>{GameLab.Tweens.shake(this.gameObject,8,0.3);const text=this.game.createObject("DamageText");text.setPosition(this.transform.x,this.transform.y-24);text.addComponent(new GameLab.TextRenderer("−1",18,"#ffd166"));GameLab.Tweens.position(text,this.transform.x,this.transform.y-64,.5).onComplete(()=>text.destroy());const camera=this.game.find("Camera");if(camera)GameLab.Tweens.shake(camera,2,0.3);});} onDestroy() {this.unsubscribe?.();}','private Runnable unsubscribe;@Override public void onCreate() {unsubscribe=requireComponent(Health.class).onDamage(()->{Tweens.shake(gameObject,8,0.3);GameObject text=getGame().createObject("DamageText");text.setPosition(transform.x,transform.y-24);text.addComponent(new TextRenderer("-1",18,"#ffd166"));Tweens.position(text,transform.x,transform.y-64,.5).onComplete(()->text.destroy());GameObject camera=getGame().find("Camera");if(camera!=null)Tweens.shake(camera,2,0.3);});} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();}');
         setup+='player.addComponent(new HitFeedback());\n';
       } else {
         object('Coin',0,100,[sprite('COIN',16,16)]);setup+=`${java?'':'GameLab.'}Tweens.position(coin,100,100,1);\n${java?'':'GameLab.'}Tweens.scale(coin,2,2,0);\n`;

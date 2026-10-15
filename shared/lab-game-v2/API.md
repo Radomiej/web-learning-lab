@@ -51,3 +51,22 @@ Collider2D(width,height), CircleCollider2D(radius) i Trigger2D(width,height) maj
 Tween jest komponentem obiektu. `Tweens.position/scale/rotation/shake` zwracają uchwyt z `cancel()` oraz `onComplete(callback)`. Zakończenie naturalne wywołuje callback raz; anulowanie i zniszczenie nie wywołują go. Rejestracja po zakończeniu, także po czasie zero, wywołuje nowy callback od razu. Shake usuwa tylko swój wkład do visualOffset.
 
 Wejście: [InputManager](INPUT.md). Katalog: [manifest assetów](assets/manifest.json). Definicje kursu i scenariuszy są danymi; ich obecność nie oznacza wykonania wszystkich testów zgodności.
+
+### ShapeRenderer: prostokąt i koło
+
+Dotychczasowy konstruktor `new ShapeRenderer(width, height, color)` rysuje prostokąt.
+Koło: Java `object.addComponent(ShapeRenderer.circle(12, "#ffd166"));`,
+JS `object.addComponent(GameLab.ShapeRenderer.circle(12, "#ffd166"));`.
+Fabryka ustawia `shape="circle"` i `radius` w pikselach; zmiana `radius` zmienia promień.
+Promień musi być skończony i nieujemny (0 daje niewidoczny kształt).
+Pozycja oznacza środek. Kamera, warstwy, UITransform, rotation, scale i visualOffset
+działają tak jak przy prostokącie. Skala nierównomierna zmienia koło w elipsę.
+Collider dodaje się osobno — wygląd koła nie tworzy kolizji.
+
+### Ostatni kierunek postaci
+
+`CharacterController2D.getDirection()` zwraca kopię znormalizowanego ostatniego
+niezerowego kierunku przekazanego do `move`. Początkowo jest to `(1,0)`.
+Wywołanie `move(0,0,speed)` zatrzymuje ruch i zachowuje kierunek patrzenia.
+Zmiana otrzymanej kopii nie zmienia stanu kontrolera. Broń może użyć tego kierunku
+do strzału po zatrzymaniu postaci. Kierunek jest zamierzony, także przy blokującej ścianie.

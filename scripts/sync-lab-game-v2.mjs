@@ -24,7 +24,7 @@ sync('shared/lab-game-v2');
 sync('public/game-assets');
 sync('public/lesson-illustrations');
 // Shared GameDev courses and their page previews.
-for (const name of ['kurs-gamedev-js', 'kurs-gamedev-js-kamera-ui', 'kurs-gamedev-js-tweeny']) {
+for (const name of ['kurs-gamedev-js', 'kurs-gamedev-js-kamera-ui', 'kurs-gamedev-js-tweeny', 'kurs-gamedev-java-v3', 'kurs-gamedev-js-v3']) {
   const rel = join('public/courses', name + '.pdf');
   const source = join(web, rel), target = join(java, rel);
   if (check) { if (!readFileSync(source).equals(readFileSync(target))) throw new Error('Out of sync: ' + rel); }

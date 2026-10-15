@@ -139,7 +139,7 @@ export default function App() {
       track: selectedLesson.track,
     });
     updateFiles(activeTask.id, solution);
-    setActiveFile(solution.runtime?.kind === 'game-js' ? 'game.js' : solution.entry);
+    setActiveFile(Object.entries(activeTask.starter.files).find(([,source])=>source.includes('TODO'))?.[0] || (solution.runtime?.kind === 'game-js' ? 'game.js' : solution.entry));
     previewRuntime.runPreview(solution, solution.entry);
   };
 

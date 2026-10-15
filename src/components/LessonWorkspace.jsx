@@ -1,3 +1,6 @@
+import {useState,useEffect} from 'react';
+import GuidedChange from '../../shared/lab-game-v2/editor/GuidedChange.jsx';
+import {changedRange} from '../../shared/lab-game-v2/editor/guidedChanges.js';
 import CodeEditor from "./CodeEditor.jsx";
 import EditorTabs from "./EditorTabs.jsx";
 import FeedbackPanel from "./FeedbackPanel.jsx";
@@ -32,6 +35,9 @@ export default function LessonWorkspace({
   nextLesson,
   onNextLesson,
 }) {
+  const [showChange,setShowChange]=useState(false);
+  useEffect(()=>setShowChange(false),[activeTask.id]);
+  const applySolution=()=>{onSolution?.();setShowChange(true);};
   const playground = lesson.track === 'playground';
   const path = Object.hasOwn(files.files, activeFile)
     ? activeFile
@@ -39,7 +45,7 @@ export default function LessonWorkspace({
   return (
     <div className="lesson-workspace">
       {playground ? <section className="lesson-overview"><p className="eyebrow">Playground · GameLab</p><h1>{lesson.title}</h1><p className="lesson-summary">{lesson.summary}</p><PlaygroundTools project={files} onImport={onImportProject} /></section> : <LessonOverview lesson={lesson} />}
-      {(playground || lesson.id === 'game-dev-701') && <GameCoursePdf key={lesson.id} />}
+      {(playground || lesson.track === 'game-dev') && <><GameCoursePdf key={lesson.id} /><p className="task-hint">PDF startowy: aktualny program 24 lekcji i pierwszych pięć lekcji JS. Materiały o kamerze i tweenach uzupełniają lekcje 15–17 i 19.</p></>}
       {playground && <GameTutor key={`${activeTask.id}:${projectRevision}`} project={files} projectRevision={projectRevision} onApply={onTutorApply} />}
       {!playground && <TaskPanel
         lesson={lesson}
@@ -47,6 +53,7 @@ export default function LessonWorkspace({
         completedTasks={completedTasks}
         onTaskChange={onTaskChange}
       />}
+      {showChange && <GuidedChange starter={activeTask.starter.files} solution={activeTask.solution.files} explanation={activeTask.solutionExplanation} />}
       <section className="editor-section" aria-labelledby="editor-title">
         <div className="section-heading-row editor-section-heading">
           <div>
@@ -71,10 +78,11 @@ export default function LessonWorkspace({
             onChange={onCodeChange}
             onRun={onRun}
             onSave={onSave}
-            onReset={onReset}
+            onReset={()=>{setShowChange(false);onReset?.();}}
             resetLabel={playground ? 'Nowy projekt' : 'Przywróć start'}
             onCheck={playground ? undefined : onCheck}
-            onSolution={activeTask.mode === "guided" ? onSolution : undefined}
+            onSolution={activeTask.mode === "guided" ? applySolution : undefined}
+            highlight={showChange&&activeTask.solutionExplanation?changedRange(activeTask.starter.files[path]??'',files.files[path]??''):null}
           />
           <RuntimeConsole messages={runtimeState?.messages} errors={runtimeErrors} status={runtimeState?.status} />
         </div>

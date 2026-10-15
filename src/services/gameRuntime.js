@@ -58,6 +58,12 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       if (typeof width === 'object') ({ width = 32, height = 32, color = '#76b9f2' } = width);
       super(); this.width = width; this.height = height; this.color = color;
       this.space = 'world'; this.layer = 0; this.order = 0;
+      this.shape = 'rect'; this.radius = 16;
+    }
+    static circle(radius = 16, color = '#76b9f2') {
+      finite(radius, 'Promień'); if (radius < 0) throw new Error('Promień nie może być ujemny.');
+      const result = new ShapeRenderer(radius * 2, radius * 2, color);
+      result.shape = 'circle'; result.radius = radius; return result;
     }
   }
   class Sprite extends ShapeRenderer {
@@ -251,12 +257,14 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     range(min, max) { if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) throw new Error('Niepoprawny zakres'); return min + this.next() * (max - min); }
   }
   class CharacterController2D extends Component {
-    constructor() { super(); this.velocity = { x: 0, y: 0 }; this.constrainToBounds = true; }
+    constructor() { super(); this.velocity = { x: 0, y: 0 }; this.direction = new Vector2(1, 0); this.constrainToBounds = true; }
+    getDirection() { return this.direction.copy(); }
     onAfterMove() {}
     move(x, y, speed = 120) {
       finite(x, 'Kierunek x'); finite(y, 'Kierunek y'); finite(speed, 'Prędkość');
       if(speed<0)throw new Error('Prędkość nie może być ujemna.');
       const length = Math.hypot(x, y);
+      if (length) this.direction.set(x / length, y / length);
       this.velocity.x = length ? x / length * speed : 0;
       this.velocity.y = length ? y / length * speed : 0;
     }
@@ -341,6 +349,12 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       [x, y, width, height, rotation, scale.x, scale.y].forEach(v => finite(v, 'Rysowanie'));
       const command={ op: 'rect', x, y, screenX: x - this.view.x, screenY: y - this.view.y, width, height, color,rotation,scaleX:scale.x,scaleY:scale.y };this.commands.push(command);
       renderer.draw(this.context,{...command,x:command.screenX,y:command.screenY});
+    }
+    drawCircle(x, y, radius, color = '#76b9f2', rotation = 0, scale = { x: 1, y: 1 }) {
+      [x, y, radius, rotation, scale.x, scale.y].forEach(v => finite(v, 'Rysowanie'));
+      if (radius < 0) throw new Error('Promień nie może być ujemny.');
+      const command = { op: 'circle', x, y, screenX: x - this.view.x, screenY: y - this.view.y, radius, color, rotation, scaleX: scale.x, scaleY: scale.y };
+      this.commands.push(command); renderer.draw(this.context, { ...command, x: command.screenX, y: command.screenY });
     }
     drawText(text, x, y, fontSize = 16, color = '#ffffff', align = 'center', baseline = 'middle') {
       if (typeof fontSize === 'string') { color = fontSize; fontSize = 16; }
@@ -451,6 +465,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
         const position = ui?.enabled ? ui.getCenter() : transform;
         if (component instanceof TextRenderer) component.onDrawUI();
         else if (component instanceof Sprite) this.canvas.drawSprite(component, { x: position.x, y: position.y, rotation: transform.rotation, scale: transform.scale, visualOffset: transform.visualOffset });
+        else if (component.shape === 'circle') this.canvas.drawCircle(position.x + transform.visualOffset.x, position.y + transform.visualOffset.y, component.radius, component.color, transform.rotation, transform.scale);
         else this.canvas.drawRect(position.x + transform.visualOffset.x, position.y + transform.visualOffset.y, component.width, component.height, component.color, transform.rotation, transform.scale);
       }
       this.canvas.view = { x: 0, y: 0 };
@@ -492,7 +507,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     }
   }
   let current = null, factory = null, frame = null, cleanup = () => {}, lastTime = null;
-  assetsReady.then(() => { if (current && !current.disposed) current.render(); });
+  assetsReady.then(() => { if (current && current.started && !current.disposed) current.render(); });
   function stopLoop() { if (frame !== null) caf(frame); frame = null; lastTime = null; }
   function dispose() { stopLoop(); cleanup(); cleanup = () => {}; current?.dispose(); current = null; }
   function snapshot(game = current) {
