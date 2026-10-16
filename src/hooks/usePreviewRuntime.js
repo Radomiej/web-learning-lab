@@ -27,7 +27,7 @@ const initialRuntimeState = (scopeKey = 'default') => ({
 function buildRequestedPreviewDocument(files, track, checks, documentPath, runId) {
   if (track === 'php' || files?.runtime?.kind === 'php-wasm') {
     return buildPhpPreviewDocument(
-      '<main><p>Uruchom podgląd, aby wykonać kod PHP.</p></main>',
+      '<main><p>Kliknij przycisk ▶ Play, aby wykonać kod PHP.</p></main>',
       files,
       { track, requestedSignals: checks, documentPath, runId },
     );
@@ -52,7 +52,9 @@ function mergeSignals(previous, payload = {}) {
   };
 }
 
-export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey = 'default') {
+export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey = 'default', {onRun} = {}) {
+  const onRunRef=useRef(onRun);onRunRef.current=onRun;
+  const notifyRun=(project)=>{try{onRunRef.current?.({project:structuredClone(project),scopeKey:scopeKeyRef.current,runId:runIdRef.current});}catch{/* Telemetry must not interrupt preview. */}};
   const autoPreviewDelay = 700;
   const runIdRef = useRef(crypto.randomUUID());
   const pathRef = useRef(files.entry || 'index.html');
@@ -269,6 +271,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     const activeFiles = nextFiles || filesRef.current;
     if (isPhpProject(activeFiles, trackRef.current)) runPhpPreview(activeFiles, documentPath, {});
     else refreshPreview(activeFiles, documentPath);
+    notifyRun(activeFiles);
   }, [clearAutoPreviewTimer, clearEvaluationTimer, isPhpProject, refreshPreview, runPhpPreview]);
 
   const checkPreview = useCallback(() => {
@@ -281,6 +284,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     const request = checksRef.current.find((check) => check.type === 'phpRequest')?.request || {};
     if (isPhpProject(activeFiles, trackRef.current)) runPhpPreview(activeFiles, activeFiles.entry, request);
     else refreshPreview(activeFiles, activeFiles.entry || 'index.html');
+    notifyRun(activeFiles);
   }, [clearAutoPreviewTimer, clearEvaluationTimer, isPhpProject, refreshPreview, runPhpPreview]);
 
   const clearRuntime = useCallback(() => {

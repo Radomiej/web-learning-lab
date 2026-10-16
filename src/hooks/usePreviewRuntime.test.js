@@ -1,6 +1,19 @@
 import { renderHook, act } from '@testing-library/react';
 import { usePreviewRuntime } from './usePreviewRuntime.js';
 
+test('notifies telemetry with the actual run project and isolates observer failures',()=>{
+  const project={entry:'index.html',files:{'index.html':'<p>one</p>'}};
+  const onRun=vi.fn();
+  const {result}=renderHook(()=>usePreviewRuntime(project,[],'html','task-1',{onRun}));
+  act(()=>result.current.runPreview());
+  expect(onRun).toHaveBeenCalledWith(expect.objectContaining({project,scopeKey:'task-1',runId:result.current.runId}));
+  const captured=onRun.mock.calls[0][0];
+  project.files['index.html']='<p>changed</p>';
+  expect(captured.project.files['index.html']).toBe('<p>one</p>');
+  onRun.mockImplementation(()=>{throw new Error('offline');});
+  expect(()=>act(()=>result.current.checkPreview())).not.toThrow();
+});
+
 test('evaluates computed CSS arrays received from the iframe', async () => {
   const checks = [{ id: 'flex', type: 'computedStyle', selector: '.practice', property: 'display', expected: 'flex' }];
   const { result } = renderHook(() => usePreviewRuntime({ html: '<div class="practice"></div>' }, checks));

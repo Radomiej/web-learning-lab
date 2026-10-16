@@ -1,3 +1,4 @@
+import {useSessionTelemetry} from './hooks/useSessionTelemetry.js';
 import { trackLabEvent, setLabContext } from './services/labAnalytics.js';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { allLessons, trackOrder, tracks } from "./data/curriculum.js";
@@ -68,12 +69,30 @@ export default function App() {
     [activeTask, filesByTask, selectedLesson.track],
   );
 
+  const snapshotRef=useRef(null),pendingTelemetryRun=useRef(null),resultSignature=useRef('');
+  const initialSnapshot={lessonNumber:selectedLesson.order,taskTitle:activeTask.title||'',progress:{completed:completedTasks.length,total:allLessons.reduce((n,lesson)=>n+lesson.tasks.length,0)},lessonId:selectedLesson.id,lessonTitle:selectedLesson.title,taskId:activeTask.id,activeFile,files:files.files,runnerStatus:'idle',output:'',passed:null,visibility:'visible'};
+  const telemetry=useSessionTelemetry(snapshotRef.current?.taskId===activeTask.id?{...snapshotRef.current,lessonNumber:initialSnapshot.lessonNumber,taskTitle:initialSnapshot.taskTitle,progress:initialSnapshot.progress,files:files.files,activeFile}:initialSnapshot);
   const previewRuntime = usePreviewRuntime(
     files,
     activeTask.checks,
     selectedLesson.track,
     activeTask.id,
+    {onRun:({project,runId,scopeKey})=>{
+      const snapshot={...snapshotRef.current,files:project.files,runnerStatus:'running',output:'',passed:null};
+      pendingTelemetryRun.current={snapshot,runId,scopeKey};resultSignature.current='';
+      telemetry.capture('run_started',snapshot);
+    }},
   );
+  const runtime=previewRuntime.runtimeState;
+  snapshotRef.current={...initialSnapshot,runnerStatus:runtime.status,output:JSON.stringify({messages:runtime.messages,errors:runtime.errors,checks:runtime.checkResults}).slice(-20000),passed:runtime.checkResults.length?runtime.checkResults.every(r=>r.passed)&&!runtime.errors.length:runtime.errors.length?false:null};
+  useEffect(()=>{
+    const run=pendingTelemetryRun.current;
+    if(!run||run.scopeKey!==activeTask.id||run.runId!==previewRuntime.runId||!['ready','error'].includes(runtime.status))return;
+    const signature=JSON.stringify([run.runId,runtime.status,runtime.checkResults,runtime.errors,runtime.messages]);
+    if(resultSignature.current===signature)return;
+    resultSignature.current=signature;
+    telemetry.capture('run_result',{...run.snapshot,runnerStatus:runtime.status,output:JSON.stringify({messages:runtime.messages,errors:runtime.errors,checks:runtime.checkResults}).slice(-20000),passed:runtime.checkResults.length?runtime.checkResults.every(r=>r.passed)&&!runtime.errors.length:runtime.errors.length?false:null});
+  },[activeTask.id,previewRuntime.runId,runtime,telemetry.capture]);
   const awardedRunRef = useRef(null);
   const loggedResultRef = useRef(null);
   useEffect(() => {
@@ -152,6 +171,7 @@ export default function App() {
 
   const sidebar = (
     <Sidebar
+      telemetry={telemetry}
       tracks={tracks}
       trackOrder={trackOrder}
       lessons={allLessons}

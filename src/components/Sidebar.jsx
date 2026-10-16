@@ -1,4 +1,6 @@
+import StudentIdentity from './StudentIdentity.jsx';
 export default function Sidebar({
+  telemetry,
   tracks,
   trackOrder,
   lessons,
@@ -30,7 +32,7 @@ export default function Sidebar({
         </span>
         <div className="sidebar-brand-copy">
           <strong>Web Learning Lab</strong>
-          <span>Ucz się przez budowanie</span>
+          <span>Laboratorium WWW</span>
         </div>
         <button
           className="sidebar-close-button"
@@ -55,6 +57,7 @@ export default function Sidebar({
         </button>
       </div>
 
+      <StudentIdentity telemetry={telemetry}/>
       <div className="sidebar-progress" aria-label="Postęp kursu">
         <div className="progress-heading">
           <span>Twój postęp</span>

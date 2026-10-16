@@ -1,8 +1,9 @@
+import {telemetryPlugin} from './server/telemetryPlugin.js';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), telemetryPlugin()],
   assetsInclude: ['**/*.wasm', '**/*.dat', '**/*.so'],
   optimizeDeps: {
     include: ['@php-wasm/universal', 'ini'],
