@@ -1,3 +1,5 @@
+import {createCourseRoutes} from './services/courseRoutes.js';
+import {useCourseRoute} from './hooks/useCourseRoute.js';
 import {useSessionTelemetry} from './hooks/useSessionTelemetry.js';
 import { trackLabEvent, setLabContext } from './services/labAnalytics.js';
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -57,7 +59,7 @@ export default function App() {
     selectedLesson.tasks.find((task) => task.id === activeTaskId) ||
     selectedLesson.tasks[0];
   useEffect(() => {
-    setLabContext({track_id:selectedLesson.track, lesson_id:selectedLesson.id, task_id:activeTask.id});
+    setLabContext({track_id:selectedLesson.track, lesson_id:selectedLesson.id, lesson_number:selectedLesson.order, task_id:activeTask.id});
     trackLabEvent('task_open');
   }, [selectedLesson.track, selectedLesson.id, activeTask.id]);
   useEffect(() => { trackLabEvent('lesson_open', {lesson_id:selectedLesson.id,track_id:selectedLesson.track}); }, [selectedLesson.id,selectedLesson.track]);
@@ -78,6 +80,7 @@ export default function App() {
     selectedLesson.track,
     activeTask.id,
     {onRun:({project,runId,scopeKey})=>{
+      trackLabEvent('task_run_started');
       const snapshot={...snapshotRef.current,files:project.files,runnerStatus:'running',output:'',passed:null};
       pendingTelemetryRun.current={snapshot,runId,scopeKey};resultSignature.current='';
       telemetry.capture('run_started',snapshot);
@@ -97,8 +100,10 @@ export default function App() {
   const loggedResultRef = useRef(null);
   useEffect(() => {
     const state = previewRuntime.runtimeState;
+    const run=pendingTelemetryRun.current;
+    if(!run||run.scopeKey!==activeTask.id||run.runId!==previewRuntime.runId||!['ready','error'].includes(state.status))return;
     if (!state.checkResults.length && !state.errors.length) return;
-    const signature = JSON.stringify([activeTask.id, previewRuntime.runId, state.checkResults, state.errors.length]);
+    const signature = JSON.stringify([activeTask.id, previewRuntime.runId]);
     if (loggedResultRef.current === signature) return;
     loggedResultRef.current = signature;
     trackLabEvent('task_run_result', {passed:state.checkResults.length > 0 && state.checkResults.every(item => item.passed), total:state.checkResults.length, error_count:state.errors.length});
@@ -169,6 +174,13 @@ export default function App() {
     previewRuntime.clearRuntime();
   };
 
+  const courseRoutes=useMemo(()=>createCourseRoutes(allLessons),[]);
+  useCourseRoute(courseRoutes,JSON.stringify([selectedLesson.track,selectedLesson.id,activeTask.id]),target=>{
+    selectLesson(target.lesson.id);setActiveTaskId(target.task.id);
+    setActiveFile(starterEntry(target.task,target.lesson.track));
+    previewRuntime.clearRuntime();setSidebarOpen(false);
+  });
+
   const sidebar = (
     <Sidebar
       telemetry={telemetry}
@@ -232,7 +244,6 @@ export default function App() {
           updateFiles(activeTask.id, { [fileKey]: value });
         }}
         onRun={() => {
-          trackLabEvent('task_run_started');
           recordWorkEvent({ type: 'run', taskId: activeTask.id });
           if (selectedLesson.track === 'playground') previewRuntime.runPreview();
           else previewRuntime.checkPreview();
