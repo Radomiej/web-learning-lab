@@ -32,7 +32,8 @@ export default function Sidebar({
         </span>
         <div className="sidebar-brand-copy">
           <strong>Web Learning Lab</strong>
-          <span>Laboratorium WWW</span>
+          <span title={telemetry?.machineId}>ID: {telemetry?.machineId?.slice(-6)||'—'}</span>
+          <span>{telemetry?.studentName||'Bez nazwy'}</span>
         </div>
         <button
           className="sidebar-close-button"
