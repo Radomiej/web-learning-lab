@@ -42,7 +42,7 @@ export default function EditorTabs({
           </button>
         ))}
       </div>
-      <button
+      {onAddFile && <button
         className="editor-tab editor-tab--add"
         type="button"
         onClick={onAddFile}
@@ -50,7 +50,7 @@ export default function EditorTabs({
         title="Dodaj plik"
       >
         <EditorIcon action="add" />
-      </button>
+      </button>}
     </div>
   );
 }

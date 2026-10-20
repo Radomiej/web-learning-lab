@@ -1,14 +1,15 @@
 import { useRef, useState } from 'react';
 import CodeExample from '../../shared/lab-game-v2/editor/CodeExample.jsx';
 import { jsCoursePages } from '../data/jsCoursePages.js';
-import { lessonInfographics } from '../data/lessonInfographics.js';
+import { lessonInfographics,lessonStepInfographics } from '../data/lessonInfographics.js';
+import HtmlLessonExample from './HtmlLessonExample.jsx';
 import './JsCourse.css';
 
 export default function JsFoundationExplanation({ lesson, pages = jsCoursePages[lesson.id] }) {
   const [index, setIndex] = useState(0);
   const heading = useRef(null);
   const page = pages[index];
-  const illustration = index === 0 ? lessonInfographics[lesson.id] : null;
+  const illustration = index === 0 ? lessonInfographics[lesson.id] : lessonStepInfographics[`${lesson.id}:${index}`];
   const imagePath = page.image?.startsWith('/') ? page.image : `/course-assets/js-foundations/${page.image}.png`;
   function go(next) {
     setIndex(next);
@@ -23,6 +24,7 @@ export default function JsFoundationExplanation({ lesson, pages = jsCoursePages[
       {page.code && <CodeExample key={page.code} code={page.code} />}
       {page.parts && <dl className="js-code-parts">{page.parts.map(([code, meaning]) => <div key={code}><dt><code>{code}</code></dt><dd>{meaning}</dd></div>)}</dl>}
       <aside className="js-program-result"><strong>Co się dzieje?</strong><p>{page.result}</p></aside>
+      {lesson.track==='html' && !illustration && <HtmlLessonExample page={page}/>}
       {illustration && <TeachingFigure src={illustration.src} alt={illustration.alt} title={page.title} />}
       {page.image && (illustration ? <details className="js-predict"><summary>Dokładny schemat kodu</summary><TeachingFigure src={imagePath} alt={page.alt} title={page.title} /></details> : <TeachingFigure src={imagePath} alt={page.alt} title={page.title} />)}
       {page.question && <details className="js-predict" key={index}><summary>{page.question}</summary><p>{page.answer}</p></details>}

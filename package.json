@@ -1,7 +1,7 @@
 {
   "name": "web-learning-lab",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.mjs",
@@ -11,6 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:assignments": "node --test --test-concurrency=1 tests/*.test.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

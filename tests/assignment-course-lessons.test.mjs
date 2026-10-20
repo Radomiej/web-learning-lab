@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {courseTaskTemplates} from '../shared/assignments/courseTaskCatalog.js';
 import {generateAssignment,publicAssignment} from '../shared/assignments/generator.js';
 
-test('all 31 non-JS lessons select their own project, target file and three exercise formats at each level',()=>{
- assert.equal(courseTaskTemplates.length,31);
+test('all 63 non-JS lessons select their own project, target file and three exercise formats at each level',()=>{
+ assert.equal(courseTaskTemplates.length,63);
  for(const template of courseTaskTemplates)for(const difficulty of ['easy','standard','challenge']){
   const seen=new Set();
   for(let i=0;i<40&&seen.size<3;i++){

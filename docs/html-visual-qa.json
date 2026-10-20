@@ -1,0 +1,314 @@
+[
+  {
+    "lesson": "html-three-layers",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Od adresu do dokumentu"
+  },
+  {
+    "lesson": "html-three-layers",
+    "step": 2,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Znacznik nadaje tekstowi rolę"
+  },
+  {
+    "lesson": "html-three-layers",
+    "step": 3,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Trzy pliki, trzy odpowiedzialności"
+  },
+  {
+    "lesson": "html-three-layers",
+    "step": 4,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Rodzic i dziecko"
+  },
+  {
+    "lesson": "html-document",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Szkielet dokumentu"
+  },
+  {
+    "lesson": "html-document",
+    "step": 2,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Tytuł karty to nie nagłówek strony"
+  },
+  {
+    "lesson": "html-document",
+    "step": 3,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Kodowanie i język"
+  },
+  {
+    "lesson": "html-document",
+    "step": 4,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Szerokość widoku na telefonie"
+  },
+  {
+    "lesson": "html-text",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Nagłówki tworzą hierarchię"
+  },
+  {
+    "lesson": "html-text",
+    "step": 2,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Akapit i przełamanie wiersza"
+  },
+  {
+    "lesson": "html-text",
+    "step": 3,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Wyróżnienie ma znaczenie"
+  },
+  {
+    "lesson": "html-text",
+    "step": 4,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Drobne znaki też są elementami"
+  },
+  {
+    "lesson": "html-lists",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Lista punktowana"
+  },
+  {
+    "lesson": "html-lists",
+    "step": 2,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Jedna zmiana: ul na ol"
+  },
+  {
+    "lesson": "html-lists",
+    "step": 3,
+    "example": true,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Podlista wewnątrz pozycji"
+  },
+  {
+    "lesson": "html-lists",
+    "step": 4,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Pojęcie i opis"
+  },
+  {
+    "lesson": "html-links",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Tekst linku a jego cel"
+  },
+  {
+    "lesson": "html-links",
+    "step": 2,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Ścieżka względna i pełny URL"
+  },
+  {
+    "lesson": "html-links",
+    "step": 3,
+    "example": true,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Skok do sekcji tego dokumentu"
+  },
+  {
+    "lesson": "html-links",
+    "step": 4,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Link działa też klawiaturą"
+  },
+  {
+    "lesson": "html-media",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Obraz jest plikiem wskazanym przez src"
+  },
+  {
+    "lesson": "html-media",
+    "step": 2,
+    "example": true,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Opis alternatywny a podpis"
+  },
+  {
+    "lesson": "html-media",
+    "step": 3,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Wymiary rezerwują miejsce"
+  },
+  {
+    "lesson": "html-media",
+    "step": 4,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Odtwarzacz z kontrolkami"
+  },
+  {
+    "lesson": "html-tables",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Wiersz zawiera komórki"
+  },
+  {
+    "lesson": "html-tables",
+    "step": 2,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Nagłówek opisuje kolumnę"
+  },
+  {
+    "lesson": "html-tables",
+    "step": 3,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Tytuł i grupowanie danych"
+  },
+  {
+    "lesson": "html-tables",
+    "step": 4,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Scalanie zmienia siatkę"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Etykieta wskazuje konkretne pole"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 2,
+    "example": true,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Typ i required zmieniają zachowanie"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 3,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Wybór i dłuższa wypowiedź"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 4,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Grupa pól i rodzaj przycisku"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 5,
+    "example": true,
+    "graphic": true,
+    "runtime": 0,
+    "title": "name nazywa wysyłaną wartość"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 6,
+    "example": true,
+    "graphic": true,
+    "runtime": 0,
+    "title": "action wskazuje adres, method sposób wysłania"
+  },
+  {
+    "lesson": "html-forms",
+    "step": 7,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Kiedy JavaScript przejmuje formularz?"
+  },
+  {
+    "lesson": "html-semantics",
+    "step": 1,
+    "example": false,
+    "graphic": true,
+    "runtime": 0,
+    "title": "Struktura jest mapą strony"
+  },
+  {
+    "lesson": "html-semantics",
+    "step": 2,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Sekcja i samodzielny artykuł"
+  },
+  {
+    "lesson": "html-semantics",
+    "step": 3,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Kontrolka ma działanie wbudowane"
+  },
+  {
+    "lesson": "html-semantics",
+    "step": 4,
+    "example": true,
+    "graphic": false,
+    "runtime": 0,
+    "title": "Pojemnik, fragment i data"
+  }
+]

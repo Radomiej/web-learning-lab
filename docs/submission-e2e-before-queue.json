@@ -1,0 +1,32 @@
+{
+  "origin": "https://web-learning-lab.vercel.app",
+  "time": "2026-10-20T10:13:04.930Z",
+  "results": [
+    {
+      "submissionId": "a66107b2-0761-48e3-bd8f-edc0d611c14e",
+      "templateId": "course-quiz-html-text",
+      "accepted": 202,
+      "archived": true,
+      "exactFiles": true,
+      "teacherKey": true,
+      "persistedDigest": "5560a58c8e2440b47041c499c645684a1821d63f629a117bbcaa1f1360a91dfa",
+      "restartVerified": true
+    },
+    {
+      "submissionId": "37b26a3e-6cbb-4771-bda8-c771c54c1a17",
+      "templateId": "js-lesson-fetch",
+      "accepted": 202,
+      "archived": true,
+      "exactFiles": true,
+      "teacherKey": true,
+      "persistedDigest": "e4b019d7575583a15bfcca1982e3b0a68a90be1d634f0f7c04d166c9fe2dee81",
+      "restartVerified": true
+    }
+  ],
+  "quizArchive": {
+    "count": 1,
+    "usedBytes": 44520,
+    "maxBytes": 524288000,
+    "full": false
+  }
+}

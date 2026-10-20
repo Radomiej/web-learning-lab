@@ -1,0 +1,28 @@
+{
+  "origin": "http://127.0.0.1:5184",
+  "time": "2026-10-20T10:45:17.289Z",
+  "results": [
+    {
+      "submissionId": "8fcf1902-b247-405e-8ae8-0713ac3b407b",
+      "templateId": "course-quiz-html-text",
+      "accepted": 202,
+      "archived": true,
+      "exactFiles": true,
+      "teacherKey": true
+    },
+    {
+      "submissionId": "e12004f6-6dd7-4936-8c75-df4f8148ded9",
+      "templateId": "js-lesson-fetch",
+      "accepted": 202,
+      "archived": true,
+      "exactFiles": true,
+      "teacherKey": true
+    }
+  ],
+  "quizArchive": {
+    "count": 2,
+    "usedBytes": 89048,
+    "maxBytes": 524288000,
+    "full": false
+  }
+}

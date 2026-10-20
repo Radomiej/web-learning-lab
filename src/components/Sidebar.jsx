@@ -1,4 +1,5 @@
 import StudentIdentity, {ConnectionStatus} from './StudentIdentity.jsx';
+const clientVersion = typeof __LAB_CLIENT_VERSION__ === 'string' ? __LAB_CLIENT_VERSION__ : 'dev';
 export default function Sidebar({
   telemetry,
   tracks,
@@ -198,6 +199,7 @@ export default function Sidebar({
           <span className="status-dot" />
           lokalnie
         </span>
+        <small className="sidebar-version" title={`Wersja laba: ${clientVersion}`}>v{clientVersion}</small>
       </div>
     </nav>
   );

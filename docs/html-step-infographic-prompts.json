@@ -1,0 +1,65 @@
+[
+  {
+    "lessonId": "html-three-layers",
+    "step": 2,
+    "asset": "public/course-assets/lesson-infographics/html-three-layers-step-2.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Use exactly 3 spacious panels: code, browser output, and tag anatomy <h1>Ogród</h1>. Remove all existing panels 4–7. Never say h1/p are parents of body. They are children. Title \"Znacznik nadaje tekstowi rolę\". Exact source code must be: <h1>Ogród</h1>\n<p>Posiejmy zioła.</p>. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-three-layers",
+    "step": 3,
+    "asset": "public/course-assets/lesson-infographics/html-three-layers-step-3.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Keep ONLY the main top code panel and matching browser output (or 3 file panels for Trzy pliki). Remove ALL phones, ALL device comparisons, ALL parent-child diagrams unrelated to this topic, ALL bottom redundant text panels. Retain at most one short sentence explaining the operation. Simplify to one idea in a spacious landscape graphic. Title \"Trzy pliki, trzy odpowiedzialności\". Exact source code must be: <!-- index.html -->\n<button>Otwórz</button>\n\n<!-- styles.css: button { color: navy; } -->\n<!-- script.js: obsługa kliknięcia -->. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-three-layers",
+    "step": 4,
+    "asset": "public/course-assets/lesson-infographics/html-three-layers-step-4.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Keep ONLY the 3 top panels: exact nested main/div/p code, conceptual nested boxes, actual plain browser output Mięta. Remove ALL lower paragraphs, phone comparisons and extra plant decorations. Title \"Rodzic i dziecko\". Exact source code must be: <main>\n  <div>\n    <p>Mięta</p>\n  </div>\n</main>. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-document",
+    "step": 2,
+    "asset": "public/course-assets/lesson-infographics/html-document-step-2.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Keep ONLY the main top code panel and matching browser output (or 3 file panels for Trzy pliki). Remove ALL phones, ALL device comparisons, ALL parent-child diagrams unrelated to this topic, ALL bottom redundant text panels. Retain at most one short sentence explaining the operation. Simplify to one idea in a spacious landscape graphic. Title \"Tytuł karty to nie nagłówek strony\". Exact source code must be: <head><title>Pracownia — kontakt</title></head>\n<body><h1>Napisz do nas</h1></body>. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-document",
+    "step": 3,
+    "asset": "public/course-assets/lesson-infographics/html-document-step-3.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Keep only top code and the correct Polish browser result plus two short notes lang=\"pl\" identifies language, charset=\"UTF-8\" identifies encoding. Fix EXACT code line <meta charset=\"UTF-8\"> with final >. Remove the whole bottom half (structure, phones). Title \"Kodowanie i język\". Exact source code must be: <html lang=\"pl\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Żółw</title>\n</head>\n<body><p>Żółw je liść.</p></body>\n</html>. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-document",
+    "step": 4,
+    "asset": "public/course-assets/lesson-infographics/html-document-step-4.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Replace the phone page contents with the SAME plain text \"Mięta rośnie szybko.\" on both phones. Left is small text on a virtual 980px canvas scaled down; right is readable text at device width. NO menu, NO hamburger, NO responsive card rearrangement, NO landscape photo. Meta viewport alone does not generate responsive CSS. Keep exact code and one short caption. Title \"Szerokość widoku na telefonie\". Exact source code must be: <meta name=\"viewport\"\n  content=\"width=device-width, initial-scale=1\">. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-text",
+    "step": 2,
+    "asset": "public/course-assets/lesson-infographics/html-text-step-2.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Keep ONLY the main top code panel and matching browser output (or 3 file panels for Trzy pliki). Remove ALL phones, ALL device comparisons, ALL parent-child diagrams unrelated to this topic, ALL bottom redundant text panels. Retain at most one short sentence explaining the operation. Simplify to one idea in a spacious landscape graphic. Title \"Akapit i przełamanie wiersza\". Exact source code must be: <p>Mięta\nrośnie szybko.</p>\n<p>ul. Leśna 2<br>80-001 Gdańsk</p>. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-text",
+    "step": 3,
+    "asset": "public/course-assets/lesson-infographics/html-text-step-3.png",
+    "prompt": "Edit ONLY the bottom caption of this infographic. Replace with EXACT Polish caption: \"strong oznacza ważność, em — nacisk. Domyślnie: pogrubienie i kursywa.\" Preserve all code, actual browser output and visual style unchanged. This teaches semantics rather than implying the tags are only visual formatting.",
+    "mode": "built-in image_gen"
+  },
+  {
+    "lessonId": "html-text",
+    "step": 4,
+    "asset": "public/course-assets/lesson-infographics/html-text-step-4.png",
+    "prompt": "Edit the attached infographic. Preserve warm ivory/navy/teal/gold style and correct code. IMPORTANT simplify and correct: Keep ONLY the main top code panel and matching browser output (or 3 file panels for Trzy pliki). Remove ALL phones, ALL device comparisons, ALL parent-child diagrams unrelated to this topic, ALL bottom redundant text panels. Retain at most one short sentence explaining the operation. Simplify to one idea in a spacious landscape graphic. Title \"Drobne znaki też są elementami\". Exact source code must be: <p>Powierzchnia: 4 m<sup>2</sup></p>\n<hr>\n<p>Woda: H<sub>2</sub>O</p>\n<p>Zapis znacznika: &lt;p&gt;</p>. No people. Do not introduce any new topic or extra content.",
+    "mode": "built-in image_gen"
+  }
+]

@@ -1,6 +1,7 @@
 import {fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {vi,test,expect,afterEach} from 'vitest';
 import AssignmentWorkspace from './AssignmentWorkspace.jsx';
+vi.mock('./CodeEditor.jsx',()=>({default:({fileLabel,value,onChange,onRun})=><div><textarea aria-label={`Edytor ${fileLabel}`} value={value} onChange={event=>onChange(event.target.value)}/><button onClick={onRun}>Uruchom</button></div>}));
 afterEach(()=>{vi.unstubAllGlobals();localStorage.clear();history.replaceState(null,'','#/');});
 test('generates a seeded task, edits files and requires student ID for an immutable submission',async()=>{
   const task={id:'test-task',templateId:'java-array',generatorVersion:'1',difficulty:'standard',seed:'KLASA-A',index:0,title:'Suma',prompt:'Policz sumę.',criteria:['Obsłuż pustą tablicę.'],starterFiles:{'Main.java':'start'},params:{}};
@@ -12,7 +13,7 @@ test('generates a seeded task, edits files and requires student ID for an immuta
   fireEvent.click(screen.getByRole('button',{name:'Generuj zestaw'}));
   await screen.findByText('Policz sumę.');
   expect(fetch.mock.calls[0][0]).toBe('/api/assignments');
-  fireEvent.change(screen.getByLabelText('Kod pliku Main.java'),{target:{value:'my solution'}});
+  fireEvent.change(screen.getByLabelText('Edytor Main.java'),{target:{value:'my solution'}});
   fireEvent.click(screen.getByRole('button',{name:'Oddaj do oceny'}));
   expect(submit).not.toHaveBeenCalled();
   fireEvent.change(screen.getByLabelText('Twoje ID ucznia'),{target:{value:'3A-12'}});

@@ -8,7 +8,7 @@ export default function LearningModule({ enabled = true, stage, onChange, learni
   useEffect(() => { setVisited(previous => previous.has(stage) ? previous : new Set([...previous, stage])); }, [stage]);
   function go(next) {
     onChange(next);
-    requestAnimationFrame(() => { content.current?.focus(); content.current?.scrollIntoView({ block: 'start' }); });
+    requestAnimationFrame(() => { content.current?.focus(); content.current?.scrollIntoView?.({ block: 'start' }); });
   }
   if (!enabled) return children;
   return <section className="learning-module" aria-label="Moduł lekcji">

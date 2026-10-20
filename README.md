@@ -109,3 +109,6 @@ Quiz oddaje niezmienną kopię answer.json przez IndexedDB i /api/submissions. S
 Umami: quiz_submitted (lesson_id, lesson_number, total, passed, kind=quiz, action=queued), assignment_generated (lesson_id, total, kind=coding), assignment_submitted (lesson_id, kind=coding, action=queued). Zachowano domenę, Website ID, flagi i DNT. Odpowiedzi i kod trafiają do istniejącego systemu prac nauczyciela, nie do Umami. Odbioru nowych zdarzeń w panelu produkcyjnym nie potwierdzano.
 
 Szczegółowy wykaz i ograniczenia: [docs/course-teaching-update.md](docs/course-teaching-update.md). Prompty: [docs/lesson-infographic-prompts.json](docs/lesson-infographic-prompts.json).
+
+## Kolejka oddań i limit quizów
+Oddania trafiają do osobnej trwałej kolejki lab.submissions.v1 (365 dni, 500 MiB, reject-publish). Archiwum quizów lab-admin ma osobny limit 500 MiB; pełny magazyn nie usuwa starych prac. Szczegóły, test rzeczywistej wysyłki i pokrycie wszystkich 77 lekcji: [raport](docs/submissions-and-course-coverage.md). Testy silnika oddań: npm run test:assignments.

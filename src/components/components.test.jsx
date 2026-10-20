@@ -8,19 +8,22 @@ test('offers the next lesson only after completing every task', async () => {
   localStorage.setItem('web-learning-lab.progress.v1', JSON.stringify({ selectedTrack: 'html', selectedLessonId: lesson.id, completedTasks: lesson.tasks.map(task => task.id) }));
   const user = userEvent.setup();
   render(<App />);
+  await openTask();
   expect(screen.getByLabelText('Wybierz lekcję')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: /Następna lekcja:/ }));
   expect(screen.getByRole('heading', { name: 'Pierwszy dokument HTML5' })).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /Następna lekcja:/ })).not.toBeInTheDocument();
 });
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {localStorage.clear();history.replaceState(null,'','#/');});
+async function openTask(){const button=screen.queryByRole('button',{name:'Zadanie',exact:true});if(button)await userEvent.setup().click(button);}
 
-test("shows the first lesson, three editor files, preview status, and track navigation", () => {
+test("shows the first lesson, three editor files, preview status, and track navigation", async () => {
   render(<App />);
+  await openTask();
   expect(screen.getByText("Web Learning Lab")).toBeInTheDocument();
   expect(
-    screen.getByRole("heading", { name: "Pierwszy dokument HTML5", level: 1 }),
+    screen.getByRole("heading", { name: "Internet, strona i trzy warstwy", level: 1 }),
   ).toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "index.html" })).toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "styles.css" })).toBeInTheDocument();
@@ -28,11 +31,11 @@ test("shows the first lesson, three editor files, preview status, and track navi
     screen.queryByRole("tab", { name: "theme.css" }),
   ).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
-  expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
-  expect(screen.getByText("72 lekcji")).toBeInTheDocument();
+  expect(screen.queryByText("Podgląd na żywo")).not.toBeInTheDocument();
+  expect(screen.getByText("78 lekcji")).toBeInTheDocument();
 });
 
-test("opens the CRA public entry when the React track is selected", () => {
+test("opens the CRA public entry when the React track is selected", async () => {
   localStorage.setItem(
     "web-learning-lab.progress.v1",
     JSON.stringify({
@@ -42,12 +45,17 @@ test("opens the CRA public entry when the React track is selected", () => {
     }),
   );
   render(<App />);
+  const user=userEvent.setup();
+  await user.click(screen.getByLabelText('Wybierz ścieżkę'));
+  await user.click(screen.getByRole('tab',{name:/React/}));
+  await openTask();
   expect(screen.getByRole("tab", { name: "public/index.html" })).toBeInTheDocument();
   expect(screen.getByLabelText("Edytor public/index.html")).toBeInTheDocument();
 });
 
-test("places add file as the final control in the editor tab strip", () => {
+test("places add file as the final control in the editor tab strip", async () => {
   render(<App />);
+  await openTask();
   const strip = screen.getByRole("group", { name: "Pliki projektu i akcje" });
   const addFile = screen.getByRole("button", { name: "Dodaj plik" });
   expect(strip).toContainElement(addFile);
@@ -60,6 +68,7 @@ test("places add file as the final control in the editor tab strip", () => {
 test("opens settings and requires a separate confirmation before hard reset", async () => {
   const user = userEvent.setup();
   render(<App />);
+  await openTask();
 
   await user.click(screen.getByRole("button", { name: "Ustawienia kursu" }));
   expect(
@@ -81,6 +90,7 @@ test("opens settings and requires a separate confirmation before hard reset", as
 test("does not clip the expanded editor help inside the editor shell", async () => {
   const user = userEvent.setup();
   const { container } = render(<App />);
+  await openTask();
   await user.click(screen.getByRole("button", { name: "Skróty edytora" }));
   expect(container.querySelector(".editor-shell")).not.toContainElement(
     screen.getByRole("tooltip"),
@@ -90,6 +100,7 @@ test("does not clip the expanded editor help inside the editor shell", async () 
 test("changes the active editor file and opens the mobile sidebar", async () => {
   const user = userEvent.setup();
   render(<App />);
+  await openTask();
   await user.click(screen.getByRole("tab", { name: "styles.css" }));
   expect(screen.getByLabelText("Edytor styles.css")).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Otwórz menu" }));
@@ -101,6 +112,7 @@ test("changes the active editor file and opens the mobile sidebar", async () => 
 test("keeps the mobile lesson panel closable and reopenable", async () => {
   const user = userEvent.setup();
   render(<App />);
+  await openTask();
 
   await user.click(screen.getByRole("button", { name: "Otwórz menu" }));
   expect(
@@ -121,6 +133,7 @@ test("keeps the mobile lesson panel closable and reopenable", async () => {
 test("adds a component, restores it after reload and confirms reset", async () => {
   const user = userEvent.setup();
   const view = render(<App />);
+  await openTask();
   await user.click(screen.getByRole("button", { name: "Dodaj plik" }));
   await user.selectOptions(screen.getByLabelText("Typ pliku"), "react");
   await user.type(screen.getByLabelText("Nazwa pliku"), "components/Card");
@@ -131,6 +144,7 @@ test("adds a component, restores it after reload and confirms reset", async () =
   );
   view.unmount();
   render(<App />);
+  await openTask();
   expect(
     screen.getByRole("tab", { name: "components/Card.jsx" }),
   ).toBeInTheDocument();
@@ -154,6 +168,8 @@ test("adds a component, restores it after reload and confirms reset", async () =
 test("collapses and restores the lesson panel without remounting the sandbox or losing editor content", async () => {
   const user = userEvent.setup();
   const { container } = render(<App />);
+  await openTask();
+  await user.click(screen.getAllByRole("button",{name:"Pokaż podgląd"})[0]);
   const frame = container.querySelector("iframe");
   const editor = screen.getByLabelText("Edytor index.html");
   const value = editor.value;
@@ -180,6 +196,7 @@ test("collapses and restores the lesson panel without remounting the sandbox or 
 test("only example exercises expose a solution button", async () => {
   const user = userEvent.setup();
   render(<App />);
+  await openTask();
   expect(
     screen.getByRole("button", { name: "Pokaż rozwiązanie" }),
   ).toBeInTheDocument();
@@ -198,10 +215,12 @@ test("only example exercises expose a solution button", async () => {
 test('opens Game Dev with its three files, engine guide, and console below the editor', async () => {
   const user = userEvent.setup();
   const { container } = render(<App />);
+  await openTask();
   await user.click(screen.getByLabelText('Wybierz ścieżkę'));
   await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
   expect(screen.getByRole('heading', { name: 'Scena, obiekty i komponenty' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();
+  await user.click(screen.getAllByRole('button',{name:'Pokaż podgląd'})[0]);
   expect(screen.getByTitle('Podgląd gry ucznia')).toHaveAttribute('sandbox', 'allow-scripts');
   expect(container.querySelector('.editor-shell')).toContainElement(screen.getByRole('heading', { name: 'Konsola' }));
   await user.click(screen.getByRole('button', { name: 'Dokumentacja GameLab' }));
