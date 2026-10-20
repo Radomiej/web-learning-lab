@@ -1,6 +1,35 @@
 import { renderHook, act } from '@testing-library/react';
 import { usePreviewRuntime } from './usePreviewRuntime.js';
 
+test('waits for asynchronous lesson output instead of grading the loading message', async () => {
+  const checks = [{ id: 'fetch', type: 'textEquals', selector: '#result', expected: 'Dane', pendingText: 'Ładowanie…' }];
+  const { result } = renderHook(() => usePreviewRuntime({ html: '<output id="result"></output>' }, checks, 'js'));
+  act(() => result.current.checkPreview());
+  const signal = text => ({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: { '#result': { exists: true, text } } } });
+  await act(async () => { result.current.handleMessage(signal('Ładowanie…')); await new Promise(resolve => setTimeout(resolve, 50)); });
+  expect(result.current.runtimeState.checkResults).toHaveLength(0);
+  await act(async () => { result.current.handleMessage(signal('Dane')); await new Promise(resolve => setTimeout(resolve, 50)); });
+  expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+});
+
+test('checks console output from current run and resets it before the next run', async () => {
+  const checks = [{ id: 'output', type: 'consoleOutput', expected: 'Ola 5' }];
+  const { result } = renderHook(() => usePreviewRuntime({ html: '<p>Konsola</p>' }, checks, 'js'));
+  act(() => result.current.checkPreview());
+  await act(async () => {
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'console', payload: { level: 'log', args: ['Ola', '5'] } });
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: {} } });
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+  act(() => result.current.checkPreview());
+  await act(async () => {
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: {} } });
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  expect(result.current.runtimeState.checkResults[0].passed).toBe(false);
+});
+
 test('notifies telemetry with the actual run project and isolates observer failures',()=>{
   const project={entry:'index.html',files:{'index.html':'<p>one</p>'}};
   const onRun=vi.fn();

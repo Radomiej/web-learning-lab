@@ -3,6 +3,8 @@ import { independentScriptTask } from './independentScripts.js';
 import { reactProjectFor } from './reactProjects.js';
 import { getReactPathSet, getReactProfile } from '../services/runtimeProfiles.js';
 import { lessonSequence } from './lessonNumbers.js';
+import { jsFoundationTasks, legacyJsSequence } from './jsFoundationTasks.js';
+import { jsExtraTasks } from './jsExtraTasks.js';
 
 function reactExercise(order, word, paths) {
   const recipes = {
@@ -31,11 +33,17 @@ function jsExercise(order, word) {
   return recipes[order];
 }
 export function scriptTasks(definition, base) {
-  const localOrder = lessonSequence(definition.track, definition.order);
-  return ['guided', 'independent'].map((mode, variant) => {
+  if (definition.track === 'js') {
+    const extra = jsExtraTasks(definition, base);
+    if (extra) return extra;
+    const foundations = jsFoundationTasks(definition, base);
+    if (foundations) return foundations;
+  }
+  const localOrder = definition.track === 'js' ? legacyJsSequence(definition.id) : lessonSequence(definition.track, definition.order);
+  const tasks = ['guided', 'independent'].map((mode, variant) => {
     if (variant) return independentScriptTask(definition, base);
     const word = 'GOTOWE';
-    const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-${mode}`;
+    const id = definition.track === 'js' ? `${definition.id}-${mode}-v3` : `${definition.track}-${String(definition.order).padStart(2, '0')}-${mode}`;
     const checks = [{ id: id + '-errors', type: 'runtimeError', label: 'Kod uruchamia się bez błędów' }];
     let starter, solution, prompt;
     if (definition.track === 'react') {
@@ -62,4 +70,19 @@ export function scriptTasks(definition, base) {
     }
     return createTask({ id, mode, track: definition.track, title: definition.title, prompt, starter, solution, checks });
   });
+  if (definition.track === 'js' && definition.id === 'js-events-forms') {
+    const id = 'js-events-forms-form-v1';
+    const starter = { ...base, html: '<main><h1>Formularz zgłoszenia</h1><form id="form"><label for="student">Imię</label><input id="student" name="student" value="Ola"><label for="count">Liczba</label><input id="count" name="count" type="number" value="3" required><button id="action" type="submit">Wyślij</button></form><output id="result"></output></main>', js: '// TODO: obsłuż submit formularza.\n' };
+    const code = 'const form = document.querySelector("#form");\nform.addEventListener("submit", (event) => {\n  event.preventDefault();\n  const data = new FormData(form);\n  const student = String(data.get("student")).trim();\n  const count = Number(data.get("count"));\n  document.querySelector("#result").textContent = student + " " + count;\n});';
+    tasks.push(createTask({ id, mode: 'independent', track: 'js', title: 'Formularz: submit, FormData i liczba',
+      prompt: 'W gotowym form#form obsłuż submit przez addEventListener. Wywołaj event.preventDefault(), aby zatrzymać domyślne wysłanie strony. Utwórz new FormData(form), odczytaj pole name="student" przez get("student") i usuń skrajne spacje przez trim(). Odczytaj get("count") i zamień tekst na liczbę przez Number(). Pokaż imię i liczbę oddzielone spacją w #result. Dla gotowych pól po kliknięciu Wyślij wynik to Ola 3. Zmień pola i sprawdź, czy kolejne wysłanie odczytuje nowe wartości; klawisz Enter także powinien wysyłać formularz.',
+      starter, solution: { ...starter, js: code },
+      hint: 'Nasłuchuj submit na formularzu, a nie click na przycisku. FormData odczytuje pola według atrybutów name, a ich wartości są tekstem.',
+      checks: [
+        { id: `${id}-errors`, type: 'runtimeError', label: 'Formularz działa bez błędów' },
+        { id: `${id}-submit`, type: 'interaction', selector: '#action', action: 'click', resultSelector: '#result', expected: { text: 'Ola 3' }, label: 'Wysłanie formularza pokazuje Ola 3' },
+      ],
+    }));
+  }
+  return tasks;
 }

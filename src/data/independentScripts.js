@@ -111,8 +111,9 @@ function reactRecipeFor(order) {
 export function independentScriptTask(definition, base) {
   const localOrder = lessonSequence(definition.track, definition.order);
   const react = definition.track === 'react';
-  const recipe = (react ? reactRecipeFor(localOrder) : jsRecipes[localOrder + 23]);
-  const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-independent-v2`;
+  const legacyJsOrder = { 'js-dom': 4, 'js-conditions-functions': 2, 'js-data-loops': 3, 'js-events-forms': 5, 'js-small-state': 6, 'js-validation-storage': 7, 'js-event-planner': 8 }[definition.id];
+  const recipe = (react ? reactRecipeFor(localOrder) : jsRecipes[legacyJsOrder + 23]);
+  const id = react ? `${definition.track}-${String(definition.order).padStart(2, '0')}-independent-v2` : `${definition.id}-independent-v3`;
   const starter = react
     ? reactProjectFor(definition.order, 'independent', 'starter')
     : { ...base, html: recipe.html, js: '// Napisz własne rozwiązanie.\n' };

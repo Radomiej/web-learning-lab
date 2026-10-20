@@ -132,7 +132,7 @@ export function practicalTasks(definition, base) {
       return null;
     }
     add('runtimeError', 'Kod uruchamia się bez błędów');
-    if (variant === 0 && !task.hint) task.hint = 'Realizuj po jednym wymaganiu. Kliknij Sprawdź, przeczytaj brakujące warunki i popraw kod.';
+    if (variant === 0 && !task.hint) task.hint = 'Wykonuj po jednym kroku. Kliknij przycisk ▶ Play, przeczytaj wynik sprawdzenia i popraw brakujące elementy.';
     return createTask({ track: definition.track, ...task });
   });
 }

@@ -3,6 +3,17 @@ import {test,expect,vi,afterEach} from 'vitest';
 import StudentIdentity from './StudentIdentity.jsx';
 afterEach(cleanup);
 const identity=()=>({machineId:'12345678-1234-4234-8234-123456789abc',studentName:'Ola',status:'online',setStudentName:vi.fn()});
+test('compact profile opens ID and name only from the icon and saves the assignment identity',()=>{
+ const telemetry=identity();render(<StudentIdentity telemetry={telemetry} compact />);
+ expect(screen.getByText('Ola')).toBeVisible();
+ expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Edytuj ID i nazwę ucznia'}));
+ fireEvent.change(screen.getByLabelText('ID ucznia'),{target:{value:'3A-12'}});
+ fireEvent.change(screen.getByLabelText('Nick lub nazwa'),{target:{value:' Ada '}});
+ fireEvent.click(screen.getByRole('button',{name:'Zapisz'}));
+ expect(JSON.parse(localStorage.getItem('www-lab-assignment-identity'))).toEqual({studentId:'3A-12',studentName:'Ada'});
+ expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+});
 test('shows ID and name, edits only after clicking the pencil and saves trimmed text',()=>{
  const telemetry=identity();render(<StudentIdentity telemetry={telemetry}/>);
  expect(screen.getByText(`ID: ${telemetry.machineId.slice(-6)}`)).toBeInTheDocument();

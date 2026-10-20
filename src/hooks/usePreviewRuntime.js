@@ -10,6 +10,7 @@ const emptySignals = () => ({
   viewport: {},
   interactions: {},
   runtimeErrors: [],
+  consoleOutput: [],
   react: {},
   phpRequest: null,
   gameScenarios: {},
@@ -227,9 +228,13 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     }
 
     if (message.type === 'console') {
+      if (message.payload?.level === 'log') {
+        signalsRef.current.consoleOutput = [...signalsRef.current.consoleOutput, (message.payload.args || []).join(' ')].slice(-80);
+      }
       setRuntimeState((current) => ({
         ...current,
         messages: [...current.messages, message.payload].slice(-80),
+        signals: { ...current.signals, consoleOutput: signalsRef.current.consoleOutput },
       }));
       return;
     }
@@ -254,7 +259,8 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
         ...current,
         signals: mergeSignals(current.signals, message.payload),
       }));
-      if (pendingCheckRef.current && checksRef.current.filter(check => check.type === 'interaction').every(check => signalsRef.current.interactions[check.id])) scheduleCheckEvaluation();
+      const awaitingData = checksRef.current.some(check => check.pendingText && signalsRef.current.dom?.[check.selector]?.text?.trim() === check.pendingText);
+      if (pendingCheckRef.current && !awaitingData && checksRef.current.filter(check => check.type === 'interaction').every(check => signalsRef.current.interactions[check.id])) scheduleCheckEvaluation();
     }
   }, [scheduleCheckEvaluation, sendDeclaredActions, sendToFrame]);
 

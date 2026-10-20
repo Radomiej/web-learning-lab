@@ -20,6 +20,7 @@ import { recordWorkEvent, workHistoryKey } from './services/workHistory.js';
 
 function starterEntry(task, track) {
   const project = normalizeProject(task?.starter, { track });
+  if (track === 'js' && Object.hasOwn(project.files, 'script.js')) return 'script.js';
   return project.runtime?.kind === 'game-js' ? 'game.js' : project.entry;
 }
 
@@ -47,6 +48,9 @@ export default function App() {
   const [dialog, setDialog] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projectRevision, setProjectRevision] = useState(0);
+  const [stage, setStage] = useState('learn');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  useEffect(() => { setStage('learn'); setPreviewOpen(false); }, [selectedLesson.id]);
 
   useEffect(() => {
     if (!selectedLesson.tasks.some((task) => task.id === activeTaskId)) {
@@ -80,6 +84,7 @@ export default function App() {
     selectedLesson.track,
     activeTask.id,
     {onRun:({project,runId,scopeKey})=>{
+      setPreviewOpen(true);
       trackLabEvent('task_run_started');
       const snapshot={...snapshotRef.current,files:project.files,runnerStatus:'running',output:'',passed:null};
       pendingTelemetryRun.current={snapshot,runId,scopeKey};resultSignature.current='';
@@ -189,6 +194,7 @@ export default function App() {
       lessons={allLessons}
       selectedTrack={selectedTrack}
       selectedLessonId={selectedLesson.id}
+      selectedTask={activeTask}
       completedTasks={completedTasks}
       isOpen={sidebarOpen}
       onTrackChange={(trackId) => {
@@ -205,9 +211,16 @@ export default function App() {
     />
   );
 
+  const togglePreview = () => {
+    if (!previewOpen) { setStage('task'); setPreviewOpen(true); previewRuntime.runPreview(); }
+    else { setPreviewOpen(false); previewRuntime.setAutoPreview(false); }
+  };
   const main = (
     <>
       <MobileHeader
+        telemetry={telemetry}
+        previewOpen={previewOpen}
+        onPreviewToggle={togglePreview}
         onOpen={() => setSidebarOpen(true)}
         runtimeLabel={runtimeLabel}
       />
@@ -217,6 +230,9 @@ export default function App() {
         </p>
       )}
       <LessonWorkspace
+        key={selectedLesson.id}
+        stage={stage}
+        onStageChange={next => { setStage(next); if (next !== 'task') setPreviewOpen(false); }}
         nextLesson={allLessons.filter(lesson => lesson.track === selectedLesson.track && lesson.order > selectedLesson.order).sort((a, b) => a.order - b.order)[0]}
         onNextLesson={() => {
           const next = allLessons.filter(lesson => lesson.track === selectedLesson.track && lesson.order > selectedLesson.order).sort((a, b) => a.order - b.order)[0];
@@ -386,6 +402,8 @@ export default function App() {
       sidebar={sidebar}
       main={main}
       inspector={inspector}
+      previewOpen={previewOpen}
+      onPreviewToggle={togglePreview}
       sidebarOpen={sidebarOpen}
       onSidebarClose={() => setSidebarOpen(false)}
     />

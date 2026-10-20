@@ -1,0 +1,1046 @@
+{
+  "lessons": 45,
+  "steps": 208,
+  "checks": [
+    {
+      "lesson": "js-browser",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-browser",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-browser",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-browser",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-browser",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "js-browser",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "js-objects",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-objects",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-objects",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-objects",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-functions",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-functions",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-functions",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-functions",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "js-dom",
+      "step": 7,
+      "ok": true
+    },
+    {
+      "lesson": "js-error-handling",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-error-handling",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-error-handling",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-error-handling",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-error-handling",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "js-error-handling",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "js-function-values",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-function-values",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-function-values",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-function-values",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-function-values",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "js-comparisons",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-comparisons",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-comparisons",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-comparisons",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-conditions-functions",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-conditions-functions",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-conditions-functions",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-data-loops",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-data-loops",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-data-loops",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-data-loops",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "js-events-forms",
+      "step": 7,
+      "ok": true
+    },
+    {
+      "lesson": "js-small-state",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-small-state",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-small-state",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-validation-storage",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-validation-storage",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-validation-storage",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-validation-storage",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-fetch",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-fetch",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-fetch",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-fetch",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "js-fetch",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "js-event-planner",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "js-event-planner",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "js-event-planner",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "js-event-planner",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-three-layers",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-three-layers",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-three-layers",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-three-layers",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-document",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-document",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-document",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-document",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-text",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-text",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-text",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-text",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-lists",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-lists",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-lists",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-lists",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-links",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-links",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-links",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-links",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-media",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-media",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-media",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-media",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-tables",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-tables",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-tables",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-tables",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "html-forms",
+      "step": 7,
+      "ok": true
+    },
+    {
+      "lesson": "html-semantics",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "html-semantics",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "html-semantics",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "html-semantics",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "css-intro",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "css-intro",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "css-intro",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "css-intro",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "css-selectors",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "css-selectors",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "css-selectors",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "css-selectors",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "css-type-colors",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "css-type-colors",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "css-type-colors",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "css-type-colors",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "css-box-model",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "css-box-model",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "css-box-model",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "css-box-model",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "css-display-position",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "css-display-position",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "css-display-position",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "css-display-position",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "css-motion-project",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "css-motion-project",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "css-motion-project",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "css-motion-project",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-echo",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-echo",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-echo",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-echo",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-variables",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-variables",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-variables",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-variables",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-conditions",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-conditions",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-conditions",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-conditions",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-loops",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-loops",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-loops",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-loops",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-arrays-foreach",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-arrays-foreach",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-arrays-foreach",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-arrays-foreach",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-functions",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-functions",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-functions",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-functions",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-post-forms",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-post-forms",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-post-forms",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-post-forms",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "php-post-forms",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "php-post-forms",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "php-profile-project",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "php-profile-project",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "php-profile-project",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "php-profile-project",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-jsx",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-jsx",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-jsx",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-jsx",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-jsx",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-jsx",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "react-components-props",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-components-props",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-components-props",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-components-props",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-components-props",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "react-state-events",
+      "step": 7,
+      "ok": true
+    },
+    {
+      "lesson": "react-lists-conditions",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-lists-conditions",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-lists-conditions",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-lists-conditions",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-lists-conditions",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-controlled-forms",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-controlled-forms",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-controlled-forms",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-controlled-forms",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-controlled-forms",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 6,
+      "ok": true
+    },
+    {
+      "lesson": "react-effects-data",
+      "step": 7,
+      "ok": true
+    },
+    {
+      "lesson": "react-composition-hooks",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-composition-hooks",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-composition-hooks",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-composition-hooks",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-composition-hooks",
+      "step": 5,
+      "ok": true
+    },
+    {
+      "lesson": "react-task-board",
+      "step": 1,
+      "ok": true
+    },
+    {
+      "lesson": "react-task-board",
+      "step": 2,
+      "ok": true
+    },
+    {
+      "lesson": "react-task-board",
+      "step": 3,
+      "ok": true
+    },
+    {
+      "lesson": "react-task-board",
+      "step": 4,
+      "ok": true
+    },
+    {
+      "lesson": "react-task-board",
+      "step": 5,
+      "ok": true
+    }
+  ]
+}

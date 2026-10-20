@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-export default function AppShell({ sidebar, main, inspector, sidebarOpen, onSidebarClose, toolbarActions }) {
+export default function AppShell({ sidebar, main, inspector, sidebarOpen, onSidebarClose, toolbarActions, previewOpen = true, onPreviewToggle }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   return (
-    <div className={`app-shell${sidebarOpen ? ' app-shell--sidebar-open' : ''}${sidebarCollapsed ? ' app-shell--sidebar-collapsed' : ''}`}>
+    <div className={`app-shell${sidebarOpen ? ' app-shell--sidebar-open' : ''}${sidebarCollapsed ? ' app-shell--sidebar-collapsed' : ''}${!previewOpen ? ' app-shell--preview-hidden' : ''}`}>
       <button
         className="sidebar-backdrop"
         type="button"
@@ -22,12 +22,13 @@ export default function AppShell({ sidebar, main, inspector, sidebarOpen, onSide
             {sidebarCollapsed ? 'Pokaż panel lekcji' : 'Schowaj panel lekcji'}
           </button>
           {toolbarActions}
+          {onPreviewToggle && <button type="button" className="button button--ghost preview-toggle" aria-expanded={previewOpen} aria-controls="course-preview" onClick={onPreviewToggle}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4m-3-10 2 2 4-4"/></svg>{previewOpen ? 'Schowaj podgląd' : 'Pokaż podgląd'}</button>}
         </div>
         {main}
       </main>
-      <aside className="inspector-region" aria-label="Podgląd i diagnostyka">
+      {previewOpen && <aside id="course-preview" className="inspector-region" aria-label="Podgląd i diagnostyka">
         {inspector}
-      </aside>
+      </aside>}
     </div>
   );
 }

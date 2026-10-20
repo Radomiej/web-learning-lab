@@ -216,6 +216,14 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
     }, 50);
   });
 
+  // Only asynchronous lesson checks observe later DOM updates; other runtimes keep their existing cost.
+  if (requestedSignals.some(check => check.pendingText)) {
+    let pendingSnapshot;
+    new MutationObserver(() => {
+      window.clearTimeout(pendingSnapshot);
+      pendingSnapshot = window.setTimeout(snapshot, 10);
+    }).observe(document.documentElement, { childList: true, characterData: true, subtree: true });
+  }
   window.addEventListener('load', () => {
     window.setTimeout(() => {
       send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });

@@ -1,0 +1,188 @@
+[
+  {
+    "lessonId": "html-three-layers",
+    "asset": "public/course-assets/lesson-infographics/html-three-layers.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Od adresu do dokumentu. Example code: <p>Cześć, świecie!</p>. Outcome: W podglądzie pojawia się akapit Cześć, świecie! Same nawiasy i nazwa p nie są wyświetlane.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-document",
+    "asset": "public/course-assets/lesson-infographics/html-document.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Szkielet dokumentu. Example code: <!doctype html>\n<html lang=\"pl\">\n  <head><title>Zielnik</title></head>\n  <body><p>Mięta</p></body>\n</html>. Outcome: Karta ma tytuł Zielnik. W treści strony jest Mięta. head i body nie tworzą dwóch widocznych ramek.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-text",
+    "asset": "public/course-assets/lesson-infographics/html-text.png",
+    "mode": "built-in image_gen",
+    "prompt": "Edit this Polish educational infographic. Preserve the attractive warm ivory, navy, teal and gold style, but SIMPLIFY to THREE spacious panels, remove the entire bottom CSS section and extra small notes. NO CHARACTERS. Title: Nagłówki tworzą hierarchię. Panel1 'Kod HTML': EXACT code <h1>Rośliny</h1> newline <h2>Zioła</h2> newline <h3>Mięta</h3> newline <h3>Bazylia</h3>. Panel2 'Widok przeglądarki': show only the plain rendered heading text Rośliny, Zioła, Mięta, Bazylia, the last TWO at the SAME font size; no plants or decorative images inside this browser because that HTML code does not render plants. Panel3 'Hierarchia': use physical wooden SIGNBOARDS as the heading labels above distinct broad staircase steps with herb pots underneath/on the steps. Top step sign 'H1 Rośliny', next lower step sign 'H2 Zioła', bottom WIDE common step with TWO EQUAL sibling signs 'H3 Mięta' and 'H3 Bazylia', with mint and basil pots beneath these signs. Clearly branch H2 to both equal H3 signs, NOT a chain Mięta->Bazylia. The plants/staircase are a visual model, not a browser result. Short caption only: 'Mięta i Bazylia: ten sam poziom H3.' This must match the user's requested signboards with herb staircase and teach levels accurately, not imply headings automatically create plants. Final revision: wooden heading signs above terraced garden stairs, different herbs beneath; mint and basil share the same H3 step."
+  },
+  {
+    "lessonId": "html-lists",
+    "asset": "public/course-assets/lesson-infographics/html-lists.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Lista punktowana. Example code: <ul>\n  <li>Mięta</li>\n  <li>Bazylia</li>\n</ul>. Outcome: Dwie osobne pozycje z punktorami: Mięta i Bazylia. Zamiana ich kolejności nie zmienia sensu spisu.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-links",
+    "asset": "public/course-assets/lesson-infographics/html-links.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Tekst linku a jego cel. Example code: <a href=\"kontakt.html\">Kontakt z pracownią</a>. Outcome: Widać klikalny tekst Kontakt z pracownią. Aktywacja otwiera kontakt.html względem bieżącego dokumentu; plik musi istnieć.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-media",
+    "asset": "public/course-assets/lesson-infographics/html-media.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Obraz jest plikiem wskazanym przez src. Example code: <img src=\"mieta.jpg\"\n  alt=\"Liście mięty o ząbkowanych brzegach\"\n  width=\"320\" height=\"200\">. Outcome: Po znalezieniu pliku pojawia się zdjęcie 320 × 200 pikseli CSS. Bez pliku obraz się nie załaduje; opis pozostaje dostępny dla technologii asystujących.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-tables",
+    "asset": "public/course-assets/lesson-infographics/html-tables.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Wiersz zawiera komórki. Example code: <table>\n  <tr><th>Zioło</th><th>Doniczki</th></tr>\n  <tr><td>Mięta</td><td>3</td></tr>\n</table>. Outcome: Dwie kolumny i dwa wiersze. Mięta znajduje się pod Zioło, liczba 3 pod Doniczki. Obramowania nie są automatycznie włączone.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-forms",
+    "asset": "public/course-assets/lesson-infographics/html-forms.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Etykieta wskazuje konkretne pole. Example code: <label for=\"roslina\">Nazwa rośliny</label>\n<input id=\"roslina\" name=\"plant\" type=\"text\">. Outcome: Widać napis i pole. Kliknięcie napisu Nazwa rośliny ustawia kursor w powiązanym polu. Wysyłana nazwa danych to plant.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "html-semantics",
+    "asset": "public/course-assets/lesson-infographics/html-semantics.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Struktura jest mapą strony. Example code: <header><h1>Zielnik</h1></header>\n<main><p>Opis roślin.</p></main>\n<footer><p>Szkolna pracownia</p></footer>. Outcome: Treści pozostają w tej kolejności. Dokument otrzymuje region główny i strukturę; sam main nie tworzy tła ani układu kolumn.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "css-intro",
+    "asset": "public/course-assets/lesson-infographics/css-intro.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Najpierw istnieje element HTML. Example code: /* HTML: <p>Mięta</p> */\np { color: navy; }. Outcome: Przed: akapit ma kolor wynikający ze stylów domyślnych. Po: tekst Mięta jest granatowy. Treść i element p pozostają te same.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "css-selectors",
+    "asset": "public/course-assets/lesson-infographics/css-selectors.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Klasa wybiera grupę. Example code: /* HTML: <p class=\"notice\">Uwaga</p><p>Opis</p> */\n.notice { color: darkred; }. Outcome: Przed: oba akapity mają domyślny kolor. Po: Uwaga jest ciemnoczerwona, Opis pozostaje bez zmiany.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "css-type-colors",
+    "asset": "public/course-assets/lesson-infographics/css-type-colors.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Jednostka wskazuje punkt odniesienia. Example code: html { font-size: 16px; }\np { font-size: 1.5rem; }. Outcome: Przed: przy domyślnych 1rem tekst ma 16px. Po: 1.5 × 16px = 24px. Rozmiar ekranu nie zmienia tego rachunku.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "css-box-model",
+    "asset": "public/course-assets/lesson-infographics/css-box-model.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: Cztery warstwy pudełka. Example code: .card {\n  padding: 12px;\n  border: 2px solid navy;\n  margin: 16px;\n  background-color: #e0f2fe;\n}. Outcome: Wokół treści jest 12px jasnego wypełnienia, następnie granatowa ramka 2px, a na zewnątrz 16px marginesu.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "css-display-position",
+    "asset": "public/course-assets/lesson-infographics/css-display-position.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: display zmienia udział w układzie. Example code: /* HTML: <span>A</span><span>B</span> */\nspan { display: block; }. Outcome: Przed: A i B są w jednym wierszu. Po: każde span zaczyna osobny wiersz jako blok. Treść znaków nie zmienia się.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "css-motion-project",
+    "asset": "public/course-assets/lesson-infographics/css-motion-project.png",
+    "mode": "built-in image_gen",
+    "prompt": "Warm ivory educational infographic with navy headings, teal arrows, gold numbered badges and colorful functional pictograms. Topic: transition potrzebuje zmiany stanu. Example code: button {\n  background-color: #e0f2fe;\n  transition: background-color 200ms ease;\n}\nbutton:hover { background-color: #bae6fd; }. Outcome: Przed najechaniem jasne tło. Po najechaniu kolor przechodzi do #bae6fd przez 200ms. Po zejściu wraca przez 200ms.. User approved the warm HTML/CSS style; retain original values and distinguish code from browser output."
+  },
+  {
+    "lessonId": "php-echo",
+    "asset": "public/course-assets/lesson-infographics/php-echo.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Co wykonuje PHP?\nThe only example is:\n<?php\necho \"Cześć!\";\nTeach exactly this result: Wynik odpowiedzi: Cześć!\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "php-variables",
+    "asset": "public/course-assets/lesson-infographics/php-variables.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Zmienna ma nazwę i wartość\nThe only example is:\n<?php\n$name = \"Ala\";\necho $name;\nTeach exactly this result: Zmienna $name przechowuje tekst Ala, więc echo wypisuje Ala.\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "php-conditions",
+    "asset": "public/course-assets/lesson-infographics/php-conditions.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Warunek daje true albo false\nThe only example is:\n<?php\n$points = 7;\nif ($points >= 5) {\n  echo \"Zaliczone\";\n} else {\n  echo \"Spróbuj ponownie\";\n}\nTeach exactly this result: 7 >= 5 daje true, więc wynik to Zaliczone.\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "php-loops",
+    "asset": "public/course-assets/lesson-infographics/php-loops.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Pętla powtarza instrukcje\nThe only example is:\n<?php\nfor ($i = 1; $i <= 3; $i++) {\n  echo $i . \" \";\n}\nTeach exactly this result: 1 2 3. Dla $i = 4 warunek jest false i pętla kończy się.\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "php-arrays-foreach",
+    "asset": "public/course-assets/lesson-infographics/php-arrays-foreach.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Tablica przechowuje kolekcję\nThe only example is:\n<?php\n$skills = [\"HTML\", \"CSS\", \"PHP\"];\necho $skills[1];\nTeach exactly this result: CSS — drugi element ma indeks 1.\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "php-functions",
+    "asset": "public/course-assets/lesson-infographics/php-functions.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Funkcja to nazwana czynność\nThe only example is:\n<?php\nfunction doublePoints($points) {\n  return $points * 2;\n}\n$result = doublePoints(4);\necho $result;\nTeach exactly this result: Argument 4 trafia do $points, return oddaje 8, $result przechowuje 8.\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "php-post-forms",
+    "asset": "public/course-assets/lesson-infographics/php-post-forms.png",
+    "mode": "built-in image_gen",
+    "prompt": "Keep the current calm ivory/navy/gold/teal visual style and three-stage form→server→browser story. In middle card REMOVE the unsafe PHP snippet that directly echoes $_POST. Replace that code box with three short neutral steps: \"Odczyt klucza name\", \"Sprawdzenie danych\", \"Przygotowanie odpowiedzi\". Show $_POST[\"name\"] → \"Ala\" as a DATA illustration, not an unsafe echo example. Keep exact HTML form left with action=index.php method=post input id=person name=name required. Left field filled Ala, request POST name=Ala, right output example Ala. Say \"Przykładowa odpowiedź po sprawdzeniu danych\". Important: no database, no automatic save, no characters. Prefer less text and large labels."
+  },
+  {
+    "lessonId": "php-profile-project",
+    "asset": "public/course-assets/lesson-infographics/php-profile-project.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a clean Polish programming infographic, landscape 3:2, one idea only, THREE large cards maximum, white/ivory background, navy text, teal arrows and small golden numbered badges, soft mint/orange accents. Match the clean educational code-and-result reference style. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO ANIMATED CHARACTERS, NO MASCOTS. No busy poster, CSS side lesson, extra examples or footnotes. Large legible text, short captions, elegant functional pictograms (server, variable box, array cells, function machine, browser). Precise code syntax, not decorative pseudo-code.\nTitle: Zaplanuj dane, obliczenia i widok\nThe only example is:\n<?php\n$profile = [\n  \"name\" => \"Ala\",\n  \"skills\" => [\"HTML\", \"CSS\", \"PHP\"]\n];\nTeach exactly this result: Plan widoku: nagłówek Ala i lista trzech umiejętności.\nFor PHP: code executes on SERVER (the lab separately supports PHP.wasm); browser receives OUTPUT, not PHP source. Do not imply defining array automatically renders a profile or defining function automatically calls it. For profile project label \"Dane\" and \"Plan widoku\" rather than claiming output already exists. For forms, name=\"name\" is POST key, id=\"person\" is for label; show user types Ala then normal submit creates POST name=Ala to index.php on a PHP server; no database claim. For variables show $name contains \"Ala\", echo reads it. For loops show i=1,2,3 output1 2 3 and i=4 stops. For arrays label indices0,1,2 with CSS at1. For functions show argument4 -> return8 -> echo8 distinct."
+  },
+  {
+    "lessonId": "react-jsx",
+    "asset": "public/course-assets/lesson-infographics/react-jsx.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a NEW Polish educational infographic. Use the supplied GameDev page ONLY as reference for its calm, spacious diagram visual style: white background, navy bold labels, teal arrows, restrained orange accent, clear flat icons, three LARGE panels maximum. Output landscape 3:2. NO PEOPLE, NO CARTOON CHARACTERS, NO FACES, NO ROBOTS, NO EMOJI, NO HANDS, no decorative mascot. Avoid busy posters, sticky notes, extra examples, CSS comparisons or lists of tips. ONE IDEA ONLY. At most a title, 3 short numbered headings, 3 short sentences and a few lines of exact code. Large legible typography and plenty of whitespace. Pictograms should depict actual data, a component card, or a browser output.\nTopic: React opisuje interfejs danymi\nExample code (use only the essential lines, syntax must be correct):\nfunction App() {\n  return <h1>Pracownia</h1>;\n}\nExact concept and visible outcome: Po zamontowaniu App użytkownik widzi nagłówek Pracownia. Samo zdefiniowanie funkcji jeszcze nie wyświetla strony.\nFor map: clearly draw the ORIGINAL array -> map function -> NEW array of JSX descriptions -> React renders DOM list; explicitly label \"Nowa tablica\", do NOT claim map directly creates DOM nodes. For state: count 0 -> click -> setter -> next render count 1. For props: App passes name=\"Lena\" to Hello, then visible \"Cześć, Lena!\". For intro: App function returns JSX, React renders mounted App into h1 \"Pracownia\"; defining a function alone doesn't mount. Keep all original example values."
+  },
+  {
+    "lessonId": "react-components-props",
+    "asset": "public/course-assets/lesson-infographics/react-components-props.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a NEW Polish educational infographic. Use the supplied GameDev page ONLY as reference for its calm, spacious diagram visual style: white background, navy bold labels, teal arrows, restrained orange accent, clear flat icons, three LARGE panels maximum. Output landscape 3:2. NO PEOPLE, NO CARTOON CHARACTERS, NO FACES, NO ROBOTS, NO EMOJI, NO HANDS, no decorative mascot. Avoid busy posters, sticky notes, extra examples, CSS comparisons or lists of tips. ONE IDEA ONLY. At most a title, 3 short numbered headings, 3 short sentences and a few lines of exact code. Large legible typography and plenty of whitespace. Pictograms should depict actual data, a component card, or a browser output.\nTopic: Props to dane od rodzica\nExample code (use only the essential lines, syntax must be correct):\nfunction Hello({ name }) {\n  return <p>Cześć, {name}!</p>;\n}\nfunction App() {\n  return <Hello name=\"Lena\" />;\n}\nExact concept and visible outcome: App przekazuje name z tekstem Lena. Hello odczytuje tę wartość i pokazuje Cześć, Lena!\nFor map: clearly draw the ORIGINAL array -> map function -> NEW array of JSX descriptions -> React renders DOM list; explicitly label \"Nowa tablica\", do NOT claim map directly creates DOM nodes. For state: count 0 -> click -> setter -> next render count 1. For props: App passes name=\"Lena\" to Hello, then visible \"Cześć, Lena!\". For intro: App function returns JSX, React renders mounted App into h1 \"Pracownia\"; defining a function alone doesn't mount. Keep all original example values."
+  },
+  {
+    "lessonId": "react-state-events",
+    "asset": "public/course-assets/lesson-infographics/react-state-events.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a NEW Polish educational infographic. Use the supplied GameDev page ONLY as reference for its calm, spacious diagram visual style: white background, navy bold labels, teal arrows, restrained orange accent, clear flat icons, three LARGE panels maximum. Output landscape 3:2. NO PEOPLE, NO CARTOON CHARACTERS, NO FACES, NO ROBOTS, NO EMOJI, NO HANDS, no decorative mascot. Avoid busy posters, sticky notes, extra examples, CSS comparisons or lists of tips. ONE IDEA ONLY. At most a title, 3 short numbered headings, 3 short sentences and a few lines of exact code. Large legible typography and plenty of whitespace. Pictograms should depict actual data, a component card, or a browser output.\nTopic: Stan jest pamięcią komponentu\nExample code (use only the essential lines, syntax must be correct):\nimport { useState } from \"react\";\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>\n    Punkty: {count}\n  </button>;\n}\nExact concept and visible outcome: Najpierw Punkty: 0. Po kliknięciu React przelicza widok z wartością 1 i przycisk pokazuje Punkty: 1.\nFor map: clearly draw the ORIGINAL array -> map function -> NEW array of JSX descriptions -> React renders DOM list; explicitly label \"Nowa tablica\", do NOT claim map directly creates DOM nodes. For state: count 0 -> click -> setter -> next render count 1. For props: App passes name=\"Lena\" to Hello, then visible \"Cześć, Lena!\". For intro: App function returns JSX, React renders mounted App into h1 \"Pracownia\"; defining a function alone doesn't mount. Keep all original example values."
+  },
+  {
+    "lessonId": "react-lists-conditions",
+    "asset": "public/course-assets/lesson-infographics/react-lists-conditions.png",
+    "mode": "built-in image_gen",
+    "prompt": "Create a NEW Polish educational infographic. Use the supplied GameDev page ONLY as reference for its calm, spacious diagram visual style: white background, navy bold labels, teal arrows, restrained orange accent, clear flat icons, three LARGE panels maximum. Output landscape 3:2. NO PEOPLE, NO CARTOON CHARACTERS, NO FACES, NO ROBOTS, NO EMOJI, NO HANDS, no decorative mascot. Avoid busy posters, sticky notes, extra examples, CSS comparisons or lists of tips. ONE IDEA ONLY. At most a title, 3 short numbered headings, 3 short sentences and a few lines of exact code. Large legible typography and plenty of whitespace. Pictograms should depict actual data, a component card, or a browser output.\nTopic: map tworzy nową tablicę wyników\nExample code (use only the essential lines, syntax must be correct):\nfunction Plants() {\n  const plants = [{ id: 7, name: \"Mięta\" }, { id: 9, name: \"Bazylia\" }];\n  return <ul>{plants.map(p =>\n    <li key={p.id}>{p.name}</li>\n  )}</ul>;\n}\nExact concept and visible outcome: map zwraca nową tablicę dwóch opisów JSX. Po renderowaniu widać listę: Mięta i Bazylia. map sam nie tworzy węzłów DOM.\nFor map: clearly draw the ORIGINAL array -> map function -> NEW array of JSX descriptions -> React renders DOM list; explicitly label \"Nowa tablica\", do NOT claim map directly creates DOM nodes. For state: count 0 -> click -> setter -> next render count 1. For props: App passes name=\"Lena\" to Hello, then visible \"Cześć, Lena!\". For intro: App function returns JSX, React renders mounted App into h1 \"Pracownia\"; defining a function alone doesn't mount. Keep all original example values."
+  },
+  {
+    "lessonId": "react-controlled-forms",
+    "asset": "public/course-assets/lesson-infographics/react-controlled-forms.png",
+    "mode": "built-in image_gen",
+    "prompt": "SIMPLIFY this infographic to ONE IDEA ONLY: controlled input. DELETE ALL sections about useEffect, shared state, arrays or checkboxes. Keep calm white/navy/teal/orange style, no characters. Title \"Kontrolowane pole pokazuje stan\". Exactly THREE spacious panels: 1 \"Stan początkowy\" with name = \"\" and an empty field labeled Imię; 2 \"Zmiana pola\" with L typed and exact arrow label onChange → setName(\"L\"); 3 \"Nowy render\" with name = \"L\" and field value L. A small single code block beneath: function NameField() { const [name, setName] = useState(\"\"); return <label>Imię<input value={name} onChange={e => setName(e.target.value)} /></label>; }. One caption: \"Stan jest źródłem wartości pola.\" Large legible text, plenty of whitespace. No second example."
+  },
+  {
+    "lessonId": "react-effects-data",
+    "asset": "public/course-assets/lesson-infographics/react-effects-data.png",
+    "mode": "built-in image_gen",
+    "prompt": "Replace this diagram with ONE IDEA ONLY: useEffect after commit updates a browser TAB title. DELETE all controlled input, setName handlers, arrays, list, checkboxes, derived counts. Calm white/navy/teal/orange GameDev style, no people. Title \"useEffect: po zatwierdzeniu widoku\". Exactly THREE large sequential cards: 1 \"Dane komponentu\" contains name = \"Lena\"; 2 \"React zatwierdza widok\" has a neutral document icon and short caption \"Najpierw aktualizacja DOM\"; 3 \"Efekt ustawia tytuł karty\" shows a BROWSER TAB (not page heading) labeled Profil: Lena. A single code block: // Fragment w komponencie z propsem name: newline useEffect(() => { newline document.title = \"Profil: \" + name; newline }, [name]);. Tiny caption: \"[name]: efekt ponawia się po zmianie name.\" Do not add an input or profile card absent from snippet. Show ONE flow only."
+  },
+  {
+    "lessonId": "react-composition-hooks",
+    "asset": "public/course-assets/lesson-infographics/react-composition-hooks.png",
+    "mode": "built-in image_gen",
+    "prompt": "SIMPLIFY to ONE IDEA ONLY: one shared state owner. DELETE all controlled input and useEffect examples. Calm white/navy/teal/orange style, no characters. Title \"Jeden stan, wspólny właściciel\". Top card App contains useState(0), count = 0. Branch from App to TWO child-view cards: \"Tekst\" showing Suma: 0 and \"Przycisk\" showing Dodaj. Label both data arrows \"count\". A return action arrow from the button to App labeled setCount(c => c + 1). Lower before/after miniature shows Suma: 0 + Dodaj -> click -> Suma: 1 + Dodaj. Small EXACT code: function App() { const [count, setCount] = useState(0); return <><p>Suma: {count}</p><button onClick={() => setCount(c => c + 1)}>Dodaj</button></>; }. Text and button are parts of the same component in this code, so call child cards \"Fragmenty widoku\" rather than pretending separately defined components exist. Caption \"Oba fragmenty korzystają ze stanu w App.\" No other concepts."
+  },
+  {
+    "lessonId": "react-task-board",
+    "asset": "public/course-assets/lesson-infographics/react-task-board.png",
+    "mode": "built-in image_gen",
+    "prompt": "NEW Polish educational infographic, landscape 3:2. Calm spacious style inspired ONLY by diagram typography/teal/orange/white of reference GameDev page. THREE large numbered cards or a simple data flow; white background, navy typography, soft mint and restrained orange, flat conceptual icons, lots of whitespace. NO PEOPLE, NO FACES, NO ROBOTS, NO HANDS, NO MASCOTS, NO EMOJI. No busy poster, no decorative notes, no extra concepts or CSS comparisons. One idea, maximum 3 short captions, large legible code snippets.\nTitle: Zacznij od danych i najmniejszego widoku\nAccurate lesson example:\nconst initialTasks = [\n  { id: 7, title: \"Podlej miętę\", done: false },\n  { id: 9, title: \"Dodaj etykietę\", done: true }\n];\nMust depict exactly: Plan: dwie pozycje, jedna ukończona. Z danych można obliczyć postęp 1 z 2 bez osobnego stanu licznika.\nFor controlled input: state name=\"\" -> user types L -> onChange calls setter -> next render value=\"L\"; don't imply the original local variable mutates. For useEffect: render/commit first, then effect updates browser TAB TITLE to \"Profil: Lena\"; [name] means rerun on changed name, not after every click; do not invent a visible profile card absent from snippet. For shared state: App owns count=0, button and label both read same state, click increments to1. For board data: two records id7 false and id9 true become two rows with unchecked/checked boxes and derived 1 z 2; show bracketed array and corresponding list. No claim code fragment alone mounts."
+  }
+]

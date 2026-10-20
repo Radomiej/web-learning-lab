@@ -463,7 +463,7 @@ export default function CodeEditor({
         {editorState === 'loading' ? 'Ładowanie edytora…' : notice}
       </p>
       <div className="editor-actions">
-        <button className="button button--primary" type="button" onClick={() => onRun?.()} aria-label="Uruchom" title="Uruchom (Ctrl+S)"><EditorIcon action="run" /></button>
+        <button className="button button--primary" type="button" onClick={() => onRun?.()} aria-label="Uruchom" title={onCheck ? 'Play: uruchom kod i sprawdź zadanie' : 'Play: uruchom projekt'}><EditorIcon action="run" /></button>
         <button className="button button--ghost" type="button" onClick={() => onReset?.()} aria-label={resetLabel} title={resetLabel}><EditorIcon action="reset" /></button>
         {onSolution && <button className="button button--ghost button--solution" type="button" onClick={onSolution} aria-label="Pokaż rozwiązanie" title="Pokaż rozwiązanie"><EditorIcon action="solution" /></button>}
       </div>

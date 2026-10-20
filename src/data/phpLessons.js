@@ -97,7 +97,7 @@ const definitions = [
     file: 'index.php',
     token: 'htmlspecialchars',
     objectives: ['Odczytaj wartość z `$_POST`.', 'Zabezpiecz tekst przez `htmlspecialchars` przed wstawieniem do HTML.'],
-    theory: ['Dane z formularza są wejściem użytkownika i mogą zawierać znaczniki HTML.', '`htmlspecialchars` zamienia znaki specjalne na bezpieczne encje. W tej lekcji przycisk Sprawdź wysyła do PHP kontrolowane żądanie POST.'],
+    theory: ['Dane z formularza mogą zawierać znaczniki HTML.', '`htmlspecialchars` pozwala wyświetlić te dane jako tekst, bez interpretowania ich jako HTML. Kliknij przycisk ▶ Play. Test tej lekcji wyśle do PHP przygotowane żądanie POST.'],
   },
   {
     order: lessonNumber('php', 8),

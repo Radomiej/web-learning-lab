@@ -14,7 +14,7 @@ export default function FeedbackPanel({ checkResults = [], runtimeErrors = [] })
           {runtimeErrors.map((error, index) => <span key={`${error}-${index}`}>{error}</span>)}
         </div>
       )}
-      {checkResults.length === 0 && runtimeErrors.length === 0 && <p className="muted-copy">Uruchom kod, aby sprawdzić zadanie.</p>}
+      {checkResults.length === 0 && runtimeErrors.length === 0 && <p className="muted-copy">Kliknij przycisk ▶ Play, aby uruchomić kod i sprawdzić zadanie.</p>}
       {checkResults.length > 0 && (
         <ul className="feedback-list">
           {checkResults.map((result) => (

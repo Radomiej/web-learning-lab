@@ -118,6 +118,12 @@ function evaluateOne(check = {}, context = {}) {
 
   try {
     switch (check.type) {
+      case 'consoleOutput': {
+        const expected = safeString(expectedValue(check));
+        const output = Array.isArray(signals.consoleOutput) ? signals.consoleOutput : [];
+        const passed = output.some(line => line === expected);
+        return resultFor(check, passed, passed ? 'Konsola zawiera oczekiwany wynik.' : `Oczekiwano wpisu w konsoli: ${expected}. Uruchom program przez ▶ Play.`);
+      }
       case 'gameScenario': {
         const result = signals.gameScenarios?.[check.id];
         if (!result?.ok) return resultFor(check, false, result?.error || 'Gra nie przekazała wyniku scenariusza. Uruchom ją przez GameLab.run.');

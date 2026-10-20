@@ -12,7 +12,7 @@ function projectWithSource(base, source) {
 const recipes = {
   40: {
     guided: {
-      prompt: 'Użyj echo, aby wyrenderować w PHP nagłówek i komunikat w elemencie #result. Uruchom podgląd, aby zobaczyć HTML wygenerowany po stronie PHP.',
+      prompt: 'Użyj echo, aby wyświetlić nagłówek i komunikat w elemencie o id="result". Kliknij przycisk ▶ Play, aby zobaczyć HTML wygenerowany przez PHP i wynik sprawdzenia.',
       starter: '<?php\n// Użyj echo i wyświetl tutaj swój pierwszy komunikat.\n',
       solution: '<?php\necho \'<main><h1>Pierwszy skrypt PHP</h1><p id="result">Witaj w PHP!</p></main>\';\n',
       checks: [
@@ -147,7 +147,7 @@ const recipes = {
   },
   46: {
     guided: {
-      prompt: 'Odczytaj imię z tablicy $_POST, zabezpiecz je przez htmlspecialchars i wyświetl w odpowiedzi. Sprawdzenie wyśle formularz POST z imieniem Ala.',
+      prompt: 'Odczytaj imię z tablicy $_POST, zabezpiecz je przez htmlspecialchars i wyświetl w odpowiedzi. Kliknij przycisk ▶ Play. Test zadania wyśle do PHP żądanie POST z imieniem Ala.',
       starter: '<?php\n// Odczytaj $_POST["name"], użyj htmlspecialchars i pokaż wynik.\n',
       solution: '<?php\n$name = htmlspecialchars($_POST["name"] ?? "Gościu", ENT_QUOTES, "UTF-8");\necho "<main><p id=\\"result\\">Witaj, $name!</p></main>";\n',
       checks: [
@@ -157,7 +157,7 @@ const recipes = {
       ],
     },
     independent: {
-      prompt: 'Zbuduj prosty formularz wiadomości po stronie PHP: odczytaj pole message z POST, zabezpiecz je i pokaż w #result. Sprawdzimy wartość „Cześć!”.',
+      prompt: 'Odczytaj pole message z $_POST, zabezpiecz tekst i wyświetl go w elemencie o id="result". Kliknij przycisk ▶ Play. Test zadania wyśle wiadomość „Cześć!”.',
       starter: '<?php\n// Odczytaj $_POST["message"] i bezpiecznie wyrenderuj odpowiedź.\n',
       solution: '<?php\n$message = htmlspecialchars($_POST["message"] ?? "Brak wiadomości", ENT_QUOTES, "UTF-8");\necho "<main><p id=\\"result\\">Wiadomość: $message</p></main>";\n',
       checks: [
@@ -222,7 +222,7 @@ export function phpTasks(definition, base) {
       solution: projectWithSource(base, recipe.solution),
       checks: makeChecks(id, recipe),
       hint: mode === 'guided'
-        ? 'Wykonuj jedno wymaganie naraz. Kliknij Sprawdź, aby zobaczyć wynik PHP i listę brakujących warunków.'
+        ? 'Wykonuj po jednym kroku. Kliknij przycisk ▶ Play, aby zobaczyć wynik PHP i sprawdzenie zadania.'
         : 'Zacznij od działającego echo, a potem dodawaj zmienne, warunki lub pętle. Uruchamiaj kod po małej zmianie.',
     });
   }).filter(Boolean);

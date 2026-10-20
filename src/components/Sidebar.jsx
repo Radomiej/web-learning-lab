@@ -1,4 +1,4 @@
-import StudentIdentity from './StudentIdentity.jsx';
+import StudentIdentity, {ConnectionStatus} from './StudentIdentity.jsx';
 export default function Sidebar({
   telemetry,
   tracks,
@@ -6,6 +6,7 @@ export default function Sidebar({
   lessons,
   selectedTrack,
   selectedLessonId,
+  selectedTask,
   completedTasks,
   onTrackChange,
   onLessonChange,
@@ -32,8 +33,7 @@ export default function Sidebar({
         </span>
         <div className="sidebar-brand-copy">
           <strong>Web Learning Lab</strong>
-          <span title={telemetry?.machineId}>ID: {telemetry?.machineId?.slice(-6)||'—'}</span>
-          <span>{telemetry?.studentName||'Bez nazwy'}</span>
+          <div className="sidebar-profile-row"><ConnectionStatus telemetry={telemetry} iconOnly/><StudentIdentity telemetry={telemetry} compact /></div>
         </div>
         <button
           className="sidebar-close-button"
@@ -58,7 +58,6 @@ export default function Sidebar({
         </button>
       </div>
 
-      <StudentIdentity telemetry={telemetry}/>
       <div className="sidebar-progress" aria-label="Postęp kursu">
         <div className="progress-heading">
           <span>Twój postęp</span>
@@ -190,6 +189,7 @@ export default function Sidebar({
       </div>
 
       </details>
+      <a className="sidebar-generator" href={`#zadania?lekcja=${encodeURIComponent(selectedLessonId)}&zadanie=${encodeURIComponent(selectedTask?.id || '')}&poziom=${selectedTask?.mode === 'guided' ? 'easy' : selectedTask?.mode === 'challenge' ? 'challenge' : 'standard'}`} onClick={onClose}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h4m3 1v6m-3-3h6"/></svg>Generator zadań</a>
       </div>
 
       <div className="sidebar-footer">

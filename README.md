@@ -94,3 +94,18 @@ Only controlled metadata is forwarded: no code, SQL, output, student names, inst
 
 ### Window focus telemetry
 Teacher session snapshots include optional `focused` status. Window focus/blur and document visibility changes send a heartbeat immediately; older clients remain compatible. Presence is independent of the 45-second connection timeout. Focus is sent only to the existing teacher backend, not Umami.
+
+
+### Kursy i oddawanie prac (2026-10-20)
+
+Moduł Nauka → Quiz → Zadanie obejmuje 45 lekcji JS/HTML/CSS/PHP/React i 208 kroków. Podgląd uruchamia się na żądanie lub przez Play. Generator pod wyborem lekcji przejmuje zagadnienie i poziom bieżącego zadania, używa suwaka oraz zwiniętych szczegółów. Profil pod tytułem pokazuje ID, opcjonalną nazwę, ikonę edycji i kropkę połączenia.
+
+JavaScript: 401 zmienne, 402 obiekty, 403 funkcje, 404 DOM, 405 referencje funkcji, 406 porównania, 407 warunki, 408 tablice, 409 formularze, 410 stan, 411 obsługa błędów, 412 JSON/zapis, 413 fetch, 414 planer. React ma 45 kroków i wyjaśnia JSX, props, stan, kolejkę, tablice, efekty, zależności i StrictMode. Łącznie jest 99 ilustracji, w tym 31 nowych kolorowych infografik.
+
+Generator v2 ma po trzy przepisy dla każdego poziomu każdej lekcji JS (126 kombinacji) oraz ćwiczenia projektowe dla pozostałych 31 tematów. Domyślny seed indywidualizuje dane i rodzaj operacji; własny seed odtwarza zestaw. Starsze deskryptory v1 są nadal odczytywane. Serwerowe rozwiązania pozostają poza publicznym payloadem API.
+
+Quiz oddaje niezmienną kopię answer.json przez IndexedDB i /api/submissions. Serwer odtwarza klucz z deskryptora. Potwierdzenie serwerowej kolejki pokazuje tylko ✓ Wysłano; odzyskiwanie kopii i ponawianie są dostępne przy problemie. Ocenę nadal potwierdza nauczyciel. Katalog oraz walidator wersji 1/2 w lokalnym lab-admin są zsynchronizowane.
+
+Umami: quiz_submitted (lesson_id, lesson_number, total, passed, kind=quiz, action=queued), assignment_generated (lesson_id, total, kind=coding), assignment_submitted (lesson_id, kind=coding, action=queued). Zachowano domenę, Website ID, flagi i DNT. Odpowiedzi i kod trafiają do istniejącego systemu prac nauczyciela, nie do Umami. Odbioru nowych zdarzeń w panelu produkcyjnym nie potwierdzano.
+
+Szczegółowy wykaz i ograniczenia: [docs/course-teaching-update.md](docs/course-teaching-update.md). Prompty: [docs/lesson-infographic-prompts.json](docs/lesson-infographic-prompts.json).

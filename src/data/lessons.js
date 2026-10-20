@@ -1,3 +1,8 @@
+import { jsCoursePages, extraJsDefinitions } from './jsCoursePages.js';
+import { htmlCssTeachingPages } from './htmlCssTeachingPages.js';
+import { phpTeachingPages } from './phpTeachingPages.js';
+import { reactTeachingPages } from './reactTeachingPages.js';
+import { jsFoundationDefinitions } from './jsFoundations.js';
 import { createLesson } from './lessonFactories.js';
 import { cssLessons } from './cssLessons.js';
 import { htmlLessons } from './htmlLessons.js';
@@ -246,57 +251,47 @@ const definitions = [
     objectives: ['Animuj zmianę stanu, nie dekoruj wszystkiego ruchem.', 'Uszanuj `prefers-reduced-motion`.'],
     theory: ['`transition` wygładza zmianę wartości, a `@keyframes` opisuje sekwencję animacji.', 'Ruch powinien wspierać orientację i informację zwrotną; użytkownik może poprosić o ograniczenie animacji.'],
   },
+  ...jsFoundationDefinitions,
+  ...extraJsDefinitions.filter(lesson => lesson.order < 407),
   {
-    order: lessonNumber('js', 1), id: 'js-browser', track: 'js', title: 'JavaScript w przeglądarce',
-    summary: 'Uruchamiaj skrypt, loguj bezpiecznie i deklaruj dane.',
-    focus: 'script, console, const, let i podstawowe typy', file: 'script.js', token: 'const',
-    objectives: ['Rozróżniaj dane stałe i zmienne.', 'Loguj wartości bez ujawniania przypadkowych obiektów.'],
-    theory: ['JavaScript dodaje zachowanie po stronie przeglądarki, ale nie powinien zastępować semantycznego HTML.', 'Zaczynaj od `const`, a po `let` sięgaj wtedy, gdy wartość naprawdę będzie zmieniana.'],
-  },
-  {
-    order: lessonNumber('js', 2), id: 'js-conditions-functions', track: 'js', title: 'Warunki i funkcje',
+    order: lessonNumber('js', 7), id: 'js-conditions-functions', track: 'js', title: 'Warunki i funkcje',
     summary: 'Podejmuj decyzje i zamykaj powtarzalną logikę w funkcjach.',
     focus: 'if, else, operatory, parametry i return', file: 'script.js', token: 'function',
     objectives: ['Rozbij logikę na małe funkcje.', 'Zwracaj wynik zamiast polegać na ukrytym stanie.'],
     theory: ['Warunek opisuje decyzję, a funkcja nadaje nazwę powtarzalnej operacji.', 'Czytelne parametry i wartości zwracane ułatwiają testowanie kodu.'],
   },
   {
-    order: lessonNumber('js', 3), id: 'js-data-loops', track: 'js', title: 'Tablice, obiekty i pętle',
+    order: lessonNumber('js', 8), id: 'js-data-loops', track: 'js', title: 'Tablice, obiekty i pętle',
     summary: 'Pracuj z danymi i przekształcaj je bez duplikacji.',
     focus: 'tablice, obiekty, for, for...of, map i filter', file: 'script.js', token: '.map(',
     objectives: ['Wybierz metodę pasującą do celu.', 'Nie mieszaj transformowania danych z renderowaniem.'],
     theory: ['`map` tworzy nową tablicę, `filter` wybiera elementy, a pętla może być dobrym wyborem dla efektów ubocznych.', 'Obiekt grupuje powiązane dane; nazwij właściwości tak, aby nie trzeba było komentować oczywistości.'],
   },
   {
-    order: lessonNumber('js', 4), id: 'js-dom', track: 'js', title: 'DOM i renderowanie',
-    summary: 'Znajduj elementy i aktualizuj widok bez utraty semantyki.',
-    focus: 'querySelector, textContent, classList i tworzenie elementów', file: 'script.js', token: 'querySelector',
-    objectives: ['Wybieraj elementy przez stabilne selektory.', 'Preferuj `textContent` dla zwykłego tekstu.'],
-    theory: ['DOM jest obiektem reprezentującym dokument; JavaScript może zmieniać jego tekst, klasy, atrybuty i dzieci.', '`innerHTML` jest wygodne, ale przy danych użytkownika wymaga ostrożności — zwykły tekst powinien trafiać do `textContent`.'],
-  },
-  {
-    order: lessonNumber('js', 5), id: 'js-events-forms', track: 'js', title: 'Zdarzenia i formularze',
+    order: lessonNumber('js', 9), id: 'js-events-forms', track: 'js', title: 'Zdarzenia i formularze',
     summary: 'Reaguj na click, input i submit oraz czytaj wartości pól.',
     focus: 'addEventListener, click, input, submit i preventDefault', file: 'script.js', token: 'addEventListener',
     objectives: ['Podłącz handler do właściwego zdarzenia.', 'Kontroluj zachowanie formularza bez blokowania klawiatury.'],
     theory: ['Zdarzenie opisuje coś, co zaszło w przeglądarce; handler powinien robić jedną, zrozumiałą rzecz.', '`preventDefault()` stosuj wtedy, gdy przejmujesz zachowanie formularza i zapewniasz równoważną informację zwrotną.'],
   },
   {
-    order: lessonNumber('js', 6), id: 'js-small-state', track: 'js', title: 'Stan małej aplikacji',
+    order: lessonNumber('js', 10), id: 'js-small-state', track: 'js', title: 'Stan małej aplikacji',
     summary: 'Zaprojektuj jeden obiekt stanu i funkcję render.',
     focus: 'obiekt stanu, render, filtrowanie listy i empty state', file: 'script.js', token: 'render',
     objectives: ['Trzymaj źródło prawdy w jednym miejscu.', 'Renderuj także stan pusty.'],
     theory: ['Stan to dane, które opisują aktualny widok; `render` powinien wyprowadzać UI ze stanu zamiast dopisywać przypadkowe fragmenty.', 'Stan pusty jest częścią przepływu, nie błędem do ukrycia.'],
   },
+  ...extraJsDefinitions.filter(lesson => lesson.order === 411),
   {
-    order: lessonNumber('js', 7), id: 'js-validation-storage', track: 'js', title: 'Walidacja, błędy i localStorage',
+    order: lessonNumber('js', 12), id: 'js-validation-storage', track: 'js', title: 'Walidacja, błędy i localStorage',
     summary: 'Waliduj dane i bezpiecznie obsługuj zapis lokalny.',
     focus: 'try/catch, JSON.stringify, JSON.parse i localStorage', file: 'script.js', token: 'localStorage',
     objectives: ['Pokaż użytkownikowi zrozumiały błąd.', 'Nie zakładaj, że dane w localStorage są poprawne.'],
     theory: ['Dane z przeglądarki są wejściem zewnętrznym — mogą być puste, stare albo uszkodzone.', '`try/catch` powinien prowadzić do bezpiecznego stanu awaryjnego, a nie do cichego połknięcia problemu.'],
   },
+  ...extraJsDefinitions.filter(lesson => lesson.order === 413),
   {
-    order: lessonNumber('js', 8), id: 'js-event-planner', track: 'js', title: 'Projekt końcowy: planer wydarzenia',
+    order: lessonNumber('js', 14), id: 'js-event-planner', track: 'js', title: 'Projekt końcowy: planer wydarzenia',
     summary: 'Połącz semantyczny HTML, arkusz styles.css, formularz i interakcje.',
     focus: 'formularz wydarzenia, tabela zadań, responsywność i checklista jakości', file: 'script.js', token: 'addEventListener',
     objectives: ['Połącz strukturę, styl i zachowanie w małą aplikację.', 'Przejdź checklistę semantyki, klawiatury i responsywności.'],
@@ -378,8 +373,9 @@ export const lessons = definitions.map((definition) => {
   return createLesson({
     ...definition,
     ...content,
+    ...((jsCoursePages[definition.id] || htmlCssTeachingPages[definition.id] || reactTeachingPages[definition.id]) ? { theory: jsCoursePages[definition.id] || htmlCssTeachingPages[definition.id] || reactTeachingPages[definition.id] } : {}),
     starter,
     solution: starter,
     tasks,
   });
-}).concat(phpLessons, gameLessons);
+}).concat(phpLessons.map(lesson => ({ ...lesson, theory: phpTeachingPages[lesson.id] || lesson.theory })), gameLessons);

@@ -1,0 +1,480 @@
+[
+  {
+    "id": "js-browser",
+    "hash": "#/js/401-zmienne-i-wartosci-pierwszy-program/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Program wykonuje instrukcje po kolei",
+      "Jak przeczytać deklarację zmiennej",
+      "let: wartość zmienia się krok po kroku",
+      "const czy let?",
+      "Tekst i liczba to różne wartości",
+      "Jak zobaczyć wynik i znaleźć pomyłkę"
+    ]
+  },
+  {
+    "id": "js-objects",
+    "hash": "#/js/402-obiekty-i-wlasciwosci/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Jedna osoba, kilka powiązanych danych",
+      "Kropka wybiera właściwość",
+      "Zmiana danych wewnątrz obiektu",
+      "Nie każda nazwa istnieje"
+    ]
+  },
+  {
+    "id": "js-functions",
+    "hash": "#/js/403-funkcje-i-metody-jak-wywolac-operacje/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Funkcja nadaje nazwę operacji",
+      "Parametr, argument i return",
+      "Metoda jest funkcją dostępną przez obiekt",
+      "Znasz już pierwszą metodę: console.log"
+    ]
+  },
+  {
+    "id": "js-dom",
+    "hash": "#/js/404-document-i-dom-kod-zmienia-strone/1-document-i-dom-kod-zmienia-strone",
+    "steps": [
+      "Przeglądarka tworzy model strony",
+      "Skąd bierze się globalne document?",
+      "Znajdź element: obiekt, metoda, argument, wynik",
+      "Zmień właściwość znalezionego elementu",
+      "getElementById a querySelector",
+      "Gdy elementu nie ma",
+      "Klasy, atrybuty i tworzenie dzieci"
+    ]
+  },
+  {
+    "id": "js-error-handling",
+    "hash": "#/js/411-bledy-wyjatki-i-obsluga-bledow/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Co jest błędem podczas wykonania?",
+      "Error to obiekt opisujący problem",
+      "try i catch: przejmij problem, nie udawaj sukcesu",
+      "finally: zakończ próbę przy sukcesie i błędzie",
+      "throw new Error: zgłoś naruszenie reguły",
+      "Reakcja zależy od rodzaju problemu"
+    ]
+  },
+  {
+    "id": "js-function-values",
+    "hash": "#/js/405-funkcje-i-metody-w-zmiennych/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Funkcja także jest wartością",
+      "Zapisz funkcję albo jej wynik",
+      "Funkcja strzałkowa i callback",
+      "Metoda w zmiennej a this",
+      "Przekaż reakcję, nie uruchamiaj jej wcześniej"
+    ]
+  },
+  {
+    "id": "js-comparisons",
+    "hash": "#/js/406-porownania-i-wartosci-logiczne/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Porównanie jest pytaniem o dane",
+      "Równość i nierówność bez zgadywania",
+      "Granice: większe czy większe lub równe?",
+      "Połącz warunki: i, lub, zaprzeczenie"
+    ]
+  },
+  {
+    "id": "js-conditions-functions",
+    "hash": "#/js/407-warunki-i-funkcje/1-warunki-i-funkcje",
+    "steps": [
+      "if wybiera blok instrukcji",
+      "Warunek w funkcji i dwa możliwe wyniki",
+      "Kilka przypadków i widoczny wynik"
+    ]
+  },
+  {
+    "id": "js-data-loops",
+    "hash": "#/js/408-tablice-obiekty-i-petle/1-tablice-obiekty-i-petle",
+    "steps": [
+      "Tablica przechowuje wiele wartości",
+      "map przekształca, filter wybiera",
+      "Pętla wykonuje instrukcje dla każdego elementu",
+      "Od tablicy do czytelnego tekstu"
+    ]
+  },
+  {
+    "id": "js-events-forms",
+    "hash": "#/js/409-zdarzenia-i-formularze/1-zdarzenia-i-formularze",
+    "steps": [
+      "Najpierw rejestracja, potem reakcja",
+      "Odczytaj aktualną wartość pola",
+      "Co zrobi formularz bez JavaScriptu?",
+      "Przejmij submit, a nie tylko kliknięcie",
+      "FormData zbiera dane według name",
+      "Sprawdź dane po ich odczytaniu",
+      "Liczby, checkbox i pola pominięte"
+    ]
+  },
+  {
+    "id": "js-small-state",
+    "hash": "#/js/410-stan-malej-aplikacji/1-stan-malej-aplikacji",
+    "steps": [
+      "Stan przechowuje dane, render pokazuje wynik",
+      "Co oznacza warunek ? wynikA : wynikB?",
+      "Zmiana danych wymaga odświeżenia widoku"
+    ]
+  },
+  {
+    "id": "js-validation-storage",
+    "hash": "#/js/412-walidacja-bledy-i-localstorage/1-walidacja-bledy-i-localstorage",
+    "steps": [
+      "JSON to tekstowy zapis danych",
+      "try/catch pozwala odzyskać kontrolę",
+      "Sprawdź również typ i strukturę",
+      "Zapis lokalny może być niedostępny"
+    ]
+  },
+  {
+    "id": "js-fetch",
+    "hash": "#/js/413-fetch-pobieranie-danych-i-obsluga-bledow/1-przecwicz-krok-po-kroku",
+    "steps": [
+      "Żądanie, oczekiwanie i odpowiedź",
+      "Sprawdź HTTP i dopiero odczytaj JSON",
+      "Obsłuż ładowanie, sukces i błąd",
+      "Kontrolowane ćwiczenie i prawdziwa sieć",
+      "then i catch to druga składnia tego samego przepływu"
+    ]
+  },
+  {
+    "id": "js-event-planner",
+    "hash": "#/js/414-projekt-koncowy-planer-wydarzenia/1-projekt-koncowy-planer-wydarzenia",
+    "steps": [
+      "Najpierw model danych i gotowy HTML",
+      "Wejście musi przejść walidację",
+      "Dodaj do danych, potem odśwież widok",
+      "Renderuj bezpiecznie i sprawdź cały przepływ"
+    ]
+  },
+  {
+    "id": "html-three-layers",
+    "hash": "#/html/101-internet-strona-i-trzy-warstwy/1-internet-strona-i-trzy-warstwy",
+    "steps": [
+      "Od adresu do dokumentu",
+      "Znacznik nadaje tekstowi rolę",
+      "Trzy pliki, trzy odpowiedzialności",
+      "Rodzic i dziecko"
+    ]
+  },
+  {
+    "id": "html-document",
+    "hash": "#/html/102-pierwszy-dokument-html5/1-pierwszy-dokument-html5",
+    "steps": [
+      "Szkielet dokumentu",
+      "Tytuł karty to nie nagłówek strony",
+      "Kodowanie i język",
+      "Szerokość widoku na telefonie"
+    ]
+  },
+  {
+    "id": "html-text",
+    "hash": "#/html/103-tekst-i-hierarchia/1-tekst-i-hierarchia",
+    "steps": [
+      "Nagłówki tworzą hierarchię",
+      "Akapit i przełamanie wiersza",
+      "Wyróżnienie ma znaczenie",
+      "Drobne znaki też są elementami"
+    ]
+  },
+  {
+    "id": "html-lists",
+    "hash": "#/html/104-listy-i-zagniezdzanie/1-listy-i-zagniezdzanie",
+    "steps": [
+      "Lista punktowana",
+      "Jedna zmiana: ul na ol",
+      "Podlista wewnątrz pozycji",
+      "Pojęcie i opis"
+    ]
+  },
+  {
+    "id": "html-links",
+    "hash": "#/html/105-linki-i-nawigacja/1-linki-i-nawigacja",
+    "steps": [
+      "Tekst linku a jego cel",
+      "Ścieżka względna i pełny URL",
+      "Skok do sekcji tego dokumentu",
+      "Link działa też klawiaturą"
+    ]
+  },
+  {
+    "id": "html-media",
+    "hash": "#/html/106-obrazy-i-multimedia/1-obrazy-i-multimedia",
+    "steps": [
+      "Obraz jest plikiem wskazanym przez src",
+      "Opis alternatywny a podpis",
+      "Wymiary rezerwują miejsce",
+      "Odtwarzacz z kontrolkami"
+    ]
+  },
+  {
+    "id": "html-tables",
+    "hash": "#/html/107-tabele-i-dane/1-tabele-i-dane",
+    "steps": [
+      "Wiersz zawiera komórki",
+      "Nagłówek opisuje kolumnę",
+      "Tytuł i grupowanie danych",
+      "Scalanie zmienia siatkę"
+    ]
+  },
+  {
+    "id": "html-forms",
+    "hash": "#/html/108-formularze-i-walidacja/1-formularze-i-walidacja",
+    "steps": [
+      "Etykieta wskazuje konkretne pole",
+      "Typ i required zmieniają zachowanie",
+      "Wybór i dłuższa wypowiedź",
+      "Grupa pól i rodzaj przycisku",
+      "name nazywa wysyłaną wartość",
+      "action wskazuje adres, method sposób wysłania",
+      "Kiedy JavaScript przejmuje formularz?"
+    ]
+  },
+  {
+    "id": "html-semantics",
+    "hash": "#/html/109-semantyka-i-dostepnosc/1-semantyka-i-dostepnosc",
+    "steps": [
+      "Struktura jest mapą strony",
+      "Sekcja i samodzielny artykuł",
+      "Kontrolka ma działanie wbudowane",
+      "Pojemnik, fragment i data"
+    ]
+  },
+  {
+    "id": "css-intro",
+    "hash": "#/css/201-css-i-dolaczanie-arkuszy/1-css-i-dolaczanie-arkuszy",
+    "steps": [
+      "Najpierw istnieje element HTML",
+      "Dołączenie pliku CSS",
+      "Tekst i tło to osobne właściwości",
+      "Przy równych regułach wygrywa późniejsza"
+    ]
+  },
+  {
+    "id": "css-selectors",
+    "hash": "#/css/202-selektory-i-kaskada/1-selektory-i-kaskada",
+    "steps": [
+      "Klasa wybiera grupę",
+      "Id, atrybut i potomek",
+      "Stan hover i widoczny fokus",
+      "Specyficzność przed kolejnością"
+    ]
+  },
+  {
+    "id": "css-type-colors",
+    "hash": "#/css/203-jednostki-kolory-i-typografia/1-jednostki-kolory-i-typografia",
+    "steps": [
+      "Jednostka wskazuje punkt odniesienia",
+      "Procenty i viewport",
+      "Interlinia oddziela wiersze",
+      "Jedna decyzja, wiele użyć"
+    ]
+  },
+  {
+    "id": "css-box-model",
+    "hash": "#/css/204-model-pudelkowy/1-model-pudelkowy",
+    "steps": [
+      "Cztery warstwy pudełka",
+      "content-box: policz całą szerokość",
+      "border-box: ta sama reguła, inny pomiar",
+      "gap oddziela dzieci kontenera"
+    ]
+  },
+  {
+    "id": "css-display-position",
+    "hash": "#/css/205-wyswietlanie-pozycjonowanie-i-powierzchnie/1-wyswietlanie-pozycjonowanie-i-powierzchnie",
+    "steps": [
+      "display zmienia udział w układzie",
+      "relative przesuwa, lecz zachowuje miejsce",
+      "absolute potrzebuje punktu odniesienia",
+      "Powierzchnia i nadmiar treści"
+    ]
+  },
+  {
+    "id": "css-motion-project",
+    "hash": "#/css/206-przejscia-animacje-i-projekt-koncowy/1-przejscia-animacje-i-projekt-koncowy",
+    "steps": [
+      "transition potrzebuje zmiany stanu",
+      "Klawiatura też zmienia stan",
+      "keyframes opisuje etapy animacji",
+      "Preferencja ograniczonego ruchu"
+    ]
+  },
+  {
+    "id": "php-echo",
+    "hash": "#/php/601-pierwszy-skrypt-php-i-echo/1-pierwszy-skrypt-php-i-echo",
+    "steps": [
+      "Co wykonuje PHP?",
+      "Gdzie zaczyna się instrukcja?",
+      "PHP tworzy HTML",
+      "HTML obok PHP"
+    ]
+  },
+  {
+    "id": "php-variables",
+    "hash": "#/php/602-zmienne-i-typy-danych/1-zmienne-i-typy-danych",
+    "steps": [
+      "Zmienna ma nazwę i wartość",
+      "Tekst, liczba i prawda",
+      "Łączenie tekstów kropką",
+      "Nowa wartość zastępuje starą"
+    ]
+  },
+  {
+    "id": "php-conditions",
+    "hash": "#/php/603-warunki-if-i-else/1-warunki-if-i-else",
+    "steps": [
+      "Warunek daje true albo false",
+      "Przypisanie a porównanie",
+      "Dwa warunki naraz",
+      "Kolejność decyzji ma znaczenie"
+    ]
+  },
+  {
+    "id": "php-loops",
+    "hash": "#/php/604-petle-for-i-while/1-petle-for-i-while",
+    "steps": [
+      "Pętla powtarza instrukcje",
+      "Jedna instrukcja, wiele elementów",
+      "while: dopóki warunek jest prawdziwy",
+      "Policz obiegi przed uruchomieniem"
+    ]
+  },
+  {
+    "id": "php-arrays-foreach",
+    "hash": "#/php/605-tablice-i-foreach/1-tablice-i-foreach",
+    "steps": [
+      "Tablica przechowuje kolekcję",
+      "foreach bierze kolejny element",
+      "Klucze zamiast numerów",
+      "Klucz i wartość w pętli"
+    ]
+  },
+  {
+    "id": "php-functions",
+    "hash": "#/php/606-funkcje-i-return/1-funkcje-i-return",
+    "steps": [
+      "Funkcja to nazwana czynność",
+      "return oddaje, echo wyświetla",
+      "Ta sama funkcja, inne argumenty",
+      "Funkcje wbudowane też przyjmują dane"
+    ]
+  },
+  {
+    "id": "php-post-forms",
+    "hash": "#/php/607-formularz-post-i-bezpieczenstwo/1-formularz-post-i-bezpieczenstwo",
+    "steps": [
+      "Co dzieje się po Wyślij?",
+      "GET i POST oraz warunki laboratorium",
+      "Pobierz wartość, ale nie zakładaj poprawności",
+      "Walidacja liczby to osobny krok",
+      "Wypisz dane jako tekst, nie jako HTML",
+      "Połącz etapy w obsługę formularza"
+    ]
+  },
+  {
+    "id": "php-profile-project",
+    "hash": "#/php/608-projekt-karta-profilu-php/1-projekt-karta-profilu-php",
+    "steps": [
+      "Zaplanuj dane, obliczenia i widok",
+      "Nazwij wspólną operację",
+      "Wygeneruj listę z danych",
+      "Sprawdź więcej niż szczęśliwy przypadek"
+    ]
+  },
+  {
+    "id": "react-jsx",
+    "hash": "#/react/501-react-i-jsx-w-sandboxie/1-react-i-jsx-w-sandboxie",
+    "steps": [
+      "React opisuje interfejs danymi",
+      "Komponent jest funkcją z wielką literą",
+      "JSX przypomina HTML, ale jest kodem JavaScript",
+      "Klamry wstawiają wartość JavaScript",
+      "Root łączy React z istniejącym DOM",
+      "JSX jest wygodnym zapisem opisu elementu"
+    ]
+  },
+  {
+    "id": "react-components-props",
+    "hash": "#/react/502-komponenty-i-props/1-komponenty-i-props",
+    "steps": [
+      "Props to dane od rodzica",
+      "Ten sam komponent, różne dane",
+      "children jest zawartością między tagami",
+      "Dziecko zgłasza akcję przez callback",
+      "Dane płyną w dół, intencja wraca funkcją"
+    ]
+  },
+  {
+    "id": "react-state-events",
+    "hash": "#/react/503-stan-i-zdarzenia/1-stan-i-zdarzenia",
+    "steps": [
+      "Stan jest pamięcią komponentu",
+      "Zdarzenie uruchamia przekazaną funkcję",
+      "Stan jest migawką konkretnego renderu",
+      "Dwa zastąpienia to nie dwa przyrosty",
+      "Aktualizator otrzymuje poprzedni wynik kolejki",
+      "Obiekt w stanie wymaga nowej wersji",
+      "StrictMode pomaga wykrywać nieczysty kod"
+    ]
+  },
+  {
+    "id": "react-lists-conditions",
+    "hash": "#/react/504-listy-i-warunkowe-renderowanie/1-listy-i-warunkowe-renderowanie",
+    "steps": [
+      "map przekształca dane w elementy",
+      "key opisuje tożsamość między renderami",
+      "filter wybiera dane, warunek wybiera widok",
+      "Dodanie i usunięcie bez mutacji",
+      "map aktualizuje wybrany obiekt"
+    ]
+  },
+  {
+    "id": "react-controlled-forms",
+    "hash": "#/react/505-formularze-kontrolowane/1-formularze-kontrolowane",
+    "steps": [
+      "Kontrolowane pole pokazuje stan",
+      "Wartość pola liczbowego nadal jest tekstem",
+      "onSubmit obsługuje cały formularz",
+      "Pokaż błąd powiązany z polem",
+      "Czyść dopiero po przyjęciu danych"
+    ]
+  },
+  {
+    "id": "react-effects-data",
+    "hash": "#/react/506-efekty-i-przeplyw-danych/1-efekty-i-przeplyw-danych",
+    "steps": [
+      "Render liczy widok, efekt synchronizuje otoczenie",
+      "Tablica zależności jest listą odczytywanych danych",
+      "cleanup odwraca poprzednią synchronizację",
+      "StrictMode sprawdza kompletność sprzątania",
+      "Nie każda zmiana wymaga efektu",
+      "Asynchroniczna praca wewnątrz efektu",
+      "Ignorowanie wyniku a anulowanie żądania"
+    ]
+  },
+  {
+    "id": "react-composition-hooks",
+    "hash": "#/react/507-kompozycja-i-wlasne-hooki/1-kompozycja-i-wlasne-hooki",
+    "steps": [
+      "Wspólna informacja potrzebuje wspólnego właściciela",
+      "Kompozycja przez props i children",
+      "Własny hook wydziela logikę stanu",
+      "Hook dzieli przepis, nie wspólną pamięć",
+      "Hooki mają stałą kolejność wywołań"
+    ]
+  },
+  {
+    "id": "react-task-board",
+    "hash": "#/react/508-projekt-koncowy-react-task-board/1-projekt-koncowy-react-task-board",
+    "steps": [
+      "Zacznij od danych i najmniejszego widoku",
+      "TaskItem pokazuje props i zgłasza zmianę",
+      "Widok pochodny nie potrzebuje kopii w stanie",
+      "Dodawanie składa się ze znanych kroków",
+      "Sprawdź działanie w trudniejszych stanach"
+    ]
+  }
+]
