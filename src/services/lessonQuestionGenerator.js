@@ -112,7 +112,7 @@ export function generateLessonQuestions(lesson, { seed = 0, count = 3, topic: ex
       const id = `${lesson.id}:${String(seed)}:${index}`;
       const distractors = shuffled([...new Set(pages.filter(other => other.result !== page.result).map(other => other.result))], random).slice(0, 3);
       const options = shuffled([page.result, ...distractors].map((text, optionIndex) => ({ id: `${id}:option-${optionIndex}`, text })), random);
-      return { id, topic: lesson.id, type: 'single-choice', prompt: `${page.title}: jaki efekt opisano w lekcji?`, code: page.code, options, correctOptionId: `${id}:option-0`, explanation: page.text };
+      return { id, topic: lesson.id, type: 'single-choice', prompt: `${page.title} — wybierz poprawne stwierdzenie.`, code: page.code, options, correctOptionId: `${id}:option-0`, explanation: page.text };
     });
   }
   const topic = explicitTopic || TOPICS_BY_ID[lesson.id] || TOPICS_IN_ORDER[lessonSequence('js', lesson.order) - 1];
