@@ -64,7 +64,7 @@ export default function PreviewInspector({ previewDocument, previewKey, onMessag
         </label>
         <span className="preview-save-hint"><kbd>Ctrl</kbd><span>+</span><kbd>S</kbd> zapisuje i odświeża</span>
       </div>
-      {previewFiles.length > 1 && <div className="preview-page-choice"><label htmlFor="preview-page">Plik wejściowy podglądu</label><select id="preview-page" value={previewPath} onChange={event=>onPreviewPathChange(event.target.value)}>{previewFiles.map(path=><option key={path} value={path}>{path}</option>)}</select><small>Sprawdź zawsze uruchamia plik wejściowy zadania.</small></div>}
+      {previewFiles.length > 1 && <div className="preview-page-choice"><label htmlFor="preview-page">Plik wejściowy podglądu</label><select id="preview-page" value={previewPath} onChange={event=>onPreviewPathChange(event.target.value)}>{previewFiles.map(path=><option key={path} value={path}>{path}</option>)}</select><small>Po kliknięciu ▶ Play test sprawdza plik wejściowy zadania. Wybór tutaj zmienia tylko podgląd.</small></div>}
       <div className="preview-frame-wrap">
         <iframe
           ref={frameRef}

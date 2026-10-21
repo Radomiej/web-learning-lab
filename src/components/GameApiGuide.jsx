@@ -78,13 +78,13 @@ export default function GameApiGuide() {
       {section === 'start' ? <div className="game-api-start">
         <div className="game-api-intro">
           <p>W <code>game.js</code> piszesz scenę oraz komponenty. Gotowe API jest dostępne jako <code>GameLab</code>. HTML i CSS edytujesz w osobnych zakładkach, a podgląd korzysta z prawdziwego canvasu.</p>
-          <ol><li>Rozszerz <code>GameLab.Game</code>.</li><li>W <code>onCreate()</code> utwórz obiekty i dodaj im komponenty.</li><li>W <code>onUpdate(delta)</code> aktualizuj grę; delta jest czasem w sekundach.</li><li>Uruchom <code>GameLab.run(MyGame)</code> lub kliknij Uruchom.</li></ol>
+          <ol><li>Rozszerz <code>GameLab.Game</code>.</li><li>W <code>onCreate()</code> utwórz obiekty i dodaj im komponenty.</li><li>W <code>onUpdate(delta)</code> aktualizuj grę; delta jest czasem w sekundach.</li><li>Na końcu pliku dodaj <code>GameLab.run(MyGame)</code>. Kliknij przycisk ▶ Play, aby uruchomić grę i sprawdzić zadanie.</li></ol>
         </div>
         <pre tabIndex={0}><code>{example}</code></pre>
         <div className="game-api-callouts">
           <p><strong>Scena i komponenty</strong><br /><code>onCreate</code> wykonuje się raz, <code>onUpdate(delta)</code> co klatkę. W komponencie używaj <code>this.game</code>, <code>this.gameObject</code> i <code>this.transform</code>.</p>
           <p><strong>Współrzędne i sterowanie</strong><br />Pozycja oznacza środek obiektu w pikselach, dodatnie Y biegnie w dół. Ruch postaci w kursie: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>.</p>
-          <p><strong>Testy a podgląd</strong><br />„Sprawdź” tworzy świeżą scenę i symuluje klatki oraz klawisze. Podgląd na żywo ma własną, niezależną instancję gry.</p>
+          <p><strong>Play i wynik zadania</strong><br />Przycisk ▶ Play uruchamia podgląd i sprawdza zadanie. Test tworzy osobną scenę i symuluje klatki oraz klawisze. W playgroundzie Play tylko uruchamia projekt.</p>
         </div>
       </div> : section === 'architecture' ? <div className="game-api-start"><h3>Obiekt + komponenty = zachowanie</h3><p>Scena dziedziczy po <code>GameLab.Game</code>. Obiekt przechowuje pozycję, a komponenty dodają wygląd, ruch, kolizje i reguły gry.</p><h3>Cykl życia</h3><p><code>onCreate()</code> przygotowuje stan raz. <code>onUpdate(delta)</code> aktualizuje go co klatkę. Czas podajemy w sekundach, prędkość w pikselach na sekundę.</p><h3>Kamera i HUD</h3><p><code>Camera2D</code> przesuwa widok świata, nie pozycje obiektów. Tekst interfejsu używa <code>TextRenderer</code> w przestrzeni ekranu.</p><h3>Twoje pliki</h3><p>W <code>game.js</code> uruchom scenę. Własne komponenty trzymaj w folderze <code>components/</code> i importuj jako moduły JavaScript. Canvas jest wynikiem pracy silnika, nie miejscem przechowywania reguł gry.</p></div> : <div className="game-api-reference">
         <div className="game-api-search-row">

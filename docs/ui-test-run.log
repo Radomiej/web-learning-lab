@@ -1,0 +1,25 @@
+
+ RUN  v2.1.9 C:/Nauka/web-learning-lab
+
+ ✓ src/components/components.test.jsx (12 tests) 18237ms
+   ✓ offers the next lesson only after completing every task 2356ms
+   ✓ shows the first lesson, three editor files, preview status, and track navigation 595ms
+   ✓ opens the CRA public entry when the React track is selected 958ms
+   ✓ places add file as the final control in the editor tab strip 573ms
+   ✓ opens settings and requires a separate confirmation before hard reset 1193ms
+   ✓ does not clip the expanded editor help inside the editor shell 649ms
+   ✓ changes the active editor file and opens the mobile sidebar 848ms
+   ✓ keeps the mobile lesson panel closable and reopenable 1282ms
+   ✓ adds a component, restores it after reload and confirms reset 3999ms
+   ✓ collapses and restores the lesson panel without remounting the sandbox or losing editor content 1509ms
+   ✓ only example exercises expose a solution button 1579ms
+   ✓ opens Game Dev with its three files, engine guide, and console below the editor 2692ms
+ ✓ src/components/AssignmentWorkspace.test.jsx (2 tests) 784ms
+   ✓ generates a seeded task, edits files and requires student ID for an immutable submission 489ms
+ ✓ src/components/HtmlLessonExample.test.jsx (2 tests) 249ms
+
+ Test Files  3 passed (3)
+      Tests  16 passed (16)
+   Start at  12:44:33
+   Duration  31.59s (transform 5.15s, setup 499ms, collect 7.08s, tests 19.27s, environment 3.24s, prepare 473ms)
+
