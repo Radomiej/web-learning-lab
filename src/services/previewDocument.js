@@ -158,7 +158,7 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
         results[check.id] = { ok: false, error: stringify(error.message || error) };
       }
     }
-    send('signals', { gameScenarios: results });
+    if (Object.keys(results).length > 0) send('signals', { gameScenarios: results });
   }
 
   ['log', 'warn', 'error'].forEach((level) => {

@@ -12,6 +12,25 @@ test('waits for asynchronous lesson output instead of grading the loading messag
   expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
 });
 
+test('ignores auxiliary signal pings and evaluates only after the DOM snapshot arrives', async () => {
+  const checks = [
+    { id: 'react', type: 'reactRendered', selector: '#root' },
+    { id: 'text', type: 'textContains', selector: '#result', expected: 'GOTOWE' },
+  ];
+  const { result } = renderHook(() => usePreviewRuntime({ html: '<div id="root"></div>' }, checks, 'react'));
+  act(() => result.current.checkPreview());
+  await act(async () => {
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { gameScenarios: {} } });
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  expect(result.current.runtimeState.checkResults).toHaveLength(0);
+  await act(async () => {
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: { '#result': { exists: true, text: 'GOTOWE' }, '#root': { exists: true, text: 'GOTOWE' } }, react: { rootReady: true } } });
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+  expect(result.current.runtimeState.checkResults.every(check => check.passed)).toBe(true);
+});
+
 test('checks console output from current run and resets it before the next run', async () => {
   const checks = [{ id: 'output', type: 'consoleOutput', expected: 'Ola 5' }];
   const { result } = renderHook(() => usePreviewRuntime({ html: '<p>Konsola</p>' }, checks, 'js'));

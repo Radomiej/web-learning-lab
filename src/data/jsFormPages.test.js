@@ -1,4 +1,7 @@
 import { jsFormPages } from './jsFormPages.js';
+import { afterEach } from 'vitest';
+
+afterEach(() => { document.body.innerHTML = ''; });
 
 test('the submit example prevents default navigation and reads name rather than id', () => {
   const page = jsFormPages.find(page => page.title === 'FormData zbiera dane według name');

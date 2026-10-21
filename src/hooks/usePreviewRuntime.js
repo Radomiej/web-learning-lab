@@ -259,8 +259,12 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
         ...current,
         signals: mergeSignals(current.signals, message.payload),
       }));
+      // Evaluate only after a real DOM snapshot arrives. Auxiliary payloads
+      // ({gameScenarios}, {interactions}) can beat the ~200ms snapshot by a
+      // wide margin on large React documents, grading an empty page.
+      const isSnapshot = ['dom', 'styles', 'elements', 'react', 'viewport'].some(key => Object.hasOwn(message.payload || {}, key));
       const awaitingData = checksRef.current.some(check => check.pendingText && signalsRef.current.dom?.[check.selector]?.text?.trim() === check.pendingText);
-      if (pendingCheckRef.current && !awaitingData && checksRef.current.filter(check => check.type === 'interaction').every(check => signalsRef.current.interactions[check.id])) scheduleCheckEvaluation();
+      if (pendingCheckRef.current && isSnapshot && !awaitingData && checksRef.current.filter(check => check.type === 'interaction').every(check => signalsRef.current.interactions[check.id])) scheduleCheckEvaluation();
     }
   }, [scheduleCheckEvaluation, sendDeclaredActions, sendToFrame]);
 

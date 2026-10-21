@@ -10,9 +10,9 @@ export function jsExtraTasks(definition, base) {
       code = index ? 'const profil = { imie: "Ewa", przedstaw() { return this.imie; } };\nconst reakcja = profil.przedstaw.bind(profil);\nconsole.log(reakcja());' : 'function potroj(n) { return n * 3; }\nconst operacja = potroj;\nconsole.log(operacja(4));';
       expected = index ? 'Ewa' : '12';
     } else if (definition.id === 'js-comparisons') {
-      prompt = index ? 'Przypisz tekst "12" do const tekst. W jednym console.log wypisz: tekst === 12 oraz Number(tekst) >= 12. Wynik ma brzmieć false true.' : 'Przypisz 10 do const punkty. W jednym console.log wypisz wyniki punkty > 10 i punkty >= 10. Oczekiwany wpis: false true.';
-      code = index ? 'const tekst = "12";\nconsole.log(tekst === 12, Number(tekst) >= 12);' : 'const punkty = 10;\nconsole.log(punkty > 10, punkty >= 10);';
-      expected = 'false true';
+      prompt = index ? 'Przypisz tekst "12" do const tekst. W jednym console.log wypisz: tekst === "12" oraz Number(tekst) >= 12. Wynik ma brzmieć true true.' : 'Przypisz 10 do const punkty. W jednym console.log wypisz wyniki punkty > 10 i punkty >= 10. Oczekiwany wpis: false true.';
+      code = index ? 'const tekst = "12";\nconsole.log(tekst === "12", Number(tekst) >= 12);' : 'const punkty = 10;\nconsole.log(punkty > 10, punkty >= 10);';
+      expected = index ? 'true true' : 'false true';
     } else if (definition.id === 'js-error-handling') {
       prompt = index ? 'Napisz funkcję sprawdz(wartosc), która rzuca new Error("Wymagana liczba"), gdy typeof wartosc nie jest "number". W try wywołaj sprawdz("12"), a w catch(error) wypisz error.message przez console.log.' : 'Zadeklaruj let komunikat = "" i let koniec = false. W try rzuć new Error("Brak pliku"). W catch(error) przypisz error.message do komunikat. W finally ustaw koniec na true. Po całym try/catch/finally wypisz komunikat i koniec w jednym console.log.';
       code = index ? 'function sprawdz(wartosc) { if (typeof wartosc !== "number") throw new Error("Wymagana liczba"); return wartosc; }\ntry { sprawdz("12"); } catch (error) { console.log(error.message); }' : 'let komunikat = "";\nlet koniec = false;\ntry { throw new Error("Brak pliku"); } catch (error) { komunikat = error.message; } finally { koniec = true; }\nconsole.log(komunikat, koniec);';

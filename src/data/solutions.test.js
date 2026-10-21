@@ -32,11 +32,16 @@ async function runTask(lesson, task, project, waitForSolution = false) {
       const dom = new JSDOM(buildPreviewDocument(project, { track: lesson.track, requestedSignals: task.checks }), {
         runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: new VirtualConsole(),
         beforeParse(window) {
+          // JSDOM has no fetch; Node's undici fetch handles data: URLs.
+          if (typeof globalThis.fetch === 'function') window.fetch = globalThis.fetch;
           window.addEventListener('message', event => {
             const message = event.data;
             if (message.type === 'signals') {
               signals = { ...signals, ...message.payload, interactions: { ...signals.interactions, ...message.payload.interactions } };
               if (message.payload.dom) snapshots++;
+            }
+            if (message.type === 'console' && message.payload?.level === 'log') {
+              signals.consoleOutput = [...(signals.consoleOutput || []), (message.payload.args || []).join(' ')];
             }
             if (message.type === 'runtime-error') signals.runtimeErrors.push(message.payload.message);
           });
