@@ -89,11 +89,6 @@ export function courseScenario(chapter,mode) {
       if(mode==='modified')expect(state('Spawner','WaveSpawner','wave'),2);
       if(mode==='independent')sourceToken='100';
       break;
-    case 'pause':
-      if(mode==='guided') {phases=[phase(1,['Escape'])];expect('paused',true);}
-      else if(mode==='modified') {phases=[phase(51)];expect('paused',false);expect(state('Player','Health','invulnerability'),.65);expect(object('Coin','y'),154);expect(state('Projectile','ProjectileMotion','remaining'),1.9);}
-      else {call(action('Player','PauseController','request','manual'),action('Player','PauseController','request','upgrade'),action('Player','PauseController','release','upgrade'));expect('paused',true);sourceToken='consumeKey';}
-      break;
     case 'upgrades':
       if(mode==='guided') {phases=[phase(1,[],[]),phase(1,['1'])];expect(state('Player','PlayerController','speed'),150);expect(state('Player','Experience','pendingChoices'),0);expect('paused',false);}
       else if(mode==='modified') {phases=[phase(1),phase(1,['2'])];expect(state('Player','Weapon','damage'),2);expect(state('Player','Experience','pendingChoices'),0);}
@@ -120,11 +115,6 @@ export function courseScenario(chapter,mode) {
     case 'run-state':
       if(mode==='guided') {phases=[phase(50),phase(1,[],[action('Run','RunController','start')])];expect('elapsed',.1);expect(state('Run','RunController','state'),'RUNNING');}
       else {phases=[phase(0,[],[action('Run','RunController','start')]),phase(0,[],[action('Player','Health','damage',99)])];expect(state('Run','RunController','state'),'LOST');expect('paused',true);if(mode==='independent')sourceToken='elapsed>=120';}
-      break;
-    case 'portability':
-      if(mode==='guided') {phases=[phase(10,['d'])];expect(object('Player','x'),220);}
-      else if(mode==='modified') {call(action('Player','Health','damage',1),action('Player','Health','damage',1));expect(state('Player','Health','currentHealth'),4);sourceToken='invulnerabilityAfterHit';}
-      else {phases=[phase(0,[],[action('Run','RunController','start')]),phase(10)];expect(state('Run','RunController','state'),'RUNNING');expect(state('Player','RunClock','elapsed'),1);sourceToken='seed=42|Random(42)';}
       break;
     case 'survivor':
       phases=[phase(0,[],[action('Run','RunController','start')]),phase(10)];expect(state('Player','PlayerController','speed'),120);expect(state('Player','Health','maxHealth'),5);expect(state('Player','Weapon','range'),240);expect(state('Player','RunClock','elapsed'),1);expect(state('Run','RunController','state'),'RUNNING');sourceToken=mode==='independent'?'projectileSpeed=220':mode==='modified'?'wave*30':'SurvivorSpawner';

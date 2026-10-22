@@ -16,18 +16,18 @@ export const lessonDiagrams = {
  'canvas-ui': ['ui-panel-blue','Pozycja ekranu → rysowanie → HUD','HUD korzysta ze współrzędnych ekranu.','canvas.drawText("HP", 20, 20);','Napis i pasek nie uciekają po przesunięciu kamery. Figury mają jawne wymiary.'],
  health: ['heart','Trafienie → Health → ochrona','Zdrowie i nietykalność należą do konkretnej jednostki.','health.damage(1);','Przyjęty cios odejmuje HP. Kolejny cios w czasie ochrony jest odrzucony; liczby pokazują testy.'],
  'enemy-ai': ['slime','Cel → kierunek → pościg','Kierunek to pozycja celu minus pozycja przeciwnika.','double dx = target.transform.x - transform.x;','Znormalizowany kierunek pozwala Slime gonić gracza ze stałą prędkością.'],
+ 'enemy-tactics': ['rogue','Zasięg → pościg lub ucieczka','Poza zasięgiem wykrywania wróg nie rusza; w zasięgu goni, przecina z boku albo ucieka.','if (Math.hypot(dx, dy) > 150) return;','Odległość decyduje o reakcji; kierunek prostopadły (−dy, dx) daje podejście z boku.'],
  projectiles: ['fireball','Pocisk → kontakt → obrażenia','Pocisk ma właściciela, kierunek i ograniczony czas życia.','health.damage(damage);','Trafienie zużywa pocisk raz. Właściciel i sojusznicy nie są celami.'],
+ 'projectile-types': ['fireball','Kierunek do celu → naprowadzanie','Homing aktualizuje direction pocisku w trakcie lotu; maxHits pozwala trafić kolejnych przeciwników.','motion.direction.set(dx, dy);','Pocisk zawraca ku celowi. Trafiony przeciwnik traci HP; drugi na linii lotu również.'],
  weapons: ['bow','Cel → cooldown → strzał','Broń czeka na cel i koniec swojego cooldownu.','timer = Math.max(0, timer - delta);','Automatyczny atak nie potrzebuje klawisza. Po strzale zaczyna się nowy odstęp.'],
  'loot-xp': ['gem','Śmierć → orb XP → poziom','Nagroda powstaje raz, a zebranie dodaje doświadczenie.','experience.add(value);','Orb znika. Po przekroczeniu progu rośnie poziom; nadwyżka XP pozostaje.'],
  waves: ['slime','Harmonogram → fabryka → fala','Spawn odmierzamy czasem symulacji.','elapsed += delta;','Nowi przeciwnicy pojawiają się zgodnie z harmonogramem, z limitem żywych jednostek.'],
- pause: ['ui-button-blue','Pauza → WORLD stoi → UI działa','Świat i interfejs mają oddzielne tryby aktualizacji.','game.pause();','Ruch, pociski i spawn stoją. UI może przyjąć wybór i wznowić grę.'],
  upgrades: ['spell-book','Awans → wybór → zmiana parametru','Jeden wybór zużywa jedną oczekującą nagrodę.','speed += 30;','Przykład: 120 → 150 px/s. Zamknięcie menu wznawia świat.'],
  'ui-flow': ['ui-button-red','Focus → przycisk → akcja','UI ma jeden aktywny wybór i reakcję na zwolnienie przycisku.','button.onClick = action;','Mysz i klawiatura uruchamiają akcję raz; paski pokazują aktualny postęp.'],
  feedback: ['impact','Trafienie → efekt → powrót','Efekt wizualny nie zmienia fizycznej pozycji collidera.','camera.shake(2, 0.3);','Shake trwa 0.3 s, po czym wraca do spokoju. Tween animuje wskazaną właściwość.'],
  composition: ['skeleton','Dane → fabryka → komponenty','Jedna fabryka składa różne jednostki z konfiguracji.','enemyFactory.create(spec, x, y);','HP, prędkość i wygląd mogą się różnić bez kopiowania całego kodu przeciwnika.'],
  performance: ['lightning-bolt','Pomiar → limit → sprzątanie','Mierz liczbę obiektów i koszt wykrywania kontaktów.','game.physics.queryRadius(x, y, range, 2);','Zapytanie przestrzenne ogranicza kandydatów. Testy sprawdzają limity i zachowanie XP.'],
  'run-state': ['knight','READY → RUNNING → LOST / WON','Stan rundy jest oddzielony od stanu zdrowia jednostki.','run.start();','Start tworzy świeżą rundę; restart sprząta poprzednią. Kliknij Start lub Enter.'],
- portability: ['chest','Projekt → eksport → odtworzenie','Eksport zawiera pliki i wersję API.','engineApiVersion: "2.0.0"','Odtworzony projekt powinien zachować zachowanie. Java i JS mają wspólny kontrakt, inne pliki.'],
  survivor: ['vampire','Ruch → walka → XP → rozwój','Końcowa gra łączy wcześniejsze komponenty.','runController.start();','Uzupełnij start rundy lub pokaż rozwiązanie. Start / Enter uruchamia grę; Slime pojawia się po 1.5 s.'],
 };
 function PixelIcon({ asset }) {
@@ -45,7 +45,6 @@ export const stateComparisons = {
  health: ['Przyjęte obrażenia', 'HP: 5 / 5', 'HP: 4 / 5', 'damage(1) odejmuje 1 HP. Następny cios podczas ochrony pozostawia 4 HP.'],
  weapons: ['Odstęp między strzałami', 'timer: 0 s → strzał', 'timer: 0.5 s → oczekiwanie', 'Po strzale ustaw cooldown. Następny strzał dopiero po jego upływie i przy dostępnym celu.'],
  'loot-xp': ['Awans z nadwyżką XP', 'Poziom 1 · XP: 4 + nagroda 2', 'Poziom 2 · XP: 1', 'Próg poziomu 1 wynosi 5 XP. Z 6 XP odejmujemy 5; pozostaje 1 XP.'],
- pause: ['Świat zatrzymany, UI aktywne', 'Pauza: WORLD 1 s · UI 1 s', 'Po sekundzie: WORLD 1 s · UI 2 s', 'Czas świata nie rośnie podczas pauzy. Interfejs nadal może obsługiwać wybór.'],
  upgrades: ['Zmiana parametru', 'Prędkość: 120 px/s', 'Prędkość: 150 px/s', 'Jedno zatwierdzenie daje +30 px/s i zużywa jeden oczekujący wybór.'],
  'run-state': ['Start rundy', 'READY · oczekiwanie', 'RUNNING · rozgrywka', 'Start tworzy nową rundę. Restart sprząta poprzednią i tworzy świeżą postać.'],
 };

@@ -1,3 +1,5 @@
+// Chapters that teach from a prepared base describe it with `scaffolding`; the rest use this fallback.
+export const defaultCourseScaffolding = 'Gotowa baza: infrastruktura i mechaniki z wcześniejszych lekcji. Uzupełniasz wyłącznie logikę tego zadania; pliki pomocnicze możesz obejrzeć.';
 export const courseManifest = {
   "engineApiVersion": 2,
   "contentVersion": 3,
@@ -748,7 +750,7 @@ export const courseManifest = {
           "mode": "guided",
           "title": "Zasięg wykrywania",
           "prompt": "Pościg już działa. Dodaj warunek: jeśli Math.hypot(dx,dy)>150, wróć bez ruchu.",
-          "objective": "Napisać własny komponent pościgu.",
+          "objective": "Ograniczyć pościg zasięgiem wykrywania.",
           "criteria": [
             "Po sekundzie poza zasięgiem Slime pozostaje na x=100.",
             "Po przesunięciu gracza do (200,100), sekunda pościgu przesuwa Slime do x=160."
@@ -761,7 +763,7 @@ export const courseManifest = {
           "mode": "modified",
           "title": "Podejście z boku",
           "prompt": "Samodzielnie skieruj Slime do punktu 80 px obok gracza, w kierunku prostopadłym do kierunku pościgu. Gotowy kontroler realizuje ruch.",
-          "objective": "Użyć jednej klasy dla różnych instancji.",
+          "objective": "Użyć prostopadłego przesunięcia celu do flankowania.",
           "criteria": [
             "Cel ruchu uwzględnia prostopadłe przesunięcie 80 px.",
             "Slime i Bat zachowują niezależne prędkości 40 i 80."
@@ -773,7 +775,7 @@ export const courseManifest = {
           "mode": "independent",
           "title": "Ucieczka w zasięgu",
           "prompt": "Napisz FleeAI: w zasięgu 120 uciekaj od gracza; poza zasięgiem zatrzymaj ruch.",
-          "objective": "Samodzielnie zaprogramować prostą regułę AI.",
+          "objective": "Zaprogramować ucieczkę z warunkiem zasięgu.",
           "criteria": [
             "Slime w (240,100) oddala się od gracza w (300,100).",
             "Po sekundzie Slime ma x=180; poza zasięgiem 120 stoi."
@@ -1088,10 +1090,10 @@ export const courseManifest = {
           "mode": "guided",
           "title": "Pocisk naprowadzany",
           "prompt": "Kierunek do celu i Projectile2D są gotowe. W Homing zapisz obliczony d jako direction pocisku; w Javie użyj direction.set(d.x,d.y).",
-          "objective": "Zadać obrażenia dopiero po kontakcie.",
+          "objective": "Naprowadzać pocisk na cel podczas lotu.",
           "criteria": [
-            "Pocisk ignoruje właściciela i zadaje obrażenia poprawnemu celowi.",
-            "Obiekt pocisku zostaje usunięty po końcu życia lub wykorzystaniu limitu trafień.",
+            "Homing aktualizuje direction pocisku do celu; Projectile2D wykonuje ruch i wykrywa kontakt na całym odcinku.",
+            "Pocisk ignoruje właściciela i trafia tylko wroga; znika po trafieniu albo po końcu życia.",
             "Zmiana kierunku w Homing kieruje pocisk do Enemy; po sekundzie HP celu wynosi 2."
           ],
           "learningStage": "Z przykładem",
@@ -1102,10 +1104,10 @@ export const courseManifest = {
           "mode": "modified",
           "title": "Dwa trafienia",
           "prompt": "Ustaw maxHits=2 i dopisz HitCount: każdy trafiony przeciwnik otrzymuje jedno obrażenie; pocisk trafia obu przeciwników i znika.",
-          "objective": "Odrzucać samouszkodzenie i usuwać nietrafione pociski.",
+          "objective": "Pozwolić pociskowi trafić więcej niż jeden cel.",
           "criteria": [
-            "Pocisk ignoruje właściciela i zadaje obrażenia poprawnemu celowi.",
-            "Obiekt pocisku zostaje usunięty po końcu życia lub wykorzystaniu limitu trafień.",
+            "maxHits=2 pozwala jednemu pociskowi trafić dwóch różnych przeciwników.",
+            "HitCount usuwa pocisk po drugim trafieniu, zanim skończy się jego czas życia.",
             "Enemy i EnemyB tracą po 1 HP; ten sam cel nie otrzymuje powtórnych obrażeń."
           ],
           "learningStage": "Samodzielnie"
@@ -1115,10 +1117,10 @@ export const courseManifest = {
           "mode": "independent",
           "title": "Szybki pocisk i pierwszy cel",
           "prompt": "Dodaj Projectile2D o prędkości 3000 i ustaw hitLayers=2. W jednym kroku ma trafić pierwszego wroga i ominąć sojusznika.",
-          "objective": "Użyć ciągłego wykrywania kontaktu silnika.",
+          "objective": "Zastosować ciągłe wykrywanie kontaktu w nowym typie pocisku.",
           "criteria": [
-            "Pocisk ignoruje właściciela i zadaje obrażenia poprawnemu celowi.",
-            "Obiekt pocisku zostaje usunięty po końcu życia lub wykorzystaniu limitu trafień."
+            "Przy prędkości 3000 pocisk trafia pierwszego wroga w jednym kroku; HP Enemy spada do 2.",
+            "hitLayers=2 pomija sojusznika na linii lotu; pocisk nie rani właściciela."
           ],
           "learningStage": "Rozbudowa"
         }

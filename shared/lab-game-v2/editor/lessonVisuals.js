@@ -62,7 +62,7 @@ export const gameExplanationPages = {
   ],
   projectiles: [
     picture('Pocisk i HP tworzą walkę', 'Space tworzy pocisk w kierunku CharacterController2D.getDirection(). Kontakt pocisku z wrogiem wywołuje Health.damage(1): HP 3 → 2. Przy HP=0 wróg znika. Kontakt wroga odbiera HP graczowi. Health jest teraz gotowe; w lekcji 10 napiszesz i rozbudujesz ten komponent.', 'combat-health'),
-    picture('Pocisk: wygląd, lot i trafienie', 'Sprite rysuje pocisk, Projectile2D albo ProjectileMotion wykonuje lot, a ProjectileHit zmienia HP celu. Owner wskazuje obiekt strzelający. Każdy komponent ma osobną odpowiedzialność.', 'projectile', 2),
+    picture('Pocisk: wygląd, lot i trafienie', 'Sprite rysuje pocisk, komponent lotu wykonuje ruch — prosta klasa ProjectileMotion w pierwszych zadaniach albo silnikowy Projectile2D, który wykrywa kontakt na całym odcinku ruchu. ProjectileHit zmienia HP celu. Owner wskazuje obiekt strzelający. Każdy komponent ma osobną odpowiedzialność.', 'projectile', 2),
     picture('Jedno trafienie zużywa pocisk', 'Poprawny cel otrzymuje obrażenia. Pocisk ignoruje właściciela i sojuszników. Flaga zużycia chroni przed drugim trafieniem tego samego pocisku.', 'projectile', 0),
 
   ],
@@ -90,11 +90,6 @@ export const gameExplanationPages = {
     picture('Spawn według harmonogramu', 'Spawner odmierza czas symulacji. Zaplanowane momenty tworzenia jednostek nie zależą od liczby klatek. Duża delta może obejmować kilka momentów.', 'timeline', 3),
     flow('Dane fali i powtarzalność', 'Konfiguracja opisuje jednostki i momenty spawnu. Seed pozwala odtworzyć losowanie w tym samym scenariuszu.', ['dane + seed', 'fabryka jednostek', 'powtarzalna fala'], 'Te same dane wejściowe pomagają porównać Java i JS.'),
     picture('Limit żywych jednostek', 'Liczba utworzonych wrogów i liczba żywych to różne wartości. Limit dotyczy aktywnych jednostek; pokonani wrogowie zwalniają miejsce.', 'instances', 1),
-  ],
-  pause: [
-    picture('Dwa zegary podczas pauzy', 'Pauza zatrzymuje WORLD: ruch, pociski, spawn i timery gry. Czas UI nadal rośnie, aby menu mogło obsłużyć wybór i wznowienie.', 'timeline', 4),
-    flow('Menu może działać, gdy świat stoi', 'Interfejs korzysta z domeny UI. Nie omijaj pauzy osobnym zegarem przeglądarki dla rozgrywki.', ['WORLD: stop', 'UI: wybór', 'wznowienie świata'], 'Świat stoi, ale przycisk nadal odpowiada.'),
-    flow('Kilka powodów pauzy', 'Menu i wybór ulepszenia mogą jednocześnie zatrzymywać świat. Zamknięcie jednego powodu nie powinno usuwać drugiego.', ['menu + awans', 'zamknięte menu', 'awans nadal pauzuje'], 'Wznów dopiero po usunięciu wszystkich powodów.'),
   ],
   upgrades: [
     flow('Awans otwiera wybór', 'Awans tworzy oczekującą nagrodę i zatrzymuje świat. Uczeń wybiera jedną opcję, która zmienia konkretny komponent.', ['awans', 'pauza + wybór', 'zmiana komponentu'], 'Zatwierdzenie zużywa jeden oczekujący wybór.'),
@@ -126,11 +121,6 @@ export const gameExplanationPages = {
     flow('Restart tworzy świeży przebieg', 'Sprzątnij obiekty, timery i reakcje poprzedniej rundy. Utwórz nową instancję gracza. Nie zostawiaj starego komponentu z poprzednim stanem.', ['stara runda', 'sprzątanie', 'nowy gracz + timery'], 'Nowa runda nie dziedziczy zużytych zasobów poprzedniej.'),
     flow('Jednoczesna śmierć i zwycięstwo', 'Ustal priorytet, gdy oba warunki zajdą w tej samej aktualizacji. Zatwierdź jeden wynik i nie uruchamiaj zakończenia ponownie.', ['warunki końca', 'jawny priorytet', 'jeden wynik rundy'], 'Reguła priorytetu należy do projektu gry.'),
   ],
-  portability: [
-    flow('Eksport obejmuje cały projekt', 'Przenieś wszystkie pliki, język i wersję API. Eksport samego GameMain gubi własne komponenty oraz pozostałe dane projektu.', ['pliki + język', 'format eksportu', 'wersja API'], 'JSON opisuje projekt; nie jest kodem Java ani JS.'),
-    flow('Import najpierw sprawdza format', 'Zweryfikuj dane przed zastąpieniem projektu. Java i JS mają wspólne reguły silnika, ale ich pliki źródłowe nie są zamienne.', ['odczytaj', 'zweryfikuj', 'odtwórz projekt'], 'Błędny import nie powinien niszczyć obecnych plików.'),
-    flow('Ten sam scenariusz zachowania', 'Porównuj wynik wspólnego scenariusza w obu językach. Przenośność oznacza zgodność reguł, a nie identyczną składnię źródeł.', ['scenariusz', 'Java / JS', 'porównanie wyniku'], 'Po imporcie sprawdź również planszę i sterowanie.'),
-  ],
   survivor: [
     flow('Jedna pętla rozgrywki', 'Najpierw połącz ruch i jednego przeciwnika. Następnie dodaj pociski, łup oraz doświadczenie. Rozwijaj grę etapami.', ['ruch + wróg', 'walka + łup', 'XP + rozwój'], 'Każdy etap powinien dawać widoczny efekt.'),
     picture('Rozwój przerywa walkę na wybór', 'Fale, walka, awans i pauza tworzą wspólny przebieg. Wybór ulepszenia zmienia komponent, a potem świat może ruszyć dalej.', 'run', 1),
@@ -139,5 +129,3 @@ export const gameExplanationPages = {
 };
 
 // Pause is taught with UI flow; portability with performance and export.
-delete gameExplanationPages.pause;
-delete gameExplanationPages.portability;
