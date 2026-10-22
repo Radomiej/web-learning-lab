@@ -86,7 +86,7 @@ const definitions = [
     file: 'index.php',
     token: 'function',
     objectives: ['Zdefiniuj funkcję z parametrem.', 'Zwróć wynik przez `return` i wykorzystaj go w HTML.'],
-    theory: ['Funkcja grupuje instrukcje pod nazwą i może przyjąć parametry.', '`return` oddaje wartość wywołującemu kodowi. Dzięki temu funkcja opisuje dane, a `echo` decyduje, gdzie je wyświetlić.'],
+    theory: ['Funkcja grupuje instrukcje pod nazwą i może przyjąć parametry.', '`return` zwraca wartość wywołującemu kodowi. Dzięki temu funkcja opisuje dane, a `echo` decyduje, gdzie je wyświetlić.'],
   },
   {
     order: lessonNumber('php', 7),

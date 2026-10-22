@@ -19,7 +19,7 @@ test('the JSX lesson renders calculated text and props through the actual exampl
   render(<Props/>);expect(screen.getByText('Cześć, Lena!')).toBeVisible();
 });
 test('replacement updates use the snapshot while functional updates consume the queue',()=>{
-  for(const [title,expected] of [['Dwa zastąpienia to nie dwa przyrosty','1'],['Aktualizator otrzymuje poprzedni wynik kolejki','2']]) {
+  for(const [title,expected] of [['Dwa razy setCount(count + 1) daje tylko +1','1'],['Funkcja w setCount dostaje świeżą wartość','2']]) {
     const App=component(`function App(){const [count,setCount]=useState(0);${example('react-state-events',title)}\nreturn <button onClick={handleClick}>{count}</button>;}`);
     render(<App/>);fireEvent.click(screen.getByRole('button',{name:'0'}));
     expect(screen.getByRole('button',{name:expected})).toBeVisible();cleanup();
