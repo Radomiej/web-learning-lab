@@ -127,5 +127,3 @@ export const gameExplanationPages = {
     flow('Sprawdź cały przebieg gry', 'Testy reguł nie zastępują ręcznej próby planszy. Sprawdź start, sterowanie, przeciwników, przegraną, restart i odtworzenie eksportu.', ['start + sterowanie', 'walka + koniec', 'restart + eksport'], 'W rozwiązaniu pierwsze Slime pojawiają się po 1.5 s.'),
   ],
 };
-
-// Pause is taught with UI flow; portability with performance and export.

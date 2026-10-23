@@ -191,9 +191,6 @@ export default function PageDiagram({ page }) {
       <rect x="45" y="80" width="350" height="120" rx="16" fill="#cee4f6" stroke="#397fce" strokeWidth="3"/><path d="M85 80v120M355 80v120M45 110h350M45 170h350" stroke="#397fce" strokeDasharray="5 5"/>
       <Label x={220} y={145}>rozciągany środek</Label><Label x={220} y={45}>9patch: narożniki bez zmian</Label><Bar x={130} y={240} value={0.5} label="ProgressBar: 50%"/>
     </>; break;
-    case 'fade': content = <>
-      {[1,0.5,0].map((alpha,i)=><g key={alpha}><rect x={25+145*i} y="75" width="100" height="125" rx="12" fill="#edf3ef"/><Sprite x={42+145*i} y={100} size={64} opacity={alpha}/><Label x={75+145*i} y={235}>α = {alpha}</Label></g>)}<Label x={220} y={45}>początek → środek → koniec</Label>
-    </>; break;
     case 'spatial': content = <>
       <path d="M45 50h350v200H45ZM45 100h350M45 150h350M45 200h350M95 50v200M145 50v200M195 50v200M245 50v200M295 50v200M345 50v200" fill="#f2f7f3" stroke="#abc6b8"/>
       <rect x="145" y="100" width="150" height="100" fill="#cee4f6" opacity="0.8"/>

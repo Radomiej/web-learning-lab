@@ -1510,9 +1510,9 @@
         "java": [
           {
             "file": "PlayerController.java",
-            "code": "public class PlayerController extends Component {\npublic double speed = 120; public Vector2 facing = new Vector2(1, 0);\n@Override public void onUpdate(double delta) {\n double x = (getGame().input.isKeyDown(\"d\") || getGame().input.isKeyDown(\"ArrowRight\") ? 1 : 0) - (getGame().input.isKeyDown(\"a\") || getGame().input.isKeyDown(\"ArrowLeft\") ? 1 : 0);\n double y = (getGame().input.isKeyDown(\"s\") || getGame().input.isKeyDown(\"ArrowDown\") ? 1 : 0) - (getGame().input.isKeyDown(\"w\") || getGame().input.isKeyDown(\"ArrowUp\") ? 1 : 0);\n requireComponent(CharacterController2D.class).move(x, y, speed);\n if (x != 0 || y != 0) { facing.x = x; facing.y = y; }\n}\n}\n",
-            "start": 528,
-            "end": 593,
+            "code": "public class PlayerController extends Component {\npublic double speed = 120;\n@Override public void onUpdate(double delta) {\n double x = (getGame().input.isKeyDown(\"d\") || getGame().input.isKeyDown(\"ArrowRight\") ? 1 : 0) - (getGame().input.isKeyDown(\"a\") || getGame().input.isKeyDown(\"ArrowLeft\") ? 1 : 0);\n double y = (getGame().input.isKeyDown(\"s\") || getGame().input.isKeyDown(\"ArrowDown\") ? 1 : 0) - (getGame().input.isKeyDown(\"w\") || getGame().input.isKeyDown(\"ArrowUp\") ? 1 : 0);\n requireComponent(CharacterController2D.class).move(x, y, speed);\n}\n}\n",
+            "start": 485,
+            "end": 550,
             "from": {
               "line": 6,
               "column": 1
@@ -1527,9 +1527,9 @@
         "js": [
           {
             "file": "PlayerController.js",
-            "code": "\nexport default class PlayerController extends GameLab.Component {\nspeed = 120; facing = { x: 1, y: 0 };\nonUpdate(delta) {\n const input = this.game.input;\n const x = Number(input.isKeyDown(\"d\") || input.isKeyDown(\"ArrowRight\")) - Number(input.isKeyDown(\"a\") || input.isKeyDown(\"ArrowLeft\"));\n const y = Number(input.isKeyDown(\"s\") || input.isKeyDown(\"ArrowDown\")) - Number(input.isKeyDown(\"w\") || input.isKeyDown(\"ArrowUp\"));\n this.requireComponent(GameLab.CharacterController2D).move(x, y, this.speed);\n if (x || y) this.facing = {x, y};\n}\n}\n",
-            "start": 426,
-            "end": 503,
+            "code": "\nexport default class PlayerController extends GameLab.Component {\nspeed = 120;\nonUpdate(delta) {\n const input = this.game.input;\n const x = Number(input.isKeyDown(\"d\") || input.isKeyDown(\"ArrowRight\")) - Number(input.isKeyDown(\"a\") || input.isKeyDown(\"ArrowLeft\"));\n const y = Number(input.isKeyDown(\"s\") || input.isKeyDown(\"ArrowDown\")) - Number(input.isKeyDown(\"w\") || input.isKeyDown(\"ArrowUp\"));\n this.requireComponent(GameLab.CharacterController2D).move(x, y, this.speed);\n}\n}\n",
+            "start": 401,
+            "end": 478,
             "from": {
               "line": 8,
               "column": 1
