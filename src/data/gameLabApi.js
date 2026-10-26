@@ -1,4 +1,4 @@
-import { Assets } from '../../shared/lab-game-v2/assets/Assets.js';
+import { Assets, assetManifest } from '../../shared/lab-game-v2/assets/Assets.js';
 // Reference and completion entries describe the public API returned by createGameLab().
 const api = (name, category, signature, description, example, kind = 'Class') => ({
   name, category, signature, description, example, kind,
@@ -10,7 +10,7 @@ export const gameLabApi = [
   api('Component', 'Komponenty', 'class Component', 'Bazowa klasa własnych zachowań. this.gameObject wskazuje właściciela, a this.game zwraca scenę.', 'class PlayerMove extends GameLab.Component {\n  onUpdate(delta) {\n    this.transform.x += 80 * delta;\n  }\n}'),
   api('Transform', 'Obiekty', 'class Transform', 'Pozycja x/y (środek w pikselach), rotation w radianach, scale oraz visualOffset.', 'player.transform.x = 120;\nplayer.transform.scale.x = 1.2;'),
   api('ShapeRenderer', 'Grafika i UI', 'new ShapeRenderer(width?, height?, color?)', 'Rysuje prostokąt (domyślnie 32×32 px) lub koło. GameLab.ShapeRenderer.circle(radius, color) tworzy koło; collider dodajesz osobno.', 'object.addComponent(new GameLab.ShapeRenderer(48, 32, "#70c994"));', 'Constructor'),
-  api('Sprite', 'Grafika i UI', 'new Sprite(texture, width?, height?)', 'Rysuje teksturę ze wspólnego katalogu Assets: postacie, przeciwnicy, pociski, świat i UI.', 'object.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01, 32, 32));', 'Constructor'),
+  api('Sprite', 'Grafika i UI', 'new Sprite(texture, width?, height?)', 'Rysuje teksturę ze wspólnego katalogu Assets: postacie, przeciwnicy, pociski, świat i UI. Nazwy i podgląd wszystkich grafik: zakładka Assety.', 'object.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01, 32, 32));', 'Constructor'),
   api('TextRenderer', 'Grafika i UI', 'new TextRenderer(text, fontSize?, color?)', 'Tekst w pozycji obiektu. Domyślnie world; space="screen" lub UITransform tworzy HUD. text może być funkcją.', 'const hud=this.createObject("HUD").setPosition(10,24);\nhud.addComponent(new GameLab.TextRenderer(() => `Punkty: ${this.points}`)).space="screen";', 'Constructor'),
   api('ControlsHint', 'Grafika i UI', 'new ControlsHint(text?)', 'Opcjonalna instrukcja na dole canvasu. Znika po kliknięciu planszy, wraca po utracie fokusu. Bez dodania komponentu instrukcja nie jest wyświetlana.', 'player.addComponent(new GameLab.ControlsHint("Kliknij planszę. WASD: ruch"));', 'Constructor'),
   api('Camera2D', 'Grafika i UI', 'new Camera2D()', 'Pierwsza aktywna kamera przesuwa świat. offsetX/Y to przesunięcie widoku; follow(target) utrzymuje gracza w środku ekranu. Fizyczne pozycje i HUD pozostają niezależne od widoku.', 'const cameraObject = this.createObject("Camera");\nconst camera = cameraObject.addComponent(new GameLab.Camera2D());\ncamera.follow(player);\ncamera.shake(4, 0.2);', 'Constructor'),
@@ -21,7 +21,7 @@ export const gameLabApi = [
   api('Collider2D', 'Ruch i kolizje', 'new Collider2D(width?, height?)', 'Jawna prostokątna bryła 32×32. Rozmiar kolizji nie zależy od sprite ani skali grafiki. layer/mask filtrują kontakty.', 'wall.addComponent(new GameLab.Collider2D(40,80));', 'Constructor'),
   api('CircleCollider2D', 'Ruch i kolizje', 'new CircleCollider2D(radius)', 'Jawna kołowa bryła o promieniu w pikselach świata.', 'player.addComponent(new GameLab.CircleCollider2D(12));', 'Constructor'),
   api('Projectile2D', 'Ruch i kolizje', 'new Projectile2D(dx, dy, speed?, lifetime?, owner?)', 'Pocisk wykrywa cele na całej drodze ruchu. owner, hitLayers i maxHits wybierają trafienia.', 'shot.addComponent(new GameLab.Projectile2D(1,0,300,2,player));', 'Constructor'),
-  api('Assets', 'Zasoby', 'GameLab.Assets.PLAYER01', 'Wspólny katalog sprite i UI. Java używa enum Assets, JavaScript zamrożonych stałych o tych samych nazwach.', 'player.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01));'),
+  api('Assets', 'Zasoby', 'GameLab.Assets.PLAYER01', 'Wspólny katalog sprite i UI. Java używa enum Assets, JavaScript zamrożonych stałych o tych samych nazwach. Pełna lista i podgląd: zakładka Assety.', 'player.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01));'),
   api('UITransform', 'Grafika i UI', 'new UITransform(width?, height?)', 'Wymiary, kotwica i pivot UI. Pozycja obiektu wyznacza margines od kotwicy.', 'const ui=panel.addComponent(new GameLab.UITransform(200,30));\nui.anchor=GameLab.UIAnchor.TOP_LEFT;', 'Constructor'),
   api('UIAnchor', 'Grafika i UI', 'GameLab.UIAnchor.TOP_LEFT', 'Kotwice: TOP_LEFT, TOP_CENTER, TOP_RIGHT, CENTER_LEFT, CENTER, CENTER_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT.'),
   api('ProgressBar', 'Grafika i UI', 'new ProgressBar(width?, height?)', 'Osobne frame/track/fill z atlasu. setProgress(50) przyjmuje procent, setValue(value,max) przelicza wartość.', 'const pb=hud.addComponent(new GameLab.ProgressBar(200,20));\npb.setProgress(50);', 'Constructor'),
@@ -157,3 +157,41 @@ export const gameLabMemberDocs = {
   'PlatformerCharacterController2D.walk':'walk(x) porusza poziomo z walkSpeed.',
   'PlatformerCharacterController2D.run':'run(x) porusza poziomo z runSpeed.',
 };
+
+// Texture keys remapped by the renderer (shared/lab-game-v2/renderer.js) — the
+// preview must show what the engine actually draws for a given key.
+const rendererAliases = { wall: 'stone', projectile: 'fireball', player01: 'player' };
+const assetByKey = new Map(assetManifest.assets.map(asset => [asset.key, asset]));
+// GameLab.Assets constants without a manifest entry are aliases, e.g. PLAYER → player.
+const assetAliases = Object.entries(Assets).reduce((map, [constant, key]) => {
+  if (!assetManifest.assets.some(asset => asset.constant === constant)) map[key] = [...(map[key] ?? []), constant];
+  return map;
+}, {});
+
+// One catalog row per manifest asset. `draw` is the resolved entry rendered by
+// the engine; `aliases` lists extra constants pointing at the same texture.
+export const gameLabAssets = assetManifest.assets.map(asset => ({
+  ...asset,
+  draw: assetByKey.get(rendererAliases[asset.key] ?? asset.key) ?? asset,
+  aliases: assetAliases[asset.key] ?? [],
+}));
+
+export const gameLabAssetGroups = [
+  { id: 'characters', label: 'Postacie i przeciwnicy', hint: 'Gracz, wrogowie i bossowie do new GameLab.Sprite(GameLab.Assets.NAZWA).' },
+  { id: 'combat', label: 'Walka', hint: 'Pociski, bronie i efekty trafień do new GameLab.Sprite(GameLab.Assets.NAZWA).' },
+  { id: 'world', label: 'Świat i przedmioty', hint: 'Rzeczy do zebrania i elementy planszy do new GameLab.Sprite(GameLab.Assets.NAZWA).' },
+  { id: 'terrain', label: 'Kafelki terenu', hint: 'Podłogi do new GameLab.TileMap("klucz") oraz pojedyncze kafelki i rudy.' },
+  { id: 'ui', label: 'Interfejs', hint: 'Ramki, przyciski, sloty i elementy pasków do new GameLab.Sprite(GameLab.Assets.NAZWA).' },
+];
+
+// Components students attach with object.addComponent(new GameLab.X()).
+// Names refer to entries in gameLabApi — the guide renders their signatures.
+export const gameLabComponentGroups = [
+  { label: 'Wygląd i tekst', hint: 'Co widać na ekranie i gdzie.', names: ['Sprite', 'ShapeRenderer', 'TextRenderer', 'TileMap', 'ControlsHint'] },
+  { label: 'Ruch postaci', hint: 'Prędkość w px/s ustawiana na klatkę.', names: ['CharacterController2D', 'TopDownCharacterController2D', 'PlatformerCharacterController2D'] },
+  { label: 'Kolizje i pociski', hint: 'Fizyczny kontakt, obszary i trafienia.', names: ['Collider2D', 'CircleCollider2D', 'Trigger2D', 'Projectile2D'] },
+  { label: 'Kamera', hint: 'Przesuwa widok świata, nie obiekty.', names: ['Camera2D'] },
+  { label: 'AI przeciwników', hint: 'Generatory kierunku wymagają kontrolera ruchu na obiekcie.', names: ['Steering2D', 'FollowTarget2D', 'FleeTarget2D', 'FlankTarget2D', 'ObstacleAvoidance2D'] },
+  { label: 'Interfejs (UI)', hint: 'HUD z kotwicami do krawędzi ekranu.', names: ['UITransform', 'ProgressBar', 'Button'] },
+  { label: 'Wejście', hint: 'Reakcja na klawisze jako komponent obiektu.', names: ['KeyPressed', 'KeyDoublePressed', 'NoneOfKeysPressed'] },
+];

@@ -366,7 +366,7 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .playground-tools p { margin: 0 0 12px; color: var(--ink-700); font-size: 13px; line-height: 1.6; }
 .playground-tools-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .playground-tools p[role="status"] { margin: 12px 0 0; }
-.game-api-nav { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.game-api-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
 .game-api-nav button { padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; color: var(--ink-700); background: transparent; cursor: pointer; font: inherit; }
 .game-api-nav button.is-active { border-bottom-color: var(--teal-600); color: var(--ink-900); font-weight: 700; }
 .game-api-intro { max-width: 850px; }
@@ -387,7 +387,25 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .game-api-entry > summary span { flex: 0 0 auto; color: var(--ink-500); font-size: 10px; }
 .game-api-entry > p { margin: 0; padding: 0 10px 10px; }
 .game-api-entry > pre { margin: 0 8px 8px; }
-@media (max-width: 700px) { .game-api-callouts, .game-api-entries { grid-template-columns: 1fr; } .game-api-search-row { grid-template-columns: 1fr; } .game-api-guide > summary { align-items: flex-start; flex-direction: column; gap: 2px; } }
+.game-component-groups, .game-asset-groups { display: grid; gap: 18px; margin-top: 14px; }
+.game-component-group h3, .game-asset-group h3 { margin: 0 0 2px; font-size: 15px; }
+.game-asset-group h3 span { color: var(--ink-500); font-size: 12px; font-weight: 450; }
+.game-component-hint { margin: 0 0 8px; color: var(--ink-500); font-size: 12px; }
+.game-component-group ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.game-component-group li { min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.game-component-group li code { display: block; margin-bottom: 4px; color: var(--ink-900); font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
+.game-component-group li span { color: var(--ink-700); font-size: 12px; line-height: 1.5; }
+.game-api-note { margin: 14px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--canvas); font-size: 13px; }
+.game-asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.game-asset-card { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 10px 6px; border: 1px solid var(--line); border-radius: 8px; color: inherit; background: var(--paper); font: inherit; text-align: center; cursor: pointer; }
+.game-asset-card:hover { border-color: var(--teal-600); }
+.game-asset-card:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 2px; }
+.game-asset-slot { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; }
+.game-asset-icon { display: block; overflow: hidden; }
+.game-asset-icon img { display: block; max-width: none; max-height: none; transform-origin: 0 0; image-rendering: pixelated; }
+.game-asset-name { color: var(--ink-900); font: 10px/1.4 var(--mono); overflow-wrap: anywhere; }
+.game-asset-key { color: var(--ink-500); font-size: 10px; overflow-wrap: anywhere; }
+@media (max-width: 700px) { .game-api-callouts, .game-api-entries, .game-component-group ul { grid-template-columns: 1fr; } .game-asset-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); } .game-api-search-row { grid-template-columns: 1fr; } .game-api-guide > summary { align-items: flex-start; flex-direction: column; gap: 2px; } }
 
 @media (max-width: 1240px) {
   .main-region { padding-right: 20px; padding-left: 20px; }

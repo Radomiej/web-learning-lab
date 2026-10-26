@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { gameLabApi, gameLabMemberDocs, gameLabMembers } from '../data/gameLabApi.js';
+import { gameLabApi, gameLabAssetGroups, gameLabAssets, gameLabComponentGroups, gameLabMemberDocs, gameLabMembers } from '../data/gameLabApi.js';
 import { callableMembers } from '../services/gameLabCompletions.js';
 
 const example = `class MyGame extends GameLab.Game {
@@ -33,6 +33,22 @@ const memberEntries = Object.entries(gameLabMembers).flatMap(([owner, names]) =>
 
 const categories = ['Wszystko', ...new Set(gameLabApi.map(item => item.category))];
 
+const apiByName = new Map(gameLabApi.map(item => [item.name, item]));
+// Zero-width space after '_' lets long constant names wrap at underscores.
+const softWrap = value => value.replaceAll('_', '_\u200B');
+const assetsByCategory = gameLabAssetGroups.map(group => ({
+  ...group,
+  assets: gameLabAssets.filter(asset => asset.category === group.id),
+}));
+
+function AssetIcon({ asset }) {
+  const frame = asset.draw.frame;
+  const scale = Math.min(56 / frame.w, 56 / frame.h);
+  return <span className="game-asset-slot" aria-hidden="true"><span className="game-asset-icon" style={{ width: Math.round(frame.w * scale), height: Math.round(frame.h * scale) }}>
+    <img src={`${import.meta.env.BASE_URL}game-assets/${asset.draw.source}`} alt="" loading="lazy" style={{ transform: `translate(${-frame.x * scale}px, ${-frame.y * scale}px) scale(${scale})` }} />
+  </span></span>;
+}
+
 export default function GameApiGuide() {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef(null);
@@ -54,6 +70,9 @@ export default function GameApiGuide() {
   const [section, setSection] = useState('start');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Wszystko');
+  const [assetQuery, setAssetQuery] = useState('');
+  const [copied, setCopied] = useState('');
+  const copyTimer = useRef(null);
   const results = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('pl');
     return [...gameLabApi, ...memberEntries].filter(item =>
@@ -61,6 +80,19 @@ export default function GameApiGuide() {
       && `${item.name} ${item.category} ${item.signature} ${item.description}`.toLocaleLowerCase('pl').includes(needle),
     );
   }, [category, query]);
+  const assetGroups = useMemo(() => {
+    const needle = assetQuery.trim().toLocaleLowerCase('pl');
+    return assetsByCategory
+      .map(group => ({ ...group, assets: needle ? group.assets.filter(asset => `${asset.key} ${asset.constant}`.toLocaleLowerCase('pl').includes(needle)) : group.assets }))
+      .filter(group => group.assets.length);
+  }, [assetQuery]);
+  async function copyAsset(asset) {
+    const code = `GameLab.Assets.${asset.constant}`;
+    try { await navigator.clipboard.writeText(code); } catch { /* clipboard can be unavailable; selection still visible */ }
+    clearTimeout(copyTimer.current);
+    setCopied(asset.constant);
+    copyTimer.current = setTimeout(() => setCopied(''), 1600);
+  }
 
   return <>
     <button ref={triggerRef} className="button button--ghost" type="button" aria-label="Dokumentacja GameLab" aria-haspopup="dialog" onClick={() => setOpen(true)}>
@@ -72,6 +104,8 @@ export default function GameApiGuide() {
     <div className="game-api-body">
       <nav className="game-api-nav" aria-label="Rozdziały dokumentacji GameLab">
         <button type="button" className={section === 'start' ? 'is-active' : ''} aria-current={section === 'start' ? 'page' : undefined} onClick={() => setSection('start')}>Pierwsze kroki</button>
+        <button type="button" className={section === 'components' ? 'is-active' : ''} aria-current={section === 'components' ? 'page' : undefined} onClick={() => setSection('components')}>Komponenty</button>
+        <button type="button" className={section === 'assets' ? 'is-active' : ''} aria-current={section === 'assets' ? 'page' : undefined} onClick={() => setSection('assets')}>Assety</button>
         <button type="button" className={section === 'reference' ? 'is-active' : ''} aria-current={section === 'reference' ? 'page' : undefined} onClick={() => setSection('reference')}>API silnika</button>
         <button type="button" className={section === 'architecture' ? 'is-active' : ''} aria-current={section === 'architecture' ? 'page' : undefined} onClick={() => setSection('architecture')}>Architektura</button>
       </nav>
@@ -85,6 +119,41 @@ export default function GameApiGuide() {
           <p><strong>Scena i komponenty</strong><br /><code>onCreate</code> wykonuje się raz, <code>onUpdate(delta)</code> co klatkę. W komponencie używaj <code>this.game</code>, <code>this.gameObject</code> i <code>this.transform</code>.</p>
           <p><strong>Współrzędne i sterowanie</strong><br />Pozycja oznacza środek obiektu w pikselach, dodatnie Y biegnie w dół. Ruch postaci w kursie: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>.</p>
           <p><strong>Play i wynik zadania</strong><br />Przycisk ▶ Play uruchamia podgląd i sprawdza zadanie. Test tworzy osobną scenę i symuluje klatki oraz klawisze. W playgroundzie Play tylko uruchamia projekt.</p>
+        </div>
+      </div> : section === 'components' ? <div className="game-api-start">
+        <p className="game-api-intro">Komponent to gotowa cecha, którą podpinasz do obiektu przez <code>addComponent(new GameLab.X())</code>. Jeden obiekt może mieć wiele komponentów; każdy typ pełni inną rolę.</p>
+        <div className="game-component-groups">
+          {gameLabComponentGroups.map(group => <section className="game-component-group" key={group.label}>
+            <h3>{group.label}</h3>
+            <p className="game-component-hint">{group.hint}</p>
+            <ul>
+              {group.names.map(name => { const item = apiByName.get(name); return <li key={name}>
+                <code>{item?.signature ?? name}</code>
+                <span>{item?.description}</span>
+              </li>; })}
+            </ul>
+          </section>)}
+        </div>
+        <p className="game-api-note"><strong>Bez addComponent:</strong> <code>GameLab.Game</code> i <code>GameLab.GameObject</code> to scena i obiekty, <code>Transform</code> jest wbudowany w każdy obiekt, <code>this.input</code> i <code>this.canvas</code> pochodzą ze sceny, a <code>Tweens</code>, <code>Assets</code>, <code>UIAnchor</code>, <code>Vector2</code> i <code>Random</code> to narzędzia. Własny komponent piszesz jako <code>class X extends GameLab.Component</code>.</p>
+      </div> : section === 'assets' ? <div className="game-api-start">
+        <p className="game-api-intro">Wszystkie grafiki pochodzą ze wspólnego katalogu. W kodzie wpisujesz stałą <code>GameLab.Assets.NAZWA</code> — kliknij kartę, aby ją skopiować. Klucz w cudzysłowie to nazwa tekstury przyjmowana też przez <code>new GameLab.TileMap(&quot;klucz&quot;)</code>.</p>
+        <div className="game-api-search-row">
+          <label>Znajdź grafikę<input type="search" value={assetQuery} onChange={event => setAssetQuery(event.target.value)} placeholder="np. slime, coin, UI_BUTTON…" /></label>
+        </div>
+        <p className="game-api-count">{assetGroups.reduce((total, group) => total + group.assets.length, 0)} grafik · podgląd pokazuje to, co narysuje silnik</p>
+        <div className="game-asset-groups">
+          {assetGroups.map(group => <section className="game-asset-group" key={group.id}>
+            <h3>{group.label} <span>{group.assets.length}</span></h3>
+            <p className="game-component-hint">{group.hint}</p>
+            <div className="game-asset-grid">
+              {group.assets.map(asset => <button type="button" className="game-asset-card" key={asset.key} title={`Kopiuj GameLab.Assets.${asset.constant}`} aria-label={`${asset.key} — kopiuj GameLab.Assets.${asset.constant}`} onClick={() => copyAsset(asset)}>
+                <AssetIcon asset={asset} />
+                <code className="game-asset-name">{copied === asset.constant ? '✓ Skopiowano' : softWrap(asset.constant)}</code>
+                <span className="game-asset-key">&quot;{asset.key}&quot;{asset.draw.key !== asset.key ? ` → ${asset.draw.key}` : ''}{asset.aliases.length ? ` · także Assets.${asset.aliases.join(', ')}` : ''}</span>
+              </button>)}
+            </div>
+          </section>)}
+          {!assetGroups.length && <p>Nie znaleziono grafiki pasującej do filtra.</p>}
         </div>
       </div> : section === 'architecture' ? <div className="game-api-start"><h3>Obiekt + komponenty = zachowanie</h3><p>Scena dziedziczy po <code>GameLab.Game</code>. Obiekt przechowuje pozycję, a komponenty dodają wygląd, ruch, kolizje i reguły gry.</p><h3>Cykl życia</h3><p><code>onCreate()</code> przygotowuje stan raz. <code>onUpdate(delta)</code> aktualizuje go co klatkę. Czas podajemy w sekundach, prędkość w pikselach na sekundę.</p><h3>Kamera i HUD</h3><p><code>Camera2D</code> przesuwa widok świata, nie pozycje obiektów. Tekst interfejsu używa <code>TextRenderer</code> w przestrzeni ekranu.</p><h3>Twoje pliki</h3><p>W <code>game.js</code> uruchom scenę. Własne komponenty trzymaj w folderze <code>components/</code> i importuj jako moduły JavaScript. Canvas jest wynikiem pracy silnika, nie miejscem przechowywania reguł gry.</p></div> : <div className="game-api-reference">
         <div className="game-api-search-row">

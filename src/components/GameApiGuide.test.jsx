@@ -27,3 +27,32 @@ test('opens the GameLab quick-start and browsable API reference', () => {
   fireEvent.change(screen.getByLabelText('Wyszukaj klasę lub metodę'), { target: { value: 'brakTakiejMetody' } });
   expect(screen.getByText('Nie znaleziono pasującej klasy ani metody.')).toBeInTheDocument();
 });
+
+test('lists component types grouped by role', () => {
+  render(<GameApiGuide />);
+  fireEvent.click(screen.getByText('Dokumentacja GameLab'));
+  fireEvent.click(screen.getByRole('button', { name: 'Komponenty' }));
+  for (const label of ['Wygląd i tekst', 'Ruch postaci', 'Kolizje i pociski', 'AI przeciwników', 'Interfejs (UI)', 'Wejście']) {
+    expect(screen.getByRole('heading', { name: label })).toBeInTheDocument();
+  }
+  expect(screen.getByText(/new Collider2D\(width\?, height\?\)/)).toBeInTheDocument();
+  expect(screen.getByText(/Bez addComponent:/)).toBeInTheDocument();
+});
+
+test('shows the asset catalog with names, keys and sprite previews', async () => {
+  render(<GameApiGuide />);
+  fireEvent.click(screen.getByText('Dokumentacja GameLab'));
+  fireEvent.click(screen.getByRole('button', { name: 'Assety' }));
+  for (const label of ['Postacie i przeciwnicy', 'Walka', 'Świat i przedmioty', 'Kafelki terenu', 'Interfejs']) {
+    expect(screen.getByRole('heading', { name: new RegExp(label) })).toBeInTheDocument();
+  }
+  const card = screen.getByRole('button', { name: 'slime — kopiuj GameLab.Assets.SLIME' });
+  expect(card.querySelector('img')).toHaveAttribute('src', expect.stringContaining('survival-characters.png'));
+  expect(screen.getByText('SLIME')).toBeInTheDocument();
+  expect(screen.getByText('"slime"')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Znajdź grafikę'), { target: { value: 'slime' } });
+  expect(screen.getAllByRole('button', { name: /kopiuj GameLab\.Assets\./ })).toHaveLength(4);
+  fireEvent.change(screen.getByLabelText('Znajdź grafikę'), { target: { value: '' } });
+  fireEvent.click(screen.getByRole('button', { name: 'slime — kopiuj GameLab.Assets.SLIME' }));
+  expect(await screen.findByText('✓ Skopiowano')).toBeInTheDocument();
+});
