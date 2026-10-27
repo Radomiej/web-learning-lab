@@ -36,7 +36,18 @@ describe('lesson question generator', () => {
   it('rejects unsupported lessons and invalid counts instead of testing another topic', () => {
     expect(() => generateLessonQuestions({ track: 'html', order: 101 })).toThrow();
     expect(() => generateLessonQuestions({ track: 'js', order: 499 })).toThrow();
-    for (const count of [0, -1, 1.5, 4]) expect(() => generateLessonQuestions({ track: 'js', order: 401 }, { count })).toThrow();
+    for (const count of [0, -1, 1.5, 7]) expect(() => generateLessonQuestions({ track: 'js', order: 401 }, { count })).toThrow();
+  });
+  it('scales the default question count with the lesson page count, capped at 6', () => {
+    expect(generateLessonQuestions({ id: 'js-dom', track: 'js', order: 404 })).toHaveLength(6);
+    expect(generateLessonQuestions({ track: 'js', order: 404 })).toHaveLength(6);
+    expect(generateLessonQuestions({ id: 'js-small-state', track: 'js', order: 410 })).toHaveLength(3);
+    for (const order of [401, 404, 409, 414]) {
+      for (let seed = 0; seed < 5; seed++) {
+        const questions = generateLessonQuestions({ track: 'js', order }, { seed });
+        expect(new Set(questions.map(question => `${question.prompt}\n${question.code}`)).size).toBe(questions.length);
+      }
+    }
   });
 });
 
@@ -45,7 +56,7 @@ it('keeps every course topic usable over many reproducible variants', () => {
   for (let order = 401; order <= 414; order++) {
     for (let seed = 0; seed < 20; seed++) {
       const questions = generateLessonQuestions({ track: 'js', order }, { seed });
-      expect(new Set(questions.map(question => question.prompt)).size).toBe(3);
+      expect(new Set(questions.map(question => `${question.prompt}\n${question.code}`)).size).toBe(questions.length);
       for (const question of questions) {
         expect(question.options.filter(option => option.id === question.correctOptionId)).toHaveLength(1);
         expect(new Set(question.options.map(option => option.text)).size).toBe(4);

@@ -18,7 +18,7 @@ export default function JsLessonQuiz({ lesson, clientFactory = createSubmissionC
   const [savedCopy, setSavedCopy] = useState(null);
   const client = useRef(null);
   const seed = `${lesson.id}:${variant}`;
-  const questions = useMemo(() => generateLessonQuestions(lesson, { seed, count: 3 }), [lesson, seed]);
+  const questions = useMemo(() => generateLessonQuestions(lesson, { seed }), [lesson, seed]);
   useEffect(() => {
     const syncIdentity = () => { if (!submitted) { try { setStudentId(JSON.parse(localStorage.getItem('www-lab-assignment-identity') || '{}').studentId || getInstallationId().slice(-6)); } catch {} } };
     addEventListener('student-identity-change', syncIdentity);
@@ -55,10 +55,10 @@ export default function JsLessonQuiz({ lesson, clientFactory = createSubmissionC
   const Container = standalone ? 'section' : 'details';
   return <Container className="js-lesson-quiz" aria-label="Quiz lekcji">
     {!standalone &&
-    <summary>Sprawdź rozumienie — 3 pytania do tej lekcji</summary>
+    <summary>Sprawdź rozumienie — {questions.length} {questions.length < 5 ? 'pytania' : 'pytań'} do tej lekcji</summary>
     }
     <div className="js-quiz-body">
-      <p>3 pytania · Zestaw {variant}</p>
+      <p>{questions.length} {questions.length < 5 ? 'pytania' : 'pytań'} · Zestaw {variant}</p>
       <form onSubmit={handIn}>
         {!standalone && <label>ID ucznia do oddania<input aria-label="ID ucznia do oddania quizu" value={studentId} onChange={event => setStudentId(event.target.value)} maxLength={80} disabled={sending || submitted} /></label>}
         {questions.map((question, index) => <fieldset key={question.id} disabled={submitted || sending}>
