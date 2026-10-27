@@ -1,14 +1,22 @@
 import { useState } from 'react';
 import LessonInfographic from './LessonInfographic.jsx';
 import PageDiagram from './PageDiagram.jsx';
+import GameIntroDiagram from './GameIntroDiagram.jsx';
 import CodeExample from './CodeExample.jsx';
 import { gameExplanationPages } from './lessonVisuals.js';
+import { gameIntroPages } from './gameIntroPages.js';
 import { withConceptVisuals } from './lessonConcepts.js';
 import './LessonExplanation.css';
+import './GameIntroDiagram.css';
 
 export function explanationPages(lesson) {
-  const gamePages = gameExplanationPages[lesson.id?.replace(/^g2d\./, '')];
-  if (gamePages && lesson.id?.startsWith('g2d.')) return gamePages;
+  const chapter = lesson.id?.replace(/^g2d\./, '');
+  const gamePages = gameExplanationPages[chapter];
+  if (gamePages && lesson.id?.startsWith('g2d.')) {
+    const intro = gameIntroPages[lesson.id];
+    if (intro) return chapter === 'input' ? [...intro, ...gamePages.slice(1)] : intro;
+    return gamePages;
+  }
   const blocks = (lesson.theory || []).map((block, index) => typeof block === 'string'
     ? { title: `Zasada ${index + 1}`, text: block }
     : block);
@@ -32,14 +40,20 @@ function ExplanationPages({ lesson, language }) {
   const pages = explanationPages(lesson);
   const [index, setIndex] = useState(0);
   const page = pages[index];
-  const code = typeof page.code === 'object' ? page.code?.[language] : page.code;
+  const lang = language === 'javascript' ? 'js' : language;
+  const pick = value => value && typeof value === 'object' ? value[lang] : value;
+  const code = pick(page.code);
+  const setupCode = pick(page.setupCode);
+  const codeContext = pick(page.codeContext);
   return <section className="lesson-explanation" aria-label="Wyjaśnienie zagadnienia">
     <header className="explanation-header"><span>POZNAJ ZASADĘ</span><span aria-live="polite">{index + 1} / {pages.length}</span></header>
     <article className="explanation-copy" aria-live="polite" aria-atomic="true">
       <h2>{page.title}</h2><p>{page.text}</p>
-      {code && <CodeExample key={code} code={code} />}
+      {setupCode && <><p className="game-intro-code-context">{lang === 'java' ? 'GameMain.onCreate()' : 'game.js · onCreate()'}: dodaj do przygotowanego Player</p><CodeExample code={setupCode} /></>}
+      {code && <>{codeContext && <p className="game-intro-code-context">{codeContext}</p>}<CodeExample key={code} code={code} /></>}
+      {page.result && <div className="concept-result"><span>Efekt tego przykładu</span><pre>{page.result}</pre></div>}
     </article>
-    <div className="explanation-visual">{page.visual ? <PageDiagram page={page} /> : <LessonInfographic lesson={{ ...lesson, theory: [page], tips: [page.text] }} language={language} />}</div>
+    <div className="explanation-visual">{page.introDiagram ? <GameIntroDiagram kind={page.introDiagram} title={page.title} /> : page.visual ? <PageDiagram page={page} /> : <LessonInfographic lesson={{ ...lesson, theory: [page], tips: [page.text] }} language={language} />}</div>
     <nav className="explanation-pagination" aria-label="Strony wyjaśnienia">
       <button type="button" aria-label="Poprzedni krok" title="Poprzedni krok" disabled={index === 0} onClick={() => setIndex(index - 1)}><Arrow back /></button>
       <div className="explanation-pages">{pages.map((_, number) => <button type="button" key={number} aria-label={`Krok ${number + 1}`} aria-current={index === number ? 'step' : undefined} onClick={() => setIndex(number)}>{number + 1}</button>)}</div>
