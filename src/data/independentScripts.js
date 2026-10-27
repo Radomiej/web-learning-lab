@@ -27,9 +27,9 @@ const jsRecipes = {
     checks: [text('#filtered', '7, 9', 'Wynik filtrowania to dokładnie „7, 9”; nie pokazuj odrzuconych liczb.')],
   },
   27: {
-    title: 'Link utworzony w DOM', prompt: 'W script.js utwórz przez createElement link <a>. Ustaw mu tekst „Dokumentacja”, href="https://developer.mozilla.org/", target="_blank" i rel="noopener". Dodaj go do akapitu z id="links".',
+    title: 'Link utworzony w DOM', prompt: 'W script.js utwórz przez createElement link <a>. Ustaw mu tekst „Dokumentacja” przez textContent i nadaj atrybuty przez setAttribute: href="https://developer.mozilla.org/", target="_blank" i rel="noopener". Dodaj go do akapitu z id="links" przez append.',
     html: '<main><h1>Przydatne materiały</h1><p id="links"></p></main>',
-    code: 'const link = document.createElement("a"); link.textContent = "Dokumentacja"; link.href = "https://developer.mozilla.org/"; link.target = "_blank"; link.rel = "noopener"; document.querySelector("#links").append(link);',
+    code: 'const link = document.createElement("a"); link.textContent = "Dokumentacja"; link.setAttribute("href", "https://developer.mozilla.org/"); link.setAttribute("target", "_blank"); link.setAttribute("rel", "noopener"); document.querySelector("#links").append(link);',
     checks: [exists('#links > a[href="https://developer.mozilla.org/"][target="_blank"][rel~="noopener"]', 'W akapicie links ma pojawić się bezpieczny link do dokumentacji w nowej karcie.'), text('#links > a', 'Dokumentacja', 'Tekst linku ma brzmieć „Dokumentacja”.')],
   },
   28: {

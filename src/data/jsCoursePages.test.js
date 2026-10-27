@@ -67,3 +67,31 @@ test('fetch exercise handles success, HTTP errors, network rejection, invalid JS
     expect(result.textContent).toBe(expected);
   }
 });
+
+test('task solutions only use APIs demonstrated in theory up to that lesson', () => {
+  const APIs = ['createElement', 'append(', 'setAttribute', 'classList', 'addEventListener', 'preventDefault', 'FormData', 'localStorage', 'JSON.parse', 'JSON.stringify', 'fetch', 'replaceChildren', 'getElementById', 'querySelectorAll', 'trim(', 'Number(', 'textContent', '.value', '.remove(', 'pop(', 'push(', 'filter(', 'map(', 'join(', 'split(', 'sort('];
+  const js = lessons.filter(lesson => lesson.track === 'js').sort((a, b) => a.order - b.order);
+  let taught = '';
+  for (const lesson of js) {
+    taught += (jsCoursePages[lesson.id] || []).map(page => Object.values(page).join(' ')).join(' ') + ' ';
+    for (const task of lesson.tasks) {
+      const required = (task.prompt || '') + ' ' + JSON.stringify(task.solution || '');
+      const missing = APIs.filter(api => required.includes(api) && !taught.includes(api));
+      expect(missing, `${task.id} wymaga API niewyjaśnionego w teorii`).toEqual([]);
+    }
+  }
+});
+
+test('js-dom demonstrates creating a link with setAttribute and append before the independent task', () => {
+  const pages = jsCoursePages['js-dom'];
+  const demo = pages.find(page => (page.code || '').includes('createElement("a")'));
+  expect(demo).toBeDefined();
+  for (const api of ['setAttribute("href"', 'setAttribute("target"', 'setAttribute("rel"', 'append(link)']) {
+    expect(demo.code, api).toContain(api);
+  }
+  const independent = lessons.find(lesson => lesson.id === 'js-dom').tasks.find(task => task.mode === 'independent');
+  const source = independent.solution.files['script.js'];
+  expect(source).toContain('createElement("a")');
+  expect(source).toContain('setAttribute');
+  expect(source).not.toMatch(/\.(href|target|rel)\s*=/);
+});
