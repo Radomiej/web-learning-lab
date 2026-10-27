@@ -395,6 +395,9 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .game-component-group li { min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
 .game-component-group li code { display: block; margin-bottom: 4px; color: var(--ink-900); font: 11px/1.5 var(--mono); overflow-wrap: anywhere; }
 .game-component-group li span { color: var(--ink-700); font-size: 12px; line-height: 1.5; }
+.game-component-example { margin-top: 6px; }
+.game-component-example > summary { cursor: pointer; color: var(--ink-500); font-size: 11px; }
+.game-component-example > pre { margin: 6px 0 0; padding: 8px; overflow-x: auto; border-radius: 6px; background: var(--canvas); font-size: 11px; }
 .game-api-note { margin: 14px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--canvas); font-size: 13px; }
 .game-asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
 .game-asset-card { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 10px 6px; border: 1px solid var(--line); border-radius: 8px; color: inherit; background: var(--paper); font: inherit; text-align: center; cursor: pointer; }

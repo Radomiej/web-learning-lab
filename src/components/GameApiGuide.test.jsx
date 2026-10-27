@@ -39,6 +39,18 @@ test('lists component types grouped by role', () => {
   expect(screen.getByText(/Bez addComponent:/)).toBeInTheDocument();
 });
 
+test('explains fetching components and shows usage examples on demand', () => {
+  render(<GameApiGuide />);
+  fireEvent.click(screen.getByText('Dokumentacja GameLab'));
+  fireEvent.click(screen.getByRole('button', { name: 'Komponenty' }));
+  expect(screen.getByText(/this\.requireComponent\(GameLab\.X\)/)).toBeInTheDocument();
+  expect(screen.getByText(/this\.game\.find/)).toBeInTheDocument();
+  const toggles = screen.getAllByText('Pokaż użycie');
+  expect(toggles.length).toBeGreaterThan(20);
+  fireEvent.click(toggles[0]);
+  expect(screen.getByText(/addComponent\(new GameLab\.Sprite/)).toBeInTheDocument();
+});
+
 test('shows the asset catalog with names, keys and sprite previews', async () => {
   render(<GameApiGuide />);
   fireEvent.click(screen.getByText('Dokumentacja GameLab'));

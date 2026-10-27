@@ -1,7 +1,7 @@
 {
   "apiVersion": 2,
   "source": "..\\web-learning-lab",
-  "revision": "c849331dd72b41973a61ec8e8f66cbb71dadf5e4",
+  "revision": "2f53c2ab4f75d932bb96a1e4aad3e5972b19ef83",
   "dirty": true,
   "hashes": {
     "shared/lab-game-v2/addons.js": "189ddafacfb17280dbd3fc66bb40a48cf1665f0268062c0f31616a1c4134b8ea",
@@ -35,7 +35,7 @@
     "shared/lab-game-v2/editor/LessonExplanation.jsx": "b3ae7cdb89497c1f73516f9a3cb436c0a2a93a4662d66e77d01291f17a5c2bdc",
     "shared/lab-game-v2/editor/LessonInfographic.css": "e1a2229f88f202fea707646d847b4c8d22117abd8f8005843d01136f1717d5c1",
     "shared/lab-game-v2/editor/LessonInfographic.jsx": "ca21d4a9d2ef116de6624d4cfd5660ccb8821f3873e1a345cd265b760c0b1f0c",
-    "shared/lab-game-v2/editor/lessonVisuals.js": "8dada2f148cccbca439e24be3cda5eeca9183a37289f9ae7f2668234168a149b",
+    "shared/lab-game-v2/editor/lessonVisuals.js": "9341974a17b1d431c4512858124b23b57aca4489b289c60bf19d2b1b9a418267",
     "shared/lab-game-v2/editor/MovementHint.jsx": "f2ef710eac1ca1d6f9992687b27fb92236a9fd3e3781f350dec819b9cf00790c",
     "shared/lab-game-v2/editor/PageDiagram.css": "ad5e75a9577e06f6c3a34c40310a64974a9f8a26c91effb8d992a9066faf893c",
     "shared/lab-game-v2/editor/PageDiagram.jsx": "66ecb8dce03e5bc75ef407bc7b3fb9bc432288ac10b9429792a6b3a22d77e1cc",

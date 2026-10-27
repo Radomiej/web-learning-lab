@@ -121,7 +121,7 @@ export default function GameApiGuide() {
           <p><strong>Play i wynik zadania</strong><br />Przycisk ▶ Play uruchamia podgląd i sprawdza zadanie. Test tworzy osobną scenę i symuluje klatki oraz klawisze. W playgroundzie Play tylko uruchamia projekt.</p>
         </div>
       </div> : section === 'components' ? <div className="game-api-start">
-        <p className="game-api-intro">Komponent to gotowa cecha, którą podpinasz do obiektu przez <code>addComponent(new GameLab.X())</code>. Jeden obiekt może mieć wiele komponentów; każdy typ pełni inną rolę.</p>
+        <p className="game-api-intro">Komponent to gotowa cecha, którą podpinasz do obiektu przez <code>addComponent(new GameLab.X())</code>. Jeden obiekt może mieć wiele komponentów; każdy typ pełni inną rolę. Komponent innego typu pobierasz przez <code>this.requireComponent(GameLab.X)</code> (zgłasza błąd, gdy go brakuje) albo <code>this.getComponent(GameLab.X)</code> (zwraca komponent lub null). Cudzy obiekt znajdziesz przez <code>this.game.find(&quot;Nazwa&quot;)</code>, a komponent uczestnika kontaktu przez <code>other.getComponent(...)</code> w onTrigger.</p>
         <div className="game-component-groups">
           {gameLabComponentGroups.map(group => <section className="game-component-group" key={group.label}>
             <h3>{group.label}</h3>
@@ -130,6 +130,7 @@ export default function GameApiGuide() {
               {group.names.map(name => { const item = apiByName.get(name); return <li key={name}>
                 <code>{item?.signature ?? name}</code>
                 <span>{item?.description}</span>
+                {item?.example && <details className="game-component-example"><summary>Pokaż użycie</summary><pre><code>{item.example}</code></pre></details>}
               </li>; })}
             </ul>
           </section>)}
