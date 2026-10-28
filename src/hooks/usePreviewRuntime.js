@@ -14,6 +14,7 @@ const emptySignals = () => ({
   react: {},
   phpRequest: null,
   gameScenarios: {},
+  probes: {},
 });
 
 const initialRuntimeState = (scopeKey = 'default') => ({

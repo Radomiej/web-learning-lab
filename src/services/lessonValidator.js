@@ -118,6 +118,27 @@ function evaluateOne(check = {}, context = {}) {
 
   try {
     switch (check.type) {
+      case 'jsProbe': {
+        const probe = signals.probes?.[check.id];
+        if (!probe) return resultFor(check, false, 'Podgląd nie zwrócił wartości wyrażenia. Uruchom program przez ▶ Play.');
+        if (!probe.ok) {
+          return resultFor(check, false, `Nie można odczytać „${safeString(check.expression)}”: ${safeString(probe.error)}.`);
+        }
+        const hasExpected = Object.hasOwn(check, 'expected');
+        const passed = hasExpected ? Object.is(probe.value, check.expected) : Boolean(probe.value);
+        const actual = safeString(probe.text ?? JSON.stringify(probe.value));
+        return passed
+          ? resultFor(check, true, `„${safeString(check.expression)}” ma oczekiwaną wartość.`)
+          : resultFor(check, false, `„${safeString(check.expression)}” zwraca ${actual}${hasExpected ? `, oczekiwano ${safeString(JSON.stringify(check.expected))}` : ''}.`);
+      }
+      case 'sourceMatches': {
+        const source = getFile(files, check.file);
+        let regex = null;
+        try { regex = new RegExp(safeString(check.pattern), check.flags || ''); } catch { regex = null; }
+        return regex && regex.test(source)
+          ? resultFor(check, true, 'Znaleziono wymagany zapis w kodzie.')
+          : resultFor(check, false, `Brak oczekiwanego zapisu w ${check.file || 'pliku'}.`);
+      }
       case 'consoleOutput': {
         const expected = safeString(expectedValue(check));
         const output = Array.isArray(signals.consoleOutput) ? signals.consoleOutput : [];

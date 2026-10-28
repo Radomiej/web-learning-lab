@@ -97,6 +97,31 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
     };
   }
 
+  function cloneValue(value) {
+    if (value === undefined) return null;
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch {
+      return stringify(value);
+    }
+  }
+
+  // jsProbe checks evaluate an expression in the student's global scope, so
+  // top-level let/const bindings are visible to the indirect eval below.
+  function collectProbes() {
+    const probes = {};
+    for (const signal of requestedSignals) {
+      if (!signal || signal.type !== 'jsProbe' || typeof signal.expression !== 'string') continue;
+      try {
+        const value = window.eval('(' + signal.expression + ')');
+        probes[signal.id] = { ok: true, value: cloneValue(value), text: stringify(value) };
+      } catch (error) {
+        probes[signal.id] = { ok: false, error: stringify(error && error.message ? error.message : error) };
+      }
+    }
+    return probes;
+  }
+
   function snapshot() {
     const elements = Array.from(document.querySelectorAll('*')).map((element) => ({
       tagName: element.tagName.toLowerCase(),
@@ -145,6 +170,7 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
         clientWidth: document.documentElement.clientWidth || window.innerWidth,
         scrollWidth: Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0),
       },
+      probes: collectProbes(),
     });
   }
 

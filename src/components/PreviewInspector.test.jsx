@@ -25,7 +25,8 @@ test('exposes an accessible auto-preview toggle', async () => {
     />,
   );
 
-  const toggle = screen.getByRole('checkbox', { name: 'Auto-podgląd' });
+  await user.click(screen.getByRole('button', { name: 'Ustawienia podglądu' }));
+  const toggle = screen.getByRole('switch', { name: 'Auto-podgląd' });
   expect(toggle).not.toBeChecked();
   await user.click(toggle);
   expect(onChange).toHaveBeenCalledWith(true);
