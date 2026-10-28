@@ -26,8 +26,8 @@ test('contains exactly 24 layout tasks across the layout range', () => {
   expect(layoutLessons).toHaveLength(8);
   expect(tasks).toHaveLength(24);
   expect(tasks.filter((task) => task.mode === 'guided')).toHaveLength(8);
-  expect(tasks.filter((task) => task.mode === 'independent')).toHaveLength(8);
-  expect(tasks.filter((task) => task.mode === 'challenge')).toHaveLength(8);
+  expect(tasks.filter((task) => task.mode === 'independent')).toHaveLength(16);
+  expect(tasks.filter((task) => task.mode === 'challenge')).toHaveLength(0);
 });
 
 test('contains eight React lessons after the JavaScript track', () => {

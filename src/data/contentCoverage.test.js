@@ -27,7 +27,7 @@ test('layout lessons cover the properties needed for 24 tasks', () => {
     'display', 'flex-direction', 'justify-content', 'align-items', 'gap',
     'flex-wrap', 'flex-basis', 'flex-grow', 'flex-shrink', 'order',
     'align-self', 'grid-template-columns', 'grid-template-areas',
-    'grid-area', '@media', 'max-width', 'overflow',
+    'grid-area', 'max-width', 'overflow',
   ].forEach((property) => expect(properties).toContain(property));
 });
 

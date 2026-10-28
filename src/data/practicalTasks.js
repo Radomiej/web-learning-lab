@@ -85,7 +85,10 @@ const layoutPlans = {
     [['display', 'grid'], ['grid-template-columns', '100px 100px'], ['gap', '12px'], ['justify-content', 'center']],
   ],
 };
-const modes = ['guided', 'independent', 'challenge'];
+// Third layout task is a second independent exercise; the id keeps its
+// historical '-challenge' suffix so saved progress and links still resolve.
+const modes = ['guided', 'independent', 'independent'];
+const modeIds = ['guided', 'independent', 'challenge'];
 const ruleText = (plans) => plans.map(([property, value, selector = '.practice']) => `${selector} { ${property}: ${value}; }`).join('\n');
 const styleTarget = (selector) => ({
   '.practice': 'W kontenerze z class="practice"',
@@ -100,7 +103,7 @@ export function practicalTasks(definition, base) {
   const count = definition.track === 'layout' ? 3 : 2;
   const localOrder = lessonSequence(definition.track, definition.order);
   return Array.from({ length: count }, (_, variant) => {
-    const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-${modes[variant]}${variant && definition.track !== 'layout' ? '-v2' : ''}`;
+    const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-${modeIds[variant]}${variant && definition.track !== 'layout' ? '-v2' : ''}`;
     const task = { id, mode: modes[variant], title: definition.title, starter: { ...base }, checks: [] };
     const add = (type, label, fields = {}) => task.checks.push({ id: `${id}-${task.checks.length}`, type, label, ...fields });
     if (definition.track === 'html') {
@@ -111,6 +114,7 @@ export function practicalTasks(definition, base) {
       task.hint = htmlTaskHint;
       task.starter.html = '<!-- Tutaj, wewnątrz body, zbuduj treść strony według kroków zadania. -->';
       task.solution = { ...base, html: example };
+      task.solutionExplanation = 'W index.html wpisano docelową strukturę z kroków zadania — zaznaczone linie to dopisany kod.';
       selectors.forEach((selector, index) => add('elementExists', independent ? independent.requirements[index][1] : htmlInstructions[localOrder][index], { selector }));
       if (localOrder === 2) add('sourceIncludes', 'Na początku pliku index.html, przed <html>, umieść deklarację <!doctype html>.', { file: 'index.html', value: '<!doctype html>' });
     } else if (['css', 'layout'].includes(definition.track)) {
@@ -125,6 +129,10 @@ export function practicalTasks(definition, base) {
       task.solution = { ...task.starter, baseCss: base.baseCss + '\n' + ruleText(plan) };
       if (definition.track === 'css') task.solution = { ...task.starter, themeCss: task.starter.themeCss + '\n' + ruleText(plan) };
       if (localOrder === 6) task.solution.baseCss += '\n.practice:hover { opacity: .6; }\n@media (prefers-reduced-motion: reduce) { .practice { transition: none; } }';
+      const [leadProperty, leadValue] = plan[0];
+      task.solutionExplanation = definition.track === 'layout'
+        ? `W styles.css dopisano poniższe reguły: najpierw ${leadProperty}: ${leadValue} włącza nowy układ kontenera, a kolejne właściwości sterują rozmieszczeniem elementów.`
+        : 'W styles.css dopisano poniższe reguły — każda odpowiada jednemu krokowi zadania.';
       add('elementExists', 'W index.html zachowaj kontener z class="practice" i trzy elementy z class="item" bezpośrednio w jego wnętrzu.', { selector: '.practice:has(> .item:nth-child(3))' });
       plan.forEach(([property, expected, selector = '.practice']) => add('computedStyle', `${styleTarget(selector)} ustaw właściwość ${property} na ${expected}. Regułę zapisz dla ${selector}.`, { selector, property, expected }));
       if (localOrder === 8) add('noHorizontalOverflow', 'Unikaj poziomego przewijania w podglądzie');

@@ -7,9 +7,17 @@ export const lessonStepInfographics = Object.fromEntries(
   }])),
 );
 
+// Layout lessons ship SVG diagrams via page.image, not lesson-infographics PNGs.
+const svgDiagramLessons = new Set([
+  'flex-axis', 'flex-wrap-gap', 'flex-sizing', 'flex-exceptions',
+  'flex-patterns', 'grid-basics', 'grid-areas', 'responsive-layouts',
+]);
+
 export const lessonInfographics = Object.fromEntries(
-  Object.entries({ ...htmlCssTeachingPages, ...phpTeachingPages, ...reactTeachingPages }).map(([id, pages]) => [id, {
-    src: `/course-assets/lesson-infographics/${id}.png`,
-    alt: `${pages[0].title}. ${pages[0].result}`,
-  }]),
+  Object.entries({ ...htmlCssTeachingPages, ...phpTeachingPages, ...reactTeachingPages })
+    .filter(([id]) => !svgDiagramLessons.has(id))
+    .map(([id, pages]) => [id, {
+      src: `/course-assets/lesson-infographics/${id}.png`,
+      alt: `${pages[0].title}. ${pages[0].result}`,
+    }]),
 );

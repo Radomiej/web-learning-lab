@@ -206,7 +206,9 @@ test("only example exercises expose a solution button", async () => {
   ).not.toBeInTheDocument();
   await user.click(screen.getByLabelText('Wybierz ścieżkę'));
   await user.click(screen.getByRole('tab', { name: /Layout/ }));
-  await user.click(screen.getByRole("button", { name: /Wyzwanie/i }));
+  await user.click(
+    screen.getAllByRole("button", { name: /Samodzielnie/i }).at(-1),
+  );
   expect(
     screen.queryByRole("button", { name: "Pokaż rozwiązanie" }),
   ).not.toBeInTheDocument();

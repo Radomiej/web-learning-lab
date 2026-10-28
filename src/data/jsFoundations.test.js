@@ -14,10 +14,20 @@ test('first three lessons can be solved without document and check real output',
       const source = task.solution.files['script.js'];
       expect(source).not.toMatch(/document|querySelector|getElementById/);
       const output = [];
-      new Function('console', source)({ log: (...values) => output.push(values.join(' ')) });
-      const result = evaluateChecks(task.checks, { signals: { consoleOutput: output, runtimeErrors: [] } });
+      // Mirror the preview bridge: eval probes inside the scope that holds
+      // the student's top-level let/const bindings.
+      const evaluateInScope = new Function('console', `${source}\nreturn (expression) => eval(expression);`)({ log: (...values) => output.push(values.join(' ')) });
+      const probes = {};
+      for (const check of task.checks.filter((check) => check.type === 'jsProbe')) {
+        try {
+          probes[check.id] = { ok: true, value: evaluateInScope(`(${check.expression})`) };
+        } catch (error) {
+          probes[check.id] = { ok: false, error: String(error?.message || error) };
+        }
+      }
+      const result = evaluateChecks(task.checks, { files: task.solution.files, signals: { consoleOutput: output, runtimeErrors: [], probes } });
       expect(result.passed, task.id).toBe(result.total);
-      expect(evaluateChecks(task.checks, { signals: { consoleOutput: [], runtimeErrors: [] } }).passed).toBeLessThan(result.total);
+      expect(evaluateChecks(task.checks, { files: task.solution.files, signals: { consoleOutput: [], runtimeErrors: [] } }).passed).toBeLessThan(result.total);
     }
   }
 });

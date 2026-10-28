@@ -31,6 +31,7 @@ export function createTask(input = {}) {
     solution: projectFrom(input.solution, title, track),
     checks: input.checks ?? [],
     ...(input.hint ? { hint: input.hint } : {}),
+    ...(input.solutionExplanation ? { solutionExplanation: input.solutionExplanation } : {}),
   };
 }
 

@@ -3,14 +3,15 @@ import { generateLessonQuestions, gradeLessonQuestion } from '../services/lesson
 import CodeExample from '../../shared/lab-game-v2/editor/CodeExample.jsx';
 import './JsCourse.css';
 import { createSubmissionClient } from '../services/assignmentSubmissions.js';
-import { getInstallationId } from '../services/installationId.js';
 import { trackLabEvent } from '../services/labAnalytics.js';
 
 export default function JsLessonQuiz({ lesson, clientFactory = createSubmissionClient, standalone = false, onContinue }) {
   const [variant, setVariant] = useState(1);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [studentId, setStudentId] = useState(() => { try { return JSON.parse(localStorage.getItem('www-lab-assignment-identity') || '{}').studentId || getInstallationId().slice(-6); } catch { return getInstallationId().slice(-6); } });
+  const [studentId, setStudentId] = useState(() => { try { return JSON.parse(localStorage.getItem('www-lab-assignment-identity') || '{}').studentId || ''; } catch { return ''; } });
+  const [studentName, setStudentName] = useState(() => { try { return JSON.parse(localStorage.getItem('www-lab-assignment-identity') || '{}').studentName || ''; } catch { return ''; } });
+  const idRef = useRef(null), nameRef = useRef(null);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
@@ -20,7 +21,7 @@ export default function JsLessonQuiz({ lesson, clientFactory = createSubmissionC
   const seed = `${lesson.id}:${variant}`;
   const questions = useMemo(() => generateLessonQuestions(lesson, { seed }), [lesson, seed]);
   useEffect(() => {
-    const syncIdentity = () => { if (!submitted) { try { setStudentId(JSON.parse(localStorage.getItem('www-lab-assignment-identity') || '{}').studentId || getInstallationId().slice(-6)); } catch {} } };
+    const syncIdentity = () => { if (!submitted) { try { const identity = JSON.parse(localStorage.getItem('www-lab-assignment-identity') || '{}'); setStudentId(identity.studentId || ''); setStudentName(identity.studentName || ''); } catch {} } };
     addEventListener('student-identity-change', syncIdentity);
     return () => removeEventListener('student-identity-change', syncIdentity);
   }, [submitted]);
@@ -36,13 +37,15 @@ export default function JsLessonQuiz({ lesson, clientFactory = createSubmissionC
   async function handIn(event) {
     event.preventDefault();
     if (!complete || submitted || sending) return;
-    if (!studentId.trim()) { setError('Podaj ID ucznia przed oddaniem quizu.'); return; }
+    if (!studentId.trim()) { setError('Podaj swoje ID ucznia (klasa i numer) przed oddaniem quizu.'); idRef.current?.focus(); return; }
+    if (!studentName.trim()) { setError('Podaj imię i nazwisko przed oddaniem quizu.'); nameRef.current?.focus(); return; }
     setSending(true); setError('');
     try {
       const topic = questions[0].topic;
       const assignment = { generatorVersion: '1', templateId: lesson.track === 'js' ? `js-quiz-${topic}` : `course-quiz-${lesson.id}`, seed, difficulty: 'standard', index: 0 };
       const files = { 'answer.json': JSON.stringify({ lessonId: lesson.id, answers }, null, 2) };
-      const id = await client.current.submit({ assignment, studentId, files });
+      const id = await client.current.submit({ assignment, studentId, studentName, files });
+      try { localStorage.setItem('www-lab-assignment-identity', JSON.stringify({ studentId: studentId.trim(), studentName: studentName.trim() })); } catch {}
       setSavedCopy({ submissionId: id, assignment, studentId, files });
       setNotice(id); setSubmitted(true);
       trackLabEvent('quiz_submitted', { lesson_id: lesson.id, lesson_number: lesson.order, total: questions.length, passed: questions.filter(question => gradeLessonQuestion(question, answers[question.id]).correct).length, kind: 'quiz', action: 'queued' });
@@ -60,7 +63,7 @@ export default function JsLessonQuiz({ lesson, clientFactory = createSubmissionC
     <div className="js-quiz-body">
       <p>{questions.length} {questions.length < 5 ? 'pytania' : 'pytań'} · Zestaw {variant}</p>
       <form onSubmit={handIn}>
-        {!standalone && <label>ID ucznia do oddania<input aria-label="ID ucznia do oddania quizu" value={studentId} onChange={event => setStudentId(event.target.value)} maxLength={80} disabled={sending || submitted} /></label>}
+        <div className="js-quiz-identity"><label>ID ucznia (klasa i numer)<input aria-label="ID ucznia do oddania quizu" ref={idRef} value={studentId} onChange={event => setStudentId(event.target.value)} maxLength={80} placeholder="Np. 3A-12" autoComplete="off" disabled={sending || submitted} /></label><label>Imię i nazwisko<input aria-label="Imię i nazwisko do oddania quizu" ref={nameRef} value={studentName} onChange={event => setStudentName(event.target.value)} maxLength={80} autoComplete="off" disabled={sending || submitted} /></label></div>
         {questions.map((question, index) => <fieldset key={question.id} disabled={submitted || sending}>
           <legend>{index + 1}. {question.prompt}</legend>
           {question.code && <CodeExample code={question.code} />}

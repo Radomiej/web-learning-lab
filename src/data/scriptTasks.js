@@ -24,7 +24,7 @@ function jsExercise(order, word) {
     1: [`const message = "${word}"; console.log(message); document.querySelector("#result").textContent = message;`, 'Zadeklaruj const message i pokaż jego wartość w #result. Wypisz ją też w konsoli.'],
     2: [`function describe(score) { if (score >= 50) return "${word}"; return "Spróbuj ponownie"; } document.querySelector("#result").textContent = describe(80);`, 'Napisz funkcję describe(score): dla wyniku >= 50 zwróć tekst sukcesu. Wywołaj ją z 80 i pokaż wynik w #result.'],
     3: [`const items = ["${word}", "CSS"]; document.querySelector("#result").textContent = items.map(item => item.toUpperCase()).join(", ");`, 'Przekształć tablicę [tekst zadania, "CSS"] przez map na wielkie litery i pokaż ją w #result.'],
-    4: [`const result = document.querySelector("#result"); result.textContent = "${word}"; result.classList.add("ready");`, 'Znajdź #result przez querySelector, ustaw jego textContent i dodaj klasę ready.'],
+    4: [`const result = document.querySelector("#result"); result.textContent = "${word}"; result.classList.add("ready");`, 'Znajdź #result przez querySelector, ustaw jego textContent i dodaj klasę ready. Reguła #result.ready jest już opisana w styles.css — po dodaniu klasy element wyraźnie zmieni wygląd; porównaj widok przed i po uruchomieniu.'],
     5: [`document.querySelector("#action").addEventListener("click", () => { document.querySelector("#result").textContent = "${word}"; });`, 'Podłącz click do #action. Dopiero po kliknięciu pokaż tekst w #result.', true],
     6: [`const state = { items: [] }; function render() { document.querySelector("#result").textContent = state.items.length ? state.items.join(", ") : "Brak zadań"; } document.querySelector("#action").addEventListener("click", () => { state.items.push("${word}"); render(); }); render();`, 'Utwórz state.items i render(). Pokaż stan pusty, a po kliknięciu #action dodaj zadanie i odśwież #result.', true],
     7: [`const raw = '{"name":"${word}"}'; try { const data = JSON.parse(raw); document.querySelector("#result").textContent = data.name; } catch { document.querySelector("#result").textContent = "Błędne dane"; }`, 'Przećwicz bezpieczny odczyt: parsuj JSON z polem name w try/catch i pokaż wynik w #result. Uwaga: izolowany iframe nie udostępnia localStorage.', false],
@@ -60,12 +60,18 @@ export function scriptTasks(definition, base) {
     } else {
       const [code, instruction, action] = jsExercise(localOrder, word);
       starter = { ...base, html: `<main><h1>Laboratorium JavaScript</h1><button id="action">Dodaj</button>${localOrder === 8 ? '<ul id="result"></ul>' : '<output id="result"></output>'}</main>`, js: '// Napisz rozwiązanie tutaj.\n' };
+      if (localOrder === 4) starter.themeCss = `${base.themeCss}\n#result { display: inline-block; padding: 10px 16px; border: 2px dashed #93aabf; border-radius: 10px; color: #54708a; background: #fff; }\n#result.ready { border-style: solid; border-width: 4px; border-color: #17803a; background-color: #dcf2e3; color: #0f5c28; font-weight: 700; }`;
       solution = { ...starter, js: code };
       prompt = instruction + ` Tekst zadania: „${word}”.`;
       checks.push(action
         ? { id: id + '-action', type: 'interaction', selector: '#action', resultSelector: '#result', expected: { text: word }, label: `Kliknięcie #action pokazuje „${word}” w #result` }
         : { id: id + '-text', type: 'textContains', selector: '#result', expected: word, label: `#result zawiera „${word}”` });
-      if (localOrder === 4) checks.push({ id: id + '-class', type: 'elementExists', selector: '#result.ready', label: '#result ma klasę ready' });
+      if (localOrder === 4) {
+        checks.push({ id: id + '-class', type: 'elementExists', selector: '#result.ready', label: '#result ma klasę ready' });
+        checks.push({ id: id + '-api', type: 'sourceMatches', file: 'script.js', pattern: 'classList\\s*\\.\\s*add\\s*\\(\\s*["\']ready["\']', label: 'W script.js dodaj klasę przez classList.add("ready")' });
+        checks.push({ id: id + '-look', type: 'computedStyle', selector: '#result', property: 'border-top-style', expected: 'solid', label: 'Reguła #result.ready zmienia przerywaną ramkę na pełną — klasa realnie zmienia wygląd' });
+        checks.push({ id: id + '-bg', type: 'computedStyle', selector: '#result', property: 'background-color', expected: 'rgb(220, 242, 227)', label: 'Reguła #result.ready nadaje zielone tło — klasa realnie zmienia wygląd' });
+      }
       if (localOrder === 8) checks.push({ id: id + '-item', type: 'elementExists', selector: '#result > li', label: 'Wydarzenie jest elementem li' });
     }
     return createTask({ id, mode, track: definition.track, title: definition.title, prompt, starter, solution, checks });

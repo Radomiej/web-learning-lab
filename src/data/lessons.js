@@ -134,13 +134,13 @@ const layoutTopics = [
   {
     order: lessonNumber('layout', 8),
     id: 'responsive-layouts',
-    title: 'Responsywne layouty',
-    summary: 'Projektuj od małego ekranu i pilnuj braku poziomego overflow.',
-    focus: '@media, mobile-first, elastyczne obrazy i breakpoint wynikający z treści',
-    token: '@media',
+    title: 'Elastyczne layouty',
+    summary: 'Buduj układy, które same dopasowują się do dostępnego miejsca.',
+    focus: 'flex-wrap, flex-basis, flex-grow, max-width i kontrola overflow',
+    token: 'flex-wrap',
     tokenFile: 'styles.css',
-    objectives: ['Zaczynaj od układu mobilnego.', 'Sprawdzaj overflow oraz czytelność przy szerokości 390px.'],
-    theory: ['Responsywność to nie tylko breakpointy — to również elastyczne szerokości, media i treści.', 'Najpierw zaprojektuj prosty układ dla małego ekranu, potem dodaj reguły dla większej przestrzeni.'],
+    objectives: ['Zbuduj układ, który zawija elementy bez sztywnych szerokości.', 'Pilnuj poziomego overflow w wąskim podglądzie.'],
+    theory: ['Elastyczny układ dopasowuje się sam: `flex-wrap`, `flex-basis` i `minmax()` pozwalają elementom zająć dostępne miejsce.', 'Najpierw sprawdź, czy treść mieści się w wąskim podglądzie — dopiero potem dodawaj stałe szerokości.'],
   },
 ].map((topic) => ({ track: 'layout', ...topic }));
 

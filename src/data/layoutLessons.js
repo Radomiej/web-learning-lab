@@ -1,6 +1,6 @@
 import { lessonNumber } from './lessonNumbers.js';
 
-const modes = [{ mode: 'guided' }, { mode: 'independent' }, { mode: 'challenge' }];
+const modes = [{ mode: 'guided' }, { mode: 'independent' }, { mode: 'independent' }];
 
 export const layoutLessons = [
   { order: lessonNumber('layout', 1), requiredProperties: ['display', 'flex-direction', 'justify-content', 'align-items'], tasks: modes, assets: ['/course-assets/04-flexbox-grid.svg'] },
@@ -10,5 +10,5 @@ export const layoutLessons = [
   { order: lessonNumber('layout', 5), requiredProperties: ['display', 'justify-content', 'align-items', 'gap', 'flex-direction'], tasks: modes },
   { order: lessonNumber('layout', 6), requiredProperties: ['display', 'grid-template-columns', 'grid-template-rows', 'fr', 'repeat', 'minmax', 'gap'], tasks: modes, assets: ['/course-assets/04-flexbox-grid.svg'] },
   { order: lessonNumber('layout', 7), requiredProperties: ['grid-template-areas', 'grid-area', 'grid-column', 'grid-row', 'display'], tasks: modes },
-  { order: lessonNumber('layout', 8), requiredProperties: ['@media', 'max-width', 'width', 'max-width', 'overflow', 'flex-wrap'], tasks: modes, assets: ['/course-assets/05-rwd.svg', '/course-assets/08-rwd-360-430-wireframe.png'] },
+  { order: lessonNumber('layout', 8), requiredProperties: ['flex-wrap', 'gap', 'flex-grow', 'flex-basis', 'max-width', 'width', 'overflow'], tasks: modes, assets: ['/course-assets/04-flexbox-grid.svg'] },
 ];
