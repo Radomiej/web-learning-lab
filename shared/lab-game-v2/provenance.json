@@ -1,7 +1,7 @@
 {
   "apiVersion": 2,
   "source": "..\\web-learning-lab",
-  "revision": "8663598d0e39b5a0ba9b43398719c6394b284d38",
+  "revision": "879f6c426d1f92933cf772ba533323e2708459c6",
   "dirty": true,
   "hashes": {
     "shared/lab-game-v2/addons.js": "189ddafacfb17280dbd3fc66bb40a48cf1665f0268062c0f31616a1c4134b8ea",
@@ -13,7 +13,7 @@
     "shared/lab-game-v2/audio.js": "60ff66c4f4a21577724194b6191675753043812f35c1e0d8b58a1f6ee200aa45",
     "shared/lab-game-v2/AUDIO.md": "a2fcfe4e26058893567bee1128961858cd8dd1d6dbde0ed3e0a17ba0fee92aba",
     "shared/lab-game-v2/conformance/scenarios.json": "d50c4cb64c05c8b20f7010599b4e953847e78cf144c7c86f9c57ef4acbfd712d",
-    "shared/lab-game-v2/contract.json": "5e09836745ea2641651e6fe9dd24cdfe3089f4dfbdd0d3314fb6810f25d8e75a",
+    "shared/lab-game-v2/contract.json": "a951dbffddd8ef58d0c2fb155bac783b9d729ba72c04199e207cac73e18cd0d8",
     "shared/lab-game-v2/course/earlyStarters.js": "30a32c5a5a63811e85ef7030ca10f834e0977f0e470260e45f7200428883f562",
     "shared/lab-game-v2/course/formatSource.js": "c988bea3b8d82fa96f13e7915a8404f03f3ba44fd156271cd7c89c78229414ff",
     "shared/lab-game-v2/course/guidedStarters.js": "c0b5b5f508ee40b8de04cf1e2e8609e137b280915397b149cb016448848bd99e",

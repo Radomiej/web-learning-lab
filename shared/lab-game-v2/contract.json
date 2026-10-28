@@ -112,6 +112,10 @@
           "description": null
         },
         {
+          "name": "getCameraView",
+          "description": "Zwraca kopię przesunięcia widoku kamery {x, y} — odpowiednik getCameraView() w Javie."
+        },
+        {
           "name": "setWorldBounds",
           "description": null
         },
@@ -211,7 +215,7 @@
         },
         {
           "name": "removeComponents",
-          "description": null
+          "description": "Usuwa wszystkie komponenty danego typu z obiektu; zwraca liczbę usuniętych."
         },
         {
           "name": "onComponentChange",
@@ -252,6 +256,10 @@
           "description": null
         },
         {
+          "name": "getGame",
+          "description": "Zwraca scenę gry — to samo co this.game; zapis zgodny z getGame() w Javie."
+        },
+        {
           "name": "gameObject",
           "description": null
         },
@@ -282,6 +290,10 @@
         {
           "name": "onLateUpdate",
           "description": null
+        },
+        {
+          "name": "onDrawBackground",
+          "description": "Hook rysujący tło sceny; wołany po wyczyszczeniu planszy, przed sprite i UI."
         },
         {
           "name": "onDrawUI",
@@ -318,6 +330,10 @@
         {
           "name": "hasComponent",
           "description": null
+        },
+        {
+          "name": "removeComponents",
+          "description": "Usuwa wszystkie komponenty danego typu z obiektu; zwraca liczbę usuniętych."
         }
       ]
     },
@@ -755,8 +771,16 @@
           "description": "Rysuje prostokąt ze środkiem w (x, y): drawRect(x, y, width, height, color?)."
         },
         {
+          "name": "drawCircle",
+          "description": "Rysuje koło ze środkiem w (x, y): drawCircle(x, y, radius, color?)."
+        },
+        {
           "name": "drawText",
           "description": "Rysuje tekst: drawText(text, x, y, fontSize?, color?, align?, baseline?). Domyślnie wyśrodkowany."
+        },
+        {
+          "name": "drawCenteredText",
+          "description": "Rysuje tekst wyśrodkowany w (x, y) — odpowiednik GameCanvas.drawCenteredText w Javie."
         },
         {
           "name": "drawTileMap",
@@ -767,12 +791,32 @@
           "description": "Wewnętrzna operacja rendererowa. Do użycia w kursie dodaj GameLab.Sprite."
         },
         {
+          "name": "drawNinePatch",
+          "description": "Wewnętrzna operacja rendererowa dla grafik 9patch."
+        },
+        {
+          "name": "drawProgressBar",
+          "description": "Wewnętrzna operacja rendererowa; w kursie użyj GameLab.ProgressBar."
+        },
+        {
+          "name": "clear",
+          "description": "Wewnętrzna operacja rendererowa — plansza jest czyszczona co klatkę."
+        },
+        {
           "name": "width",
           "description": null
         },
         {
           "name": "height",
           "description": null
+        },
+        {
+          "name": "getWidth",
+          "description": "Logiczna szerokość planszy w pikselach — odpowiednik GameCanvas.getWidth() w Javie."
+        },
+        {
+          "name": "getHeight",
+          "description": "Logiczna wysokość planszy w pikselach — odpowiednik GameCanvas.getHeight() w Javie."
         }
       ]
     },
@@ -1594,6 +1638,10 @@
         {
           "name": "onClick",
           "description": null
+        },
+        {
+          "name": "focused",
+          "description": "Surowy stan fokusu przycisku; preferuj isFocused(), które sprawdza enabled i active."
         },
         {
           "name": "activate",

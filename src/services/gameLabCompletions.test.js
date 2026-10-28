@@ -65,6 +65,18 @@ test('infers the camera and controller variables used in course examples', () =>
   expect(labels('GameLab.Camera2D.')).toEqual([]);
 });
 
+test('suggests Java-parity aliases for scene and canvas access', () => {
+  expect(labels('class Mover extends GameLab.Component { onUpdate() { this.').map(item => item.label))
+    .toEqual(expect.arrayContaining(['getGame', 'removeComponents', 'onDrawBackground']));
+  expect(labels('class Mover extends GameLab.Component { onUpdate() { this.getGame().').map(item => item.label))
+    .toEqual(expect.arrayContaining(['getCameraView', 'input', 'createObject']));
+  expect(labels('this.getGame().input.').map(item => item.label))
+    .toEqual(expect.arrayContaining(['isKeyDown', 'getPointerPosition']));
+  expect(labels('this.gameObject.game.').map(item => item.label)).toContain('getCameraView');
+  expect(labels('this.canvas.').map(item => item.label))
+    .toEqual(expect.arrayContaining(['drawCircle', 'drawCenteredText', 'getWidth', 'getHeight']));
+});
+
 test('exposes shared Assets constants, mouse input and scene queries', () => {
  expect(labels('GameLab.Assets.').map(item=>item.label)).toEqual(expect.arrayContaining(['PLAYER01','FIREBALL','UI_BUTTON_BLUE']));
  expect(labels('this.game.input.').map(item=>item.label)).toEqual(expect.arrayContaining(['getPointerPosition','isMousePressed','isMouseReleased']));

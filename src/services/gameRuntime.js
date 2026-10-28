@@ -41,7 +41,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     constructor() { let enabled = true; Object.defineProperty(this,'enabled',{ enumerable:true,get:()=>enabled,set:value=>{ if (enabled !== Boolean(value)) { enabled=Boolean(value); if(!enabled && this instanceof Button)this.blur(); if(this.gameObject)this.gameObject.game.spatialRevision++; } } }); this.gameObject = null; this.created = false; this.destroyed = false; this.updateMode = 'WORLD'; }
     get transform() { return this.gameObject.transform; }
     setEnabled(value) { this.enabled = Boolean(value); }
-    get game() { return this.gameObject.game; }
+    get game() { return this.gameObject ? this.gameObject.game : null; }
     getComponent(type) { return this.gameObject.getComponent(type); }
     getComponents(type) { return this.gameObject.getComponents(type); }
     hasComponent(type) { return this.gameObject.hasComponent(type); }
@@ -381,6 +381,9 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       finite(x, 'Tekst x'); finite(y, 'Tekst y');
       const command={ op: 'text', text: String(text), x, y, color, fontSize, align, baseline };this.commands.push(command);renderer.draw(this.context,command);
     }
+    drawCenteredText(text, x, y, color = '#ffffff') { this.drawText(text, x, y, 16, color); }
+    getWidth() { return this.width; }
+    getHeight() { return this.height; }
     drawProgressBar(x, y, width, height, progress, frame, track, fill) { const command = { op: 'progress', x, y, width, height, progress, frame, track, fill }; this.commands.push(command); renderer.drawProgress(this.context, command); }
     drawNinePatch(texture, x, y, width, height, border = 8) { const command = { op: 'ninepatch', texture, x, y, width, height, border }; this.commands.push(command); renderer.drawNinePatch(this.context, command); }
     drawTileMap(texture, tileSize) {
@@ -421,6 +424,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     pause() { this.paused = true; }
     resume() { this.paused = false; }
     isPaused() { return this.paused; }
+    getCameraView() { return { x: this.cameraView.x, y: this.cameraView.y }; }
     navigateUI() {
       const buttons=this.objects.filter(o=>o.active&&!o.destroyed).flatMap(o=>o.getComponents(Button)).filter(b=>b.enabled&&b.created);
       if(!this.input.isKeyPressed(Keys.TAB)||!buttons.length)return;
@@ -473,8 +477,11 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
         .find(c => c instanceof Camera2D && c.enabled && c.created && !c.destroyed);
       this.cameraView = camera ? camera.getView() : { x: 0, y: 0 };
       this.canvas.view = this.cameraView;
-      const tiles = this.objects.filter(o => o.active && !o.destroyed).flatMap(o => o.components)
-        .filter(c => c instanceof TileMap && c.enabled && c.created && !c.destroyed).sort((a,b) => a.layer-b.layer || a.order-b.order);
+      const tiles = [];
+      for (const object of this.objects) if (object.active && !object.destroyed) for (const component of object.components) if (component.enabled && component.created && !component.destroyed) {
+        if (component instanceof TileMap) tiles.push(component); else component.onDrawBackground();
+      }
+      tiles.sort((a, b) => a.layer - b.layer || a.order - b.order);
       for (const tileMap of tiles) this.canvas.drawTileMap(tileMap.texture, tileMap.tileSize);
       const space = component => component.getComponent(UITransform)?.enabled || component.space === 'screen' ? 1 : 0;
       const renderers = this.objects.filter(o => o.active && !o.destroyed).flatMap(o => o.components)

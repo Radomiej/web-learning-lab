@@ -69,6 +69,34 @@ test('camera follows a moving world object, handles resize and leaves HUD in scr
   lab.dispose();
 });
 
+test('exposes Java-parity aliases and runs onDrawBackground before tilemap and renderers', () => {
+  const { lab, canvas } = fixture();
+  class Background extends lab.Component {
+    onDrawBackground() { this.getGame().canvas.drawRect(0, 0, 600, 600, '#000011'); }
+  }
+  class Scene extends lab.Game {
+    onCreate() {
+      this.createObject('Ground').addComponent(new lab.TileMap('grass', 32));
+      this.createObject('Bg').addComponent(new Background());
+      this.createObject('Player').setPosition(50, 50).addComponent(new lab.ShapeRenderer({ width: 16, height: 16, color: '#ffffff' }));
+    }
+  }
+  lab.run(Scene, { canvas });
+  lab.current.step(0);
+  const commands = lab.snapshot().commands;
+  const bgIndex = commands.findIndex(c => c.op === 'rect' && c.width === 600);
+  expect(bgIndex).toBeGreaterThan(0);
+  expect(commands.findIndex(c => c.op === 'tilemap')).toBeGreaterThan(bgIndex);
+  expect(lab.current.getCameraView()).toEqual({ x: 0, y: 0 });
+  expect(lab.current.canvas.getWidth()).toBe(600);
+  expect(lab.current.canvas.getHeight()).toBe(600);
+  lab.current.canvas.drawCenteredText('OK', 10, 10, '#fff');
+  expect(lab.snapshot().commands.at(-1)).toMatchObject({ op: 'text', text: 'OK', align: 'center' });
+  expect(new lab.Component().getGame()).toBe(null);
+  expect(lab.current.find('Bg').getComponent(Background).getGame()).toBe(lab.current);
+  lab.dispose();
+});
+
 test('control hint is an optional component and hides while canvas has focus', () => {
   const { lab, canvas } = fixture();
   class Scene extends lab.Game {

@@ -15,6 +15,7 @@ export const callableMembers = new Set([
   'getComponents','requireComponent','hasComponent','removeComponents','onComponentChange','addTag','removeTag','hasTag','getTags','onLateUpdate',
   'isKeyReleased','consumeKey','getPointerPosition','isMouseDown','isMousePressed','isMouseReleased','consumeMouse','setEnabled','setActive','setProgress','getProgress','setValue','onContactEnter','onComplete',
   'activate','focus','blur','isFocused','getBounds','getCenter','getView','worldToScreen','screenToWorld','queryRadius','findNearest','refresh','overlaps','set','copy','length','lengthSquared','normalized','setSeed','next','nextInt','range',
+  'getGame','getCameraView','getWidth','getHeight','drawCenteredText','clear',
 ]);
 
 function completion(monaco, model, position, { label, detail, documentation, kind, insertText, insertTextRules }) {
@@ -48,13 +49,14 @@ function memberOwner(source, suffix) {
   if (/\bGameLab\.Tweens\.$/.test(suffix)) return 'Tweens';
   if (/\.transform\.(?:scale|visualOffset)\.$/.test(suffix)) return 'Vector2';
   if (/\.transform\.$/.test(suffix)) return 'Transform';
-  if (/\bthis(?:\.game)?\.input\.$/.test(suffix)) return 'InputManager';
-  if (/\bthis(?:\.game)?\.physics\.$/.test(suffix)) return 'Physics2D';
-  if (/\bthis(?:\.game)?\.random\.$/.test(suffix)) return 'Random';
-  if (/\bthis(?:\.game)?\.canvas\.$/.test(suffix)) return 'Canvas';
-  if (/\bthis(?:\.game)?\.time\.$/.test(suffix)) return 'Time';
+  if (/\bthis(?:\.game|\.getGame\(\))?\.input\.$/.test(suffix)) return 'InputManager';
+  if (/\bthis(?:\.game|\.getGame\(\))?\.physics\.$/.test(suffix)) return 'Physics2D';
+  if (/\bthis(?:\.game|\.getGame\(\))?\.random\.$/.test(suffix)) return 'Random';
+  if (/\bthis(?:\.game|\.getGame\(\))?\.canvas\.$/.test(suffix)) return 'Canvas';
+  if (/\bthis(?:\.game|\.getGame\(\))?\.time\.$/.test(suffix)) return 'Time';
+  if (/\bthis\.gameObject\.game\.$/.test(suffix)) return 'Game';
   if (/\bthis\.gameObject\.$/.test(suffix)) return 'GameObject';
-  if (/\bthis\.game\.$/.test(suffix)) return 'Game';
+  if (/\bthis(?:\.game|\.getGame\(\))\.$/.test(suffix)) return 'Game';
   if (/\bthis\.$/.test(suffix)) {
     return [...source.matchAll(/class\s+\w+\s+extends\s+(?:GameLab\.)?(Game|Component)\b/g)].at(-1)?.[1] ?? 'Game';
   }
