@@ -195,7 +195,11 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     }
     case 'input':
       player(100,100,mode==='modified'?100:120,mode==='modified');
-      if (mode==='independent') { component('ActionCounter','actions=0; onUpdate() { if(this.game.input.isKeyPressed("Space")) this.actions++; }','public int actions=0; @Override public void onUpdate(double delta) { if(getGame().input.isKeyPressed("Space")) actions++; }'); setup+='player.addComponent(new ActionCounter());\n'; }
+      if (mode==='independent') {
+        component('ActionCounter','actions=0; onUpdate() { if(this.game.input.isKeyPressed("Space")) this.actions++; }','public int actions=0; @Override public void onUpdate(double delta) { if(getGame().input.isKeyPressed("Space")) actions++; }');
+        component('ActionShooter','ticks=0; onUpdate() { if(++this.ticks%10!==0)return; const counter=this.requireComponent(ActionCounter); if(counter.actions!==1)return; counter.actions=0; const d=this.requireComponent(GameLab.CharacterController2D).getDirection(); const shot=this.game.createObject("Fireball"); shot.setPosition(this.transform.x,this.transform.y); shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,12,12)); shot.addComponent(new GameLab.Projectile2D(d.x,d.y,240,2,this.gameObject)); }','private int ticks=0; @Override public void onUpdate(double delta) { if(++ticks%10!=0)return; ActionCounter counter=requireComponent(ActionCounter.class); if(counter.actions!=1)return; counter.actions=0; Vector2 d=requireComponent(CharacterController2D.class).getDirection(); GameObject shot=getGame().createObject("Fireball"); shot.setPosition(transform.x,transform.y); shot.addComponent(new Sprite(Assets.FIREBALL,12,12)); shot.addComponent(new Projectile2D(d.x,d.y,240,2,gameObject)); }');
+        setup+='player.addComponent(new ActionCounter());\nplayer.addComponent(new ActionShooter());\n';
+      }
       break;
     case 'graphics': {
       object('Ground',0,0,[`TileMap(Assets.${mode==='modified'?'SAND':'GRASS'}, ${mode==='modified'?48:32})`]);

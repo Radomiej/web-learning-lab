@@ -83,12 +83,12 @@
           "id": "g2d.input.modified",
           "mode": "modified",
           "title": "Sprint",
-          "prompt": "Gotowy gracz porusza się z prędkością 100. Samodzielnie zmień parametr move: Shift daje 200 px/s, bez Shift 100. Nie kopiuj logiki kierunku.",
+          "prompt": "Gotowy gracz porusza się z prędkością 100. Samodzielnie zmień parametr move: przytrzymany Shift daje 200 px/s, bez Shift 100. Nie kopiuj logiki kierunku.",
           "objective": "Przekazywać zmienny parametr bez kopiowania logiki ruchu.",
           "criteria": [
-            "D+Shift przez 0.5 s ze startu x=100 daje x=200.",
-            "D przez kolejne 0.5 s po puszczeniu Shift daje x=250.",
-            "W+D+Shift przez 0.5 s daje dystans 100 px.",
+            "Shift podwaja prędkość ruchu do 200 px/s.",
+            "Po puszczeniu Shift prędkość wraca do 100 px/s.",
+            "Sprint na ukos nie jest szybszy — składowe pozostają wyrównane.",
             "Sam Shift nie porusza postaci."
           ],
           "learningStage": "Samodzielnie"
@@ -96,14 +96,14 @@
         {
           "id": "g2d.input.independent",
           "mode": "independent",
-          "title": "Jedna akcja na naciśnięcie",
-          "prompt": "Ruch jest gotowy. Uzupełnij ActionCounter tak, aby jedno nowe naciśnięcie Space zwiększało actions raz. Przytrzymanie nie może naliczać kolejnych akcji.",
+          "title": "Jedna akcja — jeden pocisk",
+          "prompt": "Ruch jest gotowy, a komponent ActionShooter obserwuje licznik: co 10 aktualizacji sprawdza, czy actions wynosi 1 — wtedy wystrzeliwuje Fireball w ostatnim kierunku postaci i zeruje licznik. Uzupełnij ActionCounter tak, aby jedno nowe naciśnięcie Space zwiększało actions raz. Przytrzymanie nie może naliczać kolejnych akcji — wtedy licznik przekroczy 1 i strzał nie wypadnie.",
           "objective": "Obsłużyć zbocze klawisza w osobnym komponencie.",
           "criteria": [
-            "Trzymanie Space przez 10 kolejnych aktualizacji daje actions=1.",
-            "Puszczenie na jedną aktualizację i ponowne naciśnięcie daje actions=2.",
-            "Działa jednoczesny ruch z D i akcja Space; prędkość pozostaje 120 px/s.",
-            "Ponowne wejście focus do planszy nie tworzy fikcyjnego naciśnięcia ani zablokowanego klawisza."
+            "Jedno naciśnięcie Space daje dokładnie jeden Fireball w ciągu 10 aktualizacji.",
+            "Po strzale licznik actions wraca do 0; kolejny strzał wymaga nowego naciśnięcia.",
+            "Trzymanie Space nie strzela wielokrotnie — licznik rośnie tylko na zboczu klawisza.",
+            "Ruch z D działa równocześnie; pocisk startuje z pozycji postaci."
           ],
           "learningStage": "Rozbudowa"
         }

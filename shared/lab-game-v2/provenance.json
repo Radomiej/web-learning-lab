@@ -1,7 +1,7 @@
 {
   "apiVersion": 2,
   "source": "..\\web-learning-lab",
-  "revision": "24b6a81a1cac90296897759bcbfe734d4a4d002c",
+  "revision": "ffc75cb2abd7529fe89d30684fd744402dc97877",
   "dirty": true,
   "hashes": {
     "shared/lab-game-v2/addons.js": "189ddafacfb17280dbd3fc66bb40a48cf1665f0268062c0f31616a1c4134b8ea",
@@ -14,8 +14,8 @@
     "shared/lab-game-v2/contract.json": "6a62d054be637f39320aa3353fcf549bd725dcd70875d8ae9478997b24d87ed4",
     "shared/lab-game-v2/course/earlyStarters.js": "30a32c5a5a63811e85ef7030ca10f834e0977f0e470260e45f7200428883f562",
     "shared/lab-game-v2/course/guidedStarters.js": "c0b5b5f508ee40b8de04cf1e2e8609e137b280915397b149cb016448848bd99e",
-    "shared/lab-game-v2/course/manifest.js": "2966cd2148cb81383b96e32e6890cbe54c123bf0c28023f5135760d2a533057c",
-    "shared/lab-game-v2/course/manifest.json": "7b5847a5133b1189b767a16842cb0a15e82af593af4326981a087b80b5347d51",
+    "shared/lab-game-v2/course/manifest.js": "c70775dfdc48a793d26ef4a8aa8fe77506d3088e86e0ee7742a8fb9b927b3974",
+    "shared/lab-game-v2/course/manifest.json": "082a8cd774c5674895c4f5957a70099f1f28d88f3185ae81f368513a4f19f321",
     "shared/lab-game-v2/editor/api-catalog.json": "6fe4e901033eea51ed5f6a125a3d676e499067ac096ed989a7902c3e51d1b258",
     "shared/lab-game-v2/editor/apiSyntax.js": "f77aacaf8c0bb2afb99e14ca11cd8c01528968696f03ec83466e844bce47ff4a",
     "shared/lab-game-v2/editor/ChatMessage.css": "c545ed31678292cd8cd7852ed7b30d1febd7386b11eec13a1b87775711beaeb9",

@@ -29,7 +29,7 @@ export function courseScenario(chapter,mode) {
       phases=[phase(10,mode==='modified'?['d','s','Shift']:mode==='independent'?['d','Space']:['d'])];
       expect(object('Player','x'),mode==='modified'?100+200/Math.sqrt(2):220);
       if(mode==='modified')expect(object('Player','y'),100+200/Math.sqrt(2));
-      if(mode==='independent')expect(state('Player','ActionCounter','actions'),1);
+      if(mode==='independent') {expect(state('Player','ActionCounter','actions'),0);expect('objects.length',2);}
       break;
     case 'graphics':
       expect(state('Ground','TileMap','texture'),mode==='modified'?'sand':'grass');expect(state('Ground','TileMap','tileSize'),mode==='modified'?48:32);
