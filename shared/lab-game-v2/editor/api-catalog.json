@@ -610,6 +610,11 @@
         "kind": "field"
       },
       {
+        "name": "audio",
+        "signature": "Audio audio",
+        "kind": "field"
+      },
+      {
         "name": "physics",
         "signature": "Physics2D physics",
         "kind": "field"
@@ -657,6 +662,14 @@
         "parameters": [
           "double nextWidth",
           "double nextHeight"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "emitAudio",
+        "signature": "public static void emitAudio(String json)",
+        "parameters": [
+          "String json"
         ],
         "kind": "method"
       },
@@ -784,6 +797,15 @@
         "signature": "public static void drawDebugState(boolean enabled)",
         "parameters": [
           "boolean enabled"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "drawView",
+        "signature": "public static void drawView(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
         ],
         "kind": "method"
       },
@@ -1841,6 +1863,136 @@
       }
     ]
   },
+  "Keys": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "UP",
+        "signature": "String UP",
+        "kind": "field"
+      },
+      {
+        "name": "DOWN",
+        "signature": "String DOWN",
+        "kind": "field"
+      },
+      {
+        "name": "LEFT",
+        "signature": "String LEFT",
+        "kind": "field"
+      },
+      {
+        "name": "RIGHT",
+        "signature": "String RIGHT",
+        "kind": "field"
+      },
+      {
+        "name": "W",
+        "signature": "String W",
+        "kind": "field"
+      },
+      {
+        "name": "A",
+        "signature": "String A",
+        "kind": "field"
+      },
+      {
+        "name": "S",
+        "signature": "String S",
+        "kind": "field"
+      },
+      {
+        "name": "D",
+        "signature": "String D",
+        "kind": "field"
+      },
+      {
+        "name": "X",
+        "signature": "String X",
+        "kind": "field"
+      },
+      {
+        "name": "Y",
+        "signature": "String Y",
+        "kind": "field"
+      },
+      {
+        "name": "Z",
+        "signature": "String Z",
+        "kind": "field"
+      },
+      {
+        "name": "DIGIT_1",
+        "signature": "String DIGIT_1",
+        "kind": "field"
+      },
+      {
+        "name": "DIGIT_2",
+        "signature": "String DIGIT_2",
+        "kind": "field"
+      },
+      {
+        "name": "DIGIT_3",
+        "signature": "String DIGIT_3",
+        "kind": "field"
+      },
+      {
+        "name": "SPACE",
+        "signature": "String SPACE",
+        "kind": "field"
+      },
+      {
+        "name": "ENTER",
+        "signature": "String ENTER",
+        "kind": "field"
+      },
+      {
+        "name": "SHIFT",
+        "signature": "String SHIFT",
+        "kind": "field"
+      },
+      {
+        "name": "TAB",
+        "signature": "String TAB",
+        "kind": "field"
+      },
+      {
+        "name": "ESCAPE",
+        "signature": "String ESCAPE",
+        "kind": "field"
+      },
+      {
+        "name": "ACTION_A",
+        "signature": "String ACTION_A",
+        "kind": "field"
+      },
+      {
+        "name": "ACTION_B",
+        "signature": "String ACTION_B",
+        "kind": "field"
+      },
+      {
+        "name": "ACTION_X",
+        "signature": "String ACTION_X",
+        "kind": "field"
+      },
+      {
+        "name": "ACTION_Y",
+        "signature": "String ACTION_Y",
+        "kind": "field"
+      },
+      {
+        "name": "ACTION_START",
+        "signature": "String ACTION_START",
+        "kind": "field"
+      },
+      {
+        "name": "ACTION_SELECT",
+        "signature": "String ACTION_SELECT",
+        "kind": "field"
+      }
+    ]
+  },
   "UIAnchor": {
     "constructible": true,
     "members": [
@@ -2433,6 +2585,166 @@
           "double right",
           "double bottom"
         ],
+        "kind": "method"
+      }
+    ]
+  },
+  "Notes": {
+    "constructible": true,
+    "members": []
+  },
+  "Sequencer": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "note",
+        "signature": "public Sequencer note(String name)",
+        "parameters": [
+          "String name"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "note",
+        "signature": "public Sequencer note(String name, double beats)",
+        "parameters": [
+          "String name",
+          "double beats"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "rest",
+        "signature": "public Sequencer rest()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "rest",
+        "signature": "public Sequencer rest(double beats)",
+        "parameters": [
+          "double beats"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "notes",
+        "signature": "public Sequencer notes(String phrase)",
+        "parameters": [
+          "String phrase"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "duration",
+        "signature": "public double duration()",
+        "parameters": [],
+        "kind": "method"
+      }
+    ]
+  },
+  "Song": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "sequencer",
+        "signature": "public Sequencer sequencer()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "sequencer",
+        "signature": "public Sequencer sequencer(String wave)",
+        "parameters": [
+          "String wave"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getTempo",
+        "signature": "public double getTempo()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "trackCount",
+        "signature": "public int trackCount()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "toJson",
+        "signature": "public String toJson()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "Song",
+        "signature": "public Song()",
+        "parameters": [],
+        "kind": "constructor"
+      },
+      {
+        "name": "Song",
+        "signature": "public Song(double tempo)",
+        "parameters": [
+          "double tempo"
+        ],
+        "kind": "constructor"
+      }
+    ]
+  },
+  "Audio": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "playNote",
+        "signature": "public void playNote(String note)",
+        "parameters": [
+          "String note"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "playNote",
+        "signature": "public void playNote(String note, double beats)",
+        "parameters": [
+          "String note",
+          "double beats"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "playNote",
+        "signature": "public void playNote(String note, double beats, String wave)",
+        "parameters": [
+          "String note",
+          "double beats",
+          "String wave"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "play",
+        "signature": "public void play(Song song)",
+        "parameters": [
+          "Song song"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "play",
+        "signature": "public void play(Song song, boolean loop)",
+        "parameters": [
+          "Song song",
+          "boolean loop"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "stop",
+        "signature": "public void stop()",
+        "parameters": [],
         "kind": "method"
       }
     ]

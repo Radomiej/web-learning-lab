@@ -10,9 +10,12 @@ export function createRenderer(manifest) {
   }
   function load(win, base = '/game-assets/') {
     if (!win.Image) return Promise.resolve();
-    return loading ||= Promise.all([...new Set(manifest.assets.map(a => a.source))].map(source => new Promise((resolve, reject) => {
-      const image = new win.Image(); image.onload = () => { images.set(source, image); resolve(); };
-      image.onerror = () => reject(new Error(`Nie można załadować tekstury: ${source}`)); image.src = base + source;
+    const warn = message => win.console?.warn?.(`[game-assets] ${message}`);
+    return loading ||= Promise.all([...new Set(manifest.assets.map(a => a.source))].map(source => new Promise(resolve => {
+      const image = new win.Image();
+      const timer = win.setTimeout?.(() => { warn(`Przekroczono czas ładowania tekstury: ${source}`); resolve(); }, 8000);
+      const done = ok => { win.clearTimeout?.(timer); if (ok) images.set(source, image); else warn(`Nie można załadować tekstury: ${source}`); resolve(); };
+      image.onload = () => done(true); image.onerror = () => done(false); image.src = base + source;
     })));
   }
   function drawSprite(ctx, command, clip = 1) {

@@ -50,7 +50,15 @@ Collider2D(width,height), CircleCollider2D(radius) i Trigger2D(width,height) maj
 
 Tween jest komponentem obiektu. `Tweens.position/scale/rotation/shake` zwracają uchwyt z `cancel()` oraz `onComplete(callback)`. Zakończenie naturalne wywołuje callback raz; anulowanie i zniszczenie nie wywołują go. Rejestracja po zakończeniu, także po czasie zero, wywołuje nowy callback od razu. Shake usuwa tylko swój wkład do visualOffset.
 
-Wejście: [InputManager](INPUT.md). Katalog: [manifest assetów](assets/manifest.json). Definicje kursu i scenariuszy są danymi; ich obecność nie oznacza wykonania wszystkich testów zgodności.
+Wejście: [InputManager](INPUT.md). Dźwięk: [Audio](AUDIO.md). Katalog: [manifest assetów](assets/manifest.json). Definicje kursu i scenariuszy są danymi; ich obecność nie oznacza wykonania wszystkich testów zgodności.
+
+### Ekran konsoli
+
+Canvas ma stałą **rozdzielczość logiczną 600×600 px**: `game.canvas.width/height` i `getViewportWidth/Height` zawsze zwracają wymiary logiczne. Podgląd skaluje ekran letterboxem (zachowane proporcje, `image-rendering: pixelated`); współrzędne myszy i wszystkich komend są podawane w pikselach logicznych. Pod spodem ekranu konsola pokazuje FPS, średni czas klatki z 3 s, maksimum oraz wciśnięte klawisze, a pad ekranowy generuje kody `ACTION_*` — zobacz [INPUT.md](INPUT.md).
+
+### Audio w skrócie
+
+`game.audio.playNote("C4")` gra pojedynczą nutę, `game.audio.play(song, loop)` odtwarza `new Song(tempo)` ze ścieżkami `sequencer("square").notes("C4:1 E4:1")`. Szczegóły: [AUDIO.md](AUDIO.md).
 
 ### ShapeRenderer: prostokąt i koło
 

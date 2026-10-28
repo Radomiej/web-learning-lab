@@ -17,6 +17,8 @@ test('minified production engine still serializes into a self-contained iframe s
   try {
     new Function('window', 'document', module.exports.getGameRuntimeScript())(isolated, document);
     const lab = isolated.GameLab;
+    expect(lab.Keys.SPACE).toBe('Space');
+    expect(Object.isFrozen(lab.Keys)).toBe(true);
     for(const name of ['TopDownCharacterController2D','PlatformerCharacterController2D','ObstacleAvoidance2D'])expect(new lab[name]()).toBeInstanceOf(lab.Component);
     for(const name of ['FollowTarget2D','FleeTarget2D','FlankTarget2D'])expect(new lab[name](null)).toBeInstanceOf(lab.Component);
     expect(new lab.KeyDoublePressed('e',()=>{}).maxDelaySeconds).toBe(.3);

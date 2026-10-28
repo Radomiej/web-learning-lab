@@ -41,7 +41,7 @@ function ExplanationPages({ lesson, language }) {
   const [index, setIndex] = useState(0);
   const page = pages[index];
   const lang = language === 'javascript' ? 'js' : language;
-  const pick = value => value && typeof value === 'object' ? value[lang] : value;
+  const pick = value => value && typeof value === 'object' ? (value[lang] ?? value[language]) : value;
   const code = pick(page.code);
   const setupCode = pick(page.setupCode);
   const codeContext = pick(page.codeContext);

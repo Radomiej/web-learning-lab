@@ -44,7 +44,7 @@ function entryCompletion(monaco, model, position, item) {
 }
 
 function memberOwner(source, suffix) {
-  if (/\bGameLab\.(Assets|InputManager|UIAnchor|ShapeRenderer)\.$/.test(suffix)) return suffix.match(/GameLab\.(\w+)\.$/)[1];
+  if (/\bGameLab\.(Assets|InputManager|UIAnchor|ShapeRenderer|Keys)\.$/.test(suffix)) return suffix.match(/GameLab\.(\w+)\.$/)[1];
   if (/\bGameLab\.Tweens\.$/.test(suffix)) return 'Tweens';
   if (/\.transform\.(?:scale|visualOffset)\.$/.test(suffix)) return 'Vector2';
   if (/\.transform\.$/.test(suffix)) return 'Transform';

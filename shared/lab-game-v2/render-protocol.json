@@ -6,7 +6,7 @@
     "op": "frame",
     "commands": "ordered array"
   },
-  "coordinates": "center, CSS pixels; rotation radians; scale visual only",
+  "coordinates": "center, logical pixels (fixed 600x600 viewport, letterboxed); rotation radians; scale visual only",
   "commands": {
     "clear": [
       "color"
@@ -77,6 +77,13 @@
     ],
     "debug": [
       "enabled"
+    ],
+    "view": [
+      "x",
+      "y"
+    ],
+    "audio": [
+      "jsonPayload"
     ]
   },
   "defaults": {
@@ -109,6 +116,15 @@
         "key",
         "pressed"
       ]
+    },
+    "actions": {
+      "ACTION_A": "Space",
+      "ACTION_B": "z",
+      "ACTION_X": "x",
+      "ACTION_Y": "y",
+      "ACTION_START": "Enter",
+      "ACTION_SELECT": "Shift",
+      "note": "virtual pad emits each pair together; arrows/WASD drive the d-pad"
     }
   }
 }

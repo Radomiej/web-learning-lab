@@ -4,7 +4,9 @@ const root=new URL('../shared/lab-game-v2/',import.meta.url);
 const save=(name,data)=>writeFileSync(new URL(name,root),JSON.stringify(data,null,2)+'\n');
 save('contract.json',{
   engineApiVersion:'2.0.0',languages:['Java','JavaScript'],
-  coordinates:{position:'object center',units:'pixels',positiveY:'down',rotation:'radians',input:'canvas CSS pixels'},
+  coordinates:{position:'object center',units:'pixels',positiveY:'down',rotation:'radians',input:'canvas logical pixels'},
+  display:{logicalResolution:'600x600',scaling:'fit letterbox preserving aspect; image-rendering pixelated',console:'FPS, mean frame ms over 3 s, max frame ms, pressed keys; virtual pad emits ACTION_* + keyboard aliases'},
+  audio:{facade:'game.audio',synthesis:'shared WebAudio scheduler; Java serializes audio| commands into frame records',notes:'C4, C#4, Db4, rest -, duration in quarter beats, tempo BPM',waves:['square','triangle','sine','sawtooth','noise']},
   frame:{maximumDeltaSeconds:.1,phases:['create','UI update','WORLD update','physics','late update','world render','UI render','input edges clear'],pause:'WORLD and world time stop; UI and unscaled time continue'},
   types:gameLabApi.map(type=>({...type,members:(gameLabMembers[type.name]||[]).map(name=>({name,description:gameLabMemberDocs[`${type.name}.${name}`]??gameLabMemberDocs[name]??null}))})),
   query:{components:'intersection; inheritance; inactive included; destroyed excluded; ordered by ID; snapshot',tags:'scene index; snapshot'},
@@ -13,10 +15,11 @@ save('contract.json',{
 });
 save('render-protocol.json',{
   engineApiVersion:'2.0.0',envelope:{command:'game-draw',gameId:'active scene identifier',op:'frame',commands:'ordered array'},
-  coordinates:'center, CSS pixels; rotation radians; scale visual only',
-  commands:{clear:['color'],circle:['x','y','radius','color','rotation','scaleX','scaleY'],rect:['x','y','width','height','color','rotation','scaleX','scaleY'],text:['text','x','y','color','align','fontSize','baseline'],sprite:['texture','x','y','width','height','rotation','scaleX','scaleY'],ninepatch:['texture','x','y','width','height','border'],progress:['x','y','width','height','progress','frame','track','fill'],collider:['shape','x','y','width','height','trigger'],debug:['enabled']},
+  coordinates:'center, logical pixels (fixed 600x600 viewport, letterboxed); rotation radians; scale visual only',
+  commands:{clear:['color'],circle:['x','y','radius','color','rotation','scaleX','scaleY'],rect:['x','y','width','height','color','rotation','scaleX','scaleY'],text:['text','x','y','color','align','fontSize','baseline'],sprite:['texture','x','y','width','height','rotation','scaleX','scaleY'],ninepatch:['texture','x','y','width','height','border'],progress:['x','y','width','height','progress','frame','track','fill'],collider:['shape','x','y','width','height','trigger'],debug:['enabled'],view:['x','y'],audio:['jsonPayload']},
   defaults:{rotation:0,scaleX:1,scaleY:1,fontSize:16,align:'center',baseline:'middle'},
   assets:'assets/manifest.json',
   transport:{Java:'GameCanvas pipe-delimited records parsed by TeaVM worker into the common envelope',JavaScript:'Canvas records passed directly to the renderer'},
-  input:{command:'game-input',gameId:'must equal the active scene ID',kinds:{pointer:['x','y'],mouse:['button','pressed'],clear:[],keyboard:['key','pressed']}}
+  input:{command:'game-input',gameId:'must equal the active scene ID',kinds:{pointer:['x','y'],mouse:['button','pressed'],clear:[],keyboard:['key','pressed']},
+    actions:{ACTION_A:'Space',ACTION_B:'z',ACTION_X:'x',ACTION_Y:'y',ACTION_START:'Enter',ACTION_SELECT:'Shift',note:'virtual pad emits each pair together; arrows/WASD drive the d-pad'}}
 });

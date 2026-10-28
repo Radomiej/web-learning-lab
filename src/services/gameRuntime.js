@@ -3,9 +3,14 @@ import { SpatialHash } from '../../shared/lab-game-v2/spatialHash.js';
 import { createPhysics } from '../../shared/lab-game-v2/physics.js';
 import { createRenderer } from '../../shared/lab-game-v2/renderer.js';
 import { createAddons } from '../../shared/lab-game-v2/addons.js';
+import { createLabAudio } from '../../shared/lab-game-v2/audio.js';
+import { createFrameStats } from '../../shared/lab-game-v2/stats.js';
+import { Keys as defaultKeys } from '../../shared/lab-game-v2/keys.js';
 // Dependencies are passed explicitly when serialized into the iframe.
-export function createGameLab(environment = {}, shared = { Assets, assetManifest, SpatialHash, createPhysics, createRenderer, createAddons }) {
-  const { Assets, assetManifest, SpatialHash, createPhysics, createRenderer, createAddons } = shared;
+export function createGameLab(environment = {}, shared = { Assets, assetManifest, SpatialHash, createPhysics, createRenderer, createAddons, createLabAudio, createFrameStats, Keys: defaultKeys }) {
+  const { Assets, assetManifest, SpatialHash, createPhysics, createRenderer, createAddons, Keys = defaultKeys } = shared;
+  const audioKit = (shared.createLabAudio ?? createLabAudio)();
+  const frameStatsFactory = shared.createFrameStats ?? createFrameStats;
   const win = environment.window || window;
   const doc = environment.document || win.document;
   const raf = environment.requestAnimationFrame || win.requestAnimationFrame.bind(win);
@@ -334,16 +339,31 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     constructor(element) {
       this.element = element; this.context = element.getContext('2d');
       if (!this.context) throw new Error('Canvas 2D jest niedostępny w tej przeglądarce.');
-      this.commands = []; this.width = 640; this.height = 360; this.view = { x: 0, y: 0 };
+      this.commands = []; this.width = 600; this.height = 600; this.view = { x: 0, y: 0 };
+      this.scale = 1; this.offsetX = 0; this.offsetY = 0; this.pixelRatio = 1;
     }
     resize(width, height, ratio = 1) {
       this.width = Math.max(1, finite(width, 'Szerokość')); this.height = Math.max(1, finite(height, 'Wysokość'));
-      this.element.width = Math.round(this.width * ratio); this.element.height = Math.round(this.height * ratio);
-      this.context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      this.pixelRatio = ratio;
+      const boxWidth = this.element.clientWidth || this.width, boxHeight = this.element.clientHeight || this.height;
+      this.element.width = Math.round(boxWidth * ratio); this.element.height = Math.round(boxHeight * ratio);
+      this.scale = Math.min(boxWidth / this.width, boxHeight / this.height);
+      this.offsetX = (boxWidth - this.width * this.scale) / 2;
+      this.offsetY = (boxHeight - this.height * this.scale) / 2;
+      const scale = this.scale * ratio;
+      this.context.setTransform(scale, 0, 0, scale, this.offsetX * ratio, this.offsetY * ratio);
     }
+    toLogical(x, y) { return { x: (x - this.offsetX) / this.scale, y: (y - this.offsetY) / this.scale }; }
     clear(color = '#0b2033') {
-      this.commands = [{ op: 'clear', color }]; this.context.fillStyle = color;
-      this.context.fillRect(0, 0, this.width, this.height);
+      this.commands = [{ op: 'clear', color }];
+      const { context } = this;
+      const scale = this.scale * this.pixelRatio;
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.fillStyle = '#0a1524';
+      context.fillRect(0, 0, this.element.width, this.element.height);
+      context.setTransform(scale, 0, 0, scale, this.offsetX * this.pixelRatio, this.offsetY * this.pixelRatio);
+      context.fillStyle = color;
+      context.fillRect(0, 0, this.width, this.height);
     }
     drawRect(x, y, width, height, color = '#76b9f2', rotation = 0, scale = { x: 1, y: 1 }) {
       [x, y, width, height, rotation, scale.x, scale.y].forEach(v => finite(v, 'Rysowanie'));
@@ -391,7 +411,8 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       this.objects = []; this.nextObjectId = 1; this.spatialRevision=0;this.input = new Input(); this.time = { deltaTime: 0, elapsed: 0, unscaledDeltaTime: 0, unscaledElapsed: 0 }; this.paused = false; this.worldBounds = null; this.random = new Random(1);
       this.physics = createPhysics(this, { Collider2D, CircleCollider2D, CharacterController2D, Projectile2D }, SpatialHash);
       this.componentIndex=new Map();this.tagIndex=new Map();
-      this.background = '#0b2033'; this.started = false; this.disposed = false; this.canvas = null; this.tweens = []; this.cameraView = { x: 0, y: 0 };
+      this.background = '#0b2033'; this.started = false; this.disposed = false; this.canvas = null; this.tweens = []; this.cameraView = { x: 0, y: 0 }; this.debugColliders = false;
+      this.audio = audioKit.createAudio({ window: win });
     }
     onCreate() {}
     onUpdate() {}
@@ -402,9 +423,9 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     isPaused() { return this.paused; }
     navigateUI() {
       const buttons=this.objects.filter(o=>o.active&&!o.destroyed).flatMap(o=>o.getComponents(Button)).filter(b=>b.enabled&&b.created);
-      if(!this.input.isKeyPressed('Tab')||!buttons.length)return;
-      const current=buttons.findIndex(b=>b.isFocused()), direction=this.input.isKeyDown('Shift')?-1:1;
-      buttons[(current<0?(direction>0?0:buttons.length-1):(current+direction+buttons.length)%buttons.length)].focus();this.input.consumeKey('Tab');
+      if(!this.input.isKeyPressed(Keys.TAB)||!buttons.length)return;
+      const current=buttons.findIndex(b=>b.isFocused()), direction=this.input.isKeyDown(Keys.SHIFT)?-1:1;
+      buttons[(current<0?(direction>0?0:buttons.length-1):(current+direction+buttons.length)%buttons.length)].focus();this.input.consumeKey(Keys.TAB);
     }
     getObjects() { return [...this.objects]; }
     updateComponentIndex(object) { for(const [type,objects] of this.componentIndex){if(!object.destroyed&&object.hasComponent(type))objects.add(object);else objects.delete(object);} }
@@ -473,6 +494,31 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       for (const object of this.objects) if (object.active && !object.destroyed) {
         for (const component of object.components) if (!(component instanceof TextRenderer) && component.enabled && component.created && !component.destroyed) component.onDrawUI();
       }
+      if (this.debugColliders) this.drawColliderDebug();
+    }
+    drawColliderDebug() {
+      const ctx = this.canvas.context, view = this.cameraView;
+      if (!ctx?.strokeRect) return;
+      ctx.save?.();
+      try {
+        ctx.lineWidth = 1.5;
+        for (const object of this.objects) {
+          if (!object.active || object.destroyed) continue;
+          const collider = object.components.find(c => c instanceof Collider2D && c.enabled && c.created && !c.destroyed) ?? null;
+          const controller = object.getComponent(CharacterController2D);
+          if (!collider && !(controller?.enabled && controller.created)) continue;
+          const trigger = collider?.isTrigger || collider instanceof Trigger2D;
+          ctx.strokeStyle = trigger ? '#64e9ff' : '#ffe38a';
+          ctx.setLineDash?.(trigger ? [4, 3] : []);
+          const x = object.transform.x - view.x, y = object.transform.y - view.y;
+          if (collider instanceof CircleCollider2D) {
+            ctx.beginPath(); ctx.arc(x, y, collider.radius, 0, Math.PI * 2); ctx.stroke();
+          } else {
+            const width = collider?.width ?? 32, height = collider?.height ?? 32;
+            ctx.strokeRect(x - width / 2, y - height / 2, width, height);
+          }
+        }
+      } finally { ctx.setLineDash?.([]); ctx.restore?.(); }
     }
     step(delta) {
       if (!this.started || this.disposed) return;
@@ -503,13 +549,185 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       if (this.disposed) return; this.disposed = true;
       for (const tween of this.tweens) tween.cancel(); this.tweens = [];
       for (const object of [...this.objects]) object.destroy();
-      this.objects = []; this.input.clear(); this.onDestroy();
+      this.objects = []; this.input.clear(); this.onDestroy(); this.audio.dispose();
     }
   }
-  let current = null, factory = null, frame = null, cleanup = () => {}, lastTime = null;
+  const CONSOLE_STYLE = `
+.lab-console{display:flex;justify-content:center;width:100%;min-height:100%;padding:12px 8px;box-sizing:border-box}
+.lab-console-shell{width:min(100%,430px,calc(100vh - 56px));padding:16px 16px 20px;border-radius:20px 20px 56px 20px;background:linear-gradient(165deg,#4d587f,#333a5e 55%,#252a48);box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.35),0 14px 32px rgba(6,10,24,.5);color:#c6cdec}
+.lab-console-brand{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:#8e99c9;font:700 10px/1 ui-monospace,Consolas,monospace;letter-spacing:.32em;text-transform:uppercase}
+.lab-console-brand::before,.lab-console-brand::after{content:'';flex:1;border-top:1px solid rgba(255,255,255,.12)}
+.lab-console-screen{position:relative;aspect-ratio:1/1;border:5px solid #10142a;border-radius:12px;background:#0a1524;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(124,226,214,.12),0 2px 8px rgba(0,0,0,.45)}
+.lab-console-screen>canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;outline:none}
+.lab-console-screen>canvas:focus{box-shadow:inset 0 0 0 3px rgba(124,226,214,.55)}
+.lab-console-stats{display:flex;align-items:center;gap:12px;margin:12px 4px 0;padding:6px 10px;border-radius:8px;background:#141a33;color:#7d8abc;font:10px ui-monospace,Consolas,monospace;letter-spacing:.04em}
+.lab-console-stats b{color:#e9edff;font-weight:700}
+.lab-console-keys{margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ffd166;font-weight:700}
+.lab-console-pad{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.lab-pad-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.lab-pad-row>*{flex:0 0 auto}
+.lab-console-pad button{user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;font-family:inherit}
+.lab-console-pad button:focus-visible{outline:2px solid #7ce2d6;outline-offset:2px}
+.lab-dpad{display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);width:104px;height:104px;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35))}
+.lab-dpad button{border:0;background:#1c2240;color:#4a5580;font-size:11px;cursor:pointer;touch-action:none}
+.lab-dpad button[data-dir=up]{grid-area:1/2;border-radius:8px 8px 0 0}
+.lab-dpad button[data-dir=left]{grid-area:2/1;border-radius:8px 0 0 8px}
+.lab-dpad button[data-dir=right]{grid-area:2/3;border-radius:0 8px 8px 0}
+.lab-dpad button[data-dir=down]{grid-area:3/2;border-radius:0 0 8px 8px}
+.lab-dpad .lab-dpad-hub{grid-area:2/2;display:grid;place-items:center;background:#1c2240}
+.lab-dpad .lab-dpad-hub::after{content:'';width:14px;height:14px;border-radius:50%;background:#161b33;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.lab-dpad button.down,.lab-dpad button:active{background:#2b3462;color:#9fb0ff}
+.lab-actions{display:grid;grid-template:repeat(2,1fr)/repeat(2,1fr);gap:8px;transform:rotate(-18deg)}
+.lab-actions button{width:42px;height:42px;border:0;border-radius:50%;background:#b03a5b;color:#ffe3ec;font:700 13px/1 ui-monospace,monospace;cursor:pointer;box-shadow:0 4px 0 #7d2440,0 6px 8px rgba(0,0,0,.4);touch-action:none}
+.lab-actions button>span{display:inline-block;transform:rotate(18deg)}
+.lab-actions button[data-action=y],.lab-actions button[data-action=b]{transform:translateY(6px)}
+.lab-actions button.down,.lab-actions button:active{background:#d04f74;box-shadow:0 1px 0 #7d2440;translate:0 3px}
+.lab-sys{display:flex;align-items:center;justify-content:center;gap:10px}
+.lab-pill{min-width:64px;padding:5px 12px;border:0;border-radius:999px;background:#1c2240;color:#8e99c9;font:700 9px/1 ui-monospace,monospace;letter-spacing:.14em;cursor:pointer;box-shadow:0 3px 0 #12172e;touch-action:none}
+.lab-pill.down,.lab-pill:active{background:#2b3462;color:#e9edff}
+.lab-boot{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0a1524;color:#7ce2d6;transition:opacity .35s}
+.lab-boot::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(124,226,214,.06) 3px 4px);pointer-events:none}
+.lab-boot-logo{font:700 15px/1 ui-monospace,Consolas,monospace;letter-spacing:.3em;text-shadow:0 0 12px rgba(124,226,214,.5);animation:lab-boot-logo 1s ease-out}
+@keyframes lab-boot-logo{0%{transform:translateY(-90px);opacity:0}60%{transform:translateY(4px);opacity:1}100%{transform:translateY(0)}}
+.lab-boot-bar{width:130px;height:7px;border:1px solid #2b3462;border-radius:999px;overflow:hidden;background:#10142a}
+.lab-boot-bar i{display:block;height:100%;background:#7ce2d6;transform-origin:left;animation:lab-boot-bar 1.2s ease-in-out infinite}
+@keyframes lab-boot-bar{0%{transform:scaleX(0)}55%{transform:scaleX(1)}100%{transform:scaleX(1);opacity:.35}}
+.lab-boot.hide{opacity:0;pointer-events:none}
+.lab-view{position:absolute;inset:0;z-index:3;pointer-events:none;display:none;font:600 10px/1.2 ui-monospace,Consolas,monospace;color:#9ef5e8;text-shadow:0 1px 2px rgba(4,10,18,.9)}
+.lab-view.on{display:block}
+.lab-view span{position:absolute;padding:2px 5px;background:rgba(10,21,36,.72);border:1px solid rgba(124,226,214,.35);border-radius:4px;white-space:nowrap}
+.lab-view-tl{top:4px;left:4px}
+.lab-view-tr{top:4px;right:4px}
+.lab-view-br{bottom:4px;right:4px}
+`;
+  const CONSOLE_ACTIONS = [
+    { id: 'a', label: 'A', codes: [Keys.ACTION_A, Keys.SPACE] },
+    { id: 'b', label: 'B', codes: [Keys.ACTION_B, Keys.Z] },
+    { id: 'x', label: 'X', codes: [Keys.ACTION_X, Keys.X] },
+    { id: 'y', label: 'Y', codes: [Keys.ACTION_Y, Keys.Y] },
+    { id: 'select', label: 'SELECT', codes: [Keys.ACTION_SELECT, Keys.SHIFT] },
+    { id: 'start', label: 'START', codes: [Keys.ACTION_START, Keys.ENTER] },
+  ];
+  const CONSOLE_DIRS = [
+    { id: 'up', arrow: Keys.UP, wasd: Keys.W },
+    { id: 'down', arrow: Keys.DOWN, wasd: Keys.S },
+    { id: 'left', arrow: Keys.LEFT, wasd: Keys.A },
+    { id: 'right', arrow: Keys.RIGHT, wasd: Keys.D },
+  ];
+  const CONSOLE_TWINS = { [Keys.ACTION_A]: Keys.SPACE, [Keys.ACTION_B]: Keys.Z, [Keys.ACTION_X]: Keys.X, [Keys.ACTION_Y]: Keys.Y, [Keys.ACTION_START]: Keys.ENTER, [Keys.ACTION_SELECT]: Keys.SHIFT };
+  const CONSOLE_LABELS = { [Keys.UP]: '↑', [Keys.DOWN]: '↓', [Keys.LEFT]: '←', [Keys.RIGHT]: '→', [Keys.ACTION_A]: 'A', [Keys.ACTION_B]: 'B', [Keys.ACTION_X]: 'X', [Keys.ACTION_Y]: 'Y', [Keys.ACTION_START]: 'START', [Keys.ACTION_SELECT]: 'SELECT' };
+  const CONSOLE_ORDER = [Keys.UP, Keys.DOWN, Keys.LEFT, Keys.RIGHT, Keys.W, Keys.A, Keys.S, Keys.D, Keys.ACTION_SELECT, Keys.ACTION_START, Keys.SHIFT, Keys.ENTER, Keys.ACTION_Y, Keys.ACTION_X, Keys.ACTION_B, Keys.ACTION_A, Keys.Y, Keys.X, Keys.Z, Keys.SPACE];
+  function describeConsoleKeys(down) {
+    const hidden = new Set();
+    for (const [action, twin] of Object.entries(CONSOLE_TWINS)) if (down.has(action)) hidden.add(twin);
+    const order = key => { const index = CONSOLE_ORDER.indexOf(key); return index < 0 ? 99 : index; };
+    return [...down].filter(key => !hidden.has(key)).sort((a, b) => order(a) - order(b)).map(key => CONSOLE_LABELS[key] ?? key);
+  }
+  function mountConsole(element, game, doc) {
+    if (!doc.getElementById('lab-console-style')) {
+      const style = doc.createElement('style'); style.id = 'lab-console-style'; style.textContent = CONSOLE_STYLE; (doc.head || doc.body).append(style);
+    }
+    const parent = element.parentNode, next = element.nextSibling;
+    const root = doc.createElement('div');
+    root.className = 'lab-console';
+    root.innerHTML = '<div class="lab-console-shell"><div class="lab-console-brand">LAB·BOY</div><div class="lab-console-screen"></div>'
+      + '<div class="lab-console-stats"><span data-stat="fps"><b>0</b> fps</span><span data-stat="avg"><b>0.0</b> ms śr.</span><span data-stat="max"><b>0</b> ms max</span><span class="lab-console-keys" data-stat="keys"></span></div>'
+      + '<div class="lab-console-pad"><div class="lab-sys"><button type="button" class="lab-pill" data-wasd aria-pressed="false" title="Krzyżak steruje W A S D">WASD</button><button type="button" class="lab-pill" data-action="select">SELECT</button><button type="button" class="lab-pill" data-action="start">START</button></div>'
+      + '<div class="lab-pad-row"><div class="lab-dpad">'
+      + '<button type="button" data-dir="up" aria-label="W górę">▲</button><button type="button" data-dir="left" aria-label="W lewo">◀</button><span class="lab-dpad-hub" aria-hidden="true"></span><button type="button" data-dir="right" aria-label="W prawo">▶</button><button type="button" data-dir="down" aria-label="W dół">▼</button>'
+      + '</div><div class="lab-actions"><button type="button" data-action="x"><span>X</span></button><button type="button" data-action="a"><span>A</span></button><button type="button" data-action="y"><span>Y</span></button><button type="button" data-action="b"><span>B</span></button></div></div></div></div>';
+    parent.insertBefore(root, next);
+    root.querySelector('.lab-console-screen').append(element);
+    const screen = root.querySelector('.lab-console-screen');
+    screen.append(element);
+    const viewOverlay = doc.createElement('div');
+    viewOverlay.className = 'lab-view';
+    viewOverlay.innerHTML = '<span class="lab-view-tl"></span><span class="lab-view-tr"></span><span class="lab-view-br"></span>';
+    screen.append(viewOverlay);
+    const viewEls = { tl: viewOverlay.querySelector('.lab-view-tl'), tr: viewOverlay.querySelector('.lab-view-tr'), br: viewOverlay.querySelector('.lab-view-br') };
+    let viewEnabled = false;
+    const setView = enabled => { viewEnabled = Boolean(enabled); viewOverlay.classList.toggle('on', viewEnabled); };
+    let boot = doc.createElement('div');
+    boot.className = 'lab-boot';
+    boot.innerHTML = '<span class="lab-boot-logo">LAB·BOY</span><span class="lab-boot-bar"><i></i></span>';
+    screen.append(boot);
+    const statsEls = { fps: root.querySelector('[data-stat="fps"] b'), avg: root.querySelector('[data-stat="avg"] b'), max: root.querySelector('[data-stat="max"] b'), keys: root.querySelector('[data-stat="keys"]') };
+    const stats = frameStatsFactory(3000);
+    let wasd = false;
+    const held = new Map();
+    const dirButtons = [...root.querySelectorAll('[data-dir]')], actionButtons = [...root.querySelectorAll('[data-action]')];
+    const wasdButton = root.querySelector('[data-wasd]');
+    const dirCodes = dir => { const d = CONSOLE_DIRS.find(x => x.id === dir); return wasd ? [d.wasd] : [d.arrow]; };
+    const buttonCodes = button => button.dataset.dir ? dirCodes(button.dataset.dir) : CONSOLE_ACTIONS.find(a => a.id === button.dataset.action).codes;
+    const press = codes => codes.forEach(code => game.input.setKey(code, true));
+    const release = codes => codes.forEach(code => game.input.setKey(code, false));
+    const onPadDown = event => {
+      event.preventDefault();
+      const button = event.currentTarget, codes = buttonCodes(button);
+      button.setPointerCapture?.(event.pointerId);
+      held.set(event.pointerId, { button, codes });
+      press(codes); button.classList.add('down');
+    };
+    const onPadUp = event => {
+      const entry = held.get(event.pointerId);
+      if (!entry) return;
+      held.delete(event.pointerId); release(entry.codes); entry.button.classList.remove('down');
+    };
+    for (const button of [...dirButtons, ...actionButtons]) {
+      button.addEventListener('pointerdown', onPadDown); button.addEventListener('pointerup', onPadUp);
+      button.addEventListener('pointercancel', onPadUp); button.addEventListener('lostpointercapture', onPadUp);
+    }
+    const onWasd = () => {
+      wasd = !wasd; wasdButton.setAttribute('aria-pressed', String(wasd)); wasdButton.classList.toggle('down', wasd);
+      for (const entry of held.values()) if (entry.button.dataset.dir) { release(entry.codes); entry.codes = dirCodes(entry.button.dataset.dir); press(entry.codes); }
+    };
+    wasdButton.addEventListener('click', onWasd);
+    const releaseAll = () => { for (const entry of held.values()) { release(entry.codes); entry.button.classList.remove('down'); } held.clear(); };
+    let lastUi = 0;
+    const update = now => {
+      if (boot) { const overlay = boot; boot = null; overlay.classList.add('hide'); win.setTimeout?.(() => overlay.remove(), 400); }
+      if (now - lastUi < 250) return;
+      lastUi = now;
+      const s = stats.snapshot(now);
+      statsEls.fps.textContent = String(Math.round(s.fps)); statsEls.avg.textContent = s.avgMs.toFixed(1); statsEls.max.textContent = s.maxMs.toFixed(0);
+      statsEls.keys.textContent = describeConsoleKeys(game.input.down).join(' ');
+      if (viewEnabled) {
+        const v = game.cameraView || { x: 0, y: 0 }, fmt = n => String(Math.round(n));
+        viewEls.tl.textContent = `${fmt(v.x)}, ${fmt(v.y)}`;
+        viewEls.tr.textContent = `x: ${fmt(v.x + game.canvas.width)}`;
+        viewEls.br.textContent = `y: ${fmt(v.y + game.canvas.height)}`;
+      }
+      for (const button of dirButtons) {
+        const d = CONSOLE_DIRS.find(x => x.id === button.dataset.dir);
+        button.classList.toggle('down', [d.arrow, d.wasd].some(code => game.input.down.has(code)));
+      }
+      for (const button of actionButtons) button.classList.toggle('down', CONSOLE_ACTIONS.find(a => a.id === button.dataset.action).codes.some(code => game.input.down.has(code)));
+    };
+    const dispose = () => {
+      releaseAll(); wasdButton.removeEventListener('click', onWasd);
+      for (const button of [...dirButtons, ...actionButtons]) {
+        button.removeEventListener('pointerdown', onPadDown); button.removeEventListener('pointerup', onPadUp);
+        button.removeEventListener('pointercancel', onPadUp); button.removeEventListener('lostpointercapture', onPadUp);
+      }
+      boot?.remove(); boot = null;
+      if (root.parentNode) { root.parentNode.insertBefore(element, root); root.remove(); }
+    };
+    return { root, stats, update, dispose, setView };
+  }
+  let current = null, factory = null, frame = null, cleanup = () => {}, lastTime = null, liveConsole = null;
+  const debugFlags = { view: false, colliders: false };
+  const applyDebugFlags = () => { if (current && !current.disposed) current.debugColliders = debugFlags.colliders; liveConsole?.setView(debugFlags.view); };
+  win.addEventListener('message', event => {
+    const message = event.data;
+    if (message?.source !== 'web-learning-lab' || message.type !== 'game-debug') return;
+    const payload = message.payload || {};
+    if ('view' in payload) debugFlags.view = Boolean(payload.view);
+    if ('colliders' in payload) debugFlags.colliders = Boolean(payload.colliders);
+    applyDebugFlags();
+  });
   assetsReady.then(() => { if (current && current.started && !current.disposed) current.render(); });
   function stopLoop() { if (frame !== null) caf(frame); frame = null; lastTime = null; }
-  function dispose() { stopLoop(); cleanup(); cleanup = () => {}; current?.dispose(); current = null; }
+  function dispose() { stopLoop(); cleanup(); cleanup = () => {}; liveConsole = null; current?.dispose(); current = null; }
   function snapshot(game = current) {
     if (!game) return null;
     const result = {
@@ -542,12 +760,16 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     if (!element) throw new Error('Brak canvas #game w index.html.');
     current = createScene(element);
     const game = current;
-    const resize = () => { const rect = element.getBoundingClientRect(); game.canvas.resize(rect.width || 640, rect.height || 360, win.devicePixelRatio || 1); };
-    const down = event => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault(); game.input.setKey(event.key, true); };
+    const consoleHandle = element.parentNode ? mountConsole(element, game, doc) : { root: element, stats: frameStatsFactory(3000), update: () => {}, dispose: () => {}, setView: () => {} };
+    liveConsole = consoleHandle;
+    applyDebugFlags();
+    game.audio.bindGestures(consoleHandle.root);
+    const resize = () => game.canvas.resize(600, 600, win.devicePixelRatio || 1);
+    const down = event => { if ([Keys.LEFT, Keys.RIGHT, Keys.UP, Keys.DOWN, ' '].includes(event.key)) event.preventDefault(); game.input.setKey(event.key, true); };
     const up = event => game.input.setKey(event.key, false);
     const blur = () => game.input.clear();
     const focus = () => element.focus();
-    const pointer = event => { const rect = element.getBoundingClientRect(); game.input.setPointer(event.clientX-rect.left, event.clientY-rect.top); };
+    const pointer = event => { const rect = element.getBoundingClientRect(); const p = game.canvas.toLogical(event.clientX-rect.left, event.clientY-rect.top); game.input.setPointer(p.x, p.y); };
     const pointerDown = event => { pointer(event); game.input.setMouseButton(event.button, true); element.setPointerCapture?.(event.pointerId); };
     const pointerUp = event => { pointer(event); game.input.setMouseButton(event.button, false); };
     element.addEventListener('pointermove', pointer); element.addEventListener('pointerdown', pointerDown); element.addEventListener('pointerup', pointerUp); element.addEventListener('pointercancel', blur);
@@ -558,10 +780,15 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       element.removeEventListener('pointermove', pointer); element.removeEventListener('pointerdown', pointerDown); element.removeEventListener('pointerup', pointerUp); element.removeEventListener('pointercancel', blur);
       observer?.disconnect(); element.removeEventListener('pointerdown', focus); element.removeEventListener('keydown', down); element.removeEventListener('keyup', up); element.removeEventListener('blur', blur);
       win.removeEventListener('blur', blur); win.removeEventListener('resize', resize);
+      consoleHandle.dispose();
     };
     const tick = now => {
       if (game !== current || game.disposed) return;
-      try { game.step(lastTime === null ? 0 : (now - lastTime) / 1000); lastTime = now; frame = raf(tick); }
+      try {
+        const deltaMs = lastTime === null ? 0 : now - lastTime;
+        if (deltaMs > 0) consoleHandle.stats.push(deltaMs, now);
+        game.step(deltaMs / 1000); lastTime = now; consoleHandle.update(now); frame = raf(tick);
+      }
       catch (error) { stopLoop(); win.dispatchEvent(new win.ErrorEvent('error', { error, message: error.message })); }
     };
     const start = () => { if(game!==current||game.disposed)return game;resize();game.start();game.step(0);frame=raf(tick);return game; };
@@ -602,9 +829,9 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   win.addEventListener('pagehide', dispose);
   const addons=createAddons({Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D,Trigger2D});
   for(const [name,type] of Object.entries(addons))componentNames.set(type,name);
-  return { ...addons, Assets, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Trigger2D, CharacterController2D, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
+  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Trigger2D, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
 }
 
 export function getGameRuntimeScript() {
-  return `window.GameLab = (${createGameLab.toString()})({}, {Assets:Object.freeze(${JSON.stringify(Assets)}),assetManifest:${JSON.stringify(assetManifest)},SpatialHash:(${SpatialHash.toString()}),createPhysics:(${createPhysics.toString()}),createRenderer:(${createRenderer.toString()}),createAddons:(${createAddons.toString()})});`;
+  return `window.GameLab = (${createGameLab.toString()})({}, {Assets:Object.freeze(${JSON.stringify(Assets)}),assetManifest:${JSON.stringify(assetManifest)},SpatialHash:(${SpatialHash.toString()}),createPhysics:(${createPhysics.toString()}),createRenderer:(${createRenderer.toString()}),createAddons:(${createAddons.toString()}),createLabAudio:(${createLabAudio.toString()}),createFrameStats:(${createFrameStats.toString()}),Keys:Object.freeze(${JSON.stringify(defaultKeys)})});`;
 }

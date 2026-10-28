@@ -9,7 +9,24 @@
     "units": "pixels",
     "positiveY": "down",
     "rotation": "radians",
-    "input": "canvas CSS pixels"
+    "input": "canvas logical pixels"
+  },
+  "display": {
+    "logicalResolution": "600x600",
+    "scaling": "fit letterbox preserving aspect; image-rendering pixelated",
+    "console": "FPS, mean frame ms over 3 s, max frame ms, pressed keys; virtual pad emits ACTION_* + keyboard aliases"
+  },
+  "audio": {
+    "facade": "game.audio",
+    "synthesis": "shared WebAudio scheduler; Java serializes audio| commands into frame records",
+    "notes": "C4, C#4, Db4, rest -, duration in quarter beats, tempo BPM",
+    "waves": [
+      "square",
+      "triangle",
+      "sine",
+      "sawtooth",
+      "noise"
+    ]
   },
   "frame": {
     "maximumDeltaSeconds": 0.1,
@@ -53,6 +70,10 @@
         {
           "name": "random",
           "description": null
+        },
+        {
+          "name": "audio",
+          "description": "Syntezator sceny: playNote(note, opts), play(song, loop), stop()."
         },
         {
           "name": "background",
@@ -380,7 +401,7 @@
       "name": "Sprite",
       "category": "Grafika i UI",
       "signature": "new Sprite(texture, width?, height?)",
-      "description": "Rysuje teksturę ze wspólnego katalogu Assets: postacie, przeciwnicy, pociski, świat i UI.",
+      "description": "Rysuje teksturę ze wspólnego katalogu Assets: postacie, przeciwnicy, pociski, świat i UI. Nazwy i podgląd wszystkich grafik: zakładka Assety.",
       "example": "object.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01, 32, 32));",
       "kind": "Constructor",
       "members": [
@@ -549,7 +570,7 @@
       "name": "InputManager",
       "category": "Wejście",
       "signature": "class InputManager",
-      "description": "Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach CSS canvas; naciśnięcie i zwolnienie trwają jedną klatkę.",
+      "description": "Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach logicznych canvas (600×600); naciśnięcie i zwolnienie trwają jedną klatkę. Pad konsoli emituje ACTION_A/B/X/Y/START/SELECT wraz z odpowiednikami klawiatury.",
       "example": "if (this.game.input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {\n  const p=this.game.input.getPointerPosition();\n}",
       "kind": "Class",
       "members": [
@@ -612,10 +633,120 @@
       ]
     },
     {
+      "name": "Keys",
+      "category": "Wejście",
+      "signature": "GameLab.Keys.SPACE",
+      "description": "Zamrożone stałe nazw klawiszy dla isKeyDown/isKeyPressed/isKeyReleased/consumeKey — chronią przed literówkami. Strzałki, WASD, cyfry 1–3, klawisze specjalne i kody konsoli ACTION_*. Te same wartości co engine.Keys w Javie.",
+      "example": "if (this.game.input.isKeyDown(GameLab.Keys.D)) {\n  controller.walk(1);\n}\nif (this.game.input.isKeyPressed(GameLab.Keys.ACTION_A)) {\n  jump();\n}",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "UP",
+          "description": null
+        },
+        {
+          "name": "DOWN",
+          "description": null
+        },
+        {
+          "name": "LEFT",
+          "description": null
+        },
+        {
+          "name": "RIGHT",
+          "description": null
+        },
+        {
+          "name": "W",
+          "description": null
+        },
+        {
+          "name": "A",
+          "description": null
+        },
+        {
+          "name": "S",
+          "description": null
+        },
+        {
+          "name": "D",
+          "description": null
+        },
+        {
+          "name": "X",
+          "description": null
+        },
+        {
+          "name": "Y",
+          "description": null
+        },
+        {
+          "name": "Z",
+          "description": null
+        },
+        {
+          "name": "DIGIT_1",
+          "description": null
+        },
+        {
+          "name": "DIGIT_2",
+          "description": null
+        },
+        {
+          "name": "DIGIT_3",
+          "description": null
+        },
+        {
+          "name": "SPACE",
+          "description": null
+        },
+        {
+          "name": "ENTER",
+          "description": null
+        },
+        {
+          "name": "SHIFT",
+          "description": null
+        },
+        {
+          "name": "TAB",
+          "description": null
+        },
+        {
+          "name": "ESCAPE",
+          "description": null
+        },
+        {
+          "name": "ACTION_A",
+          "description": null
+        },
+        {
+          "name": "ACTION_B",
+          "description": null
+        },
+        {
+          "name": "ACTION_X",
+          "description": null
+        },
+        {
+          "name": "ACTION_Y",
+          "description": null
+        },
+        {
+          "name": "ACTION_START",
+          "description": null
+        },
+        {
+          "name": "ACTION_SELECT",
+          "description": null
+        }
+      ]
+    },
+    {
       "name": "Canvas",
       "category": "Grafika i UI",
       "signature": "class Canvas",
-      "description": "Dostęp przez this.canvas. Rozmiar planszy jest dostępny jako width/height. Rysuj elementy HUD w onDrawUI().",
+      "description": "Dostęp przez this.canvas. Plansza ma stałą rozdzielczość logiczną 600×600; width/height zwracają wymiary logiczne, a skalowanie do okna robi letterbox. Rysuj elementy HUD w onDrawUI().",
       "example": "this.canvas.drawText(\"Punkty: 0\", 12, 24, 16, \"white\");",
       "kind": "Class",
       "members": [
@@ -642,6 +773,54 @@
         {
           "name": "height",
           "description": null
+        }
+      ]
+    },
+    {
+      "name": "Audio",
+      "category": "Dźwięk",
+      "signature": "game.audio",
+      "description": "Syntezator sceny. Nuty C4, C#4, Db4; pauza \"-\"; czas w taktach; fale square, triangle, sine, sawtooth, noise. Java gra przez ten sam scheduler WebAudio.",
+      "example": "this.audio.playNote(\"C4\", { beats: 0.5, wave: \"triangle\" });\nthis.audio.play(song, { loop: true });",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "playNote",
+          "description": "Gra pojedynczą nutę: playNote(\"A4\", { beats?, wave?, tempo? })."
+        },
+        {
+          "name": "play",
+          "description": "Odtwarza utwór: play(song) albo play(song, { loop: true })."
+        },
+        {
+          "name": "stop",
+          "description": "Zeruje zadany ruch. Grawitacja platformera pozostaje aktywna."
+        },
+        {
+          "name": "setTempo",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Song",
+      "category": "Dźwięk",
+      "signature": "new Song(tempo)",
+      "description": "Utwór z tempem w BPM i sekwencerami; każdy sequencer to równoległa ścieżka z własną falą. notes(\"C4:1 E4:0.5 -:2\") dodaje kolejne kroki.",
+      "example": "const song=new GameLab.Song(140);\nsong.sequencer(\"square\").notes(\"C4:1 E4:1 -:0.5 G4:2\");\nsong.sequencer(\"triangle\").note(\"C3\",2);",
+      "kind": "Constructor",
+      "members": [
+        {
+          "name": "tempo",
+          "description": null
+        },
+        {
+          "name": "sequencer",
+          "description": "Dodaje równoległą ścieżkę o zadanej fali: sequencer(\"square\") → Sequencer."
+        },
+        {
+          "name": "duration",
+          "description": "Całkowity czas animacji w sekundach."
         }
       ]
     },
@@ -781,7 +960,7 @@
       "name": "Assets",
       "category": "Zasoby",
       "signature": "GameLab.Assets.PLAYER01",
-      "description": "Wspólny katalog sprite i UI. Java używa enum Assets, JavaScript zamrożonych stałych o tych samych nazwach.",
+      "description": "Wspólny katalog sprite i UI. Java używa enum Assets, JavaScript zamrożonych stałych o tych samych nazwach. Pełna lista i podgląd: zakładka Assety.",
       "example": "player.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01));",
       "kind": "Class",
       "members": [

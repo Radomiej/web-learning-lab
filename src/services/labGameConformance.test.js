@@ -74,7 +74,7 @@ test('UI pointer release is consumed before a resumed WORLD action',()=>{
  class WorldAction extends lab.Component {onUpdate(){if(this.game.input.isMouseReleased(0))worldActions++;}}
  class Scene extends lab.Game {onCreate(){const world=this.createObject('World');world.addComponent(new WorldAction());const ui=this.createObject('Button');ui.addComponent(new lab.UITransform(100,40));const button=ui.addComponent(new lab.Button(100,40));button.onClick=()=>this.resume();}}
  const game=new Scene();game.canvas=new lab.Canvas(document.createElement('canvas'));game.start();game.pause();
- try{game.input.setPointer(320,180);game.input.setMouseButton(0,true);game.step(.1);game.input.setMouseButton(0,false);game.step(.1);expect(game.isPaused()).toBe(false);expect(worldActions).toBe(0);}finally{game.dispose();lab.dispose();}
+ try{game.input.setPointer(300,300);game.input.setMouseButton(0,true);game.step(.1);game.input.setMouseButton(0,false);game.step(.1);expect(game.isPaused()).toBe(false);expect(worldActions).toBe(0);}finally{game.dispose();lab.dispose();}
 });
 test('Button focus rejects an uninitialized owner and disabled arm cannot survive reenable',()=>{
  const lab=environment();const game=new lab.Game();game.canvas=new lab.Canvas(document.createElement('canvas'));const object=game.createObject('Button');object.addComponent(new lab.UITransform(100,40));const button=object.addComponent(new lab.Button(100,40));let clicks=0;button.onClick=()=>clicks++;

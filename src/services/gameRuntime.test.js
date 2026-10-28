@@ -23,6 +23,22 @@ test('empty playground boots the engine without default objects or control instr
   lab.dispose();
 });
 
+test('frozen Keys constants mirror raw key names and drive input queries', () => {
+  const { lab, canvas } = fixture();
+  class Scene extends lab.Game {}
+  lab.run(Scene, { canvas });
+  expect(Object.isFrozen(lab.Keys)).toBe(true);
+  expect(lab.Keys.SPACE).toBe('Space');
+  expect(lab.Keys.ACTION_A).toBe('ACTION_A');
+  lab.current.input.setKey(' ', true);
+  expect(lab.current.input.isKeyDown(lab.Keys.SPACE)).toBe(true);
+  lab.current.input.setKey(lab.Keys.ACTION_A, true);
+  expect(lab.current.input.isKeyDown('ACTION_A')).toBe(true);
+  lab.current.input.consumeKey(lab.Keys.ACTION_A);
+  expect(lab.current.input.isKeyDown(lab.Keys.ACTION_A)).toBe(false);
+  lab.dispose();
+});
+
 test('camera follows a moving world object, handles resize and leaves HUD in screen space', () => {
   const { lab, canvas } = fixture();
   class Move extends lab.Component { onUpdate(delta) { this.transform.x += 100 * delta; } }
@@ -44,10 +60,10 @@ test('camera follows a moving world object, handles resize and leaves HUD in scr
   const resized = lab.evaluateScenario({ phases: [{ steps: 1, width: 600, height: 400 }] });
   expect(resized.commands.find(c => c.op === 'sprite')).toMatchObject({ screenX: 300, screenY: 200 });
   lab.current.camera.shake(5, 0.2); lab.current.step(0.1);
-  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).not.toBe(200);
+  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).not.toBe(300);
   expect(lab.snapshot().commands.find(c => c.op === 'text')).toMatchObject({ x: 10, y: 24 });
   lab.current.step(0.1);
-  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).toBe(200);
+  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).toBe(300);
   lab.current.camera.enabled = false; lab.current.step(0);
   expect(lab.snapshot().camera).toEqual({ x: 0, y: 0 });
   lab.dispose();

@@ -109,7 +109,7 @@ test('upgrade buttons use actual pointer release and focused Enter release',()=>
  const lessonTask=task('g2d.ui-flow.independent'),lab=execute(lessonTask);try {
   const player=lab.current.find('Player'),xp=namedComponent(player,'Experience'),menu=namedComponent(player,'UpgradeController'),weapon=namedComponent(player,'Weapon');
   lab.current.step(.1);xp.pendingChoices=2;
-  lab.current.input.setPointer(320,180);lab.current.input.setMouseButton(0,true);lab.current.step(.1);expect(weapon.damage).toBe(1);
+  lab.current.input.setPointer(300,300);lab.current.input.setMouseButton(0,true);lab.current.step(.1);expect(weapon.damage).toBe(1);
   lab.current.input.setMouseButton(0,false);lab.current.step(.1);expect(weapon.damage).toBe(2);expect(xp.pendingChoices).toBe(1);expect(menu.opened).toBe(true);
   lab.current.input.setKey('Enter',true);lab.current.step(.1);expect(weapon.damage).toBe(2);
   lab.current.input.setKey('Enter',false);lab.current.step(.1);expect(weapon.damage).toBe(3);expect(xp.pendingChoices).toBe(0);expect(menu.opened).toBe(false);

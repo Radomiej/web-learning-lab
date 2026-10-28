@@ -1,4 +1,5 @@
 import { Assets, assetManifest } from '../../shared/lab-game-v2/assets/Assets.js';
+import { Keys } from '../../shared/lab-game-v2/keys.js';
 // Reference and completion entries describe the public API returned by createGameLab().
 const api = (name, category, signature, description, example, kind = 'Class') => ({
   name, category, signature, description, example, kind,
@@ -15,8 +16,11 @@ export const gameLabApi = [
   api('ControlsHint', 'Grafika i UI', 'new ControlsHint(text?)', 'Opcjonalna instrukcja na dole canvasu. Znika po kliknięciu planszy, wraca po utracie fokusu. Bez dodania komponentu instrukcja nie jest wyświetlana.', 'player.addComponent(new GameLab.ControlsHint("Kliknij planszę. WASD: ruch"));', 'Constructor'),
   api('Camera2D', 'Grafika i UI', 'new Camera2D()', 'Pierwsza aktywna kamera przesuwa świat. offsetX/Y to przesunięcie widoku; follow(target) utrzymuje gracza w środku ekranu. Fizyczne pozycje i HUD pozostają niezależne od widoku.', 'const cameraObject = this.createObject("Camera");\nconst camera = cameraObject.addComponent(new GameLab.Camera2D());\ncamera.follow(player);\ncamera.shake(4, 0.2);', 'Constructor'),
   api('TileMap', 'Grafika i UI', 'new TileMap("grass" | "sand", tileSize?)', 'Kafelkowe tło świata; przesuwa się z kamerą. Nie tworzy kolizji.', 'const ground = this.createObject("Ground");\nground.addComponent(new GameLab.TileMap("grass", 32));', 'Constructor'),
-  api('InputManager', 'Wejście', 'class InputManager', 'Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach CSS canvas; naciśnięcie i zwolnienie trwają jedną klatkę.', 'if (this.game.input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {\n  const p=this.game.input.getPointerPosition();\n}'),
-  api('Canvas', 'Grafika i UI', 'class Canvas', 'Dostęp przez this.canvas. Rozmiar planszy jest dostępny jako width/height. Rysuj elementy HUD w onDrawUI().', 'this.canvas.drawText("Punkty: 0", 12, 24, 16, "white");'),
+  api('InputManager', 'Wejście', 'class InputManager', 'Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach logicznych canvas (600×600); naciśnięcie i zwolnienie trwają jedną klatkę. Pad konsoli emituje ACTION_A/B/X/Y/START/SELECT wraz z odpowiednikami klawiatury.', 'if (this.game.input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {\n  const p=this.game.input.getPointerPosition();\n}'),
+  api('Keys', 'Wejście', 'GameLab.Keys.SPACE', 'Zamrożone stałe nazw klawiszy dla isKeyDown/isKeyPressed/isKeyReleased/consumeKey — chronią przed literówkami. Strzałki, WASD, cyfry 1–3, klawisze specjalne i kody konsoli ACTION_*. Te same wartości co engine.Keys w Javie.', 'if (this.game.input.isKeyDown(GameLab.Keys.D)) {\n  controller.walk(1);\n}\nif (this.game.input.isKeyPressed(GameLab.Keys.ACTION_A)) {\n  jump();\n}'),
+  api('Canvas', 'Grafika i UI', 'class Canvas', 'Dostęp przez this.canvas. Plansza ma stałą rozdzielczość logiczną 600×600; width/height zwracają wymiary logiczne, a skalowanie do okna robi letterbox. Rysuj elementy HUD w onDrawUI().', 'this.canvas.drawText("Punkty: 0", 12, 24, 16, "white");'),
+  api('Audio', 'Dźwięk', 'game.audio', 'Syntezator sceny. Nuty C4, C#4, Db4; pauza "-"; czas w taktach; fale square, triangle, sine, sawtooth, noise. Java gra przez ten sam scheduler WebAudio.', 'this.audio.playNote("C4", { beats: 0.5, wave: "triangle" });\nthis.audio.play(song, { loop: true });'),
+  api('Song', 'Dźwięk', 'new Song(tempo)', 'Utwór z tempem w BPM i sekwencerami; każdy sequencer to równoległa ścieżka z własną falą. notes("C4:1 E4:0.5 -:2") dodaje kolejne kroki.', 'const song=new GameLab.Song(140);\nsong.sequencer("square").notes("C4:1 E4:1 -:0.5 G4:2");\nsong.sequencer("triangle").note("C3",2);', 'Constructor'),
   api('CharacterController2D', 'Ruch i kolizje', 'move(x, y, speed = 120)', 'Ustawia prędkość w px/s, normalizuje ruch po przekątnej. getDirection() zwraca kopię ostatniego niezerowego kierunku, także po zatrzymaniu. Wywołuj w każdej klatce onUpdate().', 'this.gameObject.addComponent(new GameLab.CharacterController2D());\ncontroller.move(1, 0, 120);', 'Constructor'),
   api('Collider2D', 'Ruch i kolizje', 'new Collider2D(width?, height?)', 'Jawna prostokątna bryła 32×32. Rozmiar kolizji nie zależy od sprite ani skali grafiki. layer/mask filtrują kontakty.', 'wall.addComponent(new GameLab.Collider2D(40,80));', 'Constructor'),
   api('CircleCollider2D', 'Ruch i kolizje', 'new CircleCollider2D(radius)', 'Jawna kołowa bryła o promieniu w pikselach świata.', 'player.addComponent(new GameLab.CircleCollider2D(12));', 'Constructor'),
@@ -46,12 +50,13 @@ export const gameLabApi = [
 ];
 
 export const gameLabMembers = {
-  Game: ['canvas', 'input', 'time', 'physics', 'random', 'background', 'createObject', 'find', 'getObjects', 'getObjectsWith', 'getObjectsWithTag', 'pause', 'resume', 'isPaused', 'setWorldBounds', 'clearWorldBounds', 'getViewportWidth', 'getViewportHeight', 'onCreate', 'onUpdate', 'onDrawUI', 'onDestroy'],
+  Game: ['canvas', 'input', 'time', 'physics', 'random', 'audio', 'background', 'createObject', 'find', 'getObjects', 'getObjectsWith', 'getObjectsWithTag', 'pause', 'resume', 'isPaused', 'setWorldBounds', 'clearWorldBounds', 'getViewportWidth', 'getViewportHeight', 'onCreate', 'onUpdate', 'onDrawUI', 'onDestroy'],
   GameObject: ['id', 'name', 'game', 'transform', 'active', 'destroyed', 'setPosition', 'setActive', 'addComponent', 'getComponent', 'getComponents', 'requireComponent', 'hasComponent', 'removeComponent', 'removeComponents', 'onComponentChange', 'addTag', 'removeTag', 'hasTag', 'getTags', 'destroy'],
   Component: ['game', 'gameObject', 'transform', 'enabled', 'setEnabled', 'updateMode', 'onCreate', 'onUpdate', 'onLateUpdate', 'onDrawUI', 'onDestroy', 'onCollision', 'onTrigger', 'onComponentChange', 'getComponent', 'getComponents', 'requireComponent', 'hasComponent'],
   Transform: ['x', 'y', 'rotation', 'scale', 'visualOffset'],
   InputManager: ['isKeyDown', 'isKeyPressed', 'isKeyReleased', 'consumeKey', 'getPointerPosition', 'isMouseDown', 'isMousePressed', 'isMouseReleased', 'consumeMouse', 'MOUSE_LEFT', 'MOUSE_MIDDLE', 'MOUSE_RIGHT', 'MOUSE_BACK', 'MOUSE_FORWARD'],
   Assets: Object.keys(Assets),
+  Keys: Object.keys(Keys),
   UIAnchor: ['TOP_LEFT','TOP_CENTER','TOP_RIGHT','CENTER_LEFT','CENTER','CENTER_RIGHT','BOTTOM_LEFT','BOTTOM_CENTER','BOTTOM_RIGHT'],
   UITransform: ['width','height','anchor','pivot','getBounds','getCenter'],
   ProgressBar: ['setProgress','getProgress','setValue','width','height','frame','track','fill'],
@@ -82,6 +87,9 @@ export const gameLabMembers = {
   KeyPressed: ['key','action'],
   KeyDoublePressed: ['key','action','maxDelaySeconds'],
   NoneOfKeysPressed: ['keys','action'],
+  Audio: ['playNote', 'play', 'stop', 'setTempo'],
+  Song: ['tempo', 'sequencer', 'duration'],
+  Sequencer: ['wave', 'note', 'rest', 'notes', 'duration'],
 };
 
 export const gameLabMemberDocs = {
@@ -104,6 +112,13 @@ export const gameLabMemberDocs = {
   visualOffset: 'Tymczasowe przesunięcie grafiki, np. shake; nie zmienia fizycznej pozycji.',
   isKeyDown: 'Sprawdza, czy klawisz jest trzymany. Np. isKeyDown("w").',
   isKeyPressed: 'Sprawdza nowe naciśnięcie w bieżącej klatce. Np. isKeyPressed("Space").',
+  audio: 'Syntezator sceny: playNote(note, opts), play(song, loop), stop().',
+  playNote: 'Gra pojedynczą nutę: playNote("A4", { beats?, wave?, tempo? }).',
+  play: 'Odtwarza utwór: play(song) albo play(song, { loop: true }).',
+  sequencer: 'Dodaje równoległą ścieżkę o zadanej fali: sequencer("square") → Sequencer.',
+  note: 'Dodaje nutę na ścieżce: note("C4", 1) — czas w taktach.',
+  rest: 'Dodaje pauzę na ścieżce: rest(0.5) — czas w taktach.',
+  notes: 'Dodaje frazę na ścieżce: notes("C4:1 E4:0.5 -:2").',
   drawRect: 'Rysuje prostokąt ze środkiem w (x, y): drawRect(x, y, width, height, color?).',
   drawText: 'Rysuje tekst: drawText(text, x, y, fontSize?, color?, align?, baseline?). Domyślnie wyśrodkowany.',
   drawTileMap: 'Wewnętrzna operacja rendererowa do rysowania kafelków.',
