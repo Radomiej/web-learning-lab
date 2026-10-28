@@ -18,7 +18,7 @@ export default function StudentIdentity({telemetry,compact=false}){
  if(!telemetry)return null;
  let displayedId=telemetry.machineId?.slice(-6)||'—';
  try{displayedId=JSON.parse(localStorage.getItem('www-lab-assignment-identity')||'{}').studentId||displayedId;}catch{}
- const begin=()=>{setDraft(telemetry.studentName||'');try{setStudentId(JSON.parse(localStorage.getItem('www-lab-assignment-identity')||'{}').studentId||telemetry.machineId?.slice(-6)||'');}catch{setStudentId(telemetry.machineId?.slice(-6)||'');}setEditing(true);};
+ const begin=()=>{setDraft(telemetry.studentName||'');try{setStudentId(JSON.parse(localStorage.getItem('www-lab-assignment-identity')||'{}').studentId||'');}catch{setStudentId('');}setEditing(true);};
  const save=event=>{event.preventDefault();telemetry.setStudentName(draft.trim());try{localStorage.setItem('www-lab-assignment-identity',JSON.stringify({studentId:studentId.trim(),studentName:draft.trim()}));dispatchEvent(new Event('student-identity-change'));}catch{}setEditing(false);};
  return <section className="student-identity" aria-label="Tożsamość ucznia">
   <div className="student-identity-heading">
