@@ -6,3 +6,10 @@
 .lesson-code-example pre, .explanation-copy .lesson-code-example pre { margin: 0; padding: 16px; border-radius: 0; background: transparent; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.65; user-select: text; }
 .lesson-code-status { display: block; padding: 0 12px 8px; font-size: 12px; }
 .lesson-code-status:empty { display: none; }
+.tok-keyword { color: #c586c0; }
+.tok-literal { color: #569cd6; }
+.tok-type { color: #4ec9b0; }
+.tok-string { color: #ce9178; }
+.tok-number { color: #b5cea8; }
+.tok-comment { color: #6a9955; }
+.tok-annotation { color: #dcdcaa; }

@@ -16,7 +16,7 @@ test('opens the GameLab quick-start and browsable API reference', () => {
   render(<GameApiGuide />);
   fireEvent.click(screen.getByText('Dokumentacja GameLab'));
   expect(screen.getByText(/Rozszerz/)).toBeInTheDocument();
-  expect(screen.getAllByText(/GameLab\.run\(MyGame\)/)).toHaveLength(2);
+  expect([...document.querySelectorAll('pre')].some(pre => pre.textContent.includes('GameLab.run(MyGame)'))).toBe(true);
 
   fireEvent.click(screen.getByRole('button', { name: 'API silnika' }));
   expect(screen.getByLabelText('Wyszukaj klasę lub metodę')).toBeInTheDocument();
@@ -48,7 +48,7 @@ test('explains fetching components and shows usage examples on demand', () => {
   const toggles = screen.getAllByText('Pokaż użycie');
   expect(toggles.length).toBeGreaterThan(20);
   fireEvent.click(toggles[0]);
-  expect(screen.getByText(/addComponent\(new GameLab\.Sprite/)).toBeInTheDocument();
+  expect([...document.querySelectorAll('details pre')].some(pre => pre.textContent.includes('addComponent(new GameLab.Sprite'))).toBe(true);
 });
 
 test('shows the asset catalog with names, keys and sprite previews', async () => {

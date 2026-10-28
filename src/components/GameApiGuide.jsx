@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { gameLabApi, gameLabAssetGroups, gameLabAssets, gameLabComponentGroups, gameLabMemberDocs, gameLabMembers } from '../data/gameLabApi.js';
 import { callableMembers } from '../services/gameLabCompletions.js';
+import { Code } from '../../shared/lab-game-v2/editor/CodeExample.jsx';
 
 const example = `class MyGame extends GameLab.Game {
   onCreate() {
@@ -114,7 +115,7 @@ export default function GameApiGuide() {
           <p>W <code>game.js</code> piszesz scenę oraz komponenty. Gotowe API jest dostępne jako <code>GameLab</code>. HTML i CSS edytujesz w osobnych zakładkach, a podgląd korzysta z prawdziwego canvasu.</p>
           <ol><li>Rozszerz <code>GameLab.Game</code>.</li><li>W <code>onCreate()</code> utwórz obiekty i dodaj im komponenty.</li><li>W <code>onUpdate(delta)</code> aktualizuj grę; delta jest czasem w sekundach.</li><li>Na końcu pliku dodaj <code>GameLab.run(MyGame)</code>. Kliknij przycisk ▶ Play, aby uruchomić grę i sprawdzić zadanie.</li></ol>
         </div>
-        <pre tabIndex={0}><code>{example}</code></pre>
+        <pre tabIndex={0}><code><Code code={example}/></code></pre>
         <div className="game-api-callouts">
           <p><strong>Scena i komponenty</strong><br /><code>onCreate</code> wykonuje się raz, <code>onUpdate(delta)</code> co klatkę. W komponencie używaj <code>this.game</code>, <code>this.gameObject</code> i <code>this.transform</code>.</p>
           <p><strong>Współrzędne i sterowanie</strong><br />Pozycja oznacza środek obiektu w pikselach, dodatnie Y biegnie w dół. Ruch postaci w kursie: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>.</p>
@@ -130,7 +131,7 @@ export default function GameApiGuide() {
               {group.names.map(name => { const item = apiByName.get(name); return <li key={name}>
                 <code>{item?.signature ?? name}</code>
                 <span>{item?.description}</span>
-                {item?.example && <details className="game-component-example"><summary>Pokaż użycie</summary><pre><code>{item.example}</code></pre></details>}
+                {item?.example && <details className="game-component-example"><summary>Pokaż użycie</summary><pre><code><Code code={item.example}/></code></pre></details>}
               </li>; })}
             </ul>
           </section>)}

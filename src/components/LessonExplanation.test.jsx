@@ -9,12 +9,12 @@ test('g2d.scene shows the shared eleven-page introduction with JavaScript code',
   expect(pages[1].code.js).toContain('class MyGame extends GameLab.Game');
   expect(pages[5].code.js).toContain('new GameLab.ShapeRenderer(40, 24');
 
-  render(<LessonExplanation lesson={{ id: 'g2d.scene' }} language="javascript" />);
+  const { container } = render(<LessonExplanation lesson={{ id: 'g2d.scene' }} language="javascript" />);
   expect(screen.getByText('Gra działa w pętli')).toBeInTheDocument();
   expect(screen.getByRole('figure', { name: 'Schemat: Gra działa w pętli' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Następny krok' }));
   expect(screen.getByText('Game jest gospodarzem sceny')).toBeInTheDocument();
-  expect(screen.getByText(/GameLab\.run\(MyGame\)/)).toBeInTheDocument();
+  expect([...container.querySelectorAll('pre')].some(pre => pre.textContent.includes('GameLab.run(MyGame)'))).toBe(true);
   expect(screen.getByText('Plik game.js. Klasy silnika dostępne są jako GameLab.')).toBeInTheDocument();
 });
 
@@ -27,10 +27,10 @@ test('g2d.input shows five intro pages then shared pages including component loo
   expect(controller.code.java).toContain('requireComponent(CharacterController2D.class)');
   expect(controller.setupCode.js).toContain('new GameLab.CircleCollider2D(12)');
 
-  render(<LessonExplanation lesson={{ id: 'g2d.input' }} language="javascript" />);
+  const { container } = render(<LessonExplanation lesson={{ id: 'g2d.input' }} language="javascript" />);
   for (let step = 0; step < 4; step++) fireEvent.click(screen.getByRole('button', { name: 'Następny krok' }));
   expect(screen.getByText('Kontroler gracza a komponent ruchu')).toBeInTheDocument();
-  expect(screen.getByText(/this\.requireComponent\(GameLab\.CharacterController2D\)/)).toBeInTheDocument();
+  expect([...container.querySelectorAll('pre')].some(pre => pre.textContent.includes('this.requireComponent(GameLab.CharacterController2D)'))).toBe(true);
   expect(screen.getByText('game.js · onCreate(): dodaj do przygotowanego Player')).toBeInTheDocument();
 });
 
