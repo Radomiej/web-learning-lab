@@ -66,7 +66,7 @@ export function generateLessonAssignment(descriptor, int) {
     }
     case 'dom': {
       expected=`Witaj, ${name}!`;
-      prompt=`Znajdź istniejący element #result przez ${level?'querySelector("#result")':'getElementById("result")'} i przypisz jego textContent tekst „${expected}”.${level?' Dodaj mu klasę ready przez classList.add.':''}${level===2?' Ustaw atrybut title na Gotowe przez setAttribute.':''} Nie twórz nowego elementu zamiast istniejącego.`;
+      prompt=`Znajdź istniejący element #result przez ${level?'querySelector("#result")':'getElementById("result")'} i przypisz jego textContent tekst „${expected}”.${level?' Dodaj mu klasę ready przez classList.add — reguła .ready jest już ostylowana na stronie, więc element zmieni wygląd.':''}${level===2?' Ustaw atrybut title na Gotowe przez setAttribute.':''} Nie twórz nowego elementu zamiast istniejącego.`;
       code=`const wynik = document.${level?'querySelector("#result")':'getElementById("result")'};\nwynik.textContent = "${expected}";${level?'\nwynik.classList.add("ready");':''}${level===2?'\nwynik.setAttribute("title", "Gotowe");':''}`;
       break;
     }
@@ -135,7 +135,8 @@ export function generateLessonAssignment(descriptor, int) {
   }[template.topic];
   params.expected=expected;params.action=action?'click':null;
   if(params.consoleOnly){body='<p>Wynik programu odczytasz w konsoli podglądu.</p>';criteria.push('Wypisz jeden wpis w konsoli; bez używania document ani DOM.');}
-  const html=`<!doctype html><html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${template.name}</title></head><body><main><h1>${template.name}</h1>${body}</main><script src="script.js"></script></body></html>`;
+  const classStyle='<style>main{font-family:system-ui,sans-serif;max-width:640px;margin:0 auto;padding:24px 16px}#result{display:inline-block;padding:8px 14px;border:2px dashed #9db4c2;border-radius:8px}#result.ready{border-style:solid;border-width:4px;border-color:#17803a;background:#dcf2e3;color:#0f5c28;font-weight:700}.badge{display:inline-block;padding:3px 12px;border-radius:999px;background:#ffe9a8;border:1px solid #d9a400;font-weight:600}.waiting{opacity:.5;font-style:italic}</style>';
+  const html=`<!doctype html><html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${template.name}</title>${template.topic==='dom'?classStyle:''}</head><body><main><h1>${template.name}</h1>${body}</main><script src="script.js"></script></body></html>`;
   const starterFiles={'index.html':html,'script.js':`// TODO: ${params.consoleOnly?'Napisz program; wynik wypisz przez console.log.':'Napisz rozwiązanie zgodnie z poleceniem.'}\n`};
   return {title:modern?`${template.name} · ${params.taskKind}`:template.name,prompt,criteria,starterFiles,referenceFiles:{...starterFiles,'script.js':code+'\n'},params};
 }
