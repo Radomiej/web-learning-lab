@@ -25,10 +25,10 @@ const recipes = {
   ],
   'js-functions': [
     { prompt: 'Napisz funkcję podwoj(n), która zwraca n * 2 przez return. Wywołaj ją z argumentem 4 i wypisz zwrócony wynik przez console.log. Oczekiwany wynik: 8.', code: 'function podwoj(n) { return n * 2; }\nconsole.log(podwoj(4));', expected: '8', verify: [
-      { type: 'jsProbe', expression: 'podwoj(7)', expected: 14, label: 'podwoj(7) zwraca 14 — funkcja liczy dla dowolnego argumentu' },
+      { type: 'jsProbe', expression: 'podwoj(7)', expected: 14, label: 'Sprawdzamy, czy funkcja zwraca poprawny wynik także dla innego argumentu: podwoj(7) powinno zwrócić 14' },
     ] },
     { prompt: 'Utwórz obiekt kalkulator z metodą dodaj(a, b), która zwraca sumę argumentów przez return. Wywołaj kalkulator.dodaj z argumentami 3 i 6, a wynik wypisz przez console.log. Oczekiwany wynik: 9.', code: 'const kalkulator = { dodaj(a, b) { return a + b; } };\nconsole.log(kalkulator.dodaj(3, 6));', expected: '9', verify: [
-      { type: 'jsProbe', expression: 'kalkulator.dodaj(2, 5)', expected: 7, label: 'kalkulator.dodaj(2, 5) zwraca 7' },
+      { type: 'jsProbe', expression: 'kalkulator.dodaj(2, 5)', expected: 7, label: 'Sprawdzamy, czy metoda zwraca poprawny wynik także dla innych argumentów: kalkulator.dodaj(2, 5) powinno zwrócić 7' },
     ] },
   ],
 };

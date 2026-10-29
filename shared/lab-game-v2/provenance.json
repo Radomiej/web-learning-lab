@@ -1,7 +1,7 @@
 {
   "apiVersion": 2,
   "source": "..\\web-learning-lab",
-  "revision": "879f6c426d1f92933cf772ba533323e2708459c6",
+  "revision": "33a47c951e1f7cef83f8ce6d37c0c68e49a2eda9",
   "dirty": true,
   "hashes": {
     "shared/lab-game-v2/addons.js": "189ddafacfb17280dbd3fc66bb40a48cf1665f0268062c0f31616a1c4134b8ea",
@@ -17,8 +17,8 @@
     "shared/lab-game-v2/course/earlyStarters.js": "30a32c5a5a63811e85ef7030ca10f834e0977f0e470260e45f7200428883f562",
     "shared/lab-game-v2/course/formatSource.js": "c988bea3b8d82fa96f13e7915a8404f03f3ba44fd156271cd7c89c78229414ff",
     "shared/lab-game-v2/course/guidedStarters.js": "c0b5b5f508ee40b8de04cf1e2e8609e137b280915397b149cb016448848bd99e",
-    "shared/lab-game-v2/course/manifest.js": "c70775dfdc48a793d26ef4a8aa8fe77506d3088e86e0ee7742a8fb9b927b3974",
-    "shared/lab-game-v2/course/manifest.json": "082a8cd774c5674895c4f5957a70099f1f28d88f3185ae81f368513a4f19f321",
+    "shared/lab-game-v2/course/manifest.js": "63ef30ee58b33a73e9a62807b6a8c3c130e5f4d2100f8feb8d8f2b13f7db6424",
+    "shared/lab-game-v2/course/manifest.json": "6383ed084ce5c4ebfd9829b7a2b8e1170d26af854e0034363b54b7d30daec776",
     "shared/lab-game-v2/editor/api-catalog.json": "58c2c81f0142ecb2972da7ca205e55bf50b503625ba374f6ed0de8c174ed6764",
     "shared/lab-game-v2/editor/apiSyntax.js": "f77aacaf8c0bb2afb99e14ca11cd8c01528968696f03ec83466e844bce47ff4a",
     "shared/lab-game-v2/editor/ChatMessage.css": "c545ed31678292cd8cd7852ed7b30d1febd7386b11eec13a1b87775711beaeb9",
@@ -37,7 +37,7 @@
     "shared/lab-game-v2/editor/GuidedChange.jsx": "0448f6e7af190b2b93a77d3c61ec709de911152656433f12b8ce398e53b0047b",
     "shared/lab-game-v2/editor/guidedChanges.js": "56e073fbd63ef148e5cac70fe36dd1ebbb7bc7c2467b00d8fd430f82590fe3a2",
     "shared/lab-game-v2/editor/highlightCode.js": "6582b1299979c99f3661de6e21fe0881a67a406c8b1110050f328b318d83bae1",
-    "shared/lab-game-v2/editor/lessonConcepts.js": "77fe2840d63d768dd52b126ac06e13f16918d6d5b7dba596473c4a0e82f52b08",
+    "shared/lab-game-v2/editor/lessonConcepts.js": "413808183c28f0376f212ae15e0676e596b18a3ba6c7c77a85941eef1fe0dce9",
     "shared/lab-game-v2/editor/LessonExplanation.css": "db2966b2b83e0b69523fcacd99dc92780100ab0d1974937a3b42fbace19febb4",
     "shared/lab-game-v2/editor/LessonExplanation.jsx": "df8f8641a1fc5a4262a4d5ff54d2dec0f8e9141d48ccbd6f0f3b5e85ffe47008",
     "shared/lab-game-v2/editor/LessonInfographic.css": "e1a2229f88f202fea707646d847b4c8d22117abd8f8005843d01136f1717d5c1",

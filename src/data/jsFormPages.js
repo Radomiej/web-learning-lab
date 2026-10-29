@@ -18,7 +18,7 @@ export const jsFormPages = [
     text: 'event.currentTarget wskazuje formularz, na którym zarejestrowano tę obsługę. new FormData(formularz) zbiera aktualne wartości pól. get("student") odczytuje wartość pola o name="student". id="name" służy do DOM i etykiety, a nie do nazwania wysyłanej wartości. FormData jest kopią wartości w chwili utworzenia; nie aktualizuje się samo po dalszej edycji.',
     markup,
     code: 'const formularz = document.getElementById("form");\nformularz.addEventListener("submit", event => {\n  event.preventDefault();\n  const dane = new FormData(event.currentTarget);\n  const imie = dane.get("student");\n  document.getElementById("result").textContent = imie;\n});',
-    result: 'Po wpisaniu Ola i submit: dane.get("student") daje tekst Ola. Samo preventDefault nie wysyła tych danych do serwera.',
+    result: 'Po wpisaniu Ola i wysłaniu formularza: dane.get("student") zwraca tekst Ola. Samo preventDefault nie wysyła tych danych do serwera.',
     image: 'forms-control', alt: 'Formularz z id name i name student: submit, preventDefault zatrzymuje nawigację, FormData zbiera student=Ola. id odnajduje element, name jest kluczem danych.',
   },
   {
