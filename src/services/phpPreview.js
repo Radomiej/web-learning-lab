@@ -26,11 +26,13 @@ function inlineStyles(files = {}) {
 
 export function buildPhpPreviewDocument(output = '', files = {}, options = {}) {
   const normalized = normalizeHtmlDocument(String(output).replace(/<link\b[^>]*href=["'](?:\.\/)?styles\.css["'][^>]*>/gi, ''));
-  const bridge = createRuntimeBridge({
+  // The loading placeholder must not emit ready/signals: a snapshot of it
+  // would grade the task against "Uruchamiam PHP.wasm…" before the real
+  // output arrives and consume the pending check.
+  const bridgeScript = options.bridge === false ? '' : `<script data-runtime="bridge">${escapeInlineScript(createRuntimeBridge({
     requestedSignals: options.requestedSignals || [],
     runId: options.runId,
-  }).replace('TRACK_PLACEHOLDER', String(options.track || 'php'));
-  const bridgeScript = `<script data-runtime="bridge">${escapeInlineScript(bridge)}</script>`;
+  }).replace('TRACK_PLACEHOLDER', String(options.track || 'php')))}</script>`;
   return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${inlineStyles(files)}</head><body>${normalized.bodyMarkup}${bridgeScript}</body></html>`;
 }
 
