@@ -1,5 +1,35 @@
 import { renderHook, act } from '@testing-library/react';
+import { runPhpProject } from '../services/phpRuntime.js';
 import { usePreviewRuntime } from './usePreviewRuntime.js';
+
+vi.mock('../services/phpRuntime.js', () => ({ runPhpProject: vi.fn() }));
+
+test('PHP check ignores the wasm loading placeholder and grades the real output', async () => {
+  let resolveRun;
+  runPhpProject.mockImplementation(() => new Promise((resolve) => { resolveRun = resolve; }));
+  const checks = [{ id: 'text', type: 'textContains', expected: 'Witaj w PHP!' }];
+  const project = { entry: 'index.php', files: { 'index.php': '<?php echo "Witaj w PHP!";' } };
+  const { result } = renderHook(() => usePreviewRuntime(project, checks, 'php'));
+
+  act(() => result.current.checkPreview());
+  // The loading document must stay silent: a bridged iframe would emit a
+  // ready/signals snapshot of the placeholder and grade the task early.
+  expect(result.current.previewDocument).toContain('Uruchamiam PHP.wasm');
+  expect(result.current.previewDocument).not.toContain('data-runtime="bridge"');
+
+  await act(async () => {
+    resolveRun({ html: '<main><h1>Witaj w PHP!</h1></main>', errors: [], stderr: '', exitCode: 0, requestKey: null });
+    await Promise.resolve();
+  });
+  expect(result.current.previewDocument).toContain('Witaj w PHP!');
+  expect(result.current.runtimeState.checkResults).toHaveLength(0);
+
+  await act(async () => {
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: {}, text: 'Witaj w PHP!' } });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+  expect(result.current.runtimeState.checkResults[0].passed).toBe(true);
+});
 
 test('waits for asynchronous lesson output instead of grading the loading message', async () => {
   const checks = [{ id: 'fetch', type: 'textEquals', selector: '#result', expected: 'Dane', pendingText: 'Ładowanie…' }];
