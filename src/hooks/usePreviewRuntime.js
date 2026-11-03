@@ -152,7 +152,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     setPreviewDocument(buildPhpPreviewDocument(
       '<main><p>Uruchamiam PHP.wasm…</p></main>',
       nextFiles,
-      { track: trackRef.current, requestedSignals: checksRef.current, documentPath: activePath, runId: requestedRunId },
+      { track: trackRef.current, runId: requestedRunId, bridge: false },
     ));
     setPreviewKey((key) => key + 1);
     runPhpProject({ files: nextFiles.files, entry: nextFiles.entry, request })
@@ -358,14 +358,17 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     return clearAutoPreviewTimer;
   }, [autoPreview, autoPreviewDelay, clearAutoPreviewTimer, draftSignature, runPreview]);
 
+  // Cold PHP.wasm init (fetch + compile of the wasm binary) can take much
+  // longer than a plain iframe reload, so PHP runs get a wider watchdog.
+  const runningTimeout = isPhpProject() ? 20000 : 5000;
   useEffect(() => {
     if (runtimeState.status !== 'running') return;
     const timer = window.setTimeout(() => {
       pendingCheckRef.current = false;
       setRuntimeState(current => ({ ...current, status: 'error', errors: [...current.errors, 'Podgląd nie odpowiedział. Sprawdź składnię i uruchom kod ponownie.'], checkResults: [] }));
-    }, 5000);
+    }, runningTimeout);
     return () => window.clearTimeout(timer);
-  }, [runtimeState.status]);
+  }, [runtimeState.status, runningTimeout]);
 
   const visibleRuntimeState = runtimeState.scopeKey === scopeKey
     ? runtimeState

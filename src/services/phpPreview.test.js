@@ -20,3 +20,16 @@ test('turns PHP output into a document with the project stylesheet and runtime b
   expect(dom.window.document.querySelector('script[data-runtime="bridge"]')).not.toBeNull();
   dom.window.close();
 });
+
+test('renders a silent loading document without the runtime bridge', () => {
+  const source = buildPhpPreviewDocument(
+    '<main><p>Uruchamiam PHP.wasm…</p></main>',
+    { files: { 'index.php': '<?php echo "x";' }, entry: 'index.php' },
+    { bridge: false },
+  );
+  const dom = new JSDOM(source);
+
+  expect(dom.window.document.querySelector('main')?.textContent).toContain('Uruchamiam PHP.wasm');
+  expect(dom.window.document.querySelector('script[data-runtime="bridge"]')).toBeNull();
+  dom.window.close();
+});
