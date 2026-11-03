@@ -143,7 +143,12 @@ function evaluateOne(check = {}, context = {}) {
         const expected = safeString(expectedValue(check));
         const output = Array.isArray(signals.consoleOutput) ? signals.consoleOutput : [];
         const passed = output.some(line => line === expected);
-        return resultFor(check, passed, passed ? 'Konsola zawiera oczekiwany wynik.' : `Oczekiwano wpisu w konsoli: ${expected}. Uruchom program przez ▶ Play.`);
+        if (passed) return resultFor(check, true, 'Konsola zawiera oczekiwany wynik.');
+        const parts = expected.split(' ').filter(Boolean);
+        const spreadAcrossLines = parts.length > 1 && parts.every(part => output.includes(part));
+        return resultFor(check, false, spreadAcrossLines
+          ? `Wartości z „${expected}” trafiły do osobnych wpisów konsoli. Wypisz je w jednym console.log, np. console.log(a, b).`
+          : `Oczekiwano wpisu w konsoli: ${expected}. Uruchom program przez ▶ Play.`);
       }
       case 'gameScenario': {
         const result = signals.gameScenarios?.[check.id];
