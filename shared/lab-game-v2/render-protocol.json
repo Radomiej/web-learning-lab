@@ -6,7 +6,7 @@
     "op": "frame",
     "commands": "ordered array"
   },
-  "coordinates": "center, logical pixels (fixed 600x600 viewport, letterboxed); rotation radians; scale visual only",
+  "coordinates": "center, logical pixels (fixed 640x480 viewport, letterboxed); rotation radians; scale visual only",
   "commands": {
     "clear": [
       "color"

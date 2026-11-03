@@ -339,7 +339,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     constructor(element) {
       this.element = element; this.context = element.getContext('2d');
       if (!this.context) throw new Error('Canvas 2D jest niedostępny w tej przeglądarce.');
-      this.commands = []; this.width = 600; this.height = 600; this.view = { x: 0, y: 0 };
+      this.commands = []; this.width = 640; this.height = 480; this.view = { x: 0, y: 0 };
       this.scale = 1; this.offsetX = 0; this.offsetY = 0; this.pixelRatio = 1;
     }
     resize(width, height, ratio = 1) {
@@ -561,10 +561,10 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   }
   const CONSOLE_STYLE = `
 .lab-console{display:flex;justify-content:center;width:100%;min-height:100%;padding:12px 8px;box-sizing:border-box}
-.lab-console-shell{width:min(100%,430px,calc(100vh - 56px));padding:16px 16px 20px;border-radius:20px 20px 56px 20px;background:linear-gradient(165deg,#4d587f,#333a5e 55%,#252a48);box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.35),0 14px 32px rgba(6,10,24,.5);color:#c6cdec}
+.lab-console-shell{width:min(100%,430px,calc((100vh - 56px) * 4 / 3));padding:16px 16px 20px;border-radius:20px 20px 56px 20px;background:linear-gradient(165deg,#4d587f,#333a5e 55%,#252a48);box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.35),0 14px 32px rgba(6,10,24,.5);color:#c6cdec}
 .lab-console-brand{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:#8e99c9;font:700 10px/1 ui-monospace,Consolas,monospace;letter-spacing:.32em;text-transform:uppercase}
 .lab-console-brand::before,.lab-console-brand::after{content:'';flex:1;border-top:1px solid rgba(255,255,255,.12)}
-.lab-console-screen{position:relative;aspect-ratio:1/1;border:5px solid #10142a;border-radius:12px;background:#0a1524;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(124,226,214,.12),0 2px 8px rgba(0,0,0,.45)}
+.lab-console-screen{position:relative;aspect-ratio:4/3;border:5px solid #10142a;border-radius:12px;background:#0a1524;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(124,226,214,.12),0 2px 8px rgba(0,0,0,.45)}
 .lab-console-screen>canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;outline:none}
 .lab-console-screen>canvas:focus{box-shadow:inset 0 0 0 3px rgba(124,226,214,.55)}
 .lab-console-stats{display:flex;align-items:center;gap:12px;margin:12px 4px 0;padding:6px 10px;border-radius:8px;background:#141a33;color:#7d8abc;font:10px ui-monospace,Consolas,monospace;letter-spacing:.04em}
@@ -771,7 +771,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     liveConsole = consoleHandle;
     applyDebugFlags();
     game.audio.bindGestures(consoleHandle.root);
-    const resize = () => game.canvas.resize(600, 600, win.devicePixelRatio || 1);
+    const resize = () => game.canvas.resize(640, 480, win.devicePixelRatio || 1);
     const down = event => { if ([Keys.LEFT, Keys.RIGHT, Keys.UP, Keys.DOWN, ' '].includes(event.key)) event.preventDefault(); game.input.setKey(event.key, true); };
     const up = event => game.input.setKey(event.key, false);
     const blur = () => game.input.clear();

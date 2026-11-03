@@ -8,7 +8,7 @@ Każda scena ma własny `game.input`. Komponent używa `getGame().input` w Javie
 | `isKeyPressed("Space")` | Klawisz został naciśnięty w tej klatce. |
 | `isKeyReleased("Space")` | Klawisz został zwolniony w tej klatce. |
 | `consumeKey("Space")` | Kolejne komponenty nie obsłużą tego klawisza w tej klatce. |
-| `getPointerPosition()` | Kopia pozycji kursora w pikselach logicznych canvas (600×600), `null` przed pierwszym ruchem. |
+| `getPointerPosition()` | Kopia pozycji kursora w pikselach logicznych canvas (640×480), `null` przed pierwszym ruchem. |
 | `isMouseDown(button)` | Przycisk myszy jest przytrzymany. |
 | `isMousePressed(button)` | Przycisk został naciśnięty w tej klatce. |
 | `isMouseReleased(button)` | Przycisk został zwolniony w tej klatce. |
@@ -46,7 +46,7 @@ if (input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {
 
 `Button` obsługuje kliknięcie po naciśnięciu i zwolnieniu w swoim prostokącie, także podczas pauzy. Tab/Shift+Tab zmienia fokus; Enter/Space aktywuje przycisk. Utrata fokusu canvas lub okna zwalnia wejście, a przechwycenie wskaźnika pozwala odebrać zwolnienie poza canvas.
 
-Stan `Pressed` i `Released` jest czyszczony po klatce. Wielokrotne zdarzenia naciśnięcia przytrzymanego przycisku nie tworzą nowych przejść. DPR i letterbox nie zmieniają współrzędnych wejścia — pozycja wskaźnika jest zawsze w pikselach logicznych 600×600.
+Stan `Pressed` i `Released` jest czyszczony po klatce. Wielokrotne zdarzenia naciśnięcia przytrzymanego przycisku nie tworzą nowych przejść. DPR i letterbox nie zmieniają współrzędnych wejścia — pozycja wskaźnika jest zawsze w pikselach logicznych 640×480.
 
 ## Wirtualna konsola
 

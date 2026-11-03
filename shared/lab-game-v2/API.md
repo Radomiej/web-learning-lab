@@ -54,7 +54,7 @@ Wejście: [InputManager](INPUT.md). Dźwięk: [Audio](AUDIO.md). Katalog: [manif
 
 ### Ekran konsoli
 
-Canvas ma stałą **rozdzielczość logiczną 600×600 px**: `game.canvas.width/height` i `getViewportWidth/Height` zawsze zwracają wymiary logiczne. Podgląd skaluje ekran letterboxem (zachowane proporcje, `image-rendering: pixelated`); współrzędne myszy i wszystkich komend są podawane w pikselach logicznych. Pod spodem ekranu konsola pokazuje FPS, średni czas klatki z 3 s, maksimum oraz wciśnięte klawisze, a pad ekranowy generuje kody `ACTION_*` — zobacz [INPUT.md](INPUT.md).
+Canvas ma stałą **rozdzielczość logiczną 640×480 px**: `game.canvas.width/height` i `getViewportWidth/Height` zawsze zwracają wymiary logiczne. Podgląd skaluje ekran letterboxem (zachowane proporcje, `image-rendering: pixelated`); współrzędne myszy i wszystkich komend są podawane w pikselach logicznych. Pod spodem ekranu konsola pokazuje FPS, średni czas klatki z 3 s, maksimum oraz wciśnięte klawisze, a pad ekranowy generuje kody `ACTION_*` — zobacz [INPUT.md](INPUT.md).
 
 ### Audio w skrócie
 

@@ -60,10 +60,10 @@ test('camera follows a moving world object, handles resize and leaves HUD in scr
   const resized = lab.evaluateScenario({ phases: [{ steps: 1, width: 600, height: 400 }] });
   expect(resized.commands.find(c => c.op === 'sprite')).toMatchObject({ screenX: 300, screenY: 200 });
   lab.current.camera.shake(5, 0.2); lab.current.step(0.1);
-  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).not.toBe(300);
+  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).not.toBe(320);
   expect(lab.snapshot().commands.find(c => c.op === 'text')).toMatchObject({ x: 10, y: 24 });
   lab.current.step(0.1);
-  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).toBe(300);
+  expect(lab.snapshot().commands.find(c => c.op === 'sprite').screenX).toBe(320);
   lab.current.camera.enabled = false; lab.current.step(0);
   expect(lab.snapshot().camera).toEqual({ x: 0, y: 0 });
   lab.dispose();
@@ -72,7 +72,7 @@ test('camera follows a moving world object, handles resize and leaves HUD in scr
 test('exposes Java-parity aliases and runs onDrawBackground before tilemap and renderers', () => {
   const { lab, canvas } = fixture();
   class Background extends lab.Component {
-    onDrawBackground() { this.getGame().canvas.drawRect(0, 0, 600, 600, '#000011'); }
+    onDrawBackground() { this.getGame().canvas.drawRect(0, 0, 640, 480, '#000011'); }
   }
   class Scene extends lab.Game {
     onCreate() {
@@ -84,12 +84,12 @@ test('exposes Java-parity aliases and runs onDrawBackground before tilemap and r
   lab.run(Scene, { canvas });
   lab.current.step(0);
   const commands = lab.snapshot().commands;
-  const bgIndex = commands.findIndex(c => c.op === 'rect' && c.width === 600);
+  const bgIndex = commands.findIndex(c => c.op === 'rect' && c.width === 640);
   expect(bgIndex).toBeGreaterThan(0);
   expect(commands.findIndex(c => c.op === 'tilemap')).toBeGreaterThan(bgIndex);
   expect(lab.current.getCameraView()).toEqual({ x: 0, y: 0 });
-  expect(lab.current.canvas.getWidth()).toBe(600);
-  expect(lab.current.canvas.getHeight()).toBe(600);
+  expect(lab.current.canvas.getWidth()).toBe(640);
+  expect(lab.current.canvas.getHeight()).toBe(480);
   lab.current.canvas.drawCenteredText('OK', 10, 10, '#fff');
   expect(lab.snapshot().commands.at(-1)).toMatchObject({ op: 'text', text: 'OK', align: 'center' });
   expect(new lab.Component().getGame()).toBe(null);
@@ -198,4 +198,59 @@ test('built-in component identities survive renamed/minified constructor names',
     lab.run(Scene, { canvas });
     expect(lab.snapshot().objects[0].components).toEqual(['ShapeRenderer']);
   } finally { lab.dispose(); Object.defineProperty(lab.ShapeRenderer, 'name', { value: original }); }
+});
+
+test('a body that starts inside a collider can always move back out instead of locking', () => {
+  const { lab, canvas } = fixture();
+  let player, controller;
+  class Push extends lab.Component {
+    onUpdate() { controller.move(this.game.input.isKeyDown('ArrowRight') ? 1 : -1, 0, 60); }
+  }
+  class Scene extends lab.Game {
+    onCreate() {
+      const wall = this.createObject('Wall').setPosition(140, 100);
+      wall.addComponent(new lab.Collider2D(20, 100));
+      // Teleported 3px into the right face (e.g. setPosition or a bounds clamp).
+      player = this.createObject('Player').setPosition(141, 100);
+      player.addComponent(new lab.CircleCollider2D(12));
+      controller = player.addComponent(new lab.CharacterController2D());
+      player.addComponent(new Push());
+    }
+  }
+  lab.run(Scene, { canvas });
+  lab.current.step(0.1);
+  expect(player.transform.x).toBeLessThan(141);
+  const escaped = player.transform.x;
+  lab.current.input.setKey('ArrowRight', true);
+  lab.current.step(0.1);
+  lab.current.input.setKey('ArrowRight', false);
+  expect(player.transform.x).toBeGreaterThan(escaped);
+  lab.dispose();
+});
+
+test('a box body embedded in a wall can still escape along the wall', () => {
+  const { lab, canvas } = fixture();
+  let player, controller;
+  class Push extends lab.Component {
+    onUpdate() { controller.move(0, this.game.input.isKeyDown('ArrowDown') ? 1 : -1, 60); }
+  }
+  class Scene extends lab.Game {
+    onCreate() {
+      const wall = this.createObject('Wall').setPosition(140, 100);
+      wall.addComponent(new lab.Collider2D(20, 40));
+      player = this.createObject('Player').setPosition(147, 100);
+      player.addComponent(new lab.Collider2D(10, 10));
+      controller = player.addComponent(new lab.CharacterController2D());
+      player.addComponent(new Push());
+    }
+  }
+  lab.run(Scene, { canvas });
+  lab.current.input.setKey('ArrowDown', true);
+  lab.current.step(0.1);
+  expect(player.transform.y).toBeGreaterThan(100);
+  const slid = player.transform.y;
+  lab.current.step(0.1);
+  lab.current.input.setKey('ArrowDown', false);
+  expect(player.transform.y).toBeGreaterThan(slid);
+  lab.dispose();
 });

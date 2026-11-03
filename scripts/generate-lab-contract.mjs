@@ -5,7 +5,7 @@ const save=(name,data)=>writeFileSync(new URL(name,root),JSON.stringify(data,nul
 save('contract.json',{
   engineApiVersion:'2.0.0',languages:['Java','JavaScript'],
   coordinates:{position:'object center',units:'pixels',positiveY:'down',rotation:'radians',input:'canvas logical pixels'},
-  display:{logicalResolution:'600x600',scaling:'fit letterbox preserving aspect; image-rendering pixelated',console:'FPS, mean frame ms over 3 s, max frame ms, pressed keys; virtual pad emits ACTION_* + keyboard aliases'},
+  display:{logicalResolution:'640x480',scaling:'fit letterbox preserving aspect; image-rendering pixelated',console:'FPS, mean frame ms over 3 s, max frame ms, pressed keys; virtual pad emits ACTION_* + keyboard aliases'},
   audio:{facade:'game.audio',synthesis:'shared WebAudio scheduler; Java serializes audio| commands into frame records',notes:'C4, C#4, Db4, rest -, duration in quarter beats, tempo BPM',waves:['square','triangle','sine','sawtooth','noise']},
   frame:{maximumDeltaSeconds:.1,phases:['create','UI update','WORLD update','physics','late update','world render','UI render','input edges clear'],pause:'WORLD and world time stop; UI and unscaled time continue'},
   types:gameLabApi.map(type=>({...type,members:(gameLabMembers[type.name]||[]).map(name=>({name,description:gameLabMemberDocs[`${type.name}.${name}`]??gameLabMemberDocs[name]??null}))})),
@@ -15,7 +15,7 @@ save('contract.json',{
 });
 save('render-protocol.json',{
   engineApiVersion:'2.0.0',envelope:{command:'game-draw',gameId:'active scene identifier',op:'frame',commands:'ordered array'},
-  coordinates:'center, logical pixels (fixed 600x600 viewport, letterboxed); rotation radians; scale visual only',
+  coordinates:'center, logical pixels (fixed 640x480 viewport, letterboxed); rotation radians; scale visual only',
   commands:{clear:['color'],circle:['x','y','radius','color','rotation','scaleX','scaleY'],rect:['x','y','width','height','color','rotation','scaleX','scaleY'],text:['text','x','y','color','align','fontSize','baseline'],sprite:['texture','x','y','width','height','rotation','scaleX','scaleY'],ninepatch:['texture','x','y','width','height','border'],progress:['x','y','width','height','progress','frame','track','fill'],collider:['shape','x','y','width','height','trigger'],debug:['enabled'],view:['x','y'],audio:['jsonPayload']},
   defaults:{rotation:0,scaleX:1,scaleY:1,fontSize:16,align:'center',baseline:'middle'},
   assets:'assets/manifest.json',

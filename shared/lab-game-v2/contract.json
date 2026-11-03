@@ -12,7 +12,7 @@
     "input": "canvas logical pixels"
   },
   "display": {
-    "logicalResolution": "600x600",
+    "logicalResolution": "640x480",
     "scaling": "fit letterbox preserving aspect; image-rendering pixelated",
     "console": "FPS, mean frame ms over 3 s, max frame ms, pressed keys; virtual pad emits ACTION_* + keyboard aliases"
   },
@@ -586,7 +586,7 @@
       "name": "InputManager",
       "category": "Wejście",
       "signature": "class InputManager",
-      "description": "Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach logicznych canvas (600×600); naciśnięcie i zwolnienie trwają jedną klatkę. Pad konsoli emituje ACTION_A/B/X/Y/START/SELECT wraz z odpowiednikami klawiatury.",
+      "description": "Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach logicznych canvas (640×480); naciśnięcie i zwolnienie trwają jedną klatkę. Pad konsoli emituje ACTION_A/B/X/Y/START/SELECT wraz z odpowiednikami klawiatury.",
       "example": "if (this.game.input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {\n  const p=this.game.input.getPointerPosition();\n}",
       "kind": "Class",
       "members": [
@@ -762,7 +762,7 @@
       "name": "Canvas",
       "category": "Grafika i UI",
       "signature": "class Canvas",
-      "description": "Dostęp przez this.canvas. Plansza ma stałą rozdzielczość logiczną 600×600; width/height zwracają wymiary logiczne, a skalowanie do okna robi letterbox. Rysuj elementy HUD w onDrawUI().",
+      "description": "Dostęp przez this.canvas. Plansza ma stałą rozdzielczość logiczną 640×480; width/height zwracają wymiary logiczne, a skalowanie do okna robi letterbox. Rysuj elementy HUD w onDrawUI().",
       "example": "this.canvas.drawText(\"Punkty: 0\", 12, 24, 16, \"white\");",
       "kind": "Class",
       "members": [
