@@ -86,7 +86,7 @@ export function scriptTasks(definition, base) {
       hint: 'Nasłuchuj submit na formularzu, a nie click na przycisku. FormData odczytuje pola według atrybutów name, a ich wartości są tekstem.',
       checks: [
         { id: `${id}-errors`, type: 'runtimeError', label: 'Formularz działa bez błędów' },
-        { id: `${id}-submit`, type: 'interaction', selector: '#action', action: 'click', resultSelector: '#result', expected: { text: 'Ola 3' }, label: 'Wysłanie formularza pokazuje Ola 3' },
+        { id: `${id}-submit`, type: 'interaction', selector: '#action', action: 'click', resultSelector: '#result', expected: { text: 'Ola 3', submitCanceled: true }, label: 'Wysłanie formularza pokazuje Ola 3 i nie przeładowuje strony' },
       ],
     }));
   }

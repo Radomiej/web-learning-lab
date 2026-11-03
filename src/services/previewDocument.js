@@ -201,6 +201,54 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
   window.addEventListener('unhandledrejection', (event) => {
     send('runtime-error', { message: stringify(event.reason) });
   });
+
+  // The sandboxed iframe blocks native form submission before the submit
+  // event, so replay validation and the event after real activation — the
+  // same path an unsandboxed browser would take. Capture phase sees clicks
+  // and keys even when student code stops propagation; the defaultPrevented
+  // check runs deferred, once every listener had its say.
+  let lastFormSubmit = null;
+  function replayFormSubmit(form) {
+    if (typeof form.reportValidity === 'function' && !form.reportValidity()) {
+      lastFormSubmit = { dispatched: false, canceled: false, validationFailed: true };
+      return;
+    }
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    // The submit listener below records the outcome on a microtask.
+  }
+  document.addEventListener('submit', (event) => {
+    // Read canceled only after propagation — covers the replayed event and
+    // a native one in environments that do not block submissions.
+    queueMicrotask(() => {
+      lastFormSubmit = { dispatched: true, canceled: event.defaultPrevented };
+    });
+  });
+  document.addEventListener('click', (event) => {
+    lastFormSubmit = null;
+    const trigger = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('button, input[type="submit"], input[type="image"]') : null;
+    const form = trigger && (trigger.form || trigger.closest('form'));
+    const isSubmitTrigger = trigger instanceof HTMLButtonElement
+      ? trigger.type === 'submit'
+      : trigger instanceof HTMLInputElement && /^(submit|image)$/i.test(trigger.type || '');
+    if (!form || !isSubmitTrigger) return;
+    window.setTimeout(() => {
+      if (!event.defaultPrevented && !lastFormSubmit) replayFormSubmit(form);
+    }, 0);
+  }, true);
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+    const field = event.target;
+    if (!field || typeof field.closest !== 'function' || /^(TEXTAREA|BUTTON|SELECT|A)$/.test(field.tagName || '')) return;
+    const form = field.form || field.closest('form');
+    if (!form) return;
+    const submitter = form.querySelector('button[type="submit"]:not([disabled]), input[type="submit"]:not([disabled]), input[type="image"]:not([disabled]), button:not([type]):not([disabled])');
+    window.setTimeout(() => {
+      if (event.defaultPrevented) return;
+      if (submitter) submitter.click();
+      else if (!lastFormSubmit) replayFormSubmit(form);
+    }, 0);
+  }, true);
   window.addEventListener('keydown', event => {
     if (!window.GameLab) return;
     if (event.key === 'Escape') send('exit-game-fullscreen', {});
@@ -237,7 +285,8 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
     window.setTimeout(() => {
       const target = action.resultSelector ? document.querySelector(action.resultSelector) : element;
       const interaction = describeElement(target);
-      send('signals', { interactions: { [interactionId]: { ...interaction, before, ok: Boolean(target) } } });
+      const formSubmit = action.action === 'click' ? lastFormSubmit : null;
+      send('signals', { interactions: { [interactionId]: { ...interaction, before, ok: Boolean(target), ...(formSubmit ? { formSubmit } : {}) } } });
       snapshot();
     }, 50);
   });

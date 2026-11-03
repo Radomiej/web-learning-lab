@@ -10,7 +10,7 @@ export function jsExtraTasks(definition, base) {
       code = index ? 'const profil = { imie: "Ewa", przedstaw() { return this.imie; } };\nconst reakcja = profil.przedstaw.bind(profil);\nconsole.log(reakcja());' : 'function potroj(n) { return n * 3; }\nconst operacja = potroj;\nconsole.log(operacja(4));';
       expected = index ? 'Ewa' : '12';
     } else if (definition.id === 'js-comparisons') {
-      prompt = index ? 'Przypisz tekst "12" do const tekst. Wypisz wyniki tekst === "12" oraz Number(tekst) >= 12 jednym wywołaniem console.log — obie wartości mają trafić do jednego wpisu konsoli: true true.' : 'Przypisz 10 do const punkty. Wypisz wyniki punkty > 10 i punkty >= 10 jednym wywołaniem console.log — obie wartości mają trafić do jednego wpisu konsoli: false true. Dwa osobne console.log utworzą dwie linie i nie zaliczą zadania.';
+      prompt = index ? 'Przypisz tekst "12" do const tekst. Wypisz wyniki tekst === "12" oraz Number(tekst) >= 12 jednym wywołaniem console.log — obie wartości mają trafić do jednego wpisu konsoli: true true. Dwa osobne wywołania console.log utworzą dwie linie i nie zaliczą zadania.' : 'Przypisz 10 do const punkty. Wypisz wyniki punkty > 10 i punkty >= 10 jednym wywołaniem console.log — obie wartości mają trafić do jednego wpisu konsoli: false true. Dwa osobne wywołania console.log utworzą dwie linie i nie zaliczą zadania.';
       code = index ? 'const tekst = "12";\nconsole.log(tekst === "12", Number(tekst) >= 12);' : 'const punkty = 10;\nconsole.log(punkty > 10, punkty >= 10);';
       expected = index ? 'true true' : 'false true';
     } else if (definition.id === 'js-error-handling') {

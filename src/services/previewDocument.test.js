@@ -182,6 +182,64 @@ test('escapes script openers inside inline runtime code', () => {
   expect(document).not.toContain("'<script><' + '/script>'");
 });
 
+const formPreview = (js) => buildPreviewDocument({
+  html: '<form id="registration"><input id="student" value="Ola" required><input id="count" type="number" value="2"><button id="action" type="submit">Wyślij</button></form><p id="result"></p>',
+  baseCss: '',
+  themeCss: '',
+  js,
+}, { track: 'html' });
+
+async function runActionOn(dom, checkId = 't-submit') {
+  const messages = [];
+  dom.window.addEventListener('message', (event) => {
+    if (event.data?.source === 'web-learning-lab') messages.push(event.data);
+  });
+  dom.window.postMessage({
+    source: 'web-learning-lab',
+    type: 'run-action',
+    payload: { checkId, selector: '#action', action: 'click', resultSelector: '#result' },
+  }, '*');
+  await new Promise((resolve) => setTimeout(resolve, 120));
+  return messages
+    .filter((message) => message.type === 'signals')
+    .map((message) => message.payload?.interactions?.[checkId])
+    .find(Boolean);
+}
+
+test('replays the submit event for sandboxed form submissions and reports prevention', async () => {
+  const dom = new JSDOM(formPreview(`
+    document.getElementById('registration').addEventListener('submit', (event) => {
+      event.preventDefault();
+      document.getElementById('result').textContent =
+        document.getElementById('student').value + ' ' + (Number(document.getElementById('count').value) + 1);
+    });
+  `), { runScripts: 'dangerously', url: 'http://localhost/' });
+  try {
+    await waitForRender();
+    const interaction = await runActionOn(dom);
+    expect(interaction?.ok).toBe(true);
+    expect(interaction?.text).toBe('Ola 3');
+    expect(interaction?.formSubmit).toEqual({ dispatched: true, canceled: true });
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('reports an uncanceled submit when the handler never calls preventDefault', async () => {
+  const dom = new JSDOM(formPreview(`
+    document.getElementById('registration').addEventListener('submit', () => {
+      document.getElementById('result').textContent = 'sent';
+    });
+  `), { runScripts: 'dangerously', url: 'http://localhost/' });
+  try {
+    await waitForRender();
+    const interaction = await runActionOn(dom);
+    expect(interaction?.formSubmit).toEqual({ dispatched: true, canceled: false });
+  } finally {
+    dom.window.close();
+  }
+});
+
 test('adds local React, ReactDOM, and compiled JSX only for the React track', () => {
   const document = buildPreviewDocument({
     html: '<div id="root"></div>',

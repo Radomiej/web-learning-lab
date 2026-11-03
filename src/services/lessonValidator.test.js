@@ -34,6 +34,37 @@ test('fails a missing interaction selector with its hint', () => {
   expect(result.results[0].message).toContain('missing');
 });
 
+test('consoleOutput explains only values genuinely spread across separate lines', () => {
+  const check = { id: 'out', type: 'consoleOutput', expected: 'false true', label: 'console' };
+  const spread = evaluateChecks([check], { signals: { consoleOutput: ['false', 'true'] } });
+  expect(spread.passed).toBe(0);
+  expect(spread.results[0].message).toContain('jednym console.log');
+  // Multi-word values split across lines get the same diagnosis.
+  const multiWord = evaluateChecks([{ ...check, expected: 'Brak pliku true' }], { signals: { consoleOutput: ['Brak pliku', 'true'] } });
+  expect(multiWord.results[0].message).toContain('jednym console.log');
+  // A line holding only part of the expected output is a plain mismatch.
+  const missing = evaluateChecks([{ ...check, expected: 'true true' }], { signals: { consoleOutput: ['true'] } });
+  expect(missing.results[0].message).toContain('Oczekiwano wpisu');
+  // Extra tokens inside one line do not count as separate entries.
+  const sameLine = evaluateChecks([check], { signals: { consoleOutput: ['x false true'] } });
+  expect(sameLine.results[0].message).toContain('Oczekiwano wpisu');
+  expect(evaluateChecks([check], { signals: { consoleOutput: ['false true'] } }).passed).toBe(1);
+});
+
+test('interaction submitCanceled verifies preventDefault on form submit', () => {
+  const check = {
+    id: 'submit', type: 'interaction', selector: '#action', action: 'click', resultSelector: '#result',
+    expected: { text: 'Ola 3', submitCanceled: true }, label: 'form submit',
+  };
+  const run = (formSubmit) => evaluateChecks([check], {
+    signals: { interactions: { submit: { ok: true, text: 'Ola 3', ...(formSubmit ? { formSubmit } : {}) } } },
+  });
+  expect(run({ dispatched: true, canceled: true }).passed).toBe(1);
+  expect(run({ dispatched: true, canceled: false }).results[0].message).toContain('preventDefault');
+  expect(run({ dispatched: false, canceled: false, validationFailed: true }).results[0].message).toContain('walidacja');
+  expect(run(null).results[0].message).toContain('nie uruchomiło wysłania');
+});
+
 test('fails unknown checks without throwing', () => {
   const result = evaluateChecks(
     [{ id: 'future', type: 'not-a-check', label: 'future' }],

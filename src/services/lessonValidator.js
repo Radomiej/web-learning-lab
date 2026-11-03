@@ -144,8 +144,12 @@ function evaluateOne(check = {}, context = {}) {
         const output = Array.isArray(signals.consoleOutput) ? signals.consoleOutput : [];
         const passed = output.some(line => line === expected);
         if (passed) return resultFor(check, true, 'Konsola zawiera oczekiwany wynik.');
-        const parts = expected.split(' ').filter(Boolean);
-        const spreadAcrossLines = parts.length > 1 && parts.every(part => output.includes(part));
+        const parts = expected.split(/\s+/).filter(Boolean);
+        const tokens = output.flatMap(line => safeString(line).split(/\s+/).filter(Boolean));
+        const tokenLines = output.flatMap((line, index) => safeString(line).split(/\s+/).filter(Boolean).map(() => index));
+        const spreadAcrossLines = parts.length > 1 && tokens.some((_, start) =>
+          parts.every((part, i) => tokens[start + i] === part)
+          && tokenLines[start] !== tokenLines[start + parts.length - 1]);
         return resultFor(check, false, spreadAcrossLines
           ? `Wartości z „${expected}” trafiły do osobnych wpisów konsoli. Wypisz je w jednym console.log, np. console.log(a, b).`
           : `Oczekiwano wpisu w konsoli: ${expected}. Uruchom program przez ▶ Play.`);
@@ -234,9 +238,22 @@ function evaluateOne(check = {}, context = {}) {
         const visiblePasses = expected.visible == null || Boolean(interaction.visible) === Boolean(expected.visible);
         const attributePasses = !expected.attribute
           || safeString((interaction.attrs || interaction.attributes)?.[expected.attribute.name]) === safeString(expected.attribute.value);
-        return textPasses && exactPasses && beforePasses && classPasses && visiblePasses && attributePasses
-          ? resultFor(check, true, 'Interakcja zmieniła widok zgodnie z oczekiwaniem.')
-          : resultFor(check, false, 'Interakcja zadziałała, ale wynik nie spełnia oczekiwania.');
+        const submitPasses = expected.submitCanceled == null
+          || Boolean(interaction.formSubmit?.canceled) === Boolean(expected.submitCanceled);
+        const passed = textPasses && exactPasses && beforePasses && classPasses && visiblePasses && attributePasses && submitPasses;
+        if (passed) return resultFor(check, true, 'Interakcja zmieniła widok zgodnie z oczekiwaniem.');
+        if (expected.submitCanceled === true) {
+          if (interaction.formSubmit?.validationFailed) {
+            return resultFor(check, false, 'Natywna walidacja HTML (np. puste pole required) zatrzymała wysłanie — zdarzenie submit nie dotarło do formularza.');
+          }
+          if (interaction.formSubmit && !interaction.formSubmit.canceled) {
+            return resultFor(check, false, 'Zdarzenie submit dotarło do formularza, ale obsługa nie wywołała event.preventDefault() — na zwykłej stronie doszłoby do wysłania i przeładowania.');
+          }
+          if (!interaction.formSubmit) {
+            return resultFor(check, false, 'Kliknięcie nie uruchomiło wysłania formularza — sprawdzany element powinien być przyciskiem submit wewnątrz form.');
+          }
+        }
+        return resultFor(check, false, 'Interakcja zadziałała, ale wynik nie spełnia oczekiwania.');
       }
       case 'noHorizontalOverflow': {
         const viewport = signals.viewport || {};
