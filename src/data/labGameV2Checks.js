@@ -1,5 +1,6 @@
 // The same public behavior assertions drive sandbox scoring and real JVM scoring.
 const state=(name,type,field)=>`objectsByName.${name}.componentState.${type}.${field}`;
+const direction=(name,axis)=>`objectsByName.${name}.componentState.CharacterController2D.direction.${axis}`;
 const object=(name,field)=>`objectsByName.${name}.${field}`;
 const action=(name,type,method,...args)=>({object:name,component:type,method,args});
 const phase=(steps=0,keys=[],actions=[],delta=.1)=>({steps,keys,actions,delta});
@@ -14,39 +15,53 @@ export function courseScenario(chapter,mode) {
       else {expect('objects.length',3);expect(state('Player','Sprite','texture'),'player');expect(state('Enemy','Sprite','texture'),'slime');expect(state('Coin','Sprite','width'),16);}
       break;
     case 'components':
-      phases=[phase(5)];
-      if(mode==='guided') {expect(state('Player','Counter','counts'),6);expect(state('Player','Counter','creates'),1);}
-      else if(mode==='modified') {expect(state('PlayerA','Counter','counts'),6);expect(state('PlayerB','Counter','counts'),2);}
+      // More frames prove onUpdate keeps running — a preset counter would not keep growing.
+      phases=[phase(10)];
+      if(mode==='guided') {expect(state('Player','Counter','counts'),11);expect(state('Player','Counter','creates'),1);}
+      else if(mode==='modified') {expect(state('PlayerA','Counter','counts'),11);expect(state('PlayerB','Counter','counts'),2);expect(state('PlayerB','Counter','enabled'),false);}
       else expect('objects.length',0);
       break;
     case 'time':
-      phases=[phase(10)];
-      if(mode==='guided')expect(object('MoverObject','x'),180);
-      else if(mode==='modified') {expect(object('Drop','y'),100);expect(object('Spark','x'),-20);expect(object('Spark','y'),50);}
-      else {expect(object('MoverObject','x'),160);expect(object('MoverObject','y'),160);}
+      phases=[phase(15)];
+      if(mode==='guided') {expect(object('MoverObject','x'),220);expect(state('MoverObject','Mover','velocityX'),80);}
+      else if(mode==='modified') {expect(object('Drop','y'),130);expect(object('Spark','x'),-40);expect(object('Spark','y'),60);expect(state('Spark','Mover','velocityX'),-40);expect(state('Spark','Mover','velocityY'),20);}
+      else {expect(object('MoverObject','x'),190);expect(object('MoverObject','y'),200);expect(state('MoverObject','DirectionMover','speed'),100);}
       break;
     case 'input':
-      phases=[phase(10,mode==='modified'?['d','s','Shift']:mode==='independent'?['d','Space']:['d'])];
-      expect(object('Player','x'),mode==='modified'?100+200/Math.sqrt(2):220);
-      if(mode==='modified')expect(object('Player','y'),100+200/Math.sqrt(2));
+      // Releasing and pressing the opposite key proves live input handling, not a scripted path.
+      phases=[phase(10,mode==='modified'?['d','s','Shift']:mode==='independent'?['d','Space']:['d']),phase(5,[mode==='modified'?'w':'a'])];
+      expect(object('Player','x'),mode==='modified'?100+200/Math.sqrt(2):160);
+      if(mode==='modified')expect(object('Player','y'),191.4213562373095);
       if(mode==='independent') {expect(state('Player','ActionCounter','actions'),0);expect('objects.length',2);}
       break;
     case 'graphics':
       expect(state('Ground','TileMap','texture'),mode==='modified'?'sand':'grass');expect(state('Ground','TileMap','tileSize'),mode==='modified'?48:32);
-      if(mode==='modified') {phases=[phase(1,['a'])];expect(state('Player','Sprite','flipX'),true);}
+      if(mode==='modified') {phases=[phase(1,['a'])];expect(state('Player','Sprite','flipX'),true);expect(object('Player','x'),88);}
       if(mode==='independent') {expect(state('Ground','TileMap','layer'),-10);expect(state('Path','ShapeRenderer','layer'),-5);expect(state('Decoration','Sprite','layer'),5);}
       break;
-    case 'collisions':
-      phases=[phase(10,['d'])];expect(object('Player','x'),mode==='guided'?174:mode==='modified'?178:268);
+    case 'collisions': {
+      // Pin → teleport INSIDE the wall and walk out → re-pin → slide along it.
+      // A scripted setPosition cannot reproduce the pinned x, slid y and live input direction together.
+      const escape=mode==='independent'?285:195,pin=mode==='guided'?174:mode==='modified'?178:268;
+      phases=[phase(10,['d']),phase(5,['a'],[action('Player',null,'setPosition',escape,180)]),
+        phase(10,['d'],[action('Player',null,'setPosition',mode==='independent'?230:60,180)]),phase(5,['d','s'])];
+      expect(object('Player','x'),pin);expect(object('Player','y'),222.42640687119285);
+      expect(direction('Player','x'),Math.SQRT1_2);
       if(mode!=='guided')expect(state('Player','CircleCollider2D','radius'),12);
       if(mode==='modified')expect(object('Player','scaleX'),2);
       break;
+    }
     case 'triggers':
-      phases=[phase(10,['d'])];expect(state('Player','Wallet','gold'),mode==='guided'?1:mode==='modified'?15:20);
+      // Walk through, walk back, walk through again — a claimed coin or opened chest must not re-fire.
+      phases=[phase(10,['d']),phase(10,['a']),phase(10,['d'])];
+      expect(object('Player','x'),220);
+      expect(state('Player','Wallet','gold'),mode==='guided'?1:mode==='modified'?15:20);
+      if(mode==='guided')expect('objects.length',1);
+      if(mode==='modified')expect('objects.length',2);
       if(mode==='independent')expect(state('Chest','Chest','opened'),true);
       break;
     case 'camera':
-      if(mode==='modified') {phases=[phase(10,['d'])];expect(object('Player','x'),520);expect('camera.x',200);expect('camera.y',120);}
+      if(mode==='modified') {phases=[phase(10,['d']),phase(5,['d'])];expect(object('Player','x'),580);expect('camera.x',260);expect('camera.y',120);}
       else {expect('camera.x',mode==='guided'?80:60);expect('camera.y',mode==='guided'?40:150);expect(object('Player','x'),100);if(mode==='independent') {phases=[phase(1,[],[action(null,'input','setPointer',20,30)])];expect(object('Marker','x'),80);expect(object('Marker','y'),180);sourceToken='screenToWorld';}}
       break;
     case 'canvas-ui':
@@ -58,23 +73,35 @@ export function courseScenario(chapter,mode) {
       else if(mode==='modified') {phases=[phase(5,[],[action('Player','Health','damage',1)]),phase(0,[],[action('Player','Health','damage',1)])];expect(state('Player','Health','currentHealth'),4);expect(state('Player','Health','invulnerability'),.25);}
       else {call(action('Player','Health','damage',1),action('Player','Health','damage',1),action('PlayerB','Health','damage',1));expect(state('Player','Health','currentHealth'),2);expect(state('PlayerB','Health','currentHealth'),2);}
       break;
-    case 'enemy-ai':
-      phases=[phase(10)];expect(object('Slime','x'),mode==='guided'?160:mode==='modified'?140:180);
+    case 'enemy-ai': {
+      // Three retarget phases: the slime's final position comes from live EnemyAI + controller +
+      // collider interaction (it is blocked by the player), not from a scripted setPosition.
+      const sideX=mode==='guided'?190:mode==='modified'?160:250;
+      phases=[phase(10),phase(5,[],[action('Player',null,'setPosition',mode==='independent'?320:200,100)]),
+        phase(5,[],[action('Player',null,'setPosition',sideX,mode==='independent'?100:200)])];
+      if(mode==='guided') {expect(object('Slime','x'),180.16);expect(object('Slime','y'),129.71);}
+      else if(mode==='modified') {expect(object('Slime','x'),160);expect(object('Slime','y'),120);expect(object('Bat','x'),175.73);expect(object('Bat','y'),156.88);}
+      else {expect(object('Slime','x'),150);expect(object('Slime','y'),100);}
+      if(mode!=='independent')expect(state('Slime','EnemyAI','speed'),mode==='modified'?40:60);
+      else expect(state('Slime','FleeAI','speed'),60);
       if(mode==='modified')expect(state('Bat','EnemyAI','speed'),80);
       break;
+    }
     case 'projectiles':
       if(mode==='independent') {phases=[phase(1)];expect(state('Enemy','Health','currentHealth'),2);expect(state('EnemyB','Health','currentHealth'),3);expect(state('Ally','Health','currentHealth'),3);}
       else {phases=[phase(6)];expect(state('Enemy','Health','currentHealth'),2);expect('objects.length',2);sourceToken='spent';}
       break;
     case 'enemy-tactics':
       phases=[phase(10)];
-      if(mode==='guided'){phases=[phase(10),phase(10,[],[action('Player',null,'setPosition',200,100)])];expect(object('Slime','x'),160);}
-      else if(mode==='independent')expect(object('Slime','x'),180);
+      if(mode==='guided'){phases=[phase(10),phase(10,[],[action('Player',null,'setPosition',200,100)]),phase(10,[],[action('Player',null,'setPosition',60,100)])];expect(object('Slime','x'),100);expect(direction('Slime','x'),-1);}
+      else if(mode==='independent'){phases=[phase(10),phase(5,[],[action('Player',null,'setPosition',250,100)])];expect(object('Slime','x'),150);expect(direction('Slime','x'),-1);}
       else {expect(state('Slime','EnemyAI','speed'),40);expect(object('Slime','x'),137.2252560510844);expect(object('Slime','y'),114.63738640280462);}
       break;
     case 'projectile-types':
+      // Guided: teleport the enemy mid-flight — only a live homing component still scores the hit.
       if(mode==='independent'){phases=[phase(1)];expect(state('Enemy','Health','currentHealth'),2);}
-      else {phases=[phase(10)];expect(state('Enemy','TargetHp','hp'),2);if(mode==='modified')expect(state('EnemyB','TargetHp','hp'),2);}
+      else if(mode==='guided'){phases=[phase(3),phase(7,[],[action('Enemy',null,'setPosition',200,160)])];expect(state('Enemy','TargetHp','hp'),2);expect('objects.length',1);}
+      else {phases=[phase(15)];expect(state('Enemy','TargetHp','hp'),2);expect(state('EnemyB','TargetHp','hp'),2);}
       break;
     case 'weapons':
       phases=[phase(mode==='guided'?1:5,mode==='guided'?['Space']:[])];expect('objects.length',mode==='independent'?4:3);expect(state('Player','Weapon','timer'),mode==='guided'?.6:.5);sourceToken=mode==='independent'?'candidate.id<target.id':undefined;
@@ -129,9 +156,13 @@ function javaExpression(path) {
   if(path==='paused')return 'game.isPaused()';
   if(path==='elapsed')return 'game.time.elapsed';
   if(path.startsWith('camera.'))return `game.getCameraView().${path.split('.')[1]}`;
-  const [,name,kind,type,field]=path.split('.');
+  const [,name,kind,type]=path.split('.');
+  const field=path.split('.').slice(4).join('.');
   const receiver=`object(game,${JSON.stringify(name)})`;
-  if(kind==='componentState')return `component(game,${JSON.stringify(name)},${type}.class).${type==='ProgressBar' && field==='progress'?'getProgress()':field}`;
+  if(kind==='componentState'){
+    if(field.startsWith('direction.'))return `component(game,${JSON.stringify(name)},${type}.class).getDirection().${field.split('.')[1]}`;
+    return `component(game,${JSON.stringify(name)},${type}.class).${type==='ProgressBar' && field==='progress'?'getProgress()':field}`;
+  }
   const transform={x:'x',y:'y',scaleX:'scale.x',scaleY:'scale.y',visualOffsetX:'visualOffset.x',visualOffsetY:'visualOffset.y'};
   return transform[kind]?`${receiver}.transform.${transform[kind]}`:`${receiver}.${kind}`;
 }
