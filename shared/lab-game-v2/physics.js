@@ -9,7 +9,7 @@ export function createPhysics(game, types, SpatialHash) {
   const box = (o, dx = 0, dy = 0) => ({ left: o.transform.x + Math.min(0, dx) - extent(o, 'x'), top: o.transform.y + Math.min(0, dy) - extent(o, 'y'), right: o.transform.x + Math.max(0, dx) + extent(o, 'x'), bottom: o.transform.y + Math.max(0, dy) + extent(o, 'y') });
   const circle = o => collider(o) instanceof CircleCollider2D;
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-  const overlaps = (a, b, margin = EPS) => {
+  const touching = (a, b, margin = EPS) => {
     const dx = a.transform.x - b.transform.x, dy = a.transform.y - b.transform.y;
     if (circle(a) && circle(b)) return dx * dx + dy * dy <= (extent(a, 'x') + extent(b, 'x') + margin) ** 2;
     if (circle(a) || circle(b)) {
@@ -35,6 +35,45 @@ export function createPhysics(game, types, SpatialHash) {
   const masks = (a, b) => (collider(a).mask & collider(b).layer) !== 0 && (collider(b).mask & collider(a).layer) !== 0;
   const sensor = o => collider(o)?.isTrigger;
   const ignored = (a, b) => a.getComponent(Projectile2D)?.owner === b || b.getComponent(Projectile2D)?.owner === a;
+  const movable = o => { const v = o.getComponent(CharacterController2D); return !!(v && v.enabled && v.created && !v.destroyed); };
+  const constrain = o => {
+    const v = o.getComponent(CharacterController2D);
+    if (v?.constrainToBounds && game.worldBounds) {
+      const b = game.worldBounds, w = Math.min(extent(o, 'x'), b.width / 2), h = Math.min(extent(o, 'y'), b.height / 2);
+      o.transform.x = clamp(o.transform.x, b.x + w, b.x + b.width - w); o.transform.y = clamp(o.transform.y, b.y + h, b.y + b.height - h);
+    }
+  };
+  // Minimal translation that separates a pair: normal n points from b toward a.
+  function mtv(a, b) {
+    const dx = a.transform.x - b.transform.x, dy = a.transform.y - b.transform.y;
+    if (circle(a) && circle(b)) {
+      const d = Math.hypot(dx, dy), depth = extent(a, 'x') + extent(b, 'x') - d;
+      return d > EPS ? [dx / d, dy / d, depth] : [1, 0, depth];
+    }
+    if (circle(a) || circle(b)) {
+      const c = circle(a) ? a : b, r = circle(a) ? b : a, flip = circle(a) ? 1 : -1;
+      const w = extent(r, 'x'), h = extent(r, 'y');
+      const px = clamp(c.transform.x, r.transform.x - w, r.transform.x + w), py = clamp(c.transform.y, r.transform.y - h, r.transform.y + h);
+      const vx = c.transform.x - px, vy = c.transform.y - py, d = Math.hypot(vx, vy);
+      if (d > EPS) return [flip * vx / d, flip * vy / d, extent(c, 'x') - d];
+      const ox = w + extent(c, 'x') - Math.abs(c.transform.x - r.transform.x), oy = h + extent(c, 'y') - Math.abs(c.transform.y - r.transform.y);
+      return ox < oy ? [flip * (Math.sign(c.transform.x - r.transform.x) || 1), 0, ox] : [0, flip * (Math.sign(c.transform.y - r.transform.y) || 1), oy];
+    }
+    const ox = extent(a, 'x') + extent(b, 'x') - Math.abs(dx), oy = extent(a, 'y') + extent(b, 'y') - Math.abs(dy);
+    return ox < oy ? [Math.sign(dx) || 1, 0, ox] : [0, Math.sign(dy) || 1, oy];
+  }
+  // Embedded solid bodies (spawn, teleport, bounds clamp) would stay glued while
+  // both press into each other — push them back to touching along the shortest
+  // exit; controller bodies share the correction, static colliders never move.
+  function separate(a, b) {
+    if (!touching(a, b, -EPS)) return;
+    const ma = movable(a), mb = movable(b); if (!ma && !mb) return;
+    const [nx, ny, depth] = mtv(a, b); if (!(depth > 0)) return;
+    const share = ma && mb ? 0.5 : 1;
+    if (ma) { a.transform.x += nx * depth * share; a.transform.y += ny * depth * share; constrain(a); index.update(a.id, box(a)); }
+    if (mb) { b.transform.x -= nx * depth * share; b.transform.y -= ny * depth * share; constrain(b); index.update(b.id, box(b)); }
+    builtRevision = game.spatialRevision;
+  }
   function rebuild() {
     if(builtRevision===game.spatialRevision)return;
     for (const id of bodies.keys()) index.remove(id); bodies.clear();
@@ -121,7 +160,7 @@ export function createPhysics(game, types, SpatialHash) {
           // an embedded body may always move back out — only deeper penetration blocks.
           const old = o.transform[axis], before = separation(o, other);
           o.transform[axis] += Math.sign(movement) * EPS * 4;
-          const entering = overlaps(o, other, -EPS) && separation(o, other) < before - 1e-9;
+          const entering = touching(o, other, -EPS) && separation(o, other) < before - 1e-9;
           o.transform[axis] = old;
           const t = hit(o, other, dx, dy);
           if (t > 1 || (t === 0 && !entering)) continue;
@@ -131,10 +170,7 @@ export function createPhysics(game, types, SpatialHash) {
         o.transform[axis] += movement * travel;
         for (const { other, t, trigger } of collisions.sort((a, b) => a.t - b.t || a.other.id - b.other.id)) if (t <= travel + EPS) dispatch(o, other, trigger);
       }
-      if (live(o) && v.constrainToBounds && game.worldBounds) {
-        const b = game.worldBounds, w = Math.min(extent(o, 'x'), b.width / 2), h = Math.min(extent(o, 'y'), b.height / 2);
-        o.transform.x = clamp(o.transform.x, b.x + w, b.x + b.width - w); o.transform.y = clamp(o.transform.y, b.y + h, b.y + b.height - h);
-      }
+      if (live(o)) constrain(o);
       if (ready(o)) index.update(o.id, box(o)); else index.remove(o.id);
       builtRevision=game.spatialRevision;
       if (live(o)) v.onAfterMove(delta);
@@ -142,7 +178,8 @@ export function createPhysics(game, types, SpatialHash) {
     for (const a of bodies.values()) if (ready(a) && !a.getComponent(Projectile2D)?.enabled) for (const b of candidates(box(a))) {
       if (!ready(a) || !ready(b) || b.id <= a.id || b.getComponent(Projectile2D)?.enabled || !masks(a, b) || ignored(a, b)) continue;
       stats.candidates++; stats.narrowPhaseTests++;
-      if (overlaps(a, b)) dispatch(a, b, sensor(a) || sensor(b));
+      if (!sensor(a) && !sensor(b)) separate(a, b);
+      if (touching(a, b)) dispatch(a, b, sensor(a) || sensor(b));
     }
     previousContacts = new Set(contacts);
   }
@@ -163,5 +200,7 @@ export function createPhysics(game, types, SpatialHash) {
     return result;
   }
   function refresh(){builtRevision=-1;rebuild();}
+  // An object without an enabled collider never collides.
+  function overlaps(a, b) { return !!(collider(a)?.enabled && collider(b)?.enabled && touching(a, b)); }
   return { step, overlaps, queryRadius, findNearest, refresh, stats, extent };
 }

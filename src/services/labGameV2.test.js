@@ -63,7 +63,7 @@ test('v2 pause freezes WORLD while UI and unscaled clocks continue', () => {
 
 test('v2 dispersed bodies avoid the global all-pairs narrow phase', () => {
   const { lab, canvas } = labFixture();
-  class Scene extends lab.Game { onCreate() { for (let i = 0; i < 500; i++) this.createObject().setPosition(i * 100, 100).addComponent(new lab.Trigger2D(20, 20)); } }
+  class Scene extends lab.Game { onCreate() { for (let i = 0; i < 500; i++) this.createObject().setPosition(i * 100, 100).addComponent(new lab.Collider2D(20, 20).asTrigger()); } }
   lab.run(Scene, { canvas }); lab.current.step(0.1);
   expect(lab.current.physics.stats.narrowPhaseTests).toBeLessThan(500);
   expect(lab.current.physics.queryRadius(0, 100, 10, 1)).toHaveLength(1);
@@ -164,7 +164,7 @@ test('owned tweens complete once, support late listeners and freeze WORLD during
 
 test.each([100,1000,5000])('spatial hash keeps dispersed %i-body candidate counts bounded', count => {
   const {lab,canvas}=labFixture();
-  class Scene extends lab.Game {onCreate(){for(let i=0;i<count;i++)this.createObject().setPosition((i%100)*100,Math.floor(i/100)*100).addComponent(new lab.Trigger2D(20,20));}}
+  class Scene extends lab.Game {onCreate(){for(let i=0;i<count;i++)this.createObject().setPosition((i%100)*100,Math.floor(i/100)*100).addComponent(new lab.Collider2D(20,20).asTrigger());}}
   lab.run(Scene,{canvas});lab.current.step(.1);
   expect(lab.current.physics.stats.narrowPhaseTests).toBeLessThan(count);lab.dispose();
 });
@@ -184,7 +184,7 @@ test('component and tag indexes track inheritance, intersections and immediate r
 
 test('typed contact listener fires on entry, re-entry and can unsubscribe',()=>{
  const {lab,canvas}=labFixture();class Player extends lab.Component{}let entered=0;
- class Scene extends lab.Game{onCreate(){this.player=this.createObject('player');this.player.addComponent(new Player());this.player.addComponent(new lab.CircleCollider2D(10));this.sensor=this.createObject('sensor').addComponent(new lab.Trigger2D(40,40));this.off=this.sensor.onContactEnter(Player,other=>{expect(other).toBe(this.player);entered++;});}}
+ class Scene extends lab.Game{onCreate(){this.player=this.createObject('player');this.player.addComponent(new Player());this.player.addComponent(new lab.CircleCollider2D(10));this.sensor=this.createObject('sensor').addComponent(new lab.Collider2D(40,40).asTrigger());this.off=this.sensor.onContactEnter(Player,other=>{expect(other).toBe(this.player);entered++;});}}
  lab.run(Scene,{canvas});const game=lab.current;expect(entered).toBe(1);game.step(.1);game.step(.1);expect(entered).toBe(1);
  game.player.setPosition(100,100);game.step(.1);game.player.setPosition(0,0);game.step(.1);expect(entered).toBe(2);
  game.off();game.player.setPosition(100,100);game.step(.1);game.player.setPosition(0,0);game.step(.1);expect(entered).toBe(2);lab.dispose();

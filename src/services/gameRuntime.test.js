@@ -174,7 +174,7 @@ test('controller respects boundaries and triggers destroy a coin only once', () 
       player.addComponent(new Move());
       const coin = this.createObject('Coin').setPosition(60, 50);
       coin.addComponent(new lab.ShapeRenderer({ width: 20, height: 20 }));
-      coin.addComponent(new lab.Trigger2D());
+      coin.addComponent(new lab.Collider2D().asTrigger());
       this.setWorldBounds(0,0,100,100);
     }
     onUpdate() { this.canvas.drawText(`Punkty: ${this.points}`, 10, 20); }
@@ -219,12 +219,35 @@ test('a body that starts inside a collider can always move back out instead of l
   }
   lab.run(Scene, { canvas });
   lab.current.step(0.1);
-  expect(player.transform.x).toBeLessThan(141);
+  // Embedded bodies are ejected through the nearest face, then stay free.
+  expect(player.transform.x).toBeGreaterThan(161);
   const escaped = player.transform.x;
   lab.current.input.setKey('ArrowRight', true);
   lab.current.step(0.1);
   lab.current.input.setKey('ArrowRight', false);
   expect(player.transform.x).toBeGreaterThan(escaped);
+  lab.dispose();
+});
+
+test('two controllers that spawn overlapped unglue instead of staying merged', () => {
+  const { lab, canvas } = fixture();
+  class Press extends lab.Component {
+    constructor(dx) { super(); this.dx = dx; }
+    onUpdate() { this.getComponent(lab.CharacterController2D).move(this.dx, 0, 60); }
+  }
+  class Scene extends lab.Game {
+    onCreate() {
+      const a = this.createObject('A').setPosition(0, 0);
+      a.addComponent(new lab.CircleCollider2D(12)); a.addComponent(new lab.CharacterController2D()); a.addComponent(new Press(1));
+      const b = this.createObject('B').setPosition(18, 0);
+      b.addComponent(new lab.CircleCollider2D(12)); b.addComponent(new lab.CharacterController2D()); b.addComponent(new Press(-1));
+    }
+  }
+  lab.run(Scene, { canvas });
+  for (let i = 0; i < 10; i++) lab.current.step(0.1);
+  const a = lab.current.find('A'), b = lab.current.find('B');
+  expect(Math.hypot(a.transform.x - b.transform.x, a.transform.y - b.transform.y)).toBeGreaterThanOrEqual(23.99);
+  expect(b.transform.x).toBeGreaterThan(a.transform.x);
   lab.dispose();
 });
 
@@ -252,5 +275,51 @@ test('a box body embedded in a wall can still escape along the wall', () => {
   lab.current.step(0.1);
   lab.current.input.setKey('ArrowDown', false);
   expect(player.transform.y).toBeGreaterThan(slid);
+  lab.dispose();
+});
+
+test('collider API: asTrigger, derived circle size, bounds, Layers and guarded overlaps', () => {
+  const { lab, canvas } = fixture();
+  class Move extends lab.Component { onUpdate() { this.requireComponent(lab.CharacterController2D).move(1, 0, 400); } }
+  class Scene extends lab.Game {
+    onCreate() {
+      const wall = this.createObject('Wall').setPosition(100, 100);
+      wall.addComponent(new lab.Collider2D(40, 20));
+      const coin = this.createObject('Coin').setPosition(200, 100);
+      coin.addComponent(new lab.CircleCollider2D(10).asTrigger());
+      const ghost = this.createObject('Ghost').setPosition(130, 300);
+      ghost.addComponent(new lab.CharacterController2D());
+      const mover = this.createObject('Mover').setPosition(100, 300);
+      mover.addComponent(new lab.Collider2D(20, 20));
+      mover.addComponent(new lab.CharacterController2D());
+      mover.addComponent(new Move());
+    }
+  }
+  lab.run(Scene, { canvas });
+  const game = lab.current;
+  expect(Object.isFrozen(lab.Layers)).toBe(true);
+  expect(lab.Layers).toMatchObject({ DEFAULT: 1, ENEMY: 2, PLAYER: 4, PROJECTILE: 8, PICKUP: 16, WALL: 32, ALL: 0x7fffffff });
+  const wall = game.find('Wall').getComponent(lab.Collider2D);
+  expect(wall.layer).toBe(lab.Layers.DEFAULT); expect(wall.mask).toBe(lab.Layers.ALL);
+  expect(wall.isTrigger).toBe(false);
+  expect(wall.asTrigger()).toBe(wall); expect(wall.isTrigger).toBe(true); wall.isTrigger = false;
+  expect(wall.getBounds()).toEqual({ left: 80, top: 90, right: 120, bottom: 110 });
+  const circle = game.find('Coin').getComponent(lab.CircleCollider2D);
+  expect(circle.isTrigger).toBe(true);
+  expect(circle.width).toBe(20); expect(circle.height).toBe(20);
+  expect(() => { circle.width = 40; }).toThrow('Ustaw radius');
+  circle.radius = 15; expect(circle.width).toBe(30);
+  expect(circle.getBounds()).toEqual({ left: 185, top: 85, right: 215, bottom: 115 });
+  expect(new lab.Projectile2D(1, 0).hitLayers).toBe(lab.Layers.ALL);
+  const wallObject = game.find('Wall'), coin = game.find('Coin'), ghost = game.find('Ghost'), mover = game.find('Mover');
+  expect(game.physics.overlaps(wallObject, coin)).toBe(false);
+  coin.setPosition(100, 100);
+  expect(game.physics.overlaps(wallObject, coin)).toBe(true);
+  expect(game.physics.overlaps(wallObject, ghost)).toBe(false);
+  wall.enabled = false;
+  expect(game.physics.overlaps(wallObject, coin)).toBe(false);
+  wall.enabled = true; coin.setPosition(200, 100);
+  game.step(0.1);
+  expect(mover.transform.x).toBe(140);
   lab.dispose();
 });

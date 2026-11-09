@@ -148,6 +148,18 @@
         "kind": "method"
       },
       {
+        "name": "asTrigger",
+        "signature": "public Collider2D asTrigger()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "getBounds",
+        "signature": "public Bounds getBounds()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
         "name": "Collider2D",
         "signature": "public Collider2D()",
         "parameters": [],
@@ -174,24 +186,29 @@
       }
     ]
   },
-  "Trigger2D": {
+  "Bounds": {
     "constructible": true,
-    "parent": "Collider2D",
     "members": [
       {
-        "name": "Trigger2D",
-        "signature": "public Trigger2D()",
-        "parameters": [],
-        "kind": "constructor"
-      },
-      {
-        "name": "Trigger2D",
-        "signature": "public Trigger2D(double width,double height)",
+        "name": "Bounds",
+        "signature": "public Bounds(double left,double top,double right,double bottom)",
         "parameters": [
-          "double width",
-          "double height"
+          "double left",
+          "double top",
+          "double right",
+          "double bottom"
         ],
         "kind": "constructor"
+      }
+    ]
+  },
+  "Layers": {
+    "constructible": true,
+    "members": [
+      {
+        "name": "DEFAULT",
+        "signature": "int DEFAULT",
+        "kind": "field"
       }
     ]
   },
@@ -1140,6 +1157,12 @@
     "parent": "Collider2D",
     "members": [
       {
+        "name": "asTrigger",
+        "signature": "public CircleCollider2D asTrigger()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
         "name": "CircleCollider2D",
         "signature": "public CircleCollider2D(double radius)",
         "parameters": [
@@ -1553,7 +1576,7 @@
       },
       {
         "name": "overlaps",
-        "signature": "public static boolean overlaps(GameObject a,GameObject b)",
+        "signature": "public boolean overlaps(GameObject a,GameObject b)",
         "parameters": [
           "GameObject a",
           "GameObject b"

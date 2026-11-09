@@ -19,7 +19,7 @@ export function earlyStarter(language, chapter, mode, solution) {
   } else if(chapter==='projectiles') {
     if(mode==='guided')replace(`ProjectileHit.${ext}`,/hp\.damage\((?:this\.)?damage\);/,'Odejmij celowi damage punktów zdrowia.');
     else if(mode==='modified') {files[entry]=files[entry].replace('ProjectileMotion(1,0,200,0.5)','ProjectileMotion(1,0,200,2)');files[entry]='// TODO: Zmień lifetime pocisku na 0.5 sekundy.\n'+files[entry];}
-    else {replace(entry,/(?:Projectile2D|const) motion = projectile\.addComponent\(new (?:GameLab\.)?Projectile2D\([^\n]+\);/,'Dodaj pociskowi Projectile2D z polecenia.');replace(entry,/motion\.hitLayers=2;/,'Ustaw hitLayers na 2.');}
+    else {replace(entry,/(?:Projectile2D|const) motion = projectile\.addComponent\(new (?:GameLab\.)?Projectile2D\([^\n]+\);/,'Dodaj pociskowi Projectile2D z polecenia.');replace(entry,/motion\.hitLayers=(?:GameLab\.)?Layers\.ENEMY;/,'Ustaw hitLayers na Layers.ENEMY.');}
   } else return null; // The existing method exercise keeps a working scene for advanced tasks.
   return {files,ready:solution.ready};
 }

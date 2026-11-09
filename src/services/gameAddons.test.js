@@ -28,7 +28,7 @@ test('flank preserves Java radial/tangential signs in both directions',()=>{
  try{expect(ai.direction(100,0,100)).toEqual(new state.lab.Vector2(0,1));ai.clockwise=false;expect(ai.direction(100,0,100)).toEqual(new state.lab.Vector2(0,-1));expect(ai.direction(0,0,0)).toEqual(new state.lab.Vector2(1,0));}finally{state.close();}
 });
 test('avoidance uses the spatial query and ignores trigger obstacles',()=>{
- let avoidance,trigger;const state=scene((g,l,a)=>{avoidance=new a.ObstacleAvoidance2D();object(g,'Mover',100,100,new l.CircleCollider2D(10),avoidance);trigger=new l.Trigger2D(20,20);object(g,'Sensor',120,100,trigger);object(g,'Wall',140,100,new l.Collider2D(20,20));});
+ let avoidance,trigger;const state=scene((g,l,a)=>{avoidance=new a.ObstacleAvoidance2D();object(g,'Mover',100,100,new l.CircleCollider2D(10),avoidance);trigger=new l.Collider2D(20,20).asTrigger();object(g,'Sensor',120,100,trigger);object(g,'Wall',140,100,new l.Collider2D(20,20));});
  try{const query=vi.spyOn(state.game.physics,'queryRadius');expect(avoidance.steer(1,0)).toEqual(new state.lab.Vector2(1,-2));expect(query).toHaveBeenCalledWith(100,100,98,0x7fffffff);state.game.find('Wall').destroy();expect(avoidance.steer(1,0)).toEqual(new state.lab.Vector2(1,0));expect(avoidance.steer(0,0)).toEqual(new state.lab.Vector2());}finally{state.close();}
 });
 test('top down walking/running normalizes and flips sprites with no keyboard dependency',()=>{

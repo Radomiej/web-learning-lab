@@ -231,19 +231,21 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     static rotation(object, radians, seconds) { return this.start(object, 'rotation', radians, seconds); }
     static shake(object, strength, seconds) { return this.start(object, 'shake', strength, seconds); }
   }
+  const Layers = Object.freeze({ DEFAULT: 1, ENEMY: 2, PLAYER: 4, PROJECTILE: 8, PICKUP: 16, WALL: 32, ALL: 0x7fffffff });
   class Collider2D extends Component {
     onContactEnter(type,callback) { if(typeof type!=='function'||(type!==Component&&!(type.prototype instanceof Component))||typeof callback!=='function')throw new Error('Oczekiwano typu komponentu i funkcji');if(!this.contactListeners)this.contactListeners=new Set();const listener={type,callback};this.contactListeners.add(listener);return ()=>this.contactListeners.delete(listener); }
     fireContactEnter(other) { for(const listener of [...(this.contactListeners||[])]){if(this.destroyed||this.gameObject.destroyed||other.destroyed)break;if(other.hasComponent(listener.type))listener.callback(other);} }
-    constructor(width = 32, height = 32) { super(); if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) throw new Error('Niepoprawny rozmiar collidera'); this.geometryField('width',width); this.geometryField('height',height); this.layer = 1; this.mask = 0x7fffffff; this.isTrigger = false; }
-    geometryField(name,initial) { let value=initial; Object.defineProperty(this,name,{enumerable:true,get:()=>value,set:next=>{if(!Number.isFinite(next)||next<=0)throw new Error('Niepoprawna geometria');if(next!==value){value=next;if(this.gameObject)this.gameObject.game.spatialRevision++;}}}); }
+    constructor(width = 32, height = 32) { super(); if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) throw new Error('Niepoprawny rozmiar collidera'); this.geometryField('width',width); this.geometryField('height',height); this.layer = Layers.DEFAULT; this.mask = Layers.ALL; this.isTrigger = false; }
+    geometryField(name,initial) { let value=initial; Object.defineProperty(this,name,{enumerable:true,configurable:true,get:()=>value,set:next=>{if(!Number.isFinite(next)||next<=0)throw new Error('Niepoprawna geometria');if(next!==value){value=next;if(this.gameObject)this.gameObject.game.spatialRevision++;}}}); }
+    asTrigger() { this.isTrigger = true; return this; }
+    getBounds() { return { left: this.transform.x - this.width / 2, top: this.transform.y - this.height / 2, right: this.transform.x + this.width / 2, bottom: this.transform.y + this.height / 2 }; }
   }
   class CircleCollider2D extends Collider2D {
-    constructor(radius) { super(); if (!Number.isFinite(radius) || radius <= 0) throw new Error('Niepoprawny promień'); this.geometryField('radius',radius); }
+    constructor(radius) { super(); if (!Number.isFinite(radius) || radius <= 0) throw new Error('Niepoprawny promień'); this.geometryField('radius',radius); for (const name of ['width','height']) Object.defineProperty(this,name,{enumerable:true,get:()=>this.radius*2,set:()=>{throw new Error('Ustaw radius');}}); }
   }
-  class Trigger2D extends Collider2D { constructor(width = 32, height = 32) { super(width, height); this.isTrigger = true; } }
   class Projectile2D extends Component {
-    constructor(dx, dy, speed = 300, lifetime = 2, owner = null) { super();if(![dx,dy,speed,lifetime].every(Number.isFinite)||speed<0||lifetime<0)throw new Error('Niepoprawny pocisk'); this.direction = new Vector2(dx, dy).normalized(); this.speed = speed; this.remainingLifetime = lifetime; this.owner = owner; this.maxHits = 1; this.hits = 0; this.hitLayers = 0x7fffffff; this.hitObjects = new Set(); }
-    onCreate() { if (!this.getComponent(Collider2D)) { const c = this.gameObject.addComponent(new CircleCollider2D(4)); c.isTrigger = true; } if (!this.getComponent(CharacterController2D)) this.gameObject.addComponent(new CharacterController2D());this.getComponent(CharacterController2D).constrainToBounds=false; }
+    constructor(dx, dy, speed = 300, lifetime = 2, owner = null) { super();if(![dx,dy,speed,lifetime].every(Number.isFinite)||speed<0||lifetime<0)throw new Error('Niepoprawny pocisk'); this.direction = new Vector2(dx, dy).normalized(); this.speed = speed; this.remainingLifetime = lifetime; this.owner = owner; this.maxHits = 1; this.hits = 0; this.hitLayers = Layers.ALL; this.hitObjects = new Set(); }
+    onCreate() { if (!this.getComponent(Collider2D)) this.gameObject.addComponent(new CircleCollider2D(4).asTrigger()); if (!this.getComponent(CharacterController2D)) this.gameObject.addComponent(new CharacterController2D());this.getComponent(CharacterController2D).constrainToBounds=false; }
     onUpdate() { if(![this.speed,this.remainingLifetime].every(Number.isFinite)||this.speed<0||this.remainingLifetime<0)throw new Error('Niepoprawny pocisk');if(this.remainingLifetime===0){this.gameObject.destroy();return;}this.getComponent(CharacterController2D).move(this.direction.x, this.direction.y, this.speed); }
   }
   class Vector2 {
@@ -307,7 +309,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   }
   const componentNames = new Map([
     [ShapeRenderer, 'ShapeRenderer'], [Sprite, 'Sprite'], [TextRenderer, 'TextRenderer'], [ControlsHint, 'ControlsHint'], [Camera2D, 'Camera2D'], [TileMap, 'TileMap'], [Collider2D, 'Collider2D'],
-    [Trigger2D, 'Trigger2D'], [CharacterController2D, 'CharacterController2D'],
+    [CharacterController2D, 'CharacterController2D'],
   ]);
   class Input {
     static get MOUSE_LEFT() { return 0; }
@@ -514,7 +516,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
           const collider = object.components.find(c => c instanceof Collider2D && c.enabled && c.created && !c.destroyed) ?? null;
           const controller = object.getComponent(CharacterController2D);
           if (!collider && !(controller?.enabled && controller.created)) continue;
-          const trigger = collider?.isTrigger || collider instanceof Trigger2D;
+          const trigger = collider?.isTrigger;
           ctx.strokeStyle = trigger ? '#64e9ff' : '#ffe38a';
           ctx.setLineDash?.(trigger ? [4, 3] : []);
           const x = object.transform.x - view.x, y = object.transform.y - view.y;
@@ -834,9 +836,9 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     } finally { game.dispose(); }
   }
   win.addEventListener('pagehide', dispose);
-  const addons=createAddons({Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D,Trigger2D});
+  const addons=createAddons({Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D});
   for(const [name,type] of Object.entries(addons))componentNames.set(type,name);
-  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Trigger2D, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
+  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Layers, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
 }
 
 export function getGameRuntimeScript() {

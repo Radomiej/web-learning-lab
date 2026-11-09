@@ -309,7 +309,7 @@
         },
         {
           "name": "onTrigger",
-          "description": "Reakcja na kontakt z obszarem Trigger2D bez blokowania ruchu."
+          "description": "Reakcja na kontakt z obszarem collidera z isTrigger, bez blokowania ruchu."
         },
         {
           "name": "onComponentChange",
@@ -902,8 +902,8 @@
       "name": "Collider2D",
       "category": "Ruch i kolizje",
       "signature": "new Collider2D(width?, height?)",
-      "description": "Jawna prostokątna bryła 32×32. Rozmiar kolizji nie zależy od sprite ani skali grafiki. layer/mask filtrują kontakty.",
-      "example": "wall.addComponent(new GameLab.Collider2D(40,80));",
+      "description": "Jawna prostokątna bryła 32×32. Rozmiar kolizji nie zależy od sprite ani skali grafiki. asTrigger() czyni ją wykrywającą bez blokowania; layer/mask filtrują kontakty.",
+      "example": "wall.addComponent(new GameLab.Collider2D(40,80));\ncoin.addComponent(new GameLab.Collider2D(20,20).asTrigger());",
       "kind": "Constructor",
       "members": [
         {
@@ -927,6 +927,14 @@
           "description": null
         },
         {
+          "name": "asTrigger",
+          "description": "Ustawia isTrigger i zwraca collider — obszar wykrywa kontakt bez blokowania ruchu."
+        },
+        {
+          "name": "getBounds",
+          "description": "Krawędzie collidera w świecie: getBounds() → {left, top, right, bottom}; dla koła to kwadrat opisany."
+        },
+        {
           "name": "onContactEnter",
           "description": null
         }
@@ -936,13 +944,21 @@
       "name": "CircleCollider2D",
       "category": "Ruch i kolizje",
       "signature": "new CircleCollider2D(radius)",
-      "description": "Jawna kołowa bryła o promieniu w pikselach świata.",
+      "description": "Jawna kołowa bryła o promieniu w pikselach świata; width i height to jego średnica.",
       "example": "player.addComponent(new GameLab.CircleCollider2D(12));",
       "kind": "Constructor",
       "members": [
         {
           "name": "radius",
           "description": "Promień kołowego collidera albo dystans obiegania FlankTarget2D, w pikselach świata."
+        },
+        {
+          "name": "width",
+          "description": null
+        },
+        {
+          "name": "height",
+          "description": null
         },
         {
           "name": "layer",
@@ -955,6 +971,14 @@
         {
           "name": "isTrigger",
           "description": null
+        },
+        {
+          "name": "asTrigger",
+          "description": "Ustawia isTrigger i zwraca collider — obszar wykrywa kontakt bez blokowania ruchu."
+        },
+        {
+          "name": "getBounds",
+          "description": "Krawędzie collidera w świecie: getBounds() → {left, top, right, bottom}; dla koła to kwadrat opisany."
         },
         {
           "name": "onContactEnter",
@@ -996,6 +1020,44 @@
         },
         {
           "name": "hits",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "Layers",
+      "category": "Ruch i kolizje",
+      "signature": "GameLab.Layers.ENEMY",
+      "description": "Zamrożone nazwane warstwy kolizji: DEFAULT, ENEMY, PLAYER, PROJECTILE, PICKUP, WALL i ALL dla layer, mask, hitLayers i zapytań physics.",
+      "example": "enemyCollider.layer = GameLab.Layers.ENEMY;\nmotion.hitLayers = GameLab.Layers.ENEMY;",
+      "kind": "Class",
+      "members": [
+        {
+          "name": "DEFAULT",
+          "description": null
+        },
+        {
+          "name": "ENEMY",
+          "description": null
+        },
+        {
+          "name": "PLAYER",
+          "description": null
+        },
+        {
+          "name": "PROJECTILE",
+          "description": null
+        },
+        {
+          "name": "PICKUP",
+          "description": null
+        },
+        {
+          "name": "WALL",
+          "description": null
+        },
+        {
+          "name": "ALL",
           "description": null
         }
       ]
@@ -1512,7 +1574,7 @@
         },
         {
           "name": "getBounds",
-          "description": null
+          "description": "Krawędzie collidera w świecie: getBounds() → {left, top, right, bottom}; dla koła to kwadrat opisany."
         },
         {
           "name": "getCenter",
@@ -1724,15 +1786,6 @@
           "description": null
         }
       ]
-    },
-    {
-      "name": "Trigger2D",
-      "category": "Ruch i kolizje",
-      "signature": "class Trigger2D extends Collider2D",
-      "description": "Kontakt nie blokuje ruchu; uruchamia onTrigger(other) na komponentach obiektów.",
-      "example": "chest.addComponent(new GameLab.Trigger2D());",
-      "kind": "Constructor",
-      "members": []
     },
     {
       "name": "Tween",

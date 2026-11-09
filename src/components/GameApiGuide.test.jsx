@@ -22,7 +22,7 @@ test('opens the GameLab quick-start and browsable API reference', () => {
   expect(screen.getByLabelText('Wyszukaj klasę lub metodę')).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText('Wyszukaj klasę lub metodę'), { target: { value: 'onTrigger' } });
   expect(screen.getByText(/onTrigger\(\.\.\.\)/)).toBeInTheDocument();
-  expect(screen.getByText(/kontakt z obszarem Trigger2D/)).toBeInTheDocument();
+  expect(screen.getByText(/kontakt z obszarem collidera z isTrigger/)).toBeInTheDocument();
 
   fireEvent.change(screen.getByLabelText('Wyszukaj klasę lub metodę'), { target: { value: 'brakTakiejMetody' } });
   expect(screen.getByText('Nie znaleziono pasującej klasy ani metody.')).toBeInTheDocument();

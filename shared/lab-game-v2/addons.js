@@ -1,7 +1,7 @@
 // Self-contained factory: the same function is serialized into the editor iframe.
 export function createAddons(types) {
-  const {Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D,Trigger2D}=types;
-  for(const type of [Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D,Trigger2D])if(typeof type!=='function')throw new Error('Missing addon engine type');
+  const {Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D}=types;
+  for(const type of [Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D])if(typeof type!=='function')throw new Error('Missing addon engine type');
   const finite=(value,label,min=0)=>{if(!Number.isFinite(value)||value<min)throw new Error(`Invalid ${label}`);return value;};
   const extent=(object,x)=>{const c=object.getComponent(Collider2D);return c instanceof CircleCollider2D?c.radius:(c?(x?c.width:c.height)/2:16);};
   const keyValid=key=>typeof key==='string'&&key.length>0;
@@ -38,7 +38,7 @@ export function createAddons(types) {
       const length=Math.hypot(x,y);if(!length)return new Vector2();const dx=x/length,dy=y/length;
       const radius=this.lookAhead+Math.max(extent(this.gameObject,true),extent(this.gameObject,false))+8;
       for(const other of this.game.physics.queryRadius(this.transform.x,this.transform.y,radius,0x7fffffff)){
-        const collider=other.getComponent(Collider2D);if(other===this.gameObject||!other.active||other.destroyed||!collider?.enabled||collider.isTrigger||collider instanceof Trigger2D)continue;
+        const collider=other.getComponent(Collider2D);if(other===this.gameObject||!other.active||other.destroyed||!collider?.enabled||collider.isTrigger)continue;
         const ox=other.transform.x-this.transform.x,oy=other.transform.y-this.transform.y,ahead=ox*dx+oy*dy,side=ox*(-dy)+oy*dx;
         const clearance=Math.abs(dy)*(extent(other,true)+extent(this.gameObject,true))+Math.abs(dx)*(extent(other,false)+extent(this.gameObject,false))+8;
         const forward=Math.abs(dx)*extent(other,true)+Math.abs(dy)*extent(other,false);
@@ -67,7 +67,7 @@ export function createAddons(types) {
     isGrounded(){if(this.created&&this.gameObject.active&&!this.gameObject.destroyed)this.onAfterMove(0);return this.grounded;}
     isWalk(){return this.enabled&&!this.running&&this.velocity.x!==0;}
     isRunning(){return this.enabled&&this.running&&this.velocity.x!==0;}
-    solidAt(offset){const original=this.transform.y;this.transform.y+=offset;try{const radius=Math.hypot(extent(this.gameObject,true),extent(this.gameObject,false))+Math.abs(offset);for(const other of this.game.physics.queryRadius(this.transform.x,this.transform.y,radius,0x7fffffff)){const collider=other.getComponent(Collider2D);if(other!==this.gameObject&&other.active&&!other.destroyed&&collider?.enabled&&!collider.isTrigger&&!(collider instanceof Trigger2D)&&this.game.physics.overlaps(this.gameObject,other))return true;}return false;}finally{this.transform.y=original;}}
+    solidAt(offset){const original=this.transform.y;this.transform.y+=offset;try{const radius=Math.hypot(extent(this.gameObject,true),extent(this.gameObject,false))+Math.abs(offset);for(const other of this.game.physics.queryRadius(this.transform.x,this.transform.y,radius,0x7fffffff)){const collider=other.getComponent(Collider2D);if(other!==this.gameObject&&other.active&&!other.destroyed&&collider?.enabled&&!collider.isTrigger&&this.game.physics.overlaps(this.gameObject,other))return true;}return false;}finally{this.transform.y=original;}}
     onAfterMove(){const height=extent(this.gameObject,false),bounds=this.game.worldBounds;this.grounded=this.verticalSpeed>=0&&(this.solidAt(.01)||this.constrainToBounds&&bounds!==null&&this.transform.y>=bounds.y+bounds.height-height-.01);const ceiling=this.verticalSpeed<0&&(this.solidAt(-.01)||this.constrainToBounds&&bounds!==null&&this.transform.y<=bounds.y+height+.01);if(this.grounded||ceiling){this.verticalSpeed=0;this.velocity.y=0;}}
   }
   class KeyPressed extends Component {
