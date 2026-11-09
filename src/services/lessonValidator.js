@@ -102,6 +102,18 @@ function expectedValue(check, fallback = '') {
   return check.expected ?? check.value ?? check.needle ?? fallback;
 }
 
+// Znaki mnożenia spoza klawiatury traktuj jak zwykłe „x” — uczeń wpisze „x” albo „*”.
+function normalizeTextValue(value) {
+  return safeString(value).replace(/[×✕✖∗·∙⋅*]/g, 'x');
+}
+
+function textMatches(check, actual, expected, { exact = false } = {}) {
+  const normalizedActual = normalizeTextValue(actual);
+  return [expected, ...(check.variants || [])]
+    .map(normalizeTextValue)
+    .some((needle) => (exact ? normalizedActual === needle : normalizedActual.includes(needle)));
+}
+
 function phpRequestKey(request = {}) {
   const value = request && typeof request === 'object' && !Array.isArray(request) ? request : {};
   return JSON.stringify({
@@ -125,7 +137,11 @@ function evaluateOne(check = {}, context = {}) {
           return resultFor(check, false, `Nie można odczytać „${safeString(check.expression)}”: ${safeString(probe.error)}.`);
         }
         const hasExpected = Object.hasOwn(check, 'expected');
-        const passed = hasExpected ? Object.is(probe.value, check.expected) : Boolean(probe.value);
+        const passed = hasExpected
+          ? (typeof check.expected === 'string'
+            ? textMatches(check, probe.value, check.expected, { exact: true })
+            : Object.is(probe.value, check.expected))
+          : Boolean(probe.value);
         const actual = safeString(probe.text ?? JSON.stringify(probe.value));
         return passed
           ? resultFor(check, true, `„${safeString(check.expression)}” ma oczekiwaną wartość.`)
@@ -142,7 +158,7 @@ function evaluateOne(check = {}, context = {}) {
       case 'consoleOutput': {
         const expected = safeString(expectedValue(check));
         const output = Array.isArray(signals.consoleOutput) ? signals.consoleOutput : [];
-        const passed = output.some(line => line === expected);
+        const passed = output.some(line => textMatches(check, line, expected, { exact: true }));
         if (passed) return resultFor(check, true, 'Konsola zawiera oczekiwany wynik.');
         const parts = expected.split(/\s+/).filter(Boolean);
         const tokens = output.flatMap(line => safeString(line).split(/\s+/).filter(Boolean));
@@ -170,7 +186,7 @@ function evaluateOne(check = {}, context = {}) {
       case 'sourceIncludes': {
         const source = getFile(files, check.file);
         const needle = safeString(expectedValue(check));
-        return source.includes(needle)
+        return textMatches(check, source, needle)
           ? resultFor(check, true, 'Znaleziono wymagany fragment kodu.')
           : resultFor(check, false, `Brak fragmentu „${needle}” w ${check.file || 'pliku'}.`);
       }
@@ -194,7 +210,7 @@ function evaluateOne(check = {}, context = {}) {
         const signal = getDomSignal(signals, check.selector);
         const actual = signal?.attrs?.[check.attribute];
         const expected = safeString(expectedValue(check));
-        return safeString(actual) === expected
+        return textMatches(check, actual, expected, { exact: true })
           ? resultFor(check, true, `Atrybut ${check.attribute} ma poprawną wartość.`)
           : resultFor(check, false, `Atrybut ${check.attribute} dla ${check.selector} ma wartość „${safeString(actual)}”, oczekiwano „${expected}”.`);
       }
@@ -202,7 +218,7 @@ function evaluateOne(check = {}, context = {}) {
         const signal = check.selector ? getDomSignal(signals, check.selector) : null;
         const actual = safeString(signal?.text ?? signals.text);
         const expected = safeString(expectedValue(check));
-        return actual.includes(expected)
+        return textMatches(check, actual, expected)
           ? resultFor(check, true, 'Tekst jest widoczny.')
           : resultFor(check, false, `Nie znaleziono tekstu „${expected}”.`);
       }
@@ -210,7 +226,7 @@ function evaluateOne(check = {}, context = {}) {
         const signal = getDomSignal(signals, check.selector);
         const actual = safeString(signal?.text).trim();
         const expected = safeString(expectedValue(check));
-        return signal?.exists && actual === expected
+        return signal?.exists && textMatches(check, actual, expected, { exact: true })
           ? resultFor(check, true, 'Wynik jest zgodny z oczekiwaniem.')
           : resultFor(check, false, `Oczekiwano „${expected}”, odczytano „${actual}”.`);
       }
@@ -230,10 +246,11 @@ function evaluateOne(check = {}, context = {}) {
           return resultFor(check, false, `Interakcja nie znalazła selektora ${check.selector || ''}.`);
         }
         const expected = check.expected || {};
+        const variantCheck = { variants: expected.variants };
         const actualText = safeString(interaction.text);
-        const textPasses = expected.text == null || actualText.includes(safeString(expected.text));
-        const exactPasses = expected.textEquals == null || actualText.trim() === safeString(expected.textEquals);
-        const beforePasses = expected.beforeText == null || safeString(interaction.before?.text).trim() === safeString(expected.beforeText);
+        const textPasses = expected.text == null || textMatches(variantCheck, actualText, expected.text);
+        const exactPasses = expected.textEquals == null || textMatches(variantCheck, actualText.trim(), expected.textEquals, { exact: true });
+        const beforePasses = expected.beforeText == null || textMatches(variantCheck, safeString(interaction.before?.text).trim(), expected.beforeText, { exact: true });
         const classPasses = expected.class == null || safeString(interaction.className).includes(safeString(expected.class));
         const visiblePasses = expected.visible == null || Boolean(interaction.visible) === Boolean(expected.visible);
         const attributePasses = !expected.attribute
@@ -268,7 +285,7 @@ function evaluateOne(check = {}, context = {}) {
         const rootReady = Boolean(signals.react?.rootReady);
         const domSignal = check.selector ? getDomSignal(signals, check.selector) : { exists: true };
         const textExpected = check.text ?? check.expectedText;
-        const textPasses = textExpected == null || safeString(domSignal?.text).includes(safeString(textExpected));
+        const textPasses = textExpected == null || textMatches(check, domSignal?.text, textExpected);
         return rootReady && Boolean(domSignal?.exists) && textPasses
           ? resultFor(check, true, 'Komponent React został wyrenderowany.')
           : resultFor(check, false, 'React nie wyrenderował oczekiwanego elementu lub tekstu.');
@@ -279,7 +296,7 @@ function evaluateOne(check = {}, context = {}) {
         const requestPasses = safeString(request.requestKey) === expectedRequest;
         const signal = check.selector ? getDomSignal(signals, check.selector) : null;
         const expectedText = safeString(expectedValue(check));
-        const textPasses = expectedText === '' || safeString(signal?.text ?? signals.text).includes(expectedText);
+        const textPasses = expectedText === '' || textMatches(check, signal?.text ?? signals.text, expectedText);
         return requestPasses && textPasses
           ? resultFor(check, true, 'PHP otrzymał żądanie i zwrócił oczekiwany wynik.')
           : resultFor(check, false, requestPasses

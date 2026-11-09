@@ -51,6 +51,24 @@ test('consoleOutput explains only values genuinely spread across separate lines'
   expect(evaluateChecks([check], { signals: { consoleOutput: ['false true'] } }).passed).toBe(1);
 });
 
+test('text checks accept typable multiplication signs for „×”', () => {
+  const check = { id: 'mul', type: 'textContains', expected: '2 × 3 = 6', label: 'mnożenie' };
+  for (const text of ['2 × 3 = 6', '2 x 3 = 6', '2 * 3 = 6']) {
+    expect(evaluateChecks([check], { signals: { text } }).results[0].passed).toBe(true);
+  }
+  expect(evaluateChecks([check], { signals: { text: '2 + 3 = 6' } }).results[0].passed).toBe(false);
+
+  const equalsCheck = { id: 'mul-eq', type: 'textEquals', selector: '#result', expected: '2 × 3 = 6', label: 'mnożenie' };
+  const dom = { '#result': { exists: true, text: '2 * 3 = 6' } };
+  expect(evaluateChecks([equalsCheck], { signals: { dom } }).results[0].passed).toBe(true);
+});
+
+test('text checks honor explicit variants', () => {
+  const check = { id: 'v', type: 'textContains', expected: '„Gotowe”', variants: ['"Gotowe"', "'Gotowe'"], label: 'warianty' };
+  expect(evaluateChecks([check], { signals: { text: '"Gotowe"' } }).results[0].passed).toBe(true);
+  expect(evaluateChecks([check], { signals: { text: 'Gotowe' } }).results[0].passed).toBe(false);
+});
+
 test('interaction submitCanceled verifies preventDefault on form submit', () => {
   const check = {
     id: 'submit', type: 'interaction', selector: '#action', action: 'click', resultSelector: '#result',
