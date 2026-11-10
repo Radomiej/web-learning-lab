@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150" role="img">
+  <title>Dane w PHP → Szablon HTML → Karta profilu</title>
+  <rect width="600" height="150" rx="20" fill="#f5f3fb"/>
+  <g fill="#fff" stroke="#b9a7db" stroke-width="2">
+    <rect x="16" y="42" width="162" height="66" rx="12"/>
+    <rect x="219" y="42" width="162" height="66" rx="12"/>
+    <rect x="422" y="42" width="162" height="66" rx="12"/>
+  </g>
+  <path d="M184 75h27m-7-7 7 7-7 7m183-7h27m-7-7 7 7-7 7" fill="none" stroke="#63459a" stroke-width="3"/>
+  <g fill="#24233a" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">
+    <text x="97" y="81">Dane w PHP</text>
+    <text x="300" y="81">Szablon HTML</text>
+    <text x="503" y="81">Karta profilu</text>
+  </g>
+</svg>

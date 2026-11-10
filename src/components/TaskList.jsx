@@ -2,6 +2,7 @@ const modeLabels = {
   guided: 'Z przykładem',
   independent: 'Samodzielnie',
   challenge: 'Wyzwanie',
+  exercise: 'Ćwiczenie',
 };
 
 export default function TaskList({ tasks = [], activeTaskId, completedTasks = [], onTaskChange }) {

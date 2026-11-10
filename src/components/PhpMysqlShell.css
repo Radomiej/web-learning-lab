@@ -1,0 +1,30 @@
+.php-mysql-shell {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.php-mysql-shell summary { cursor: pointer; font-weight: 700; }
+.php-mysql-shell form { display: grid; gap: 8px; justify-items: start; }
+.php-mysql-shell textarea {
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink-900);
+  font: 14px/1.5 var(--mono);
+}
+.php-mysql-shell [role="status"]:empty { margin: 0; }
+.php-mysql-shell [role="alert"] { color: #9c2525; }
+.php-mysql-results { overflow-x: auto; }
+.php-mysql-results table { border-collapse: collapse; }
+.php-mysql-results :is(th, td) {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}

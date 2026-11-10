@@ -25,6 +25,7 @@ const definitions = [
   {
     order: lessonNumber('php', 1),
     id: 'php-echo',
+    taskPrefix: 'php-01',
     title: 'Pierwszy skrypt PHP i echo',
     summary: 'Uruchom PHP.wasm i wygeneruj pierwszy fragment HTML.',
     focus: 'tag PHP, echo, tekst oraz HTML zwracany przez skrypt',
@@ -36,6 +37,7 @@ const definitions = [
   {
     order: lessonNumber('php', 2),
     id: 'php-variables',
+    taskPrefix: 'php-02',
     title: 'Zmienne i typy danych',
     summary: 'Przechowuj tekst, liczby i wartości logiczne w zmiennych PHP.',
     focus: '$name, $age, string, int, bool i interpolacja',
@@ -47,6 +49,7 @@ const definitions = [
   {
     order: lessonNumber('php', 3),
     id: 'php-conditions',
+    taskPrefix: 'php-03',
     title: 'Warunki if i else',
     summary: 'Podejmuj decyzję na podstawie wartości zmiennej.',
     focus: 'if, else, porównania i wynik warunku',
@@ -58,6 +61,7 @@ const definitions = [
   {
     order: lessonNumber('php', 4),
     id: 'php-loops',
+    taskPrefix: 'php-04',
     title: 'Pętle for i while',
     summary: 'Powtarzaj fragment HTML bez kopiowania tych samych linii.',
     focus: 'for, while, licznik i generowanie listy',
@@ -69,6 +73,7 @@ const definitions = [
   {
     order: lessonNumber('php', 5),
     id: 'php-arrays-foreach',
+    taskPrefix: 'php-05',
     title: 'Tablice i foreach',
     summary: 'Przechowuj kolekcję danych i wyświetl każdy element.',
     focus: 'tablica, foreach, as i elementy li',
@@ -80,6 +85,7 @@ const definitions = [
   {
     order: lessonNumber('php', 6),
     id: 'php-functions',
+    taskPrefix: 'php-06',
     title: 'Funkcje i return',
     summary: 'Nadaj powtarzalnej logice nazwę i zwracaj jej wynik.',
     focus: 'function, parametr, return i wywołanie',
@@ -91,6 +97,7 @@ const definitions = [
   {
     order: lessonNumber('php', 7),
     id: 'php-post-forms',
+    taskPrefix: 'php-07',
     title: 'Formularz POST i bezpieczeństwo',
     summary: 'Odczytaj dane formularza, zabezpiecz je i zwróć HTML.',
     focus: '$_POST, htmlspecialchars, request mode i bezpieczne wyjście',
@@ -102,6 +109,7 @@ const definitions = [
   {
     order: lessonNumber('php', 8),
     id: 'php-profile-project',
+    taskPrefix: 'php-08',
     title: 'Projekt: karta profilu PHP',
     summary: 'Połącz zmienne, funkcję, tablicę i pętlę w mały projekt.',
     focus: 'kompozycja poznanych elementów, bezpieczny tekst i semantyczny HTML',
@@ -110,16 +118,101 @@ const definitions = [
     objectives: ['Zaplanuj dane i funkcję pomocniczą.', 'Wyrenderuj kartę profilu z listą umiejętności.'],
     theory: ['Mały projekt składa się z tych samych klocków: dane, funkcje, pętla i HTML.', 'Najpierw spraw, aby wynik był poprawny, a potem uporządkuj kod tak, aby każda część miała jedną odpowiedzialność.'],
   },
+  {
+    order: lessonNumber('php', 9),
+    id: 'php-html-template',
+    title: 'Zwykły HTML z osadzonym PHP',
+    summary: 'Wstaw dane i listę do szablonu karty profilu.',
+    focus: 'HTML, <?= … ?> i foreach w szablonie',
+    file: 'index.php',
+    objectives: ['Wstaw wartość PHP do znacznika HTML.', 'Wyświetl bezpieczny tekst i wygeneruj listę.'],
+  },
+  {
+    order: lessonNumber('php', 10),
+    id: 'php-javascript-data',
+    title: 'Od PHP do JavaScript',
+    summary: 'Przekaż dane karty profilu do skryptu w przeglądarce.',
+    focus: 'data-*, dataset, kliknięcie i textContent',
+    file: 'index.php',
+    objectives: ['Umieść dane PHP w atrybucie HTML.', 'Odczytaj dane i zmień widok po kliknięciu.'],
+    theory: [
+      'Małe wartości przypisane do jednego elementu przekazuj atrybutami data-* i odczytuj w skrypcie przez dataset.',
+      'Całe struktury (tablice, obiekty) osadź w <script> przez json_encode z flagami JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT — e()/htmlspecialchars nie chroni kontekstu JavaScriptu.',
+      'Dane, które mają zmieniać się bez przeładowania strony, pobieraj przez fetch z endpointu PHP zwracającego JSON.',
+      'Nie odczytuj danych z widocznego tekstu (np. h1.textContent) — prezentacja to nie dane.',
+    ],
+  },
+  {
+    order: lessonNumber('php', 11),
+    id: 'php-json-data',
+    title: 'Dane z PHP jako JSON w skrypcie',
+    summary: 'Osadź całą strukturę PHP w kodzie JavaScript przez json_encode.',
+    focus: 'json_encode, flagi JSON_HEX_* i kontekst skryptu',
+    file: 'index.php',
+    taskPrefix: 'php-json-data',
+    objectives: ['Zamień tablicę PHP na JSON w <script> przez json_encode.', 'Użyj flag JSON_HEX_* zamiast e() w kontekście JavaScriptu.'],
+    theory: [
+      'json_encode z flagami JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT zapisuje tablicę PHP jako bezpieczny literał JS — e()/htmlspecialchars w tym miejscu jest błędem, bo chroni kontekst HTML, nie skryptu.',
+      'Sam „<?= $name ?>" w cudzysłowach skryptu to luka XSS — cytat lub </script> w wartości zepsuje lub podmieni kod.',
+      'Literał JSON w <script> jest czytany raz, przy ładowaniu strony — gdy dane mają być świeże, potrzebny jest fetch do endpointu PHP.',
+      'Nie wpisuj struktur ręcznie w skrypt — ma je wyprodukować PHP, inaczej przestaną się aktualizować.',
+    ],
+  },
+  {
+    order: lessonNumber('php', 12),
+    id: 'php-fetch-api',
+    title: 'fetch do endpointu PHP — GET i POST',
+    summary: 'Pobieraj i wysyłaj dane JSON do api.php bez przeładowania strony.',
+    focus: 'fetch, $_GET, $_POST, REQUEST_METHOD i odpowiedź JSON',
+    file: 'index.php',
+    taskPrefix: 'php-fetch-api',
+    objectives: ['Pobierz JSON z api.php przez GET z parametrem w adresie.', 'Wyślij dane metodą POST przez FormData i obsłuż status odpowiedzi.'],
+    theory: [
+      'GET czyta dane — parametry idą w adresie ($_GET), są widoczne w URL i nie powinny niczego zmieniać.',
+      'POST wysyła dane w ciele żądania ($_POST z FormData, albo json_decode(file_get_contents("php://input"), true) dla JSON) i zmienia stan serwera.',
+      'Endpoint ustawia header("Content-Type: application/json") i odpowiada json_encode; dla złej metody: http_response_code(405).',
+      'W skrypcie sprawdzaj response.ok i pustą listę — nie każde żądanie kończy się danymi.',
+    ],
+  },
+  {
+    order: lessonNumber('php', 13),
+    id: 'php-objects',
+    title: 'Obiekty w PHP: class, new, -> i ::',
+    summary: 'Zrozum obiekty zanim użyjesz PDO — klasa, instancja, właściwości, metody, $this i stałe klas.',
+    focus: 'class, new, ->, $this, __construct, stałe klas i ::',
+    file: 'index.php',
+    taskPrefix: 'php-objects',
+    objectives: ['Zdefiniuj klasę z konstruktorem i metodą.', 'Utwórz obiekt przez new i wywołuj jego metody przez ->.', 'Użyj stałej klasy przez :: jak w PDO::FETCH_ASSOC.'],
+    theory: [
+      'Klasa to plan, obiekt to konkret: `new Profile(...)` tworzy instancję z własnymi danymi.',
+      'Właściwości czytasz przez `->` (`$profile->name`), metody wołasz tak samo (`$profile->label()`); wewnątrz metody `$this` wskazuje na bieżący obiekt.',
+      'Konstruktor z promowanymi właściwościami (`public function __construct(public string $name, …)`) zapisuje argumenty od razu do pól obiektu.',
+      'Stałe klasy wołasz przez `::` — `Profile::MAX_SKILLS`. Tak samo działa `PDO::FETCH_ASSOC` używane później z bazą.',
+      'Obiekt przypomina tablicę asocjacyjną: `[\'name\' => \'Ala\']` ↔ `$profile->name` — ale obiekt ma też metody. `json_decode` bez drugiego argumentu `true` też zwraca obiekt (stdClass) — `$book->tytul`.',
+    ],
+  },
+  {
+    order: lessonNumber('php', 14),
+    id: 'php-sqlite-pdo',
+    title: 'PHP i SQLite przez PDO',
+    summary: 'Otwórz bazę Biblioteka z Database Lab i wyświetl książki pasujące do zapytania.',
+    focus: 'PDO, SQLite, parametry zapytania i porównanie z MySQL',
+    file: 'index.php',
+    taskPrefix: 'php-611',
+    objectives: ['Połącz się z plikiem SQLite przez PDO.', 'Pobierz rekordy przez zapytanie parametryzowane i obsłuż brak wyników.'],
+  },
 ];
 
 export const phpLessons = definitions.map((definition) => {
-  const starter = phpProject();
+  const base = phpProject();
+  const tasks = phpTasks(definition, base);
+  const firstExercise = tasks.find(({ mode }) => mode === 'exercise');
   return createLesson({
     ...definition,
     track: 'php',
     runtime: 'php-wasm',
-    starter,
-    solution: starter,
-    tasks: phpTasks(definition, starter),
+    starter: firstExercise?.starter ?? base,
+    solution: firstExercise?.solution ?? base,
+    tasks,
   });
 });

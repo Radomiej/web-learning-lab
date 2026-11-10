@@ -15,7 +15,7 @@ test('every JS, HTML and CSS chapter has complete pages with an existing dedicat
   }
   const pagesById = { ...jsCoursePages, ...htmlCssTeachingPages, ...phpTeachingPages, ...reactTeachingPages };
   const targets = lessons.filter(lesson => ['js', 'html', 'css', 'php', 'react'].includes(lesson.track));
-  expect(targets).toHaveLength(45);
+  expect(targets).toHaveLength(48);
   for (const lesson of targets) {
     const pages = pagesById[lesson.id];
     expect(pages.length, lesson.id).toBeGreaterThanOrEqual(3);

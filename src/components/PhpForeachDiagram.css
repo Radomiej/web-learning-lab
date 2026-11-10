@@ -1,0 +1,45 @@
+.php-foreach-diagram {
+  margin: 20px 0 0;
+  padding: 16px;
+  border: 1px solid var(--line, #c9dde4);
+  border-radius: 12px;
+  color: var(--ink-900, #16384a);
+  background: #f7fafb;
+}
+.php-foreach-diagram figcaption { margin-bottom: 12px; }
+.php-foreach-diagram code { max-width: 100%; font-size: 13px; overflow-wrap: break-word; word-break: normal; white-space: pre-wrap; }
+.php-foreach-source { display: grid; gap: 8px; }
+.php-foreach-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid;
+  border-radius: 7px;
+}
+.php-foreach-segment small { font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+.php-foreach-segment--html { color: #125e58; background: #e5f5f1; border-color: #9bd1c8; }
+.php-foreach-segment--php { color: #503681; background: #f0eafa; border-color: #c5b0e6; }
+.php-foreach-loop { display: grid; gap: 8px; padding: 8px 0; }
+.php-foreach-repeat { padding: 12px; border: 2px dashed #8760b2; border-radius: 10px; background: white; }
+.php-foreach-repeat > strong { display: block; margin-bottom: 6px; }
+.php-foreach-boundary { color: #503681; font-size: 12px; font-weight: 700; }
+.php-foreach-body { display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap; }
+.php-foreach-body > .php-foreach-segment--php { flex: 1 1 180px; }
+.php-foreach-diagram .php-foreach-note { margin: 4px 0 10px; font-size: 13px; line-height: 1.6; }
+.php-foreach-iterations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.php-foreach-pass { display: grid; gap: 8px; min-width: 0; padding: 12px; border: 1px solid #c9dde4; border-radius: 10px; background: white; }
+.php-foreach-pass .php-foreach-body > .php-foreach-segment--php { flex: 1 1 auto; }
+.php-foreach-pass .php-foreach-body { flex-wrap: nowrap; }
+.php-foreach-pass .php-foreach-segment { flex-direction: column; gap: 4px; padding: 6px; }
+.php-foreach-pass p { margin: 0; font-size: 13px; }
+.php-foreach-value { color: #503681; }
+.php-foreach-output { margin-top: 12px; padding: 12px; border: 1px solid #c9dde4; border-radius: 10px; background: white; }
+.php-foreach-output ul { margin: 8px 0 0; padding-left: 24px; }
+@media (max-width: 600px) {
+  .php-foreach-diagram { padding: 12px; }
+  .php-foreach-repeat { padding: 8px; }
+  .php-foreach-iterations { grid-template-columns: 1fr; }
+}

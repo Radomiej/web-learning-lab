@@ -1,0 +1,53 @@
+.step-trial { margin: 10px 0 14px; }
+
+.step-trial-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.step-trial-panel {
+  min-width: 0;
+  margin: 0;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.step-trial-panel figcaption {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  background: #173c52;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.step-trial-panel.is-active { border-color: #2a9d8f; box-shadow: 0 0 0 2px #2a9d8f33; }
+.step-trial-panel.is-active figcaption { background: #2a9d8f; }
+
+.step-trial-code {
+  margin: 0;
+  padding: 10px;
+  background: #10263a;
+  color: #eaf4f4;
+  font: 12.5px/1.55 var(--mono, ui-monospace, monospace);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.step-trial-result {
+  margin: 0;
+  padding: 12px 10px;
+  background: #fff8ea;
+  color: #173c52;
+  font: 600 14px/1.5 inherit;
+}
+
+.step-trial-caption { margin: 4px 0 10px; color: var(--ink-900); font-weight: 600; }
+
+.step-trial-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.step-trial-counter { color: var(--ink-700); font-size: 13px; }

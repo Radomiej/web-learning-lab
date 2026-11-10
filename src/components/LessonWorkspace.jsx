@@ -11,7 +11,10 @@ import PlaygroundTools from './PlaygroundTools.jsx';
 import GameTutor from './GameTutor.jsx';
 import GameCoursePdf from './GameCoursePdf.jsx';
 import LearningModule from './LearningModule.jsx';
+import LessonPilot from './LessonPilot.jsx';
 import JsLessonQuiz from './JsLessonQuiz.jsx';
+import PhpMysqlShell from './PhpMysqlShell.jsx';
+import {taskLearningFor} from '../data/taskLearning.js';
 
 export default function LessonWorkspace({
   lesson,
@@ -38,6 +41,7 @@ export default function LessonWorkspace({
   onNextLesson,
   stage = 'learn',
   onStageChange,
+  inlinePreview,
 }) {
   const [showChange,setShowChange]=useState(false);
   useEffect(()=>setShowChange(false),[activeTask.id]);
@@ -49,6 +53,67 @@ export default function LessonWorkspace({
   const path = Object.hasOwn(files.files, activeFile)
     ? activeFile
     : files.entry;
+  const taskLearning = taskLearningFor(activeTask.id);
+
+  const editorSection = (
+    <section className="editor-section" aria-labelledby="editor-title">
+      <div className="section-heading-row editor-section-heading">
+        <div>
+          <h2 id="editor-title"><span aria-hidden="true">⌨ </span>{playground ? 'Twój projekt' : 'Zbuduj rozwiązanie'}</h2>
+        </div>
+      </div>
+      <div className="editor-shell">
+        <EditorTabs
+          workspaceKey={activeTask.id}
+          files={files.files}
+          activeFile={path}
+          onFileChange={onFileChange}
+          onAddFile={onAddFile}
+          runtime={files.runtime}
+        />
+        <CodeEditor
+          fileKey={path}
+          fileLabel={path}
+          workspaceKey={activeTask.id}
+          gameDev={files.runtime?.kind === 'game-js'}
+          value={files.files[path] || ""}
+          onChange={onCodeChange}
+          onRun={onRun}
+          onSave={onSave}
+          onReset={()=>{setShowChange(false);onReset?.();}}
+          resetLabel={playground ? 'Nowy projekt' : 'Przywróć start'}
+          onCheck={playground ? undefined : onCheck}
+          onSolution={!taskLearning && activeTask.mode === "guided" ? applySolution : undefined}
+          highlight={showChange&&activeTask.solutionExplanation?changedRange(activeTask.starter.files[path]??'',files.files[path]??''):null}
+        />
+        <RuntimeConsole messages={runtimeState?.messages} errors={runtimeErrors} status={runtimeState?.status} />
+      </div>
+    </section>
+  );
+  const feedbackPanel = !playground && <FeedbackPanel checkResults={checkResults} runtimeErrors={runtimeErrors} />;
+  const completion = !playground && lesson.tasks.length > 0 && lesson.tasks.every(task => completedTasks.includes(task.id)) && <section className="lesson-complete" aria-label="Lekcja ukończona"><p><span aria-hidden="true">✓ </span>Lekcja zaliczona!</p>{nextLesson ? <button className="button button--primary" type="button" onClick={onNextLesson}>Następna lekcja: {nextLesson.title} <span aria-hidden="true">→</span></button> : <p>To ostatnia lekcja tej ścieżki.</p>}</section>;
+  const nextNav = !playground && <nav className="task-next-navigation" aria-label="Kolejne zadanie">{nextTask ? <button className="button button--primary" type="button" onClick={() => onTaskChange(nextTask.id)}>Następne zadanie →</button> : nextLesson && !lesson.tasks.every(task => completedTasks.includes(task.id)) ? <button className="button button--primary" type="button" onClick={onNextLesson}>Następna lekcja →</button> : null}</nav>;
+
+  if (taskLearning) {
+    return (
+      <div className="lesson-workspace lesson-workspace--pilot">
+        <LessonOverview lesson={lesson} headingOnly />
+        <LessonPilot
+          lesson={lesson}
+          activeTask={activeTask}
+          learning={taskLearning}
+          completedTasks={completedTasks}
+          onTaskChange={onTaskChange}
+          onNextLesson={onNextLesson}
+          editor={editorSection}
+          preview={inlinePreview}
+          feedback={feedbackPanel}
+          submission={completion}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="lesson-workspace">
       {playground ? <section className="lesson-overview"><p className="eyebrow">Playground · GameLab</p><h1>{lesson.title}</h1><p className="lesson-summary">{lesson.summary}</p><PlaygroundTools project={files} onImport={onImportProject} /></section> : <LessonOverview lesson={lesson} headingOnly={modular} />}
@@ -61,46 +126,12 @@ export default function LessonWorkspace({
         completedTasks={completedTasks}
         onTaskChange={onTaskChange}
       />}
+      {lesson.id === 'php-sqlite-pdo' && <PhpMysqlShell />}
       {showChange && <GuidedChange starter={activeTask.starter.files} solution={activeTask.solution.files} explanation={activeTask.solutionExplanation} />}
-      <section className="editor-section" aria-labelledby="editor-title">
-        <div className="section-heading-row editor-section-heading">
-          <div>
-            <h2 id="editor-title"><span aria-hidden="true">⌨ </span>{playground ? 'Twój projekt' : 'Zbuduj rozwiązanie'}</h2>
-          </div>
-        </div>
-        <div className="editor-shell">
-          <EditorTabs
-            workspaceKey={activeTask.id}
-            files={files.files}
-            activeFile={path}
-            onFileChange={onFileChange}
-            onAddFile={onAddFile}
-            runtime={files.runtime}
-          />
-          <CodeEditor
-            fileKey={path}
-            fileLabel={path}
-            workspaceKey={activeTask.id}
-            gameDev={files.runtime?.kind === 'game-js'}
-            value={files.files[path] || ""}
-            onChange={onCodeChange}
-            onRun={onRun}
-            onSave={onSave}
-            onReset={()=>{setShowChange(false);onReset?.();}}
-            resetLabel={playground ? 'Nowy projekt' : 'Przywróć start'}
-            onCheck={playground ? undefined : onCheck}
-            onSolution={activeTask.mode === "guided" ? applySolution : undefined}
-            highlight={showChange&&activeTask.solutionExplanation?changedRange(activeTask.starter.files[path]??'',files.files[path]??''):null}
-          />
-          <RuntimeConsole messages={runtimeState?.messages} errors={runtimeErrors} status={runtimeState?.status} />
-        </div>
-      </section>
-      {!playground && <FeedbackPanel
-        checkResults={checkResults}
-        runtimeErrors={runtimeErrors}
-      />}
-      {!playground && lesson.tasks.length > 0 && lesson.tasks.every(task => completedTasks.includes(task.id)) && <section className="lesson-complete" aria-label="Lekcja ukończona"><p><span aria-hidden="true">✓ </span>Lekcja zaliczona!</p>{nextLesson ? <button className="button button--primary" type="button" onClick={onNextLesson}>Następna lekcja: {nextLesson.title} <span aria-hidden="true">→</span></button> : <p>To ostatnia lekcja tej ścieżki.</p>}</section>}
-      {!playground && <nav className="task-next-navigation" aria-label="Kolejne zadanie">{nextTask ? <button className="button button--primary" type="button" onClick={() => onTaskChange(nextTask.id)}>Następne zadanie →</button> : nextLesson && !lesson.tasks.every(task => completedTasks.includes(task.id)) ? <button className="button button--primary" type="button" onClick={onNextLesson}>Następna lekcja →</button> : null}</nav>}
+      {editorSection}
+      {feedbackPanel}
+      {completion}
+      {nextNav}
       </LearningModule>
     </div>
   );

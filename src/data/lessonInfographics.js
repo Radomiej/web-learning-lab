@@ -7,10 +7,11 @@ export const lessonStepInfographics = Object.fromEntries(
   }])),
 );
 
-// Layout lessons ship SVG diagrams via page.image, not lesson-infographics PNGs.
+// These lessons ship SVG diagrams via page.image.
 const svgDiagramLessons = new Set([
   'flex-axis', 'flex-wrap-gap', 'flex-sizing', 'flex-exceptions',
   'flex-patterns', 'grid-basics', 'grid-areas', 'responsive-layouts',
+  'php-html-template', 'php-javascript-data', 'php-sqlite-pdo',
 ]);
 
 export const lessonInfographics = Object.fromEntries(

@@ -17,6 +17,7 @@ import EditorDialog from "./components/EditorDialog.jsx";
 import { normalizeProject } from "./services/projectFiles.js";
 import { applyTutorProposal } from './services/tutorProposals.js';
 import { recordWorkEvent, workHistoryKey } from './services/workHistory.js';
+import { taskLearningFor } from './data/taskLearning.js';
 
 function starterEntry(task, track) {
   const project = normalizeProject(task?.starter, { track });
@@ -179,6 +180,7 @@ export default function App() {
     previewRuntime.clearRuntime();
   };
 
+  const taskLearning = taskLearningFor(activeTask.id);
   const courseRoutes=useMemo(()=>createCourseRoutes(allLessons),[]);
   useCourseRoute(courseRoutes,JSON.stringify([selectedLesson.track,selectedLesson.id,activeTask.id]),target=>{
     selectLesson(target.lesson.id);setActiveTaskId(target.task.id);
@@ -215,12 +217,30 @@ export default function App() {
     if (!previewOpen) { setStage('task'); setPreviewOpen(true); previewRuntime.runPreview(); }
     else { setPreviewOpen(false); previewRuntime.setAutoPreview(false); }
   };
+  const inspectorNode = (
+      <PreviewInspector
+        gameMode={files.runtime?.kind === 'game-js'}
+        previewFiles={Object.keys(files.files).filter((path) =>
+          path.endsWith(".html") || path.endsWith(".php"),
+        )}
+        previewPath={previewRuntime.previewPath}
+        onPreviewPathChange={previewRuntime.setPreviewPath}
+        previewDocument={previewRuntime.previewDocument}
+        previewKey={previewRuntime.previewKey}
+        autoPreview={previewRuntime.autoPreview}
+        onAutoPreviewChange={previewRuntime.setAutoPreview}
+        onMessage={previewRuntime.handleMessage}
+        onFrameReady={previewRuntime.setFrame}
+        runtimeState={{ ...previewRuntime.runtimeState, label: runtimeLabel }}
+      />
+  );
+
   const main = (
     <>
       <MobileHeader
         telemetry={telemetry}
-        previewOpen={previewOpen}
-        onPreviewToggle={togglePreview}
+        previewOpen={taskLearning ? false : previewOpen}
+        onPreviewToggle={taskLearning ? undefined : togglePreview}
         onOpen={() => setSidebarOpen(true)}
         runtimeLabel={runtimeLabel}
       />
@@ -269,6 +289,7 @@ export default function App() {
         onAddFile={() => setDialog("add")}
         onCheck={() => { trackLabEvent('task_check_started'); previewRuntime.checkPreview(); }}
         onSolution={handleSolution}
+        inlinePreview={taskLearning ? inspectorNode : undefined}
         onImportProject={(project) => {
           setProjectRevision(value => value + 1);
           updateFiles(activeTask.id, project);
@@ -376,25 +397,7 @@ export default function App() {
     </>
   );
 
-  const inspector = (
-    <>
-      <PreviewInspector
-        gameMode={files.runtime?.kind === 'game-js'}
-        previewFiles={Object.keys(files.files).filter((path) =>
-          path.endsWith(".html") || path.endsWith(".php"),
-        )}
-        previewPath={previewRuntime.previewPath}
-        onPreviewPathChange={previewRuntime.setPreviewPath}
-        previewDocument={previewRuntime.previewDocument}
-        previewKey={previewRuntime.previewKey}
-        autoPreview={previewRuntime.autoPreview}
-        onAutoPreviewChange={previewRuntime.setAutoPreview}
-        onMessage={previewRuntime.handleMessage}
-        onFrameReady={previewRuntime.setFrame}
-        runtimeState={{ ...previewRuntime.runtimeState, label: runtimeLabel }}
-      />
-    </>
-  );
+  const inspector = taskLearning ? null : inspectorNode;
 
   return (
     <AppShell
@@ -402,8 +405,8 @@ export default function App() {
       sidebar={sidebar}
       main={main}
       inspector={inspector}
-      previewOpen={previewOpen}
-      onPreviewToggle={togglePreview}
+      previewOpen={taskLearning ? false : previewOpen}
+      onPreviewToggle={taskLearning ? undefined : togglePreview}
       sidebarOpen={sidebarOpen}
       onSidebarClose={() => setSidebarOpen(false)}
     />

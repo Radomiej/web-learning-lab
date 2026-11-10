@@ -1,0 +1,32 @@
+.php-condition-diagram {
+  margin: 20px 0 0;
+  padding: 16px;
+  border: 1px solid #c9dde4;
+  border-radius: 12px;
+  color: #16384a;
+  background: #f7fafb;
+}
+.php-condition-diagram figcaption { margin-bottom: 14px; font-size: 18px; }
+.php-condition-diagram table { width: 100%; border-collapse: collapse; background: white; font-size: 14px; }
+.php-condition-diagram caption { padding-bottom: 8px; text-align: left; font-size: 13px; }
+.php-condition-diagram :is(th, td) { padding: 10px 6px; border: 1px solid #c9dde4; text-align: center; }
+.php-condition-diagram th { background: #edf4f6; }
+.php-condition-diagram tbody th { text-align: left; }
+.php-condition-diagram tbody th code { display: block; font-size: 17px; white-space: nowrap; }
+.php-condition-diagram th small { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; }
+.php-truth { display: inline-block; padding: 3px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; font-weight: 700; }
+.php-truth--true { color: #125e58; background: #dff3ed; }
+.php-truth--false { color: #8b2838; background: #fbe7ec; }
+.php-condition-flow { display: grid; justify-items: center; gap: 6px; padding: 12px; border: 1px solid #9bd1c8; border-radius: 8px; background: white; text-align: center; }
+.php-logic-rule { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.php-logic-rule p { display: grid; gap: 6px; margin: 0; padding: 12px; border: 1px solid #c5b0e6; border-radius: 8px; background: white; }
+.php-logic-rule code { color: #503681; font-size: 19px; font-weight: 700; }
+.php-logic-rule span, .php-condition-example { font-size: 14px; line-height: 1.7; }
+@media (max-width: 600px) {
+  .php-condition-diagram { padding: 10px; }
+  .php-condition-diagram :is(th, td) { padding: 8px 3px; }
+  .php-condition-diagram th { font-size: 12px; }
+  .php-condition-diagram tbody th code { font-size: 15px; }
+  .php-truth { padding: 3px; font-size: 12px; }
+  .php-logic-rule { grid-template-columns: 1fr; }
+}

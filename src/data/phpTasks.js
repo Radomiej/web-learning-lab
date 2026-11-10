@@ -1,11 +1,12 @@
 import { createTask } from './lessonFactories.js';
 import { lessonSequence } from './lessonNumbers.js';
+import { phpProfileExercises } from './phpProfileExercises.js';
 
-function projectWithSource(base, source) {
+function projectWithSource(base, source, extraFiles) {
   return {
     entry: base.entry,
     runtime: { ...base.runtime },
-    files: { ...base.files, [base.entry]: source },
+    files: { ...base.files, ...extraFiles, [base.entry]: source },
   };
 }
 
@@ -207,6 +208,25 @@ function makeChecks(id, recipe) {
 }
 
 export function phpTasks(definition, base) {
+  const exercises = phpProfileExercises[definition.order];
+  if (exercises) {
+    const taskPrefix = definition.taskPrefix ?? `php-${definition.order}`;
+    return exercises.map((recipe, index) => {
+      const id = `${taskPrefix}-${recipe.suffix ?? `exercise-${index + 1}`}`;
+      return createTask({
+        id,
+        mode: 'exercise',
+        track: 'php',
+        title: recipe.title,
+        prompt: recipe.prompt,
+        starter: projectWithSource(base, recipe.starter, recipe.starterFiles),
+        solution: projectWithSource(base, recipe.solution, recipe.solutionFiles ?? recipe.starterFiles),
+        checks: makeChecks(id, recipe),
+        ...(recipe.steps ? { steps: recipe.steps } : {}),
+        ...(recipe.hint ? { hint: recipe.hint } : {}),
+      });
+    });
+  }
   const localOrder = lessonSequence(definition.track ?? 'php', definition.order);
   return ['guided', 'independent'].map((mode) => {
     const recipe = recipes[localOrder + 39]?.[mode];
