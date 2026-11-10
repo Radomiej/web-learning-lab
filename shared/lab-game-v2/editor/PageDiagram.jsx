@@ -2,7 +2,7 @@ import { useId } from 'react';
 import { assetManifest } from '../assets/Assets.js';
 import './PageDiagram.css';
 
-function Sprite({ asset = 'player', x, y, size = 48, flip = false, opacity = 1 }) {
+export function Sprite({ asset = 'player', x, y, size = 48, flip = false, opacity = 1 }) {
   const item = assetManifest.assets.find(value => value.key === asset);
   if (!item) return null;
   return <g opacity={opacity} transform={flip ? `translate(${2*x+size} 0) scale(-1 1)` : undefined}>
@@ -52,6 +52,42 @@ export default function PageDiagram({ page }) {
   }
   let content;
   switch (kind) {
+    case 'sprint-distance': content = <>
+      <Label x={220} y={38}>Ruch w prawo przez 0,5 s</Label>
+      <Label x={30} y={80} anchor="start">D · 100 px/s</Label>
+      <Sprite x={36} y={91} size={48}/>
+      {arrow(94,115,218,115)}
+      <Label x={156} y={151}>50 px</Label>
+      <Label x={30} y={200} anchor="start">D + Shift · 200 px/s</Label>
+      <Sprite x={36} y={211} size={48}/>
+      {arrow(94,235,342,235)}
+      <Label x={218} y={271}>100 px</Label>
+    </>; break;
+    case 'flee-range': content = <>
+      <path d="M104 70H224V230Z" fill="#edf5e7" stroke="#83a792" strokeWidth="3"/>
+      <Sprite asset="slime" x={56} y={22} size={96}/>
+      <Sprite x={176} y={182} size={96}/>
+      <Label x={60} y={32}>Slime</Label>
+      <Label x={224} y={296}>Gracz</Label>
+      <Label x={183} y={53}>dx = 72 px</Label>
+      <Label x={306} y={154}>dy = 96 px</Label>
+      <Label x={111} y={182}>120 px</Label>
+    </>; break;
+    case 'chase-motion': content = <>
+      <rect x="10" y="45" width="420" height="226" rx="12" fill="#edf5e7" stroke="#a2bd9d"/>
+      <Label x={106} y={80}>Slime: pościg</Label>
+      <Label x={322} y={80}>Gracz: klawisz D</Label>
+      <path d="M28 185H412" stroke="#b5cdb0" strokeDasharray="5 5"/>
+      <Sprite asset="slime" x={16} y={113} size={96} opacity={0.4}/>
+      <Sprite asset="slime" x={79} y={113} size={96}/>
+      <Sprite x={198} y={113} size={96} opacity={0.4}/>
+      <Sprite x={324} y={113} size={96}/>
+      {arrow(64,207,127,207,'#a65d24')}
+      {arrow(246,207,372,207)}
+      <Label x={96} y={239} color="#a65d24">30 px</Label>
+      <Label x={309} y={239}>60 px</Label>
+      <Label x={220} y={305}>Ruch obu postaci przez 0,5 s</Label>
+    </>; break;
     case 'component-appearance': content=<>
       <rect x="35" y="55" width="165" height="145" rx="12" fill="#fff" stroke="#90aaa0" strokeDasharray="5 5"/>
       <circle cx="118" cy="125" r="4" fill="#d85158"/>
@@ -127,7 +163,8 @@ export default function PageDiagram({ page }) {
       <Label x={265} y={245}>(1,1): √2</Label><Label x={220} y={310}>(0.707,0.707): długość 1</Label>
       <Label x={240} y={150} color="#397fce">po normalizacji</Label><Label x={220} y={30} color="#d85158">(1,0): długość 1</Label>
     </> : <>
-      <Sprite asset={variant===3?'slime':'player'} x={65} y={95}/><Sprite x={320} y={95}/>
+      <Sprite asset={variant===3?'slime':'player'} x={variant===3?41:65} y={variant===3?71:95} size={variant===3?96:48}/>
+      <Sprite x={variant===3?296:320} y={variant===3?71:95} size={variant===3?96:48}/>
       {variant!==2&&arrow(125,120,307,120)}<Label x={90} y={175}>x = 100</Label><Label x={345} y={175}>{variant===2?'x = 100':'x = 160'}</Label>
       <Label x={220} y={60}>{variant===2?'kierunek (0,0)':variant===3?'cel − przeciwnik = (60,0)':'120 px/s × 0.5 s'}</Label>
       <Label x={220} y={235}>{variant===2?'Nie dziel przez zero':variant===3?'Normalizacja → (1,0)':'Przesunięcie: 60 px →'}</Label>

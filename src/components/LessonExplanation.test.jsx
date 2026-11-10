@@ -37,3 +37,17 @@ test('g2d.input shows five intro pages then shared pages including component loo
 test('lessons without an introduction keep their three shared diagram pages', () => {
   expect(explanationPages({ id: 'g2d.collisions' })).toHaveLength(3);
 });
+
+test('g2d.enemy-ai shows four pages with JavaScript chase and flee code', () => {
+  const pages = explanationPages({ id: 'g2d.enemy-ai' });
+  expect(pages).toHaveLength(4);
+  expect(pages[2].code.js).toContain('this.requireComponent(GameLab.CharacterController2D)');
+  expect(pages[2].code.java).toContain('requireComponent(CharacterController2D.class)');
+  expect(pages[3].code.js).toContain('Math.hypot(dx, dy)');
+  expect(pages[3].codeContext.js).toContain('FleeAI.onUpdate()');
+
+  render(<LessonExplanation lesson={{ id: 'g2d.enemy-ai' }} language="javascript" />);
+  for (let step = 0; step < 3; step++) fireEvent.click(screen.getByRole('button', { name: 'Następny krok' }));
+  expect(screen.getByRole('heading', { name: 'Kiedy Slime zaczyna uciekać?' })).toBeInTheDocument();
+  expect(screen.getByText(/Pole this\.target wskazuje gracza/)).toBeInTheDocument();
+});

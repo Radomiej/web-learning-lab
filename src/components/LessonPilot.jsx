@@ -1,22 +1,56 @@
 import { useEffect, useRef, useState } from 'react';
 import CodeExample from '../../shared/lab-game-v2/editor/CodeExample.jsx';
+import PageDiagram from '../../shared/lab-game-v2/editor/PageDiagram.jsx';
 import CopyLessonLink from './CopyLessonLink.jsx';
 import HtmlLessonExample from './HtmlLessonExample.jsx';
+import GameDevTerms from './GameDevTerms.jsx';
+import ChaseVectorBoard from './ChaseVectorBoard.jsx';
 import StepTrial from './StepTrial.jsx';
 import { codeText } from './codeText.jsx';
 import './LessonPilot.css';
 
+const CodeText = ({ text }) => <>{codeText(text)}</>;
+
+function PlatformTrial() {
+  const [played, setPlayed] = useState(false);
+  return <div className="pilot-platform-trial">
+    <svg viewBox="0 70 440 155" role="img" aria-label={played ? 'Platforma A: x = 120. Platforma B: x = 340.' : 'Położenie początkowe platform A i B.'}>
+      <rect x="0" y="70" width="440" height="155" rx="10" fill="#10263a" />
+      <rect x="70" y="170" width="100" height="20" rx="3" fill="#70c994" />
+      <text x="120" y="209" textAnchor="middle" fill="#fff">PlatformA</text>
+      <g className="pilot-trial-moving" transform={played ? 'translate(40 0)' : undefined}>
+        <rect x="260" y="110" width="80" height="20" rx="3" fill="#ffd166" />
+        <text x="300" y="150" textAnchor="middle" fill="#fff">PlatformB</text>
+      </g>
+    </svg>
+    <button className={played ? 'button button--ghost' : 'button button--primary pilot-trial-play'}
+      type="button" onClick={() => setPlayed(current => !current)}>
+      {!played && <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4 2.5v11L13 8Z" fill="currentColor" />
+      </svg>}
+      {played ? 'Przywróć położenie startowe' : 'Odtwórz próbę'}
+    </button>
+    <p role="status">{played ? 'PlatformA stoi na x = 120. PlatformB przesunęła się z x = 300 na x = 340.' : 'Stan początkowy'}</p>
+  </div>;
+}
+
 function TheoryVisual({ learning }) {
+  if (learning.board?.kind === 'chase') {
+    return <ChaseVectorBoard mode={learning.board.mode} />;
+  }
   if (learning.visual?.kind === 'html') {
     return <HtmlLessonExample page={{ title: learning.title, code: learning.visual.code }} />;
+  }
+  if (learning.visual?.kind) {
+    return <PageDiagram page={learning} />;
   }
   return null;
 }
 
-function AnswerDetails({ answer }) {
+function AnswerDetails({ answer, Terms }) {
   return <details className="pilot-observation">
     <summary>Porównaj z oczekiwanym wynikiem</summary>
-    <p>{codeText(answer)}</p>
+    <p><Terms text={answer} /></p>
     <p>Jeśli wynik różni się od przewidywania, znajdź w kodzie instrukcję lub warunek, który o nim decyduje.</p>
   </details>;
 }
@@ -65,6 +99,7 @@ export default function LessonPilot({
     }
   };
   const cheatsheet = learning.cheatsheet;
+  const Terms = lesson.track === 'game-dev' ? GameDevTerms : CodeText;
 
   return <>
     <nav className="pilot-task-picker" aria-label="Wybierz zadanie">
@@ -82,7 +117,7 @@ export default function LessonPilot({
         <summary><strong>Teoria pod ręką</strong><span>{learning.title}</span></summary>
         <div className="pilot-disclosure-body">
           <h2>{learning.title}</h2>
-          <p>{codeText(learning.text)}</p>
+          <p><Terms text={learning.text} /></p>
           <div className="pilot-theory-grid">
             <TheoryVisual key={activeTask.id} learning={learning} />
             <div><h3>Zapis w kodzie</h3><CodeExample key={activeTask.id} code={learning.code} /></div>
@@ -91,20 +126,20 @@ export default function LessonPilot({
         </div>
       </details>
       <details className="pilot-disclosure" key={`predict-${activeTask.id}`}>
-        <summary><strong>Przewidź i sprawdź</strong><span>{codeText(learning.question)}</span><small>Opcjonalnie</small></summary>
+        <summary><strong>Przewidź i sprawdź</strong><span><Terms text={learning.question} /></span><small>Opcjonalnie</small></summary>
         <div className="pilot-disclosure-body">
-          <p>{codeText(learning.prediction.context)}</p>
+          <p><Terms text={learning.prediction.context} /></p>
           <div className="pilot-prediction-code">
             <CodeExample label="Kod próby" code={learning.prediction.code} />
           </div>
           <PredictionQuiz question={learning.prediction.quizQuestion} options={learning.prediction.options} />
           {learning.trace ? <>
-            {learning.trial && <p><strong>Sprawdź.</strong> {codeText(learning.trial)}</p>}
+            {learning.trial && <p><strong>Sprawdź.</strong> <Terms text={learning.trial} /></p>}
             <StepTrial trace={learning.trace} />
-            <AnswerDetails answer={learning.answer} />
-          </> : <>
-            <p><strong>Sprawdź.</strong> {codeText(learning.trial)}</p>
-            <AnswerDetails answer={learning.answer} />
+            <AnswerDetails answer={learning.answer} Terms={Terms} />
+          </> : learning.trialWidget === 'platform' ? <PlatformTrial /> : <>
+            <p><strong>Sprawdź.</strong> <Terms text={learning.trial} /></p>
+            <AnswerDetails answer={learning.answer} Terms={Terms} />
           </>}
         </div>
       </details>
@@ -116,23 +151,23 @@ export default function LessonPilot({
         <CopyLessonLink />
       </div>
       <h2 id="pilot-task-title" tabIndex={-1} ref={heading}>Zadanie {taskIndex + 1} · {activeTask.title}</h2>
-      <p className="pilot-prompt">{codeText(activeTask.prompt)}</p>
+      <p className="pilot-prompt"><Terms text={activeTask.prompt} /></p>
       {activeTask.criteria?.length > 0 && <details className="pilot-criteria" key={`criteria-${activeTask.id}`}>
         <summary>Kryteria zaliczenia</summary>
-        <ul>{activeTask.criteria.map(criterion => <li key={criterion}>{codeText(criterion)}</li>)}</ul>
+        <ul>{activeTask.criteria.map(criterion => <li key={criterion}><Terms text={criterion} /></li>)}</ul>
       </details>}
       {activeTask.steps?.length > 0 && <details className="pilot-criteria" key={`steps-${activeTask.id}`}>
         <summary>Kroki</summary>
-        <ol>{activeTask.steps.map(step => <li key={step}>{codeText(step)}</li>)}</ol>
+        <ol>{activeTask.steps.map(step => <li key={step}><Terms text={step} /></li>)}</ol>
       </details>}
       {(activeTask.hints?.length > 0 || activeTask.hint) && <details className="pilot-criteria" key={`hints-${activeTask.id}`}>
         <summary>Wskazówki</summary>
-        <ul>{(activeTask.hints ?? [activeTask.hint]).map(hint => <li key={hint}>{codeText(hint)}</li>)}</ul>
+        <ul>{(activeTask.hints ?? [activeTask.hint]).map(hint => <li key={hint}><Terms text={hint} /></li>)}</ul>
       </details>}
       {cheatsheet && <details className="pilot-disclosure pilot-cheatsheet">
         <summary><strong>Ściąga do zadania</strong><span>{cheatsheet.title}</span></summary>
         <div className="pilot-disclosure-body">
-          <p>{codeText(cheatsheet.intro)}</p>
+          <p><Terms text={cheatsheet.intro} /></p>
           <CodeExample {...cheatsheet.examples[0]} />
           {cheatsheet.examples.length > 1 && <details className="pilot-cheatsheet-alternatives">
             <summary>Pokaż inne sposoby</summary>

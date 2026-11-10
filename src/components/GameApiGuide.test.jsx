@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import GameApiGuide from './GameApiGuide.jsx';
+import GameDevTerms from './GameDevTerms.jsx';
 
 test('opens a modal and restores the trigger focus after Escape', () => {
   render(<GameApiGuide />);
@@ -67,4 +68,27 @@ test('shows the asset catalog with names, keys and sprite previews', async () =>
   fireEvent.change(screen.getByLabelText('Znajdź grafikę'), { target: { value: '' } });
   fireEvent.click(screen.getByRole('button', { name: 'slime — kopiuj GameLab.Assets.SLIME' }));
   expect(await screen.findByText('✓ Skopiowano')).toBeInTheDocument();
+});
+
+test('opens the GameObject entry from a highlighted term and restores focus on close', async () => {
+  render(
+    <div>
+      <GameApiGuide />
+      <GameDevTerms text="GameObject i EnemyAI" />
+    </div>,
+  );
+  const trigger = screen.getByRole('button', { name: 'Dokumentacja: GameObject' });
+  fireEvent.click(trigger);
+  const dialog = screen.getByRole('dialog');
+  expect(within(dialog).getByLabelText('Wyszukaj klasę lub metodę')).toHaveValue('GameObject');
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Zamknij dokumentację' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(trigger).toHaveFocus();
+});
+
+test('highlights identifiers without splitting Polish words', () => {
+  const { container } = render(<GameDevTerms text="Sprite i zniszczenie obiektu" />);
+  const button = screen.getByRole('button', { name: 'Dokumentacja: Sprite' });
+  expect(button).toHaveClass('pilot-term', 'pilot-term--docs');
+  expect(container.textContent).toBe('Sprite i zniszczenie obiektu');
 });

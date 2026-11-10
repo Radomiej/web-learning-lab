@@ -54,6 +54,18 @@ export default function GameApiGuide() {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef(null);
   const triggerRef = useRef(null);
+  const returnFocus = useRef(null);
+  useEffect(() => {
+    const openEntry = ({ detail }) => {
+      returnFocus.current = detail?.trigger ?? null;
+      setSection('reference');
+      setCategory('Wszystko');
+      setQuery(detail?.entry ?? '');
+      setOpen(true);
+    };
+    window.addEventListener('web-lab-open-api-guide', openEntry);
+    return () => window.removeEventListener('web-lab-open-api-guide', openEntry);
+  }, []);
   useEffect(() => {
     if (!open) return;
     const dialog = dialogRef.current;
@@ -65,7 +77,9 @@ export default function GameApiGuide() {
     return () => {
       dialog.close?.();
       document.body.style.overflow = overflow;
-      triggerRef.current?.focus();
+      const target = returnFocus.current;
+      (target?.isConnected ? target : triggerRef.current)?.focus();
+      returnFocus.current = null;
     };
   }, [open]);
   const [section, setSection] = useState('start');

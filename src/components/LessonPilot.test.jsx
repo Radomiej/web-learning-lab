@@ -1,6 +1,7 @@
 import { afterEach, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import LessonPilot from './LessonPilot.jsx';
+import { gameDevTaskLearning } from '../data/gameDevTaskLearning.js';
 
 afterEach(cleanup);
 
@@ -46,4 +47,34 @@ it('grades the quick quiz with why-feedback for wrong and right answers', () => 
   fireEvent.click(screen.getByLabelText(/Dobra odpowiedź/));
   fireEvent.click(check);
   expect(verdict()).toContain('Dobrze! bo właśnie tak');
+});
+
+it('renders the game-dev pilot with linked terms, a chase board and a cheatsheet', () => {
+  const gdLesson = {
+    id: 'g2d.enemy-ai', track: 'game-dev',
+    tasks: [{ id: 'g2d.enemy-ai.independent', title: 'Ucieczka', prompt: 'Zmień GameObject Slime' }],
+  };
+  const { container } = render(
+    <LessonPilot {...props} lesson={gdLesson} activeTask={gdLesson.tasks[0]}
+      learning={gameDevTaskLearning['g2d.enemy-ai.independent']} />,
+  );
+  expect(container.querySelector('.pilot-vector-board')).toBeInTheDocument();
+  expect(container.querySelector('.pilot-cheatsheet')).toBeInTheDocument();
+  const docButtons = screen.getAllByRole('button', { name: /^Dokumentacja: / });
+  expect(docButtons.length).toBeGreaterThan(0);
+});
+
+it('renders the platform trial widget for g2d.scene.modified', () => {
+  const gdLesson = {
+    id: 'g2d.scene', track: 'game-dev',
+    tasks: [{ id: 'g2d.scene.modified', title: 'Przesunięcie', prompt: 'Przesuń PlatformB' }],
+  };
+  const { container } = render(
+    <LessonPilot {...props} lesson={gdLesson} activeTask={gdLesson.tasks[0]}
+      learning={gameDevTaskLearning['g2d.scene.modified']} />,
+  );
+  const trial = container.querySelector('.pilot-platform-trial');
+  expect(trial).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Odtwórz próbę' }));
+  expect(trial.querySelector('[role="status"]')).toHaveTextContent('x = 340');
 });

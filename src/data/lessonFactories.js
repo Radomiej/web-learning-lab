@@ -54,6 +54,7 @@ export function createLesson(input = {}) {
     tokenFile: input.tokenFile ?? '',
     objectives: input.objectives ?? [],
     theory: input.theory ?? [],
+    tips: input.tips ?? [],
     starter,
     solution,
     tasks: (input.tasks ?? []).map((task) => createTask({ track, ...task })),

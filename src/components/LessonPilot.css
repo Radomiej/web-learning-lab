@@ -93,6 +93,8 @@
 
 .pilot-theory-grid > * { min-width: 0; }
 .pilot-theory-grid .html-lesson-example { margin: 0; }
+.pilot-theory-grid .page-diagram { margin: 0; }
+.pilot-theory-grid .page-diagram svg { max-height: 230px; }
 
 .pilot-return {
   display: block;
@@ -123,11 +125,66 @@
 
 .pilot-task > h2 { margin: 8px 0; font-size: clamp(1.2rem, 3vw, 1.85rem); scroll-margin-top: 18px; }
 .pilot-prompt { margin: 0 0 12px; line-height: 1.5; }
+.pilot-term {
+  padding: .06em .28em;
+  border-radius: 4px;
+  background: #eef1f7;
+  color: #33466a;
+  font: 600 .92em var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.pilot-term--docs {
+  border: 0;
+  background: #e5f3f2;
+  color: #00565e;
+  text-decoration: underline;
+  text-underline-offset: .15em;
+  cursor: pointer;
+}
+
+.pilot-term--docs:hover { background: #cce9e7; }
+.pilot-term--docs:focus-visible { outline: 2px solid #006b70; outline-offset: 2px; }
+.pilot-term--docs:focus-visible:not([data-summary-dismissed])::after {
+  content: attr(data-summary);
+  position: fixed;
+  z-index: 10;
+  inset-inline: 12px;
+  bottom: 16px;
+  width: fit-content;
+  max-width: calc(100vw - 24px);
+  margin-inline: auto;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #17324a;
+  color: white;
+  font: 500 .9rem/1.4 system-ui, sans-serif;
+  pointer-events: none;
+}
+
 .pilot-criteria { margin-bottom: 16px; color: var(--ink-700); }
 .pilot-criteria li + li { margin-top: 5px; }
 .pilot-cheatsheet { margin-bottom: 16px; }
 .pilot-cheatsheet-alternatives > summary { margin-top: 10px; cursor: pointer; }
+.pilot-platform-trial > svg { display: block; width: min(100%, 530px); margin-bottom: 12px; }
+.pilot-trial-play { display: inline-flex; align-items: center; gap: 8px; }
+.pilot-vector-board > svg { display: block; width: 100%; border-radius: 10px; background: #10263a; user-select: none; }
+.pilot-vector-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.pilot-vector-actor { cursor: grab; touch-action: none; outline: none; }
+.pilot-vector-actor[data-dragging] { cursor: grabbing; }
+.pilot-vector-actor:is(:focus-visible, [data-dragging]) > circle { stroke: #66e1cd; stroke-width: 4px; }
+.pilot-vector-actor text { pointer-events: none; }
+.pilot-vector-label { fill: #f8dd90; stroke: #10263a; stroke-width: 4px; paint-order: stroke; font: 700 15px var(--mono); pointer-events: none; }
+.pilot-vector-label--move { fill: #66e1cd; }
+.pilot-vector-values { width: 100%; margin: 10px 0; border-collapse: collapse; text-align: left; }
+.pilot-vector-values :is(th, td) { padding: 5px 9px; border-bottom: 1px solid var(--line); }
+.pilot-vector-values thead { background: #ffdb74; color: #302000; }
+.pilot-vector-values td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .pilot-prediction-code { max-width: 530px; }
+.pilot-trial-moving { transition: transform .35s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .pilot-trial-moving { transition: none; }
+}
 
 .pilot-workbench {
   display: grid;
