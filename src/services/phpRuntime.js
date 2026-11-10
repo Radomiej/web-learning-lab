@@ -160,8 +160,14 @@ async function executePhpProject({ files = {}, entry = 'index.php', request = {}
     ? await withTimeout(handler.request(prepareRequest(request, requestPath)))
     : await withTimeout(php.run({ scriptPath: `${runRoot}/${entryPath}` }));
   const stderr = String(response?.errors || '');
+  const responseHeaders = {};
+  for (const [name, values] of Object.entries(asRecord(response?.headers))) {
+    responseHeaders[name.toLowerCase()] = Array.isArray(values) ? values.join(', ') : String(values);
+  }
   return {
     html: String(response?.text || ''),
+    status: Number(response?.httpStatusCode ?? 0) || (hasRequest ? 200 : 0),
+    headers: responseHeaders,
     errors: stderr ? [stderr] : [],
     stderr,
     exitCode: Number(response?.exitCode ?? 0),

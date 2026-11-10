@@ -155,6 +155,14 @@ function evaluateOne(check = {}, context = {}) {
           ? resultFor(check, true, 'Znaleziono wymagany zapis w kodzie.')
           : resultFor(check, false, `Brak oczekiwanego zapisu w ${check.file || 'pliku'}.`);
       }
+      case 'sourceNotMatches': {
+        const source = getFile(files, check.file);
+        let regex = null;
+        try { regex = new RegExp(safeString(check.pattern), check.flags || ''); } catch { regex = null; }
+        return regex && regex.test(source)
+          ? resultFor(check, false, `Zapis, którego nie powinno być, jest w ${check.file || 'pliku'}.`)
+          : resultFor(check, true, 'Kod nie zawiera niedozwolonego zapisu.');
+      }
       case 'consoleOutput': {
         const expected = safeString(expectedValue(check));
         const output = Array.isArray(signals.consoleOutput) ? signals.consoleOutput : [];
@@ -270,7 +278,30 @@ function evaluateOne(check = {}, context = {}) {
             return resultFor(check, false, 'Kliknięcie nie uruchomiło wysłania formularza — sprawdzany element powinien być przyciskiem submit wewnątrz form.');
           }
         }
-        return resultFor(check, false, 'Interakcja zadziałała, ale wynik nie spełnia oczekiwania.');
+        const target = check.resultSelector || check.selector || 'element';
+        const mismatches = [];
+        if (!beforePasses && expected.beforeText != null) {
+          mismatches.push(`Przed kliknięciem ${target} miał tekst „${safeString(interaction.before?.text).trim()}”, oczekiwano „${expected.beforeText}”.`);
+        }
+        if (!exactPasses && expected.textEquals != null) {
+          mismatches.push(`W ${target} jest „${actualText.trim()}”, oczekiwano „${expected.textEquals}”.`);
+        }
+        if (!textPasses && expected.text != null) {
+          mismatches.push(`W ${target} jest „${actualText.trim()}”, oczekiwano tekstu zawierającego „${expected.text}”.`);
+        }
+        if (!classPasses && expected.class != null) {
+          mismatches.push(`Element ${check.selector} ma klasę „${safeString(interaction.className)}”, oczekiwano klasy „${expected.class}”.`);
+        }
+        if (!visiblePasses && expected.visible != null) {
+          mismatches.push(`Element ${check.selector} jest ${interaction.visible ? 'widoczny' : 'niewidoczny'}, oczekiwano stanu ${expected.visible ? 'widoczny' : 'niewidoczny'}.`);
+        }
+        if (!attributePasses && expected.attribute) {
+          mismatches.push(`Atrybut ${expected.attribute.name} elementu ${check.selector} ma wartość „${safeString((interaction.attrs || interaction.attributes)?.[expected.attribute.name])}”, oczekiwano „${expected.attribute.value}”.`);
+        }
+        if (!submitPasses && expected.submitCanceled === false) {
+          mismatches.push('Wysłanie formularza zostało przerwane, a oczekiwano przejścia dalej.');
+        }
+        return resultFor(check, false, mismatches.join(' ') || 'Interakcja zadziałała, ale wynik nie spełnia oczekiwania.');
       }
       case 'noHorizontalOverflow': {
         const viewport = signals.viewport || {};

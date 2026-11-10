@@ -195,21 +195,29 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
       });
   }, [scheduleCheckEvaluation]);
 
-  const sendDeclaredActions = useCallback(() => {
-    checksRef.current
-      .filter((check) => check.type === 'interaction' && check.selector)
-      .forEach((check) => sendToFrame({
-        source: 'web-learning-lab',
-        type: 'run-action',
-        payload: {
-          checkId: check.id,
-          selector: check.selector,
-          resultSelector: check.resultSelector,
-          action: check.action || 'click',
-          value: check.value,
-        },
-      }));
+  // Interactions run one at a time — an action (np. fetch → php-wasm) may take
+  // seconds and a second click could overwrite its result before the first
+  // signal was captured.
+  const actionQueueRef = useRef([]);
+  const sendNextAction = useCallback(() => {
+    const check = actionQueueRef.current[0];
+    if (!check) return;
+    sendToFrame({
+      source: 'web-learning-lab',
+      type: 'run-action',
+      payload: {
+        checkId: check.id,
+        selector: check.selector,
+        resultSelector: check.resultSelector,
+        action: check.action || 'click',
+        value: check.value,
+      },
+    });
   }, [sendToFrame]);
+  const sendDeclaredActions = useCallback(() => {
+    actionQueueRef.current = checksRef.current.filter((check) => check.type === 'interaction' && check.selector);
+    sendNextAction();
+  }, [sendNextAction]);
 
   const handleMessage = useCallback((message) => {
     if (!message) return;
@@ -225,6 +233,20 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
         sendToFrame({ source: 'web-learning-lab', type: 'collect-signals', payload: { checks: checksRef.current } });
         sendDeclaredActions();
       }
+      return;
+    }
+
+    if (message.type === 'php-fetch') {
+      const { id, path, method, query, headers, body } = message.payload || {};
+      runPhpProject({
+        files: filesRef.current.files,
+        entry: path || 'index.php',
+        request: { method, query, headers, body: body || undefined },
+      }).then((result) => {
+        sendToFrame({ source: 'web-learning-lab', type: 'php-fetch-result', payload: { id, status: result.status || 200, headers: result.headers || {}, body: result.html } });
+      }).catch((error) => {
+        sendToFrame({ source: 'web-learning-lab', type: 'php-fetch-result', payload: { id, status: 500, headers: {}, body: String(error?.message || error) } });
+      });
       return;
     }
 
@@ -255,6 +277,11 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     }
 
     if (message.type === 'signals') {
+      const inFlight = actionQueueRef.current[0];
+      if (inFlight && message.payload?.interactions?.[inFlight.id]) {
+        actionQueueRef.current = actionQueueRef.current.slice(1);
+        sendNextAction();
+      }
       signalsRef.current = mergeSignals(signalsRef.current, message.payload);
       setRuntimeState((current) => ({
         ...current,
@@ -276,6 +303,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   const runPreview = useCallback((nextFiles, documentPath) => {
     clearAutoPreviewTimer();
     pendingCheckRef.current = false;
+    actionQueueRef.current = [];
     clearEvaluationTimer();
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });

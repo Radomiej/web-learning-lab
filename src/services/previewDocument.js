@@ -106,6 +106,58 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
     }
   }
 
+  // Fetch shim: relatywne adresy .php nie istnieją w podglądzie srcdoc —
+  // przekazujemy je do rodzica, który wykonuje projekt w php-wasm.
+  const nativeFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+  const fetchCalls = new Map();
+  let fetchSeq = 0;
+  window.fetch = function bridgedFetch(input, init = {}) {
+    const url = typeof input === 'string' ? input : (input && input.url) || '';
+    const isRelativePhp = url && !/^[a-z][a-z0-9+.-]*:/i.test(url) && !url.startsWith('//') && /\\.php($|[?#])/i.test(url);
+    if (!isRelativePhp) {
+      if (nativeFetch) return nativeFetch(input, init);
+      return Promise.reject(new TypeError('W podglądzie działa fetch tylko do plików .php projektu: ' + url));
+    }
+    const method = String(init.method || 'GET').toUpperCase();
+    let headers = {};
+    try { headers = init.headers ? Object.fromEntries(new Headers(init.headers).entries()) : {}; } catch {}
+    let body = init.body == null ? '' : init.body;
+    if (body instanceof FormData || body instanceof URLSearchParams) {
+      body = new URLSearchParams(body).toString();
+      if (!Object.keys(headers).some(key => key.toLowerCase() === 'content-type')) {
+        headers['content-type'] = 'application/x-www-form-urlencoded';
+      }
+    } else {
+      body = String(body);
+    }
+    const queryIndex = url.indexOf('?');
+    const path = queryIndex === -1 ? url : url.slice(0, queryIndex);
+    const query = {};
+    if (queryIndex !== -1) {
+      try { for (const [key, value] of new URLSearchParams(url.slice(queryIndex + 1))) query[key] = value; } catch {}
+    }
+    const id = 'fetch-' + (++fetchSeq);
+    send('php-fetch', { id, path, method, query, headers, body });
+    return new Promise((resolve, reject) => { fetchCalls.set(id, { resolve, reject }); });
+  };
+  function handleFetchResult(payload = {}) {
+    const call = fetchCalls.get(payload.id);
+    if (!call) return;
+    fetchCalls.delete(payload.id);
+    if (payload.error) {
+      call.reject(new TypeError(stringify(payload.error)));
+      return;
+    }
+    try {
+      call.resolve(new Response(payload.body == null ? '' : String(payload.body), {
+        status: Number(payload.status) || 200,
+        headers: payload.headers || {},
+      }));
+    } catch (error) {
+      call.reject(error);
+    }
+  }
+
   // jsProbe checks evaluate an expression in the student's global scope, so
   // top-level let/const bindings are visible to the indirect eval below.
   function collectProbes() {
@@ -258,6 +310,10 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
   window.addEventListener('message', (event) => {
     const message = event.data;
     if (!message || message.source !== source) return;
+    if (message.type === 'php-fetch-result') {
+      handleFetchResult(message.payload || {});
+      return;
+    }
     if (message.type === 'collect-signals') {
       collectGameScenarios();
       snapshot();
@@ -268,8 +324,23 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
     let element = null;
     try { element = document.querySelector(action.selector); } catch {}
     if (!element) {
-      send('signals', { interactions: { [action.checkId || action.id || action.selector]: { ok: false, selector: action.selector, reason: 'missing-selector' } }, action: { ok: false, selector: action.selector, reason: 'missing-selector' } });
-      snapshot();
+      // Doc may still be settling after a run — retry briefly before failing.
+      const interactionKey = action.checkId || action.id || action.selector;
+      let missingRetries = 0;
+      const retryMissing = () => {
+        try { element = document.querySelector(action.selector); } catch {}
+        if (element) {
+          window.dispatchEvent(new MessageEvent('message', { data: { source, type: 'run-action', payload: action } }));
+          return;
+        }
+        if (++missingRetries > 10) {
+          send('signals', { interactions: { [interactionKey]: { ok: false, selector: action.selector, reason: 'missing-selector' } }, action: { ok: false, selector: action.selector, reason: 'missing-selector' } });
+          snapshot();
+          return;
+        }
+        window.setTimeout(retryMissing, 150);
+      };
+      window.setTimeout(retryMissing, 150);
       return;
     }
     const before = describeElement(action.resultSelector ? document.querySelector(action.resultSelector) : element);
@@ -282,13 +353,37 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
       element.dispatchEvent(new Event('change', { bubbles: true }));
     }
     const interactionId = action.checkId || action.id || action.selector;
-    window.setTimeout(() => {
+    const finishInteraction = () => {
       const target = action.resultSelector ? document.querySelector(action.resultSelector) : element;
       const interaction = describeElement(target);
       const formSubmit = action.action === 'click' ? lastFormSubmit : null;
       send('signals', { interactions: { [interactionId]: { ...interaction, before, ok: Boolean(target), ...(formSubmit ? { formSubmit } : {}) } } });
       snapshot();
-    }, 50);
+    };
+    // Async results (np. fetch → php-wasm) potrafią trwać sekundami — wydłużamy
+    // oczekiwanie tylko dopóki któryś fetch jest w toku; bez niego kończymy
+    // po krótkim czasie ustalenia jak dawniej.
+    const checkSpec = requestedSignals.find(check => check && (check.id === interactionId));
+    const expectsText = checkSpec && checkSpec.expected && (checkSpec.expected.text != null || checkSpec.expected.textEquals != null);
+    if (!expectsText) {
+      window.setTimeout(finishInteraction, 50);
+      return;
+    }
+    const beforeKey = JSON.stringify(before);
+    const startedAt = Date.now();
+    const deadline = startedAt + 9000;
+    const pollInteraction = () => {
+      const target = action.resultSelector ? document.querySelector(action.resultSelector) : element;
+      const changed = JSON.stringify(describeElement(target)) !== beforeKey;
+      const elapsed = Date.now() - startedAt;
+      const settled = fetchCalls.size === 0 && elapsed > 300;
+      if (changed || settled || Date.now() > deadline) {
+        finishInteraction();
+        return;
+      }
+      window.setTimeout(pollInteraction, 100);
+    };
+    window.setTimeout(pollInteraction, 60);
   });
 
   // Only asynchronous lesson checks observe later DOM updates; other runtimes keep their existing cost.
