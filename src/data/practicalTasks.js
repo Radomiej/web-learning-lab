@@ -1,6 +1,7 @@
 import { createTask } from './lessonFactories.js';
 import { htmlInstructions, htmlTaskIntro, htmlTaskHint } from './htmlInstructions.js';
 import { independentHtml } from './independentHtml.js';
+import { modifiedHtml } from './modifiedHtml.js';
 import { lessonSequence } from './lessonNumbers.js';
 
 const htmlExamples = {
@@ -87,8 +88,10 @@ const layoutPlans = {
 };
 // Third layout task is a second independent exercise; the id keeps its
 // historical '-challenge' suffix so saved progress and links still resolve.
-const modes = ['guided', 'independent', 'independent'];
-const modeIds = ['guided', 'independent', 'challenge'];
+// HTML lessons run guided → modified → independent; ids html-10N-guided,
+// html-10N-modified-v2 (new middle task) and html-10N-independent-v2 (kept).
+const modes = { html: ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'independent'] };
+const modeIds = { html: ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'challenge'] };
 const ruleText = (plans) => plans.map(([property, value, selector = '.practice']) => `${selector} { ${property}: ${value}; }`).join('\n');
 const styleTarget = (selector) => ({
   '.practice': 'W kontenerze z class="practice"',
@@ -99,24 +102,62 @@ const styleTarget = (selector) => ({
   '#featured': 'W elemencie z id="featured"',
 }[selector]);
 
+const guidedGoals = {
+  1: 'Zbuduj strukturę strony w `index.html`: nagłówek `h1` w `main` i trzy sekcje `section` z `h2` i `p`.',
+  2: 'Ułóż szkielet dokumentu HTML5: `lang="pl"` na `html`, `title` i `meta charset` w `head`, `main` z `h1` w `body`.',
+  3: 'Zbuduj poradnik tekstowy: `h1`+`h2`, `strong` i `em` w akapicie, `hr`, wzory w `sub`/`sup` i `br`.',
+  4: 'Zbuduj trzy listy: `ul` z podlistą, `ol` kroków i `dl` definicji z `dt`/`dd`.',
+  5: 'Zbuduj nawigację: `nav` z linkiem `a href="#kontakt"`, cel `id="kontakt"` i link zewnętrzny `target="_blank"`.',
+  6: 'Dodaj media: `figure` z `img alt` i `figcaption`, `video controls` i `audio controls` ze `source`.',
+  7: 'Zbuduj tabelę: `caption`, `thead` z `th scope="col"`, `tbody` z `th scope="row"`+`td` i `tfoot`.',
+  8: 'Zbuduj formularz: `fieldset`+`legend`, pary `label`/`input` (email, select, textarea) i `button type="submit"`.',
+  9: 'Ułóż stronę z landmarks: `header` z `nav` i linkiem `a[href="#main"]`, `main`, `article`+`time`, `aside`, `footer`.',
+};
+const skeletonNote = 'Szkielet dokumentu (`<!doctype html>`, `html`, `head`, `body`) zostaje — treść wpisuj w `index.html` między `<body>` a `</body>`.';
+const guidedSteps = {
+  1: ['W `<main>` dodaj `<h1>` z tytułem strony.', 'Dodaj `<section id="html">` z nagłówkiem `<h2>` i akapitem `<p>`.', 'Obok niej dodaj sekcje `#css` i `#js` z taką samą budową.'],
+  2: ['Ustaw `lang="pl"` w znaczniku `<html>`.', 'W `<head>` dodaj `<title>` i `<meta charset="UTF-8">`.', 'W `<body>` umieść `<main>` z nagłówkiem `<h1>`.'],
+  3: ['Dodaj `<h1>` poradnika i `<h2>` pierwszego kroku w `<section>`.', 'W `<p>` oznacz `<strong>` ważny fragment i `<em>` akcent.', 'Dodaj `<hr>`, `H<sub>2</sub>O`, `m<sup>2</sup>` i `<br>`.'],
+  4: ['Dodaj `<ul>` z punktami `<li>` — jeden z podlistą `<ul>`.', 'Dodaj numerowaną `<ol>` z krokami `<li>`.', 'Utwórz `<dl>` z `<dt>` i `<dd>`.'],
+  5: ['W `<nav>` zbuduj `<ul><li><a href="#kontakt">`.', 'Dodaj element `id="kontakt"`, do którego prowadzi link.', 'Dodaj link zewnętrzny z `target="_blank"` i `rel="noopener"`.'],
+  6: ['W `<figure>` dodaj `<img>` z `alt`, `width`, `height` i `<figcaption>`.', 'Dodaj `<video controls>` z `<source>`.', 'Dodaj `<audio controls>` ze `<source>`.'],
+  7: ['Dodaj `<table>` z tytułem w `<caption>`.', 'W `<thead>` dodaj nagłówki `<th scope="col">`.', 'W `<tbody>`/`<tfoot>` dodaj `<th scope="row">` i `<td>`.'],
+  8: ['W `<form>` utwórz `<fieldset>` z `<legend>`.', 'Dodaj `label + input[type=email][required]` i `select` z `option`.', 'Dodaj `textarea[required]` i `button[type=submit]`.'],
+  9: ['Zbuduj `header > nav` z linkiem `a[href="#main"]`.', 'Dodaj `main#main` z `h1`, `section` z `h2`, `article` z `h3` i `time[datetime]`.', 'Dodaj `aside` z `h2` i `footer` na końcu.'],
+};
+
 export function practicalTasks(definition, base) {
-  const count = definition.track === 'layout' ? 3 : 2;
+  const count = definition.track === 'html' || definition.track === 'layout' ? 3 : 2;
   const localOrder = lessonSequence(definition.track, definition.order);
+  const trackModes = modes[definition.track] || modes.default;
+  const trackIds = modeIds[definition.track] || modeIds.default;
   return Array.from({ length: count }, (_, variant) => {
-    const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-${modeIds[variant]}${variant && definition.track !== 'layout' ? '-v2' : ''}`;
-    const task = { id, mode: modes[variant], title: definition.title, starter: { ...base }, checks: [] };
+    const id = `${definition.track}-${String(definition.order).padStart(2, '0')}-${trackIds[variant]}${variant && definition.track !== 'layout' ? '-v2' : ''}`;
+    const task = { id, mode: trackModes[variant], title: definition.title, starter: { ...base }, checks: [] };
     const add = (type, label, fields = {}) => task.checks.push({ id: `${id}-${task.checks.length}`, type, label, ...fields });
     if (definition.track === 'html') {
-      const independent = variant ? independentHtml[localOrder] : null;
-      const [example, selectors] = independent ? [independent.html, independent.requirements.map(([selector]) => selector)] : htmlExamples[localOrder];
-      if (independent) task.title = independent.title;
-      task.prompt = (independent ? independent.goal + ' ' : '') + htmlTaskIntro;
-      task.hint = htmlTaskHint;
-      task.starter.html = '<!-- Tutaj, wewnątrz body, zbuduj treść strony według kroków zadania. -->';
+      const modified = variant === 1 ? modifiedHtml[localOrder] : null;
+      const independent = variant === 2 ? independentHtml[localOrder] : null;
+      const variantData = independent || modified;
+      const [example, selectors] = independent
+        ? [independent.html, independent.requirements.map(([selector]) => selector)]
+        : modified
+          ? [modified.solution, modified.requirements.map(([selector]) => selector)]
+          : htmlExamples[localOrder];
+      if (variantData) task.title = variantData.title;
+      task.prompt = variantData ? variantData.goal : guidedGoals[localOrder];
+      if (variant === 0) {
+        task.hint = htmlTaskHint;
+        task.steps = localOrder === 2 ? guidedSteps[localOrder] : [skeletonNote, ...guidedSteps[localOrder]];
+        task.starter.html = '<!-- Tutaj, wewnątrz body, zbuduj treść strony według kroków zadania. -->';
+      } else {
+        task.starter.html = modified ? modified.starter : '<!-- Tutaj, wewnątrz body, zbuduj treść strony według kroków zadania. -->';
+      }
       task.solution = { ...base, html: example };
       task.solutionExplanation = 'W index.html wpisano docelową strukturę z kroków zadania — zaznaczone linie to dopisany kod.';
-      selectors.forEach((selector, index) => add('elementExists', independent ? independent.requirements[index][1] : htmlInstructions[localOrder][index], { selector }));
-      if (localOrder === 2) add('sourceIncludes', 'Na początku pliku index.html, przed <html>, umieść deklarację <!doctype html>.', { file: 'index.html', value: '<!doctype html>' });
+      selectors.forEach((selector, index) => add('elementExists', variantData ? variantData.requirements[index][1] : htmlInstructions[localOrder][index], { selector }));
+      (modified?.textChecks || []).forEach(([selector, expected, label]) => add('textEquals', label, { selector, expected }));
+      if (localOrder === 2 && variant !== 1) add('sourceIncludes', 'Na początku pliku index.html, przed <html>, umieść deklarację <!doctype html>.', { file: 'index.html', value: '<!doctype html>' });
     } else if (['css', 'layout'].includes(definition.track)) {
       let plan = definition.track === 'layout' ? layoutPlans[localOrder][variant] : stylePlans[localOrder];
       const independent = definition.track === 'css' && variant ? independentStyles[localOrder] : null;

@@ -6,8 +6,11 @@ test('HTML requirements explain tags in words instead of exposing bare selectors
   for (const lesson of lessons.filter(lesson => lesson.track === 'html')) {
     expect(htmlInstructions[lessonSequence('html', lesson.order)].length).toBeGreaterThan(0);
     for (const task of lesson.tasks) {
-      expect(task.prompt).toContain('index.html');
-      expect(task.prompt).toContain('między <body> a </body>');
+      // Prompt is one concrete goal sentence — the generic skeleton intro moved
+      // into guided steps, so it must not repeat in the prompt text.
+      expect(task.prompt).toBeTruthy();
+      expect(task.prompt).not.toContain('Na tym etapie nie musisz zmieniać');
+      expect(task.prompt).not.toContain('Zachowaj szkielet dokumentu');
       for (const check of task.checks) {
         expect(check.label).toBeTruthy();
         expect(check.label).not.toContain('Dodaj element:');
