@@ -6,6 +6,7 @@ const PANEL_ORDER = [
   ['php', 'index.php'],
   ['mem', 'Obiekt w pamięci'],
   ['html', 'Wygenerowany HTML'],
+  ['css', 'Plik styles.css'],
   ['dom', 'Podgląd strony'],
   ['js', 'Skrypt w przeglądarce'],
   ['api', 'api.php (odpowiedź)'],

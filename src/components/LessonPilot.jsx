@@ -8,6 +8,9 @@ import ChaseVectorBoard from './ChaseVectorBoard.jsx';
 import CoordinateBoard from './CoordinateBoard.jsx';
 import ComponentToggleBoard from './ComponentToggleBoard.jsx';
 import KeyPressBoard from './KeyPressBoard.jsx';
+import FlexPlayground from './FlexPlayground.jsx';
+import FlexItemBoard from './FlexItemBoard.jsx';
+import GridPlayground from './GridPlayground.jsx';
 import StepTrial from './StepTrial.jsx';
 import ElementTree from './ElementTree.jsx';
 import { codeText } from './codeText.jsx';
@@ -45,6 +48,9 @@ function TheoryVisual({ learning }) {
   if (learning.board?.kind === 'coordinates') return <CoordinateBoard {...learning.board} />;
   if (learning.board?.kind === 'components') return <ComponentToggleBoard {...learning.board} />;
   if (learning.board?.kind === 'keypress') return <KeyPressBoard {...learning.board} />;
+  if (learning.board?.kind === 'flex') return <FlexPlayground {...learning.board.props} />;
+  if (learning.board?.kind === 'flex-items') return <FlexItemBoard {...learning.board.props} />;
+  if (learning.board?.kind === 'grid') return <GridPlayground {...learning.board.props} />;
   if (learning.visual?.kind === 'html') {
     return <HtmlLessonExample page={{ title: learning.title, code: learning.visual.code, themeCss: learning.visual.themeCss }} />;
   }

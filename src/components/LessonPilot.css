@@ -364,3 +364,127 @@
   .pilot-key-shot { animation-name: pilot-key-shot-fade; transform: translateX(330px); }
 }
 @keyframes pilot-key-shot-fade { from { opacity: 0; } 35% { opacity: 1; } to { opacity: 0; } }
+
+/* Plansze układu (FlexPlayground / FlexItemBoard / GridPlayground) — prawdziwy
+   kontener flex/grid jak .practice w zadaniu, nie rysowany diagram. */
+.pilot-lb { display: grid; gap: 10px; }
+.pilot-lb-stage {
+  position: relative;
+  padding: 16px 10px 10px;
+  border: 1px solid #cfdce8;
+  border-radius: 10px;
+  background: #eaf2f8;
+}
+.pilot-lb-tag {
+  position: absolute;
+  top: -9px;
+  left: 10px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: #10263a;
+  color: #f8dd90;
+  font: 700 .75rem var(--mono);
+}
+.pilot-lb-container {
+  min-height: 96px;
+  padding: 8px;
+  margin: 0 auto;
+  border: 2px dashed #8aa9c0;
+  border-radius: 8px;
+  background: #e0edf5;
+  transition: width .25s ease;
+}
+.pilot-lb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid #789;
+  border-radius: 6px;
+  background: #fff;
+  color: #233748;
+  font: 700 .82rem/1.25 var(--mono);
+  text-align: center;
+  transition: flex-basis .25s ease, outline-color .15s ease;
+}
+.pilot-lb-item--grid { min-height: 46px; }
+.pilot-lb-item--pick { cursor: pointer; appearance: none; }
+.pilot-lb-item--pick:hover { border-color: #006b70; }
+.pilot-lb-item--pick[aria-checked="true"] { outline: 3px solid #006b70; outline-offset: 1px; }
+.pilot-lb-item--pick:focus-visible { outline: 3px solid #006b70; outline-offset: 1px; }
+.pilot-lb-item-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.pilot-lb-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+.pilot-lb-badge {
+  padding: 1px 4px;
+  border: 1px solid #b9cddb;
+  border-radius: 4px;
+  background: #eef4fa;
+  font: 600 .62rem var(--mono);
+}
+.pilot-lb-controls { display: grid; gap: 8px; }
+.pilot-lb-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.pilot-lb-name { flex: 0 0 auto; min-width: 148px; color: #33465a; font: 700 .8rem var(--mono); }
+.pilot-lb-options { display: flex; flex-wrap: wrap; gap: 4px; }
+.pilot-lb-option {
+  padding: 5px 10px;
+  border: 1px solid #9db4c6;
+  border-radius: 7px;
+  background: #fff;
+  color: #233748;
+  font: 600 .8rem var(--mono);
+  cursor: pointer;
+}
+.pilot-lb-option:hover { border-color: #006b70; }
+.pilot-lb-option[aria-checked="true"] { border-color: #006b70; background: #006b70; color: #fff; }
+.pilot-lb-option:focus-visible { outline: 2px solid #006b70; outline-offset: 2px; }
+.pilot-lb-slider input[type="range"] { flex: 1 1 110px; min-width: 90px; accent-color: #006b70; }
+.pilot-lb-value { min-width: 46px; color: #33465a; font: 700 .8rem var(--mono); text-align: right; }
+.pilot-lb-custom input {
+  flex: 1 1 150px;
+  min-width: 120px;
+  padding: 6px 9px;
+  border: 1px solid #9db4c6;
+  border-radius: 7px;
+  font: 600 .8rem var(--mono);
+}
+.pilot-lb-custom input[aria-invalid="true"] { border-color: #c0392b; background: #fdecea; }
+.pilot-lb-code {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #10263a;
+  color: #66e1cd;
+  font: 13px/1.55 var(--mono);
+  white-space: pre-wrap;
+}
+.pilot-lb-status { margin: 0; min-height: 1.3em; font-size: .9rem; }
+.pilot-lb-hint {
+  position: absolute;
+  top: -13px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ffdb74;
+  color: #302000;
+  font-size: .85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+  animation: pilot-lb-bounce 1.4s ease-in-out infinite;
+}
+.pilot-lb-hint > svg { flex-shrink: 0; }
+@keyframes pilot-lb-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .pilot-lb-hint { animation: none; }
+  .pilot-lb-container, .pilot-lb-item { transition: none; }
+}
+@media (max-width: 560px) {
+  .pilot-lb-name { flex-basis: 100%; min-width: 0; }
+}
