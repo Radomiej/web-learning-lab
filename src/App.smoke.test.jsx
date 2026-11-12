@@ -1,9 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import App from './App.jsx';
 
-test('renders the Web Learning Lab shell title', () => {
+test('renders the Web Learning Lab shell title', async () => {
+  const user = userEvent.setup();
   render(<App />);
   expect(screen.getByText('Web Learning Lab')).toBeInTheDocument();
+  await user.click(screen.getByLabelText('Wybierz ścieżkę'));
+  await user.click(screen.getByRole('tab', { name: 'CSS 6' }));
   expect(screen.getByRole('button', {name:'Nauka',exact:true})).toHaveAttribute('aria-current','step');
   expect(screen.queryByRole('complementary',{name:'Podgląd i diagnostyka'})).toBeNull();
   expect(screen.queryByRole('region',{name:'Zbuduj rozwiązanie'})).toBeNull();

@@ -25,6 +25,5 @@ export default function HtmlLessonExample({page}){
  return <figure className="html-lesson-example" aria-label={`Wizualny przykład: ${page.title}`}>
   <div className="html-example-bar"><span aria-hidden="true">● ● ●</span><strong>{title||'Widok HTML'}</strong></div>
   {viewport?<div className="html-viewport-example"><div className="html-example-phone"><span>Szerokość urządzenia</span><p>Czytelny widok</p></div><p>width=device-width<br/><small>Układ dopasowujesz dalej w CSS.</small></p></div>:<div ref={host}/>}
-  <figcaption>Przykład z kodu powyżej. Linki i wysyłka formularza pozostają w obrębie lekcji; zewnętrzne media nie są pobierane.</figcaption>
  </figure>;
 }

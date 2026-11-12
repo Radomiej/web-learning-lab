@@ -7,6 +7,8 @@ test('exposes landmarks and labels for the editor workflow', async () => {
   render(<App />);
   expect(screen.getByRole('navigation', { name: 'Nawigacja kursu' })).toBeInTheDocument();
   expect(screen.getByRole('main')).toBeInTheDocument();
+  await user.click(screen.getByLabelText('Wybierz ścieżkę'));
+  await user.click(screen.getByRole('tab', { name: 'CSS 6' }));
   await user.click(screen.getByRole('button', { name: 'Zadanie', exact: true }));
   expect(screen.getByLabelText('Edytor index.html')).toBeInTheDocument();
   await user.click(screen.getAllByRole('button', { name: 'Pokaż podgląd' })[0]);

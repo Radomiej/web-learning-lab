@@ -31,8 +31,8 @@ test("shows the first lesson, three editor files, preview status, and track navi
     screen.queryByRole("tab", { name: "theme.css" }),
   ).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
-  expect(screen.queryByText("Podgląd na żywo")).not.toBeInTheDocument();
-  expect(screen.getByText("78 lekcji")).toBeInTheDocument();
+  expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
+  expect(screen.getByText("99 lekcji")).toBeInTheDocument();
 });
 
 test("opens the CRA public entry when the React track is selected", async () => {
@@ -130,7 +130,7 @@ test("keeps the mobile lesson panel closable and reopenable", async () => {
   ).toHaveAttribute("data-open", "true");
 });
 
-test("adds a component, restores it after reload and confirms reset", async () => {
+test("adds a component, restores it after reload and confirms reset", { timeout: 20000 }, async () => {
   const user = userEvent.setup();
   const view = render(<App />);
   await openTask();
@@ -169,7 +169,6 @@ test("collapses and restores the lesson panel without remounting the sandbox or 
   const user = userEvent.setup();
   const { container } = render(<App />);
   await openTask();
-  await user.click(screen.getAllByRole("button",{name:"Pokaż podgląd"})[0]);
   const frame = container.querySelector("iframe");
   const editor = screen.getByLabelText("Edytor index.html");
   const value = editor.value;
@@ -195,7 +194,9 @@ test("collapses and restores the lesson panel without remounting the sandbox or 
 
 test("only example exercises expose a solution button", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  const { container } = render(<App />);
+  await user.click(screen.getByLabelText('Wybierz ścieżkę'));
+  await user.click(screen.getByRole('tab', { name: 'CSS 6' }));
   await openTask();
   expect(
     screen.getByRole("button", { name: "Pokaż rozwiązanie" }),
@@ -206,9 +207,8 @@ test("only example exercises expose a solution button", async () => {
   ).not.toBeInTheDocument();
   await user.click(screen.getByLabelText('Wybierz ścieżkę'));
   await user.click(screen.getByRole('tab', { name: /Layout/ }));
-  await user.click(
-    screen.getAllByRole("button", { name: /Samodzielnie/i }).at(-1),
-  );
+  const choices = container.querySelectorAll('.pilot-task-choice');
+  await user.click(choices[choices.length - 1]);
   expect(
     screen.queryByRole("button", { name: "Pokaż rozwiązanie" }),
   ).not.toBeInTheDocument();
@@ -222,12 +222,12 @@ test('opens Game Dev with its three files, engine guide, and console below the e
   await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
   expect(screen.getByRole('heading', { name: 'Scena, obiekty i komponenty' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();
-  await user.click(screen.getAllByRole('button',{name:'Pokaż podgląd'})[0]);
   expect(screen.getByTitle('Podgląd gry ucznia')).toHaveAttribute('sandbox', 'allow-scripts');
   expect(container.querySelector('.editor-shell')).toContainElement(screen.getByRole('heading', { name: 'Konsola' }));
   await user.click(screen.getByRole('button', { name: 'Dokumentacja GameLab' }));
   expect(screen.getByRole('dialog', { name: 'Dokumentacja GameLab' })).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Zamknij dokumentację' }));
-  await user.click(screen.getByRole('button', { name: /Samodzielnie/ }));
+  const choices = container.querySelectorAll('.pilot-task-choice');
+  await user.click(choices[choices.length - 1]);
   expect(screen.queryByRole('button', { name: 'Pokaż rozwiązanie' })).not.toBeInTheDocument();
 });

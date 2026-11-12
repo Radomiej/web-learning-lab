@@ -139,7 +139,10 @@ echo json_encode(['error' => 'Dozwolone metody: GET, POST']);
 `;
 
 function fetchPage(script) {
-  return `<!doctype html>
+  return `<?php
+// Ta strona to klient — dane serwuje api.php przez fetch.
+?>
+<!doctype html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
