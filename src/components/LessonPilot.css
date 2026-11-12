@@ -416,7 +416,20 @@
 .pilot-lb-item--pick[aria-checked="true"] { outline: 3px solid #006b70; outline-offset: 1px; }
 .pilot-lb-item--pick:focus-visible { outline: 3px solid #006b70; outline-offset: 1px; }
 .pilot-lb-item-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.pilot-lb-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+/* Odznaki pozycjonowane absolutnie — nie wpływają na flex-basis: auto
+   (inaczej sam opis własności rozszerzałby bazę elementu). */
+.pilot-lb-item { position: relative; }
+.pilot-lb-badges {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  pointer-events: none;
+}
 .pilot-lb-badge {
   padding: 1px 4px;
   border: 1px solid #b9cddb;
@@ -481,6 +494,80 @@
 }
 .pilot-lb-hint > svg { flex-shrink: 0; }
 @keyframes pilot-lb-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+/* Ukryte lustro kontenera — mierzy „bazę" pudełek (grow/shrink wyzerowane),
+   dzięki czemu pasek podziału pokazuje bazę i wzrost w prawdziwych px. */
+.pilot-lb-mirror {
+  height: 0;
+  min-height: 0;
+  padding-block: 0;
+  border-width: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+/* Pasek podziału szerokości: jeden segment na element, w nim baza (pełna)
+   i wzrost (kreskowany), plus segment wolnego miejsca. */
+.pilot-lb-meter-wrap { margin: 8px auto 0; }
+.pilot-lb-meter { display: flex; align-items: stretch; gap: 2px; height: 24px; }
+.pilot-lb-meter-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: 4px;
+  background: #d7e4ee;
+}
+.pilot-lb-meter-basis {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 4px 0 0 4px;
+  background: #2e8b8b;
+}
+.pilot-lb-meter-grow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(45deg, rgba(0, 107, 112, .45) 0 4px, rgba(0, 107, 112, .2) 4px 8px);
+}
+.pilot-lb-meter-free {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border: 1px dashed #8aa9c0;
+  border-radius: 4px;
+  background: repeating-linear-gradient(45deg, #eef3f7 0 4px, #dfe9f0 4px 8px);
+}
+.pilot-lb-meter-gap { flex: 0 0 auto; background: #c8d6e0; }
+.pilot-lb-meter-label {
+  position: relative;
+  padding: 0 6px;
+  font: 700 .68rem/1 var(--mono);
+  font-style: normal;
+  color: #16323f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pilot-lb-meter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 4px 0 0;
+  font-size: .75rem;
+  color: #33465a;
+}
+.pilot-lb-sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  vertical-align: -2px;
+  border-radius: 3px;
+}
+.pilot-lb-sw--basis { background: #2e8b8b; }
+.pilot-lb-sw--grow { background: repeating-linear-gradient(45deg, rgba(0, 107, 112, .5) 0 3px, rgba(0, 107, 112, .22) 3px 6px); }
+.pilot-lb-sw--free { background: repeating-linear-gradient(45deg, #eef3f7 0 3px, #dfe9f0 3px 6px); border: 1px dashed #8aa9c0; }
 @media (prefers-reduced-motion: reduce) {
   .pilot-lb-hint { animation: none; }
   .pilot-lb-container, .pilot-lb-item { transition: none; }
