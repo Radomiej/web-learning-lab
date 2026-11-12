@@ -29,10 +29,12 @@ export function courseScenario(chapter,mode) {
       break;
     case 'input':
       // Releasing and pressing the opposite key proves live input handling, not a scripted path.
+      // Independent: held Space fires once; a released phase then a fresh press must fire again.
       phases=[phase(10,mode==='modified'?['d','s','Shift']:mode==='independent'?['d','Space']:['d']),phase(5,[mode==='modified'?'w':'a'])];
+      if(mode==='independent')phases.push(phase(1),phase(3,['Space']));
       expect(object('Player','x'),mode==='modified'?100+200/Math.sqrt(2):160);
       if(mode==='modified')expect(object('Player','y'),191.4213562373095);
-      if(mode==='independent') {expect(state('Player','ActionCounter','actions'),0);expect('objects.length',2);}
+      if(mode==='independent') {expect(state('Player','BulletShooter','shots'),2);expect('objects.length',3);sourceToken='.shoot(';}
       break;
     case 'graphics':
       expect(state('Ground','TileMap','texture'),mode==='modified'?'sand':'grass');expect(state('Ground','TileMap','tileSize'),mode==='modified'?48:32);

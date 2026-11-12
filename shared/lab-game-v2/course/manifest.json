@@ -100,14 +100,14 @@
         {
           "id": "g2d.input.independent",
           "mode": "independent",
-          "title": "Jedna akcja — jeden pocisk",
-          "prompt": "Ruch jest gotowy, a komponent ActionShooter obserwuje licznik: co 10 aktualizacji sprawdza, czy actions wynosi 1 — wtedy wystrzeliwuje Fireball w ostatnim kierunku postaci i zeruje licznik. Uzupełnij ActionCounter tak, aby jedno nowe naciśnięcie Space zwiększało actions o 1. Przytrzymanie klawisza nie może naliczać kolejnych akcji — inaczej licznik przekroczy 1 i strzał nie nastąpi.",
-          "objective": "Wykrywać pojedyncze naciśnięcie klawisza w osobnym komponencie.",
+          "title": "Jedno naciśnięcie — jeden pocisk",
+          "prompt": "Ruch jest gotowy, a komponent BulletShooter ma gotową metodę shoot(): tworzy pocisk Fireball na pozycji postaci i wystrzeliwuje go w ostatnim kierunku ruchu. W komponencie SpaceShooter uzupełnij onUpdate tak, aby jedno nowe naciśnięcie Space wywoływało shoot() na BulletShooter — pobierz ten komponent przez requireComponent. Przytrzymanie klawisza nie może wywoływać strzału w każdej aktualizacji.",
+          "objective": "Wywoływać metodę innego komponentu w reakcji na pojedyncze naciśnięcie klawisza.",
           "criteria": [
-            "Jedno naciśnięcie Space daje dokładnie jeden pocisk Fireball w ciągu 10 aktualizacji.",
-            "Po strzale licznik actions wraca do 0; kolejny strzał wymaga nowego naciśnięcia.",
-            "Przytrzymanie Space nie strzela wielokrotnie — licznik rośnie tylko przy nowym naciśnięciu klawisza.",
-            "Ruch klawiszem D działa równocześnie; pocisk startuje z pozycji postaci."
+            "Jedno naciśnięcie Space wywołuje BulletShooter.shoot() i daje dokładnie jeden pocisk Fireball.",
+            "Przytrzymanie Space nie strzela ponownie — kolejny pocisk wymaga puszczenia klawisza i nowego naciśnięcia.",
+            "Ruch klawiszem D działa równocześnie; pocisk startuje z pozycji postaci i leci w ostatnim kierunku ruchu.",
+            "Każde wywołanie shoot() zwiększa licznik shots o 1; po puszczeniu i ponownym naciśnięciu lecą dwa pociski."
           ],
           "learningStage": "Rozbudowa"
         }

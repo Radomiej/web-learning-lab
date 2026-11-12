@@ -47,7 +47,7 @@ export default function LessonWorkspace({
   useEffect(()=>setShowChange(false),[activeTask.id]);
   const applySolution=()=>{onSolution?.();setShowChange(true);};
   const playground = lesson.track === 'playground';
-  const modular = ['js', 'html', 'css', 'php', 'react'].includes(lesson.track);
+  const modular = ['js', 'html', 'html-gd', 'css', 'php', 'react'].includes(lesson.track);
   const taskIndex = lesson.tasks.findIndex(task => task.id === activeTask.id);
   const nextTask = lesson.tasks[taskIndex + 1];
   const path = Object.hasOwn(files.files, activeFile)
@@ -109,6 +109,7 @@ export default function LessonWorkspace({
           preview={inlinePreview}
           feedback={feedbackPanel}
           submission={completion}
+          studentHtml={files.files['index.html'] ?? files.files[files.entry] ?? ''}
         />
       </div>
     );

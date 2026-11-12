@@ -5,7 +5,11 @@ import CopyLessonLink from './CopyLessonLink.jsx';
 import HtmlLessonExample from './HtmlLessonExample.jsx';
 import GameDevTerms from './GameDevTerms.jsx';
 import ChaseVectorBoard from './ChaseVectorBoard.jsx';
+import CoordinateBoard from './CoordinateBoard.jsx';
+import ComponentToggleBoard from './ComponentToggleBoard.jsx';
+import KeyPressBoard from './KeyPressBoard.jsx';
 import StepTrial from './StepTrial.jsx';
+import ElementTree from './ElementTree.jsx';
 import { codeText } from './codeText.jsx';
 import './LessonPilot.css';
 
@@ -38,8 +42,11 @@ function TheoryVisual({ learning }) {
   if (learning.board?.kind === 'chase') {
     return <ChaseVectorBoard mode={learning.board.mode} />;
   }
+  if (learning.board?.kind === 'coordinates') return <CoordinateBoard {...learning.board} />;
+  if (learning.board?.kind === 'components') return <ComponentToggleBoard {...learning.board} />;
+  if (learning.board?.kind === 'keypress') return <KeyPressBoard {...learning.board} />;
   if (learning.visual?.kind === 'html') {
-    return <HtmlLessonExample page={{ title: learning.title, code: learning.visual.code }} />;
+    return <HtmlLessonExample page={{ title: learning.title, code: learning.visual.code, themeCss: learning.visual.themeCss }} />;
   }
   if (learning.visual?.kind) {
     return <PageDiagram page={learning} />;
@@ -79,12 +86,21 @@ function PredictionQuiz({ question, options }) {
 // Układ „pilot" — jak w java-lab: teoria pod ręką, przewidywanie z próbą
 // krokową i zadanie z edytorem + podglądem na żywo w jednym widoku.
 export default function LessonPilot({
-  lesson, activeTask, learning, completedTasks, onTaskChange, onNextLesson, editor, preview, feedback, submission,
+  lesson, activeTask, learning, completedTasks, onTaskChange, onNextLesson, editor, preview, feedback, submission, studentHtml,
 }) {
   const heading = useRef(null);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [lesson.id]);
+  const gameUi = lesson.track === 'html-gd';
+  const [liveHtml, setLiveHtml] = useState(studentHtml);
+  useEffect(() => {
+    const timer = setTimeout(() => setLiveHtml(studentHtml), 300);
+    return () => clearTimeout(timer);
+  }, [studentHtml]);
+  const treeChecks = gameUi
+    ? (activeTask.checks ?? []).filter((check) => check.type === 'elementExists').map((check) => ({ selector: check.selector, label: check.label }))
+    : null;
   const taskIndex = lesson.tasks.findIndex(task => task.id === activeTask.id);
   const nextTask = lesson.tasks[taskIndex + 1];
   const focusTask = () => {
@@ -122,6 +138,12 @@ export default function LessonPilot({
             <TheoryVisual key={activeTask.id} learning={learning} />
             <div><h3>Zapis w kodzie</h3><CodeExample key={activeTask.id} code={learning.code} /></div>
           </div>
+          {gameUi && learning.visual?.kind === 'html' && (
+            <div className="pilot-theory-tree">
+              <h3>Drzewo elementów przykładu</h3>
+              <ElementTree html={learning.visual.code} />
+            </div>
+          )}
           <button type="button" className="pilot-return" onClick={focusTask}>Wróć do edytora ↓</button>
         </div>
       </details>
@@ -179,6 +201,13 @@ export default function LessonPilot({
         {editor}
         {preview}
       </div>
+      {gameUi && (
+        <section className="pilot-element-tree" aria-labelledby="pilot-element-tree-title">
+          <h3 id="pilot-element-tree-title">Drzewo elementów</h3>
+          <p className="pilot-element-tree-hint">Struktura Twojego <code>index.html</code> na żywo. ✓ oznacza spełnione warunki zadania.</p>
+          <ElementTree html={liveHtml} checks={treeChecks} />
+        </section>
+      )}
       {feedback}
       {submission}
       {(nextTask || onNextLesson) && <div className="pilot-next">

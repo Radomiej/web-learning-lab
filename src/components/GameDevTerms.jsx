@@ -18,12 +18,12 @@ for (const [term, entry, summary] of [
 
 // Nazwy z projektów ucznia — podświetlane bez linku do dokumentacji.
 const projectTerms = new Set([
-  'EnemyAI', 'FleeAI', 'PlayerController', 'ActionCounter', 'ActionShooter',
+  'EnemyAI', 'FleeAI', 'PlayerController', 'BulletShooter', 'SpaceShooter',
   'ProjectileHit', 'ProjectileMotion', 'FireWeapon', 'CombatEnemy', 'Health',
   'MyGame', 'Player', 'Slime', 'Bat', 'Enemy', 'Coin', 'Ally', 'PlayerShot',
   'Wall', 'LeftWall', 'RightWall', 'PlatformA', 'PlatformB', 'Fireball',
   'dx', 'dy', 'speed', 'controller', 'owner', 'lifetime', 'remaining',
-  'actions', 'hp', 'motion', 'target', 'Math.hypot', 'Number',
+  'shoot', 'shots', 'hp', 'motion', 'target', 'Math.hypot', 'Number',
 ]);
 const terms = [...new Set([...documented.keys(), ...projectTerms])]
   .sort((first, second) => second.length - first.length)

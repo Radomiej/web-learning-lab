@@ -5,12 +5,11 @@ import { buildCourseProject } from './labGameV2Course.js';
 
 describe('formatSource', () => {
   test('generated component files become multi-line and indented', () => {
-    const source = buildCourseProject('js', 'input', 'independent').files['ActionShooter.js'];
+    const source = buildCourseProject('js', 'input', 'independent').files['SpaceShooter.js'];
     const formatted = formatSource(source);
     expect(formatted).toContain('onUpdate() {\n');
-    expect(formatted).toContain("  ticks=0;");
-    expect(formatted).toContain('    if(++this.ticks%10!==0)return;');
-    expect(formatted).toContain('import ActionCounter');
+    expect(formatted).toContain('    if(this.game.input.isKeyPressed("Space")) this.requireComponent(BulletShooter).shoot();');
+    expect(formatted).toContain('import BulletShooter');
     expect(formatted.trim().endsWith('}')).toBe(true);
     // Braces stay balanced and code still parses as a module body.
     const opens = (formatted.match(/{/g) ?? []).length;
@@ -41,12 +40,15 @@ describe('formatSource', () => {
   });
 
   test('java example formats and keeps annotations and generics', () => {
-    const source = buildCourseProject('java', 'input', 'independent').files['ActionShooter.java'];
+    const source = buildCourseProject('java', 'input', 'independent').files['BulletShooter.java'];
     const formatted = formatSource(source);
-    expect(formatted).toContain('public class ActionShooter extends Component {\n');
-    expect(formatted).toContain('requireComponent(ActionCounter.class)');
-    expect(formatted).toContain('@Override');
+    expect(formatted).toContain('public class BulletShooter extends Component {\n');
+    expect(formatted).toContain('public void shoot()');
+    expect(formatted).toContain('requireComponent(CharacterController2D.class)');
     expect(formatted).toContain('new Projectile2D(d.x,d.y,240,2,gameObject)');
+    const shooter = formatSource(buildCourseProject('java', 'input', 'independent').files['SpaceShooter.java']);
+    expect(shooter).toContain('@Override');
+    expect(shooter).toContain('requireComponent(BulletShooter.class).shoot()');
   });
 });
 

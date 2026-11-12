@@ -19,7 +19,7 @@ export function buildCourseProject(language, chapter, mode, solved = true, useEn
     }
     const targets={
       scene:[entry,'onCreate'],components:[`${mode==='independent'?'Lifetime':'Counter'}.${extension}`,'onUpdate'],
-      time:[`${mode==='independent'?'DirectionMover':'Mover'}.${extension}`,'onUpdate'],input:[`${mode==='independent'?'ActionCounter':'PlayerController'}.${extension}`,'onUpdate'],
+      time:[`${mode==='independent'?'DirectionMover':'Mover'}.${extension}`,'onUpdate'],input:[`${mode==='independent'?'SpaceShooter':'PlayerController'}.${extension}`,'onUpdate'],
       graphics:[mode==='modified'?`FacingVisual.${extension}`:entry,mode==='modified'?'onUpdate':'onCreate'],collisions:[entry,'onCreate'],
       triggers:[`${mode==='independent'?'Chest':'Pickup'}.${extension}`,'onTrigger'],camera:[mode==='independent'?`CursorMarker.${extension}`:entry,mode==='independent'?'onUpdate':'onCreate'],
       'canvas-ui':[entry,mode==='guided'?'onCreate':'onDrawUI'],health:[`Health.${extension}`,'damage'],
@@ -196,9 +196,9 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     case 'input':
       player(100,100,mode==='modified'?100:120,mode==='modified');
       if (mode==='independent') {
-        component('ActionCounter','actions=0; onUpdate() { if(this.game.input.isKeyPressed("Space")) this.actions++; }','public int actions=0; @Override public void onUpdate(double delta) { if(getGame().input.isKeyPressed("Space")) actions++; }');
-        component('ActionShooter','ticks=0; onUpdate() { if(++this.ticks%10!==0)return; const counter=this.requireComponent(ActionCounter); if(counter.actions!==1)return; counter.actions=0; const d=this.requireComponent(GameLab.CharacterController2D).getDirection(); const shot=this.game.createObject("Fireball"); shot.setPosition(this.transform.x,this.transform.y); shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,12,12)); shot.addComponent(new GameLab.Projectile2D(d.x,d.y,240,2,this.gameObject)); }','private int ticks=0; @Override public void onUpdate(double delta) { if(++ticks%10!=0)return; ActionCounter counter=requireComponent(ActionCounter.class); if(counter.actions!=1)return; counter.actions=0; Vector2 d=requireComponent(CharacterController2D.class).getDirection(); GameObject shot=getGame().createObject("Fireball"); shot.setPosition(transform.x,transform.y); shot.addComponent(new Sprite(Assets.FIREBALL,12,12)); shot.addComponent(new Projectile2D(d.x,d.y,240,2,gameObject)); }');
-        setup+='player.addComponent(new ActionCounter());\nplayer.addComponent(new ActionShooter());\n';
+        component('BulletShooter','shots=0; shoot() { const d=this.requireComponent(GameLab.CharacterController2D).getDirection(); const shot=this.game.createObject("Fireball"); shot.setPosition(this.transform.x,this.transform.y); shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,12,12)); shot.addComponent(new GameLab.Projectile2D(d.x,d.y,240,2,this.gameObject)); this.shots++; }','public int shots=0; public void shoot() { Vector2 d=requireComponent(CharacterController2D.class).getDirection(); GameObject shot=getGame().createObject("Fireball"); shot.setPosition(transform.x,transform.y); shot.addComponent(new Sprite(Assets.FIREBALL,12,12)); shot.addComponent(new Projectile2D(d.x,d.y,240,2,gameObject)); shots++; }');
+        component('SpaceShooter','onUpdate() { if(this.game.input.isKeyPressed("Space")) this.requireComponent(BulletShooter).shoot(); }','@Override public void onUpdate(double delta) { if(getGame().input.isKeyPressed("Space")) requireComponent(BulletShooter.class).shoot(); }');
+        setup+='player.addComponent(new BulletShooter());\nplayer.addComponent(new SpaceShooter());\n';
       }
       break;
     case 'graphics': {

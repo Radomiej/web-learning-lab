@@ -78,3 +78,15 @@ it('renders the platform trial widget for g2d.scene.modified', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Odtwórz próbę' }));
   expect(trial.querySelector('[role="status"]')).toHaveTextContent('x = 340');
 });
+
+it('renders the coordinate board when learning has board kind coordinates', () => {
+  const gdLesson = {
+    id: 'g2d.scene', track: 'game-dev',
+    tasks: [{ id: 'g2d.scene.modified', title: 'Przesunięcie', prompt: 'Przesuń PlatformB' }],
+  };
+  render(
+    <LessonPilot {...props} lesson={gdLesson} activeTask={gdLesson.tasks[0]}
+      learning={{ ...learning, board: { kind: 'coordinates' } }} />,
+  );
+  expect(screen.getByRole('group', { name: 'Plansza układu współrzędnych' })).toBeInTheDocument();
+});
