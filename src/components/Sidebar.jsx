@@ -113,6 +113,8 @@ export default function Sidebar({
               >
                 {trackId === "html"
                   ? "</>"
+                  : trackId === "html-gd"
+                    ? "◆"
                   : trackId === "css"
                     ? "✦"
                     : trackId === "layout"

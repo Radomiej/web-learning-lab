@@ -1,5 +1,7 @@
 import { createTask } from './lessonFactories.js';
 import { htmlInstructions, htmlTaskIntro, htmlTaskHint } from './htmlInstructions.js';
+import { htmlGdTasks, htmlGdTaskHint } from './htmlGdTasks.js';
+import { gameUiThemeCss } from './gameUiTheme.js';
 import { independentHtml } from './independentHtml.js';
 import { modifiedHtml } from './modifiedHtml.js';
 import { lessonSequence } from './lessonNumbers.js';
@@ -90,8 +92,9 @@ const layoutPlans = {
 // historical '-challenge' suffix so saved progress and links still resolve.
 // HTML lessons run guided → modified → independent; ids html-10N-guided,
 // html-10N-modified-v2 (new middle task) and html-10N-independent-v2 (kept).
-const modes = { html: ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'independent'] };
-const modeIds = { html: ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'challenge'] };
+// The html-gd variant track uses the same mode and id scheme.
+const modes = { html: ['guided', 'modified', 'independent'], 'html-gd': ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'independent'] };
+const modeIds = { html: ['guided', 'modified', 'independent'], 'html-gd': ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'challenge'] };
 const ruleText = (plans) => plans.map(([property, value, selector = '.practice']) => `${selector} { ${property}: ${value}; }`).join('\n');
 const styleTarget = (selector) => ({
   '.practice': 'W kontenerze z class="practice"',
@@ -127,7 +130,7 @@ const guidedSteps = {
 };
 
 export function practicalTasks(definition, base) {
-  const count = definition.track === 'html' || definition.track === 'layout' ? 3 : 2;
+  const count = ['html', 'html-gd', 'layout'].includes(definition.track) ? 3 : 2;
   const localOrder = lessonSequence(definition.track, definition.order);
   const trackModes = modes[definition.track] || modes.default;
   const trackIds = modeIds[definition.track] || modeIds.default;
@@ -158,6 +161,19 @@ export function practicalTasks(definition, base) {
       selectors.forEach((selector, index) => add('elementExists', variantData ? variantData.requirements[index][1] : htmlInstructions[localOrder][index], { selector }));
       (modified?.textChecks || []).forEach(([selector, expected, label]) => add('textEquals', label, { selector, expected }));
       if (localOrder === 2 && variant !== 1) add('sourceIncludes', 'Na początku pliku index.html, przed <html>, umieść deklarację <!doctype html>.', { file: 'index.html', value: '<!doctype html>' });
+    } else if (definition.track === 'html-gd') {
+      // Small focused edits on an almost-complete, already themed game page.
+      const gd = [htmlGdTasks[localOrder].guided, htmlGdTasks[localOrder].modified, htmlGdTasks[localOrder].independent][variant];
+      if (gd.title) task.title = gd.title;
+      task.prompt = gd.goal;
+      if (variant === 0) {
+        task.hint = htmlGdTaskHint;
+        task.steps = gd.steps;
+      }
+      task.starter = { ...base, html: gd.starter, baseCss: '', themeCss: gameUiThemeCss };
+      task.solution = { ...task.starter, html: gd.solution };
+      task.solutionExplanation = 'W index.html wpisano docelowy fragment z kroków zadania — zaznaczone linie to dopisany kod.';
+      gd.checks.forEach(([type, label, fields]) => add(type, label, fields));
     } else if (['css', 'layout'].includes(definition.track)) {
       let plan = definition.track === 'layout' ? layoutPlans[localOrder][variant] : stylePlans[localOrder];
       const independent = definition.track === 'css' && variant ? independentStyles[localOrder] : null;

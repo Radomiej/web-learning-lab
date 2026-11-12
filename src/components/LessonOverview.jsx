@@ -5,8 +5,9 @@ import { jsCoursePages } from '../data/jsCoursePages.js';
 import { htmlCssTeachingPages } from '../data/htmlCssTeachingPages.js';
 import { phpTeachingPages } from '../data/phpTeachingPages.js';
 import { reactTeachingPages } from '../data/reactTeachingPages.js';
+import { htmlGdTheorySource } from '../data/htmlGdLessons.js';
 export default function LessonOverview({ lesson, headingOnly = false, learningOnly = false }) {
-  const teachingPages = jsCoursePages[lesson.id] || htmlCssTeachingPages[lesson.id] || phpTeachingPages[lesson.id] || reactTeachingPages[lesson.id];
+  const teachingPages = jsCoursePages[lesson.id] || htmlCssTeachingPages[lesson.id] || htmlCssTeachingPages[htmlGdTheorySource[lesson.id]] || phpTeachingPages[lesson.id] || reactTeachingPages[lesson.id];
   return (
     <section className="lesson-overview" aria-labelledby="lesson-title">
       {!learningOnly && <><p className="lesson-meta">Kurs Web · {lesson.track.toUpperCase()} · Lekcja {lesson.order}</p>

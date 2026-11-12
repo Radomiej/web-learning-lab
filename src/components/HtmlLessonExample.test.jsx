@@ -9,6 +9,17 @@ test('all 39 HTML steps provide a visual example without starting an iframe runt
   unmount();
  }
 });
+test('appends themeCss to the shadow style but keeps the default look without it',()=>{
+ const {container}=render(<HtmlLessonExample page={{title:'T',code:'<p>x</p>',themeCss:'h1{color:gold}'}}/>);
+ const root=[...container.querySelectorAll('div')].find(node=>node.shadowRoot)?.shadowRoot;
+ const themed=root.querySelector('style').textContent;
+ expect(themed).toContain('h1{color:gold}');
+ const {container:plain}=render(<HtmlLessonExample page={{title:'T',code:'<p>x</p>'}}/>);
+ const root2=[...plain.querySelectorAll('div')].find(node=>node.shadowRoot)?.shadowRoot;
+ const unthemed=root2.querySelector('style').textContent;
+ expect(unthemed).not.toContain('h1{color:gold}');
+ expect(unthemed).toBe(themed.replace('\nh1{color:gold}',''));
+});
 test('renders actual HTML hierarchy in an isolated visual example',()=>{
  const {container}=render(<HtmlLessonExample page={htmlCssTeachingPages['html-text'][0]}/>);
  const root=[...container.querySelectorAll('div')].find(node=>node.shadowRoot)?.shadowRoot;

@@ -14,6 +14,12 @@ export const tracks = {
     description: 'Struktura, semantyka i dostępność stron.',
     accent: '#29c3b1',
   },
+  'html-gd': {
+    id: 'html-gd',
+    label: 'HTML GD',
+    description: 'Te same umiejętności HTML na przykładach interfejsu gry (wariant testowy).',
+    accent: '#e0b04a',
+  },
   css: {
     id: 'css',
     label: 'CSS',
@@ -46,6 +52,6 @@ export const tracks = {
   },
 };
 
-export const trackOrder = ['html', 'css', 'layout', 'js', 'react', 'php', 'game-dev', 'playground'];
+export const trackOrder = ['html', 'html-gd', 'css', 'layout', 'js', 'react', 'php', 'game-dev', 'playground'];
 
 export const allLessons = [...lessons, playgroundLesson].sort((a, b) => a.order - b.order);

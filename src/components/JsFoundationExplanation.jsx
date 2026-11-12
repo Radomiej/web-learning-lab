@@ -3,8 +3,10 @@ import CodeExample from '../../shared/lab-game-v2/editor/CodeExample.jsx';
 import { jsCoursePages } from '../data/jsCoursePages.js';
 import { lessonInfographics,lessonStepInfographics } from '../data/lessonInfographics.js';
 import HtmlLessonExample from './HtmlLessonExample.jsx';
+import ElementTree from './ElementTree.jsx';
 import PhpForeachDiagram from './PhpForeachDiagram.jsx';
 import PhpConditionDiagram from './PhpConditionDiagram.jsx';
+import { gameUiThemeCss } from '../data/gameUiTheme.js';
 import './JsCourse.css';
 
 export default function JsFoundationExplanation({ lesson, pages = jsCoursePages[lesson.id] }) {
@@ -31,6 +33,10 @@ export default function JsFoundationExplanation({ lesson, pages = jsCoursePages[
       {lesson.id === 'php-html-template' && page.title === 'Powtórz fragment HTML' && <PhpForeachDiagram />}
       {(comparisonDiagram || logicDiagram) && <PhpConditionDiagram logic={logicDiagram} />}
       {lesson.track==='html' && !illustration && <HtmlLessonExample page={page}/>}
+      {lesson.track==='html-gd' && !illustration && <>
+        <HtmlLessonExample page={{...page, themeCss: gameUiThemeCss}}/>
+        <ElementTree html={page.code}/>
+      </>}
       {illustration && <TeachingFigure src={illustration.src} alt={illustration.alt} title={page.title} />}
       {page.image && !comparisonDiagram && !logicDiagram && (illustration ? <details className="js-predict"><summary>Dokładny schemat kodu</summary><TeachingFigure src={imagePath} alt={page.alt} title={page.title} /></details> : <TeachingFigure src={imagePath} alt={page.alt} title={page.title} />)}
       {page.question && <details className="js-predict" key={index}><summary>{page.question}</summary><p>{page.answer}</p></details>}

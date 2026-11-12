@@ -13,7 +13,9 @@ export default function HtmlLessonExample({page}){
   document.querySelectorAll('script,iframe,object,embed,link,style').forEach(node=>node.remove());
   document.querySelectorAll('*').forEach(node=>{for(const attr of [...node.attributes])if(/^on/i.test(attr.name)||['src','srcset','action','formaction'].includes(attr.name))node.removeAttribute(attr.name);});
   const style=window.document.createElement('style');
-  style.textContent=':host{display:block;padding:24px;color:#17222b;font:18px/1.5 Georgia,serif;background:white;min-height:150px}*{box-sizing:border-box}img,video,audio{max-width:100%}table{border-collapse:collapse}td,th{padding:5px 10px;border:1px solid #aaa}input,select,button,textarea{font:16px system-ui;max-width:100%;margin:5px}fieldset{max-width:100%}';
+  style.textContent=':host{display:block;padding:24px;color:#17222b;font:18px/1.5 Georgia,serif;background:white;min-height:150px}*{box-sizing:border-box}img,video,audio{max-width:100%}table{border-collapse:collapse}td,th{padding:5px 10px;border:1px solid #aaa}input,select,button,textarea{font:16px system-ui;max-width:100%;margin:5px}fieldset{max-width:100%}'+(page.themeCss?'\n'+page.themeCss:'');
+  const fontFaces=page.themeCss?.match(/@font-face\s*{[^}]*}/g);
+  if(fontFaces&&!window.document.head.querySelector('style[data-lesson-fonts]')){const fonts=window.document.createElement('style');fonts.dataset.lessonFonts='';fonts.textContent=fontFaces.join('\n');window.document.head.append(fonts);}
   root.replaceChildren(style,...[...document.body.childNodes].map(node=>window.document.importNode(node,true)));
   const prevent=event=>event.preventDefault();
   const stopLink=event=>{if(event.composedPath().some(node=>node.tagName==='A'))event.preventDefault();};

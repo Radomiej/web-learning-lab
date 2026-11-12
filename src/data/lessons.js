@@ -6,6 +6,8 @@ import { jsFoundationDefinitions } from './jsFoundations.js';
 import { createLesson } from './lessonFactories.js';
 import { cssLessons } from './cssLessons.js';
 import { htmlLessons } from './htmlLessons.js';
+import { htmlGdLessons } from './htmlGdLessons.js';
+import { gameUiThemeCss } from './gameUiTheme.js';
 import { jsLessons } from './jsLessons.js';
 import { layoutLessons } from './layoutLessons.js';
 import { reactLessons } from './reactLessons.js';
@@ -44,6 +46,18 @@ const standardStarter = (track, order, title) => {
   <h1>${title}</h1>
   <p>Przygotuj semantyczny przykład do ćwiczeń.</p>
 </main>`;
+
+  if (track === 'html-gd') {
+    return bundle(
+      `<main>
+  <h1>${title}</h1>
+  <p>Przygotuj stronę gry do ćwiczeń.</p>
+</main>`,
+      '',
+      gameUiThemeCss,
+      '',
+    );
+  }
 
   return bundle(
     html,
@@ -209,6 +223,69 @@ const definitions = [
     theory: ['Semantyka daje przeglądarce i technologii asystującej mapę strony bez dodatkowych atrybutów.', 'Najpierw korzystaj z natywnych elementów, a ARIA dodawaj wtedy, gdy natywna semantyka nie wystarcza.'],
   },
   {
+    order: lessonNumber('html-gd', 1), id: 'html-gd-title-screen', track: 'html-gd', title: 'Ekran tytułowy gry',
+    summary: 'Zbuduj ekran tytułowy gry z nagłówkiem, sekcjami menu i stopką.',
+    focus: 'trzy warstwy strony i nazwy plików', file: 'index.html', token: '<main',
+    objectives: ['Rozróżniaj HTML, CSS i JavaScript.', 'Nazywaj pliki i opisz ich rolę w projekcie.'],
+    theory: htmlCssTeachingPages['html-three-layers'],
+  },
+  {
+    order: lessonNumber('html-gd', 2), id: 'html-gd-game-page', track: 'html-gd', title: 'Strona gry w przeglądarce',
+    summary: 'Ułóż poprawny dokument HTML5 strony gry.',
+    focus: 'doctype, html, head, body, lang, meta i title', file: 'index.html', token: '<!doctype html',
+    objectives: ['Utwórz pełny dokument HTML5.', 'Ustaw język, kodowanie i tytuł strony.'],
+    theory: htmlCssTeachingPages['html-document'],
+  },
+  {
+    order: lessonNumber('html-gd', 3), id: 'html-gd-quest-log', track: 'html-gd', title: 'Dziennik questów',
+    summary: 'Pisz wpisy dziennika questów nagłówkami i semantycznymi wyróżnieniami tekstu.',
+    focus: 'h1–h6, p, strong, em, br, hr, sup i sub', file: 'index.html', token: '<h1',
+    objectives: ['Buduj hierarchię nagłówków.', 'Odróżniaj znaczenie `strong` i `em` od samego wyglądu.'],
+    theory: htmlCssTeachingPages['html-text'],
+  },
+  {
+    order: lessonNumber('html-gd', 4), id: 'html-gd-inventory', track: 'html-gd', title: 'Ekwipunek i questy',
+    summary: 'Opisz ekwipunek i kroki questów listami punktowanymi, numerowanymi i definicyjnymi.',
+    focus: 'ul, ol, li, dl, dt, dd i poprawne zagnieżdżanie', file: 'index.html', token: '<ul',
+    objectives: ['Dobierz typ listy do znaczenia danych.', 'Zagnieżdżaj listy bez łamania struktury HTML.'],
+    theory: htmlCssTeachingPages['html-lists'],
+  },
+  {
+    order: lessonNumber('html-gd', 5), id: 'html-gd-main-menu', track: 'html-gd', title: 'Menu główne',
+    summary: 'Połącz pozycje menu gry linkami do sekcji i zewnętrznych zasobów.',
+    focus: 'a, href, ścieżki, fragmenty, nav, target i rel', file: 'index.html', token: 'href=',
+    objectives: ['Twórz linki wewnętrzne i zewnętrzne.', 'Dodaj bezpieczny `rel` przy nowej karcie.'],
+    theory: htmlCssTeachingPages['html-links'],
+  },
+  {
+    order: lessonNumber('html-gd', 6), id: 'html-gd-gallery', track: 'html-gd', title: 'Galeria i trailer',
+    summary: 'Dodaj grafiki gry i trailer z tekstem alternatywnym i kontrolkami.',
+    focus: 'img, alt, figure, figcaption, audio, video i source', file: 'index.html', token: 'alt=',
+    objectives: ['Dodaj opis alternatywny obrazka.', 'Zachowaj proporcje i kontrolki multimediów.'],
+    theory: htmlCssTeachingPages['html-media'],
+  },
+  {
+    order: lessonNumber('html-gd', 7), id: 'html-gd-leaderboard', track: 'html-gd', title: 'Ranking graczy',
+    summary: 'Zbuduj tabelę rankingu z nagłówkami, zakresami i podsumowaniem.',
+    focus: 'table, caption, thead, tbody, th, td i scope', file: 'index.html', token: '<table',
+    objectives: ['Używaj tabel tylko do danych tabelarycznych.', 'Dodaj `caption` oraz `scope` do nagłówków.'],
+    theory: htmlCssTeachingPages['html-tables'],
+  },
+  {
+    order: lessonNumber('html-gd', 8), id: 'html-gd-character', track: 'html-gd', title: 'Tworzenie postaci',
+    summary: 'Zbierz dane postaci przez label, input, select, textarea i button.',
+    focus: 'form, label, input, select, textarea, button i required', file: 'index.html', token: '<label',
+    objectives: ['Połącz etykietę z kontrolką.', 'Włącz natywną walidację tam, gdzie ma sens.'],
+    theory: htmlCssTeachingPages['html-forms'],
+  },
+  {
+    order: lessonNumber('html-gd', 9), id: 'html-gd-launch-page', track: 'html-gd', title: 'Strona premiery gry',
+    summary: 'Ułóż stronę premiery z header, main, section, article, aside i footer.',
+    focus: 'semantyczne landmarks, focus, kontrast i natywne kontrolki', file: 'index.html', token: '<main',
+    objectives: ['Dobierz semantyczny element do roli treści.', 'Zadbaj o klawiaturę, fokus i kontrast.'],
+    theory: htmlCssTeachingPages['html-semantics'],
+  },
+  {
     order: lessonNumber('css', 1), id: 'css-intro', track: 'css', title: 'CSS i dołączanie arkuszy',
     summary: 'Poznaj selektor, właściwość, wartość i kolejność arkuszy.',
     focus: 'link, selektor, właściwość, wartość i komentarz CSS', file: 'styles.css', token: 'color:',
@@ -357,6 +434,7 @@ const definitions = [
 
 const contentMetadata = new Map([
   ...htmlLessons,
+  ...htmlGdLessons,
   ...cssLessons,
   ...layoutLessons,
   ...jsLessons,
@@ -365,7 +443,7 @@ const contentMetadata = new Map([
 
 export const lessons = definitions.map((definition) => {
   const starter = standardStarter(definition.track, definition.order, definition.title);
-  const tasks = ['html', 'css', 'layout'].includes(definition.track)
+  const tasks = ['html', 'html-gd', 'css', 'layout'].includes(definition.track)
     ? practicalTasks(definition, starter)
     : scriptTasks(definition, starter);
   const content = contentMetadata.get(definition.order) || {};

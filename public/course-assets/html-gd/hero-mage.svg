@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" role="img" aria-label="Portret czarodziejki">
+  <defs>
+    <linearGradient id="mbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1f2b"/>
+      <stop offset="1" stop-color="#0e1118"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8fb8ff"/>
+      <stop offset="1" stop-color="#8fb8ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="240" height="160" fill="url(#mbg)"/>
+  <circle cx="120" cy="74" r="52" fill="#12161f" stroke="#6b5326" stroke-width="2"/>
+  <path d="M84 100c0-34 16-56 36-56s36 22 36 56l-10 6H94l-10-6z" fill="#3d2f5c"/>
+  <path d="M96 66c6-22 48-22 48 0l-6 4h-36l-6-4z" fill="#0a0d13"/>
+  <ellipse cx="120" cy="82" rx="18" ry="14" fill="#241a38"/>
+  <circle cx="120" cy="80" r="10" fill="url(#orb)"/>
+  <circle cx="120" cy="80" r="4" fill="#8fb8ff"/>
+  <path d="M84 100l8-8m64 8l-8-8" stroke="#8fb8ff" stroke-width="2"/>
+  <rect x="4" y="4" width="232" height="152" fill="none" stroke="#6b5326" stroke-width="3"/>
+  <rect x="10" y="10" width="220" height="140" fill="none" stroke="#e0b04a" opacity="0.4"/>
+</svg>

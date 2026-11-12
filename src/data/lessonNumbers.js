@@ -7,6 +7,7 @@ export const trackNumberBases = Object.freeze({
   php: 600,
   'game-dev': 700,
   playground: 800,
+  'html-gd': 900,
 });
 
 export function lessonNumber(track, sequence) {
