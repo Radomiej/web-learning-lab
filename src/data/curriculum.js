@@ -26,6 +26,12 @@ export const tracks = {
     description: 'Selektory, typografia i wygląd elementów.',
     accent: '#64a6ff',
   },
+  'css-gd': {
+    id: 'css-gd',
+    label: 'CSS GD',
+    description: 'Gotowy HTML interfejsu gry ostylowany własnym arkuszem (wariant testowy).',
+    accent: '#7fd4c9',
+  },
   layout: {
     id: 'layout',
     label: 'Layout',
@@ -52,6 +58,6 @@ export const tracks = {
   },
 };
 
-export const trackOrder = ['html', 'html-gd', 'css', 'layout', 'js', 'react', 'php', 'game-dev', 'playground'];
+export const trackOrder = ['html', 'html-gd', 'css', 'css-gd', 'layout', 'js', 'react', 'php', 'game-dev', 'playground'];
 
 export const allLessons = [...lessons, playgroundLesson].sort((a, b) => a.order - b.order);

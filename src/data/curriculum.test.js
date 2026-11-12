@@ -2,12 +2,13 @@ import { allLessons } from './curriculum.js';
 import { lessons } from './lessons.js';
 import { evaluateChecks } from '../services/lessonValidator.js';
 
-test('reserves a three-digit lesson range for every track', () => {
-  expect(allLessons).toHaveLength(93);
+test('reserves a numbered lesson range for every track', () => {
+  expect(allLessons).toHaveLength(99);
   const expected = {
     html: Array.from({ length: 9 }, (_, index) => 101 + index),
     'html-gd': Array.from({ length: 9 }, (_, index) => 901 + index),
     css: Array.from({ length: 6 }, (_, index) => 201 + index),
+    'css-gd': Array.from({ length: 6 }, (_, index) => 1001 + index),
     layout: Array.from({ length: 8 }, (_, index) => 301 + index),
     js: Array.from({ length: 14 }, (_, index) => 401 + index),
     react: Array.from({ length: 8 }, (_, index) => 501 + index),

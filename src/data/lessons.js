@@ -7,6 +7,7 @@ import { createLesson } from './lessonFactories.js';
 import { cssLessons } from './cssLessons.js';
 import { htmlLessons } from './htmlLessons.js';
 import { htmlGdLessons } from './htmlGdLessons.js';
+import { cssGdLessons } from './cssGdLessons.js';
 import { gameUiThemeCss } from './gameUiTheme.js';
 import { jsLessons } from './jsLessons.js';
 import { layoutLessons } from './layoutLessons.js';
@@ -55,6 +56,18 @@ const standardStarter = (track, order, title) => {
 </main>`,
       '',
       gameUiThemeCss,
+      '',
+    );
+  }
+
+  if (track === 'css-gd') {
+    return bundle(
+      `<main>
+  <h1>${title}</h1>
+  <p>Przygotuj interfejs gry do ostylowania.</p>
+</main>`,
+      '',
+      '',
       '',
     );
   }
@@ -322,6 +335,48 @@ const definitions = [
   },
   ...layoutTopics,
   {
+    order: lessonNumber('css-gd', 1), id: 'css-gd-title-screen', track: 'css-gd', title: 'Ekran tytułowy: pierwsze style',
+    summary: 'Ożyw goły HTML ekranu tytułowego pierwszymi regułami CSS.',
+    focus: 'selektor, właściwość, wartość i kolejność arkuszy', file: 'styles.css', token: 'color:',
+    objectives: ['Rozdziel strukturę HTML od wyglądu CSS.', 'Rozumiej, który arkusz wygrywa w kaskadzie.'],
+    theory: htmlCssTeachingPages['css-intro'],
+  },
+  {
+    order: lessonNumber('css-gd', 2), id: 'css-gd-menu-selectors', track: 'css-gd', title: 'Selektory ekwipunku',
+    summary: 'Wybieraj przedmioty klasami, identyfikatorami, atrybutami i pseudoklasami.',
+    focus: 'element, class, id, atrybuty, potomkowie i pseudoklasy', file: 'styles.css', token: '.',
+    objectives: ['Dobieraj selektor o najmniejszej potrzebnej specyficzności.', 'Unikaj `!important` jako pierwszego rozwiązania.'],
+    theory: htmlCssTeachingPages['css-selectors'],
+  },
+  {
+    order: lessonNumber('css-gd', 3), id: 'css-gd-quest-type', track: 'css-gd', title: 'Typografia dziennika',
+    summary: 'Dobieraj jednostki, kolory, fonty i custom properties dla questów.',
+    focus: 'rem, %, vw, font-size, line-height, text-align i zmienne CSS', file: 'styles.css', token: '--',
+    objectives: ['Odróżniaj jednostki zależne od rodzica i viewportu.', 'Zbuduj mały zestaw custom properties.'],
+    theory: htmlCssTeachingPages['css-type-colors'],
+  },
+  {
+    order: lessonNumber('css-gd', 4), id: 'css-gd-inventory-box', track: 'css-gd', title: 'Pudełka kart',
+    summary: 'Zrozum content, padding, border, margin i box-sizing na kartach karczmy.',
+    focus: 'content, padding, border, margin, width, height i box-sizing', file: 'styles.css', token: 'box-sizing',
+    objectives: ['Policz rzeczywistą szerokość pudełka.', 'Stosuj `border-box` dla przewidywalnych wymiarów.'],
+    theory: htmlCssTeachingPages['css-box-model'],
+  },
+  {
+    order: lessonNumber('css-gd', 5), id: 'css-gd-hud-position', track: 'css-gd', title: 'Pozycje HUD',
+    summary: 'Steruj display, position, tłem, obramowaniem i overflow panelu gracza.',
+    focus: 'display, position, z-index, background, border-radius i overflow', file: 'styles.css', token: 'display:',
+    objectives: ['Odróżniaj normal flow od pozycjonowania.', 'Użyj overflow świadomie, nie do maskowania błędu.'],
+    theory: htmlCssTeachingPages['css-display-position'],
+  },
+  {
+    order: lessonNumber('css-gd', 6), id: 'css-gd-menu-motion', track: 'css-gd', title: 'Ruch interfejsu',
+    summary: 'Dodaj spokojny ruch, stany interakcji i checklistę jakości do menu gry.',
+    focus: 'transition, hover, focus, keyframes i prefers-reduced-motion', file: 'styles.css', token: 'transition:',
+    objectives: ['Animuj zmianę stanu, nie dekoruj wszystkiego ruchem.', 'Uszanuj `prefers-reduced-motion`.'],
+    theory: htmlCssTeachingPages['css-motion-project'],
+  },
+  {
     order: lessonNumber('css', 6), id: 'css-motion-project', track: 'css', title: 'Przejścia, animacje i projekt końcowy',
     summary: 'Dodaj spokojny ruch, stany interakcji i checklistę jakości.',
     focus: 'transition, hover, focus, keyframes i prefers-reduced-motion', file: 'styles.css', token: 'transition:',
@@ -436,6 +491,7 @@ const contentMetadata = new Map([
   ...htmlLessons,
   ...htmlGdLessons,
   ...cssLessons,
+  ...cssGdLessons,
   ...layoutLessons,
   ...jsLessons,
   ...reactLessons,
@@ -443,7 +499,7 @@ const contentMetadata = new Map([
 
 export const lessons = definitions.map((definition) => {
   const starter = standardStarter(definition.track, definition.order, definition.title);
-  const tasks = ['html', 'html-gd', 'css', 'layout'].includes(definition.track)
+  const tasks = ['html', 'html-gd', 'css', 'css-gd', 'layout'].includes(definition.track)
     ? practicalTasks(definition, starter)
     : scriptTasks(definition, starter);
   const content = contentMetadata.get(definition.order) || {};

@@ -98,7 +98,7 @@ export default function LessonPilot({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [lesson.id]);
-  const gameUi = lesson.track === 'html-gd';
+  const gameUi = ['html-gd', 'css-gd'].includes(lesson.track);
   const [liveHtml, setLiveHtml] = useState(studentHtml);
   useEffect(() => {
     const timer = setTimeout(() => setLiveHtml(studentHtml), 300);

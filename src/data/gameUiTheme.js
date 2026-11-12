@@ -2,7 +2,9 @@
 // menu gier AAA. Stylowane są wyłącznie selektory elementów i atrybutów,
 // bo uczeń nie zna jeszcze klas CSS. Pliki fontów (Cinzel, Cinzel Decorative)
 // są serwowane lokalnie z public/course-assets/html-gd/fonts/.
-export const gameUiThemeCss = `/* Motyw interfejsu gry — gotowy. Nie musisz go zmieniać; CSS poznasz w kolejnych lekcjach. */
+// Blok @font-face jest też startem ścieżki CSS GD — tam uczniowie sami
+// piszą reguły, a fonty dostają gotowe.
+export const gameUiFontFaceCss = `/* Fonty gry — gotowe. Nie musisz ich zmieniać. */
 @font-face {
   font-family: 'Cinzel';
   font-style: normal;
@@ -67,7 +69,10 @@ export const gameUiThemeCss = `/* Motyw interfejsu gry — gotowy. Nie musisz go
   src: url('/course-assets/html-gd/fonts/cinzel-decorative-latin-700-normal.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+`;
 
+export const gameUiThemeCss = `${gameUiFontFaceCss}
+/* Motyw interfejsu gry — gotowy. Nie musisz go zmieniać; CSS poznasz w kolejnych lekcjach. */
 * { box-sizing: border-box; }
 html { scrollbar-color: #6b5326 #07090d; }
 body {

@@ -8,6 +8,7 @@ export const trackNumberBases = Object.freeze({
   'game-dev': 700,
   playground: 800,
   'html-gd': 900,
+  'css-gd': 1000,
 });
 
 export function lessonNumber(track, sequence) {

@@ -1,6 +1,7 @@
 import { createTask } from './lessonFactories.js';
 import { htmlInstructions, htmlTaskIntro, htmlTaskHint } from './htmlInstructions.js';
 import { htmlGdTasks, htmlGdTaskHint } from './htmlGdTasks.js';
+import { cssGdTasks, cssGdTaskHint } from './cssGdTasks.js';
 import { gameUiThemeCss } from './gameUiTheme.js';
 import { independentHtml } from './independentHtml.js';
 import { modifiedHtml } from './modifiedHtml.js';
@@ -93,8 +94,8 @@ const layoutPlans = {
 // HTML lessons run guided → modified → independent; ids html-10N-guided,
 // html-10N-modified-v2 (new middle task) and html-10N-independent-v2 (kept).
 // The html-gd variant track uses the same mode and id scheme.
-const modes = { html: ['guided', 'modified', 'independent'], 'html-gd': ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'independent'] };
-const modeIds = { html: ['guided', 'modified', 'independent'], 'html-gd': ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'challenge'] };
+const modes = { html: ['guided', 'modified', 'independent'], 'html-gd': ['guided', 'modified', 'independent'], 'css-gd': ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'independent'] };
+const modeIds = { html: ['guided', 'modified', 'independent'], 'html-gd': ['guided', 'modified', 'independent'], 'css-gd': ['guided', 'modified', 'independent'], default: ['guided', 'independent', 'challenge'] };
 const ruleText = (plans) => plans.map(([property, value, selector = '.practice']) => `${selector} { ${property}: ${value}; }`).join('\n');
 const styleTarget = (selector) => ({
   '.practice': 'W kontenerze z class="practice"',
@@ -130,7 +131,7 @@ const guidedSteps = {
 };
 
 export function practicalTasks(definition, base) {
-  const count = ['html', 'html-gd', 'layout'].includes(definition.track) ? 3 : 2;
+  const count = ['html', 'html-gd', 'css-gd', 'layout'].includes(definition.track) ? 3 : 2;
   const localOrder = lessonSequence(definition.track, definition.order);
   const trackModes = modes[definition.track] || modes.default;
   const trackIds = modeIds[definition.track] || modeIds.default;
@@ -173,6 +174,20 @@ export function practicalTasks(definition, base) {
       task.starter = { ...base, html: gd.starter, baseCss: '', themeCss: gameUiThemeCss };
       task.solution = { ...task.starter, html: gd.solution };
       task.solutionExplanation = 'W index.html wpisano docelowy fragment z kroków zadania — zaznaczone linie to dopisany kod.';
+      gd.checks.forEach(([type, label, fields]) => add(type, label, fields));
+    } else if (definition.track === 'css-gd') {
+      // Flipped variant: the game UI markup is complete; the student writes
+      // the stylesheet in styles.css until the page looks like a game menu.
+      const gd = [cssGdTasks[localOrder].guided, cssGdTasks[localOrder].modified, cssGdTasks[localOrder].independent][variant];
+      if (gd.title) task.title = gd.title;
+      task.prompt = gd.goal;
+      if (variant === 0) {
+        task.hint = cssGdTaskHint;
+        task.steps = gd.steps;
+      }
+      task.starter = { ...base, html: gd.html, baseCss: gd.cssStarter, themeCss: '' };
+      task.solution = { ...task.starter, baseCss: gd.cssSolution };
+      task.solutionExplanation = 'W styles.css dopisano reguły z kroków zadania — zaznaczone linie to nowe reguły.';
       gd.checks.forEach(([type, label, fields]) => add(type, label, fields));
     } else if (['css', 'layout'].includes(definition.track)) {
       let plan = definition.track === 'layout' ? layoutPlans[localOrder][variant] : stylePlans[localOrder];
