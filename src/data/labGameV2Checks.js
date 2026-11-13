@@ -168,13 +168,15 @@ function javaExpression(path) {
   const transform={x:'x',y:'y',scaleX:'scale.x',scaleY:'scale.y',visualOffsetX:'visualOffset.x',visualOffsetY:'visualOffset.y'};
   return transform[kind]?`${receiver}.transform.${transform[kind]}`:`${receiver}.${kind}`;
 }
+const JAVA_KEY_CONSTANTS={"1":'DIGIT_1',"2":'DIGIT_2',"3":'DIGIT_3',"ArrowUp":'UP',"ArrowDown":'DOWN',"ArrowLeft":'LEFT',"ArrowRight":'RIGHT',"w":'W',"a":'A',"s":'S',"d":'D',"x":'X',"y":'Y',"z":'Z',"Space":'SPACE',"Enter":'ENTER',"Shift":'SHIFT',"Tab":'TAB',"Escape":'ESCAPE',"ACTION_A":'ACTION_A',"ACTION_B":'ACTION_B',"ACTION_X":'ACTION_X',"ACTION_Y":'ACTION_Y',"ACTION_START":'ACTION_START',"ACTION_SELECT":'ACTION_SELECT'};
+const javaKeyName=key=>JAVA_KEY_CONSTANTS[key]?`Keys.${JAVA_KEY_CONSTANTS[key]}`:JSON.stringify(key);
 export function courseJavaTest(chapter,mode) {
   const scenario=courseScenario(chapter,mode);
   let body='GameCanvas.setSize(640,360);game.start();game.step(0);\n';
   if(chapter==='feedback' && mode==='modified')body+='game.find("Player").getComponent(Health.class).damage(1);game.step(.1);check(Math.abs(game.find("Player").transform.visualOffset.x)>0,"accepted damage starts visual shake");\n';
   for(const phase of scenario.phases) {
     body+='game.input.clear();\n';
-    for(const key of phase.keys)body+=`game.input.setKey(${JSON.stringify(key)},true);\n`;
+    for(const key of phase.keys)body+=`game.input.setKey(${javaKeyName(key)},true);\n`;
     for(const action of phase.actions) {
       const owner=action.object===null?'game':`object(game,${JSON.stringify(action.object)})`;
       const receiver=action.component==='input'?`${owner}.input`:action.component?`component(game,${JSON.stringify(action.object)},${action.component}.class)`:owner;
@@ -188,7 +190,7 @@ export function courseJavaTest(chapter,mode) {
     const label = path.replace('objectsByName.','').replace('.componentState.',' → ');
     body+=`check(${condition},${JSON.stringify(label+': oczekiwano '+String(value)+', otrzymano ')}+(${expression}));\n`;
   }
-  if(chapter==='graphics' && mode==='modified')body+='game.input.clear();game.input.setKey("d",true);for(int i=0;i<10;i++)game.step(.1);check(component(game,"Player",Sprite.class).flipX,"W prawo (D) sprite.flipX wynosi true — grafika domyślnie patrzy w lewo");game.input.clear();for(int i=0;i<3;i++)game.step(.1);check(component(game,"Player",Sprite.class).flipX,"Po zatrzymaniu flipX zostaje — postać patrzy w ostatnią stronę");check(Math.abs(object(game,"Player").transform.rotation)<=0.02 && Math.abs(object(game,"Player").transform.scale.x-1)<=0.02,"Odbicie nie zmienia rotation ani scale");\n';
+  if(chapter==='graphics' && mode==='modified')body+='game.input.clear();game.input.setKey(Keys.D,true);for(int i=0;i<10;i++)game.step(.1);check(component(game,"Player",Sprite.class).flipX,"W prawo (D) sprite.flipX wynosi true — grafika domyślnie patrzy w lewo");game.input.clear();for(int i=0;i<3;i++)game.step(.1);check(component(game,"Player",Sprite.class).flipX,"Po zatrzymaniu flipX zostaje — postać patrzy w ostatnią stronę");check(Math.abs(object(game,"Player").transform.rotation)<=0.02 && Math.abs(object(game,"Player").transform.scale.x-1)<=0.02,"Odbicie nie zmienia rotation ani scale");\n';
   if(chapter==='projectiles' && mode==='modified')body+='game.dispose();game=new GameMain();game.start();game.step(0);game.find("Enemy").setPosition(1000,100);for(int i=0;i<4;i++)game.step(.1);check(game.find("Projectile")!=null,"Chybiony pocisk istnieje po 0.4 s");for(int i=0;i<2;i++)game.step(.1);GameObject stray=game.find("Projectile");ProjectileMotion strayMotion=stray==null?null:stray.getComponent(ProjectileMotion.class);check(stray==null,"Chybiony pocisk znika po 0.5 s"+(stray==null?"":" — pocisk wciąż istnieje (remaining="+(strayMotion==null?"brak ProjectileMotion":""+Math.round(strayMotion.remaining*100)/100.0)+" s)"));\n';
   if(chapter==='camera' && mode==='independent')body+=`
 Camera2D camera=game.find("Camera").getComponent(Camera2D.class);

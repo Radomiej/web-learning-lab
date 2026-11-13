@@ -2,8 +2,8 @@
 import {test,expect} from 'vitest';
 import {courseManifest} from '../../shared/lab-game-v2/course/manifest.js';
 import {buildCourseProject} from './labGameV2Course.js';
-test('first five lessons reach movement, collisions, enemies and a hit',()=>{
- expect(courseManifest.chapters.slice(0,5).map(c=>c.id)).toEqual(['g2d.scene','g2d.input','g2d.collisions','g2d.enemy-ai','g2d.projectiles']);
+test('first five lessons build scene, lifecycle, movement, time and collisions',()=>{
+ expect(courseManifest.chapters.slice(0,5).map(c=>c.id)).toEqual(['g2d.scene','g2d.components','g2d.input','g2d.time','g2d.collisions']);
 });
 test('guided starters preserve a scene and remove only the small target change',()=>{
  for(const lang of ['java','js'])for(const chapter of ['scene','input','collisions','enemy-ai','projectiles']){

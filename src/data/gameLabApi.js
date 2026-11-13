@@ -43,10 +43,10 @@ export const gameLabApi = [
   api('FlankTarget2D','AI','new FlankTarget2D(target)','Zbliża się do radius=100 px i obiega cel. clockwise wybiera kierunek; speed jest w px/s.','const ai=enemy.addComponent(new GameLab.FlankTarget2D(player));\nai.clockwise=false;','Constructor'),
   api('ObstacleAvoidance2D','AI','new ObstacleAvoidance2D()','Koryguje kierunek lokalnie przez zapytania przestrzenne. lookAhead=80 px, weight=2. Ignoruje triggery; nie wyszukuje drogi w labiryncie.','enemy.addComponent(new GameLab.ObstacleAvoidance2D());','Constructor'),
   api('TopDownCharacterController2D','Ruch i kolizje','new TopDownCharacterController2D()','Ruch bez grawitacji i odczytu klawiszy. walkSpeed=120, runSpeed=240 px/s, automatyczne flipX sprite. Zastępuje CharacterController2D na postaci.','controller.walk(1,0);\ncontroller.run(-1,0);','Constructor'),
-  api('PlatformerCharacterController2D','Ruch i kolizje','new PlatformerCharacterController2D()','Ruch poziomy, grawitacja i pojedynczy skok z podłoża. Użyj prostokątnego collidera; gravity=900, jumpSpeed=340, maxFallSpeed=600.','controller.walk(1);\nif(this.game.input.isKeyPressed("Space"))controller.jump();','Constructor'),
-  api('KeyPressed','Wejście','new KeyPressed(key, action)','Wywołuje callback raz na nowe naciśnięcie klawisza wejścia swojej sceny; powtórzenia systemowe nie tworzą nowych naciśnięć.','player.addComponent(new GameLab.KeyPressed("W",()=>{this.debug=true;}));','Constructor'),
-  api('KeyDoublePressed','Wejście','new KeyDoublePressed(key, action)','Callback po dwóch naciśnięciach z puszczeniem pomiędzy. maxDelaySeconds=0.3 s czasu symulacji; udana para resetuje uzbrojenie.','player.addComponent(new GameLab.KeyDoublePressed("D",()=>controller.setRunning(true)));','Constructor'),
-  api('NoneOfKeysPressed','Wejście','new NoneOfKeysPressed(keys, action)','Callback w każdej aktualizacji, gdy żaden klawisz z kopii tablicy nie jest trzymany.','player.addComponent(new GameLab.NoneOfKeysPressed(["W","A","S","D"],()=>controller.setRunning(false)));','Constructor'),
+  api('PlatformerCharacterController2D','Ruch i kolizje','new PlatformerCharacterController2D()','Ruch poziomy, grawitacja i pojedynczy skok z podłoża. Użyj prostokątnego collidera; gravity=900, jumpSpeed=340, maxFallSpeed=600.','controller.walk(1);\nif(this.game.input.isKeyPressed(GameLab.Keys.SPACE))controller.jump();','Constructor'),
+  api('KeyPressed','Wejście','new KeyPressed(key, action)','Wywołuje callback raz na nowe naciśnięcie klawisza wejścia swojej sceny; powtórzenia systemowe nie tworzą nowych naciśnięć.','player.addComponent(new GameLab.KeyPressed(GameLab.Keys.W,()=>{this.debug=true;}));','Constructor'),
+  api('KeyDoublePressed','Wejście','new KeyDoublePressed(key, action)','Callback po dwóch naciśnięciach z puszczeniem pomiędzy. maxDelaySeconds=0.3 s czasu symulacji; udana para resetuje uzbrojenie.','player.addComponent(new GameLab.KeyDoublePressed(GameLab.Keys.D,()=>controller.setRunning(true)));','Constructor'),
+  api('NoneOfKeysPressed','Wejście','new NoneOfKeysPressed(keys, action)','Callback w każdej aktualizacji, gdy żaden klawisz z kopii tablicy nie jest trzymany.','player.addComponent(new GameLab.NoneOfKeysPressed([GameLab.Keys.W,GameLab.Keys.A,GameLab.Keys.S,GameLab.Keys.D],()=>controller.setRunning(false)));','Constructor'),
 ];
 
 export const gameLabMembers = {
@@ -111,8 +111,8 @@ export const gameLabMemberDocs = {
   rotation: 'Obrót w radianach.',
   scale: 'Skala grafiki w osiach x/y; nie zmienia rozmiaru kolizji.',
   visualOffset: 'Tymczasowe przesunięcie grafiki, np. shake; nie zmienia fizycznej pozycji.',
-  isKeyDown: 'Sprawdza, czy klawisz jest trzymany. Np. isKeyDown("w").',
-  isKeyPressed: 'Sprawdza nowe naciśnięcie w bieżącej klatce. Np. isKeyPressed("Space").',
+  isKeyDown: 'Sprawdza, czy klawisz jest trzymany. Np. isKeyDown(GameLab.Keys.W).',
+  isKeyPressed: 'Sprawdza nowe naciśnięcie w bieżącej klatce. Np. isKeyPressed(GameLab.Keys.SPACE).',
   audio: 'Syntezator sceny: playNote(note, opts), play(song, loop), stop().',
   playNote: 'Gra pojedynczą nutę: playNote("A4", { beats?, wave?, tempo? }).',
   play: 'Odtwarza utwór: play(song) albo play(song, { loop: true }).',

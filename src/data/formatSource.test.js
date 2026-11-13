@@ -8,7 +8,7 @@ describe('formatSource', () => {
     const source = buildCourseProject('js', 'input', 'independent').files['SpaceShooter.js'];
     const formatted = formatSource(source);
     expect(formatted).toContain('onUpdate() {\n');
-    expect(formatted).toContain('    if(this.game.input.isKeyPressed("Space")) this.requireComponent(BulletShooter).shoot();');
+    expect(formatted).toContain('    if(this.game.input.isKeyPressed(GameLab.Keys.SPACE)) this.requireComponent(BulletShooter).shoot();');
     expect(formatted).toContain('import BulletShooter');
     expect(formatted.trim().endsWith('}')).toBe(true);
     // Braces stay balanced and code still parses as a module body.

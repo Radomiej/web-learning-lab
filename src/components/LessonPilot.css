@@ -610,3 +610,62 @@
   .pilot-canvas-hint { animation: none; }
   .pilot-canvas-fill { transition: none; }
 }
+/* ── Plansza cyklu życia (LifecycleBoard) ─────────────────────────── */
+.pilot-lifecycle-board { margin-top: 12px; border: 1px solid var(--line, #d9d5cc); border-radius: 12px; padding: 12px 14px; background: var(--panel, #fbfaf7); }
+.pilot-lifecycle-help { margin: 0 0 8px; font-size: 13px; color: var(--muted, #5a5648); }
+.pilot-lifecycle-stage { position: relative; }
+.pilot-lifecycle-stage svg { display: block; width: 100%; max-width: 420px; }
+.pilot-lifecycle-world { fill: var(--code-bg, #f2f0ea); stroke: var(--line, #d9d5cc); }
+.pilot-lifecycle-object { fill: #e3efff; stroke: #76b9f2; stroke-width: 1.6; }
+.pilot-lifecycle-name { font-size: 12px; font-weight: 700; fill: #2c5282; }
+.pilot-lifecycle-ticks { font-size: 11px; fill: #2c5282; font-family: var(--mono, monospace); }
+.pilot-lifecycle-ghost { fill: none; stroke: var(--line, #d9d5cc); stroke-dasharray: 5 4; }
+.pilot-lifecycle-ghost-label { font-size: 11px; fill: var(--muted, #8a8676); font-style: italic; }
+.pilot-lifecycle-track { fill: var(--line, #d9d5cc); }
+.pilot-lifecycle-fill { fill: #70c994; }
+.pilot-lifecycle-axis { stroke: var(--muted, #8a8676); stroke-width: 1; }
+.pilot-lifecycle-mark { stroke: #76b9f2; stroke-width: 1.6; }
+.pilot-lifecycle-axis-label { font-size: 10px; fill: var(--muted, #8a8676); }
+.pilot-lifecycle-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.pilot-lifecycle-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid #76b9f2; background: #e3efff; color: #2c5282; font-weight: 600; cursor: pointer; }
+.pilot-lifecycle-btn:hover { background: #d0e4fd; }
+.pilot-lifecycle-fps { display: inline-flex; align-items: center; gap: 2px; }
+.pilot-lifecycle-fps-btn { padding: 4px 10px; border: 1px solid var(--line, #d9d5cc); background: #fff; cursor: pointer; font-family: var(--mono, monospace); }
+.pilot-lifecycle-fps-btn:first-of-type { border-radius: 8px 0 0 8px; }
+.pilot-lifecycle-fps-btn.is-active { background: #2c5282; color: #fff; border-color: #2c5282; }
+.pilot-lifecycle-fps-unit { font-size: 12px; color: var(--muted, #8a8676); margin-left: 4px; }
+.pilot-lifecycle-log { margin: 8px 0 0; padding: 8px 10px; list-style: none; background: var(--code-bg, #f2f0ea); border-radius: 8px; font-family: var(--mono, monospace); font-size: 12px; min-height: 32px; max-height: 132px; overflow: auto; }
+.pilot-lifecycle-log li { padding: 1px 0; color: #4a5568; }
+.pilot-lifecycle-log li:last-child { color: #1a202c; font-weight: 600; }
+.pilot-lifecycle-log-t { color: #76b9f2; margin-right: 8px; }
+.pilot-lifecycle-log-empty { font-style: italic; color: var(--muted, #8a8676); font-weight: 400 !important; }
+.pilot-lifecycle-status { margin: 8px 0 0; font-size: 13px; color: #2d3748; }
+.pilot-lifecycle-hint { position: absolute; right: 12px; bottom: 8px; display: flex; align-items: center; gap: 6px; background: #2c5282; color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 12px; pointer-events: none; animation: pilot-hint-bounce 1.6s ease-in-out infinite; }
+
+/* ── Plansza sprintu (SprintBoard) ─────────────────────────────────── */
+.pilot-sprint-board { margin-top: 12px; border: 1px solid var(--line, #d9d5cc); border-radius: 12px; padding: 12px 14px; background: var(--panel, #fbfaf7); outline: none; }
+.pilot-sprint-board:focus-visible { border-color: #76b9f2; box-shadow: 0 0 0 3px rgba(118, 185, 242, .25); }
+.pilot-sprint-help { margin: 0 0 8px; font-size: 13px; color: var(--muted, #5a5648); }
+.pilot-sprint-stage { position: relative; }
+.pilot-sprint-stage svg { display: block; width: 100%; max-width: 420px; }
+.pilot-sprint-world { fill: var(--code-bg, #f2f0ea); stroke: var(--line, #d9d5cc); }
+.pilot-sprint-track { stroke: var(--line, #d9d5cc); stroke-width: 2; }
+.pilot-sprint-tick { stroke: var(--muted, #8a8676); stroke-width: 1; }
+.pilot-sprint-tick-label { font-size: 9px; fill: var(--muted, #8a8676); }
+.pilot-sprint-ghost rect { fill: none; stroke: #a0aec0; stroke-width: 1.5; stroke-dasharray: 3 2; }
+.pilot-sprint-ghost-label { font-size: 9px; fill: #a0aec0; }
+.pilot-sprint-player rect { fill: #e3efff; stroke: #76b9f2; stroke-width: 1.6; }
+.pilot-sprint-player.is-sprinting rect { fill: #c6f6d5; stroke: #48bb78; }
+.pilot-sprint-player-label { font-size: 9px; fill: #2c5282; }
+.pilot-sprint-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
+.pilot-sprint-keycap { padding: 6px 16px; border-radius: 8px; border: 2px solid #4a5568; border-bottom-width: 4px; background: #edf2f7; font-family: var(--mono, monospace); font-weight: 700; cursor: pointer; }
+.pilot-sprint-keycap.is-down { border-bottom-width: 2px; transform: translateY(2px); background: #c6f6d5; border-color: #48bb78; }
+.pilot-sprint-speed { font-size: 13px; font-family: var(--mono, monospace); }
+.pilot-sprint-gap { font-size: 12px; color: var(--muted, #8a8676); }
+.pilot-sprint-code { margin: 8px 0 0; padding: 8px 10px; background: var(--code-bg, #f2f0ea); border-radius: 8px; font-size: 12px; overflow-x: auto; }
+.pilot-sprint-status { margin: 8px 0 0; font-size: 13px; color: #2d3748; }
+.pilot-sprint-hint { position: absolute; right: 12px; bottom: 8px; display: flex; align-items: center; gap: 6px; background: #2c5282; color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 12px; pointer-events: none; animation: pilot-hint-bounce 1.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pilot-lifecycle-hint, .pilot-sprint-hint { animation: none; }
+}
