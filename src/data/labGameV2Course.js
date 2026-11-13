@@ -17,6 +17,14 @@ export function buildCourseProject(language, chapter, mode, solved = true, useEn
       files[entry]=files[entry].replace(/(camera\.addComponent\(new (?:GameLab\.)?Camera2D\(\)\);)/,'$1\n// TODO: Ustaw kamerę zgodnie z poleceniem; ruch gracza jest już gotowy.');
       return {files,ready:solution.ready};
     }
+    if(chapter==='graphics' && mode==='independent') {
+      files[entry]=files[entry]
+        .replace(/ground\.getComponent\((?:GameLab\.)?TileMap(?:\.class)?\)\.layer=-10;/,'// TODO: ustaw warstwę tła na -10')
+        .replace(/path\.getComponent\((?:GameLab\.)?ShapeRenderer(?:\.class)?\)\.layer=-5;/,'// TODO: ustaw warstwę ścieżki na -5')
+        .replace(/player\.addComponent\(new (?:GameLab\.)?PlayerController\(\)\);/,'$&\n// TODO: ustaw jawnie warstwę Player na 0')
+        .replace(/decoration\.getComponent\((?:GameLab\.)?Sprite(?:\.class)?\)\.layer=5;/,'// TODO: ustaw warstwę dekoracji na 5');
+      return {files,ready:solution.ready};
+    }
     const targets={
       scene:[entry,'onCreate'],components:[`${mode==='independent'?'Lifetime':'Counter'}.${extension}`,'onUpdate'],
       time:[`${mode==='independent'?'DirectionMover':'Mover'}.${extension}`,'onUpdate'],input:[`${mode==='independent'?'SpaceShooter':'PlayerController'}.${extension}`,'onUpdate'],
@@ -209,7 +217,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
         setup+=`${get('player','Sprite')}.texture=Assets.RANGER${java?'.key()':''};\n${get('player','Sprite')}.width=48;\n${get('player','Sprite')}.height=48;\n`;
         object('Wall',240,100,[shape(24,120,'#70c994'),'Collider2D(24,120)']);
       }
-      if(mode==='modified') { component('FacingVisual','onUpdate() { const i=this.game.input; const x=Number(i.isKeyDown("d"))-Number(i.isKeyDown("a")); if(x) this.requireComponent(GameLab.Sprite).flipX=x<0; }','@Override public void onUpdate(double delta) { double x=(getGame().input.isKeyDown("d")?1:0)-(getGame().input.isKeyDown("a")?1:0); if(x!=0) requireComponent(Sprite.class).flipX=x<0; }'); setup+='player.addComponent(new FacingVisual());\n'; }
+      if(mode==='modified') { component('FacingVisual','onUpdate() { const i=this.game.input; const x=Number(i.isKeyDown("d"))-Number(i.isKeyDown("a")); if(x) this.requireComponent(GameLab.Sprite).flipX=x>0; }','@Override public void onUpdate(double delta) { double x=(getGame().input.isKeyDown("d")?1:0)-(getGame().input.isKeyDown("a")?1:0); if(x!=0) requireComponent(Sprite.class).flipX=x>0; }'); setup+='player.addComponent(new FacingVisual());\n'; }
       if(mode==='independent') { object('Decoration',240,180,[sprite('COIN',16,16)]); setup+=`${get('decoration','Sprite')}.layer=5;\n`; }
       break;
     }

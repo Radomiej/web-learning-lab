@@ -38,7 +38,7 @@ export function courseScenario(chapter,mode) {
       break;
     case 'graphics':
       expect(state('Ground','TileMap','texture'),mode==='modified'?'sand':'grass');expect(state('Ground','TileMap','tileSize'),mode==='modified'?48:32);
-      if(mode==='modified') {phases=[phase(1,['a'])];expect(state('Player','Sprite','flipX'),true);expect(object('Player','x'),88);}
+      if(mode==='modified') {phases=[phase(1,['a'])];expect(state('Player','Sprite','flipX'),false);expect(object('Player','x'),88);}
       if(mode==='independent') {expect(state('Ground','TileMap','layer'),-10);expect(state('Path','ShapeRenderer','layer'),-5);expect(state('Decoration','Sprite','layer'),5);}
       break;
     case 'collisions': {
@@ -188,7 +188,8 @@ export function courseJavaTest(chapter,mode) {
     const label = path.replace('objectsByName.','').replace('.componentState.',' → ');
     body+=`check(${condition},${JSON.stringify(label+': oczekiwano '+String(value)+', otrzymano ')}+(${expression}));\n`;
   }
-  if(chapter==='projectiles' && mode==='modified')body+='game.dispose();game=new GameMain();game.start();game.step(0);game.find("Enemy").setPosition(1000,100);for(int i=0;i<6;i++)game.step(.1);check(game.find("Projectile")==null,"Chybiony pocisk znika po 0.5 s");\n';
+  if(chapter==='graphics' && mode==='modified')body+='game.input.clear();game.input.setKey("d",true);for(int i=0;i<10;i++)game.step(.1);check(component(game,"Player",Sprite.class).flipX,"W prawo (D) sprite.flipX wynosi true — grafika domyślnie patrzy w lewo");game.input.clear();for(int i=0;i<3;i++)game.step(.1);check(component(game,"Player",Sprite.class).flipX,"Po zatrzymaniu flipX zostaje — postać patrzy w ostatnią stronę");check(Math.abs(object(game,"Player").transform.rotation)<=0.02 && Math.abs(object(game,"Player").transform.scale.x-1)<=0.02,"Odbicie nie zmienia rotation ani scale");\n';
+  if(chapter==='projectiles' && mode==='modified')body+='game.dispose();game=new GameMain();game.start();game.step(0);game.find("Enemy").setPosition(1000,100);for(int i=0;i<4;i++)game.step(.1);check(game.find("Projectile")!=null,"Chybiony pocisk istnieje po 0.4 s");for(int i=0;i<2;i++)game.step(.1);GameObject stray=game.find("Projectile");ProjectileMotion strayMotion=stray==null?null:stray.getComponent(ProjectileMotion.class);check(stray==null,"Chybiony pocisk znika po 0.5 s"+(stray==null?"":" — pocisk wciąż istnieje (remaining="+(strayMotion==null?"brak ProjectileMotion":""+Math.round(strayMotion.remaining*100)/100.0)+" s)"));\n';
   if(chapter==='camera' && mode==='independent')body+=`
 Camera2D camera=game.find("Camera").getComponent(Camera2D.class);
 GameObject marker=game.find("Marker"),player=game.find("Player");
@@ -204,6 +205,7 @@ check(player.transform.x==playerX && player.transform.y==playerY,"Marker nie mo�
 `;
   if(chapter==='canvas-ui' && mode==='modified')body+='check(GameCanvas.frame().contains("rect|80.0|90.0|40.0|30.0|#76b9f2"),"centered rectangle");check(GameCanvas.frame().contains("text|Start|80.0|140.0"),"centered text");\n';
   if(chapter==='canvas-ui' && mode==='independent')body+='check(GameCanvas.frame().contains("rect|80.0|40.0|120.0|12.0"),"progress left edge and width");check(GameCanvas.frame().contains("|left|"),"paragraph alignment");\n';
+  if(chapter==='components' && mode==='independent')body+='game.dispose();game=new GameMain();game.start();game.step(0);for(int i=0;i<2;i++)game.step(.1);check(game.find("Spark")!=null,"Spark istnieje po 0.2 s");for(int i=0;i<3;i++)game.step(.1);GameObject stray=game.find("Spark");Lifetime strayLife=stray==null?null:stray.getComponent(Lifetime.class);check(stray==null,"Spark znika po 0.3 s"+(stray==null?"":" — Spark wciąż istnieje (remaining="+(strayLife==null?"brak komponentu Lifetime":""+Math.round(strayLife.remaining*100)/100.0)+", active="+stray.active+")"));check(game.cleanup==1,"cleanup liczy dokładnie jedno zniszczenie (cleanup="+game.cleanup+")");GameObject extra=game.createObject("Spark2");extra.setPosition(50,50);extra.addComponent(new Lifetime());game.step(.1);check(!extra.destroyed,"Drugi Spark odlicza własny czas, a nie globalny czas gry");for(int i=0;i<3;i++)game.step(.1);check(extra.destroyed,"Nowy Spark znika po własnych 0.3 s");check(game.cleanup==2,"cleanup rośnie przy każdym zniszczeniu (cleanup="+game.cleanup+")");\n';
   return `import engine.*;\npublic class JavaTest {
 static void check(boolean value,String label) {if(!value){System.out.println("LAB_CHECK_FAILED:"+label);throw new AssertionError(label);}}
 static GameObject object(Game game,String name) {GameObject value=game.find(name);check(value!=null,"Brakuje obiektu „"+name+"”. Utwórz go przed sprawdzaniem zadania. Jeśli gra ma przycisk Start, uzupełnij RunController.start().");return value;}
@@ -213,7 +215,9 @@ public static void main(String[] args) {GameMain game=new GameMain();try {${body
 export function courseWebChecks(chapter,mode,id,files) {
   const {sourceToken,...scenario}=courseScenario(chapter,mode);
   const checks=[{type:'gameScenario',id:id+'.behavior',label:'Scenariusz zachowania zadania.',scenario:{phases:scenario.phases},expected:scenario.expected,tolerance:scenario.tolerance},{type:'runtimeError',id:id+'.runtime',label:'Scena uruchamia się bez błędów.'}];
-  if(chapter==='projectiles' && mode==='modified')checks.push({type:'gameScenario',id:id+'.lifetime',label:'Chybiony pocisk znika po 0.5 s.',scenario:{phases:[phase(6,[],[action('Enemy',null,'setPosition',1000,100)])]},expected:{'objects.length':2},tolerance:.02});
+  if(chapter==='graphics' && mode==='modified')checks.push({type:'gameScenario',id:id+'.facing-right',label:'W prawo sprite.flipX wynosi true i zostaje po zatrzymaniu.',scenario:{phases:[phase(1,['d']),phase(1)]},expected:{[state('Player','Sprite','flipX')]:true,[object('Player','x')]:112},tolerance:.02});
+  if(chapter==='projectiles' && mode==='modified'){checks.push({type:'gameScenario',id:id+'.lifetime-alive',label:'Chybiony pocisk istnieje po 0.4 s.',scenario:{phases:[phase(4,[],[action('Enemy',null,'setPosition',1000,100)])]},expected:{'objects.length':3},tolerance:.02});checks.push({type:'gameScenario',id:id+'.lifetime',label:'Chybiony pocisk znika po 0.5 s.',scenario:{phases:[phase(6,[],[action('Enemy',null,'setPosition',1000,100)])]},expected:{'objects.length':2},tolerance:.02});}
+  if(chapter==='components' && mode==='independent')checks.push({type:'gameScenario',id:id+'.spark-alive',label:'Spark istnieje po 0.2 s.',scenario:{phases:[phase(2)]},expected:{'objects.length':1},tolerance:.02});
   if(sourceToken) {
     for(const token of sourceToken.split('|')) {
       const file=Object.entries(files).find(([name,source])=>name.endsWith('.js') && source.includes(token))?.[0];

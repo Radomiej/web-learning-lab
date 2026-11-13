@@ -32,12 +32,19 @@ Kontrakt `board` w notatce (`extra` w `note()`):
   obiektu, składnia danego labu); komponent może nieść własne `object`
   ({name,x,y}) — tablica rysuje osobny marker Transform na każdy odrębny
   obiekt, a komponent bez `object` przypada bazowemu `object`.
+- `{ board: { kind: 'keypress', code } }` — keycap + symulacja przytrzymania,
+  kod wywołania przychodzi w `code`.
+- `{ board: { kind: 'canvas', variant: 'button'|'bar', api } }` — interaktywne
+  drawRect/drawText na suwakach; `api` to prefiks wywołania (`this.canvas.` w JS,
+  `canvas.` w Javie). Wariant `bar` pokazuje pasek z przypiętym lewym brzegiem
+  (x = krawędź + width/2, bo drawRect dostaje środek).
 
 Te widżety są BAJTOWO identyczne w java-lab i web-learning-lab (kopiuj, nie
 forkuj — precedens: ChaseVectorBoard, CoordinateBoard). Różnią się tylko
-łańcuchy `code` w notatkach (`GameLab.` w JS vs czysta składnia Javy).
+łańcuchy `code`/`api` w notatkach (`GameLab.`/`this.canvas.` w JS vs czysta
+składnia Javy).
 
 Testy: `src/components/<Board>.test.jsx` w obu labach + rozszerzony test
 pokrycia `src/data/gameDevTaskLearning.test.js` (`board.kind` ∈ chase |
-coordinates | components). Uruchom: `npx vitest run <pliki> --maxWorkers=1
---minWorkers=1` sekwencyjnie w każdym labie.
+coordinates | components | keypress | canvas). Uruchom: `npx vitest run <pliki>
+--maxWorkers=1 --minWorkers=1` sekwencyjnie w każdym labie.

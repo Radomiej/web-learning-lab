@@ -4,7 +4,7 @@ export const courseManifest = {
   "engineApiVersion": 2,
   "contentVersion": 3,
   "chapters": [
-    {
+      {
       "id": "g2d.scene",
       "order": 1,
       "title": "Scena, obiekty i komponenty",
@@ -61,9 +61,63 @@ export const courseManifest = {
       "prerequisites": [],
       "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
     },
-    {
-      "id": "g2d.input",
+      {
+      "id": "g2d.components",
       "order": 2,
+      "title": "Własna klasa komponentu i cykl życia",
+      "objectives": [
+        "Piszesz klasę dziedziczącą po Component i dodajesz jej instancję do obiektu. Odróżniasz stan instancji od wspólnego stanu oraz tworzenie od aktualizacji i usuwania."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.components.guided",
+          "mode": "guided",
+          "title": "Licznik aktualizacji",
+          "prompt": "Masz gotową klasę Counter i scenę. Dopisz zwiększenie counts o 1 w onUpdate.",
+          "objective": "Uzupełnić pola i metodę własnego komponentu.",
+          "criteria": [
+            "Po uruchomieniu counts=0; po trzech aktualizacjach counts=3.",
+            "Znacznik inicjalizacji ma wartość 1 również po trzeciej aktualizacji.",
+            "Komponent ma poprawnego właściciela Player; nie tworzysz kolejnych Player w onUpdate."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Pole counts należy do instancji komponentu. counts++ zapisuje kolejną aktualizację; tworzenie obiektu i inicjalizacja pozostają poza pętlą."
+        },
+        {
+          "id": "g2d.components.modified",
+          "mode": "modified",
+          "title": "Dwa liczniki",
+          "prompt": "Dodaj osobne instancje Counter do obiektów PlayerA i PlayerB; po dwóch aktualizacjach wyłącz tylko licznik obiektu PlayerB i wykonaj jeszcze trzy aktualizacje.",
+          "objective": "Przechowywać stan w osobnych instancjach i sterować polem enabled.",
+          "criteria": [
+            "Po pierwszych dwóch aktualizacjach oba liczniki wynoszą 2.",
+            "Po wyłączeniu komponentu B i trzech kolejnych aktualizacjach licznik A wynosi 5, a B wynosi 2.",
+            "Ponowne włączenie komponentu B i jedna aktualizacja dają A = 6 oraz B = 3, bez ponownej inicjalizacji."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.components.independent",
+          "mode": "independent",
+          "title": "Obiekt z określonym czasem życia",
+          "prompt": "Napisz komponent Lifetime z polem remaining = 0.3 s. Dodaj go do obiektu Spark i usuń obiekt po upływie tego czasu. W metodzie onDestroy zwiększ pomocniczy licznik cleanup.",
+          "objective": "Odliczać czas życia w komponencie i wykonać sprzątanie dokładnie raz.",
+          "criteria": [
+            "Po 0.2 s obiekt Spark jeszcze istnieje; po 0.3 s zostaje zniszczony i usunięty z aktywnej sceny.",
+            "Licznik cleanup zwiększa się dokładnie raz, także po kolejnych aktualizacjach i powtórnym wywołaniu destroy.",
+            "Dwa obiekty Spark utworzone w różnych chwilach odliczają swój czas remaining niezależnie.",
+            "Zniszczony obiekt Spark nie jest już aktualizowany ani rysowany."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.projectiles"
+      ]
+    },
+      {
+      "id": "g2d.input",
+      "order": 3,
       "title": "Sterowanie i kierunek postaci",
       "objectives": [
         "Rozróżniasz przytrzymanie klawisza i pojedyncze naciśnięcie. Oddzielasz odczyt wejścia od wykonania ruchu przez CharacterController2D.",
@@ -119,9 +173,63 @@ export const courseManifest = {
       ],
       "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
     },
-    {
+      {
+      "id": "g2d.time",
+      "order": 4,
+      "title": "Czas, wektory i stała prędkość",
+      "objectives": [
+        "Liczysz przesunięcie jako prędkość razy czas. Normalizujesz wektor kierunku i obsługujesz wektor zerowy."
+      ],
+      "tasks": [
+        {
+          "id": "g2d.time.guided",
+          "mode": "guided",
+          "title": "80 pikseli na sekundę",
+          "prompt": "Masz gotowy Mover z velocityX=80 i delta. Dopisz przesunięcie transform.x o velocityX*delta.",
+          "objective": "Zastosować delta w ruchu.",
+          "criteria": [
+            "Po 0.5 s pozycja wynosi (140,80), po 1 s (180,80).",
+            "10 kroków po 0.1 s i 20 kroków po 0.05 s daje tę samą pozycję końcową.",
+            "Krok o delta=0 nie zmienia pozycji."
+          ],
+          "learningStage": "Z przykładem",
+          "solutionExplanation": "Prędkość jest w px/s, a delta w sekundach. Ich iloczyn daje przesunięcie w tej aktualizacji, niezależne od liczby klatek."
+        },
+        {
+          "id": "g2d.time.modified",
+          "mode": "modified",
+          "title": "Prędkość jako konfiguracja",
+          "prompt": "Dodaj w komponencie Mover pola velocityX oraz velocityY. Obiekt Drop w (200, 40) ma prędkość (0, 60), a Spark w (20, 30) ma prędkość (-40, 20).",
+          "objective": "Użyć jednej klasy komponentu z różnymi parametrami dla różnych obiektów.",
+          "criteria": [
+            "Po 0.5 s obiekt Drop jest w (200, 70), a Spark w (0, 40).",
+            "Po 1 s obiekt Drop jest w (200, 100), a Spark w (-20, 50), bez automatycznego zatrzymywania na krawędzi ekranu.",
+            "Zmiana prędkości obiektu Drop nie zmienia prędkości obiektu Spark."
+          ],
+          "learningStage": "Samodzielnie"
+        },
+        {
+          "id": "g2d.time.independent",
+          "mode": "independent",
+          "title": "Ten sam dystans w każdym kierunku",
+          "prompt": "Napisz komponent DirectionMover z polami direction i speed. Dla kierunku (3, 4) i speed = 100 obiekt ma pokonać dokładnie 100 px w sekundę; kierunek zerowy (0, 0) zatrzymuje ruch.",
+          "objective": "Znormalizować wektor kierunku bez dzielenia przez zero.",
+          "criteria": [
+            "Startując z (100, 100), po sekundzie ruchu w kierunku (3, 4) obiekt dociera do (160, 180).",
+            "Dla kierunku (1, 1) długość przesunięcia po sekundzie wynosi 100 px, a nie około 141.421 px.",
+            "Dla kierunku (0, 0) pozycja się nie zmienia, a współrzędne pozostają poprawnymi liczbami (bez NaN).",
+            "Zmiana kierunku na przeciwny odwraca zwrot ruchu bez zmiany prędkości."
+          ],
+          "learningStage": "Rozbudowa"
+        }
+      ],
+      "prerequisites": [
+        "g2d.components"
+      ]
+    },
+      {
       "id": "g2d.collisions",
-      "order": 3,
+      "order": 5,
       "title": "Collidery, przeszkody i granice świata",
       "objectives": [
         "Odróżniasz renderer od fizycznego kształtu i triggera. Używasz kontrolera do blokowania ruchu i ślizgania przy przeszkodach."
@@ -174,9 +282,9 @@ export const courseManifest = {
       ],
       "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
     },
-    {
+      {
       "id": "g2d.enemy-ai",
-      "order": 4,
+      "order": 6,
       "title": "Pierwszy przeciwnik i pościg",
       "objectives": [
         "Uruchamiasz pościg za graczem przez komponent EnemyAI. Obliczasz kierunek do celu, korzystając z gotowego kontrolera; następnie samodzielnie piszesz pościg i ucieczkę."
@@ -231,9 +339,9 @@ export const courseManifest = {
       ],
       "scaffolding": "Gotowa baza: infrastruktura i mechaniki jeszcze niewyjaśnione w kursie. Edytuj wyłącznie miejsce TODO; pliki pomocnicze możesz obejrzeć."
     },
-    {
+      {
       "id": "g2d.projectiles",
-      "order": 5,
+      "order": 7,
       "title": "Pociski, HP i pierwsza pętla walki",
       "objectives": [
         "Strzelasz zgodnie z ostatnim kierunkiem ruchu, odczytanym z CharacterController2D.getDirection(). Pocisk odbiera HP, przeciwnik znika po śmierci, a kontakt wroga odbiera HP graczowi. Gotowe komponenty później rozbudujesz."
@@ -276,7 +384,7 @@ export const courseManifest = {
           "id": "g2d.projectiles.independent",
           "mode": "independent",
           "title": "Szybki pocisk i pierwszy cel",
-          "prompt": "Obsługa trafienia i obiekty sceny są gotowe. Samodzielnie dodaj pociskowi komponent Projectile2D(1, 0, 3000, 1, player) i ustaw hitLayers = Layers.ENEMY. Pocisk ma trafić pierwszego wroga na linii strzału, pomijając sojusznika i właściciela.",
+          "prompt": "Obsługa trafienia i obiekty sceny są gotowe. Pod TODO dodaj dwie linie: Projectile2D motion = projectile.addComponent(new Projectile2D(1, 0, 3000, 1, player)); oraz motion.hitLayers = Layers.ENEMY;. Argumenty konstruktora to (kierunek x, kierunek y, prędkość px/s, czas życia w sekundach, właściciel). Prędkość 3000 px/s to 300 px na klatkę — Projectile2D sprawdza trafienia na całym odcinku ruchu (sweep), a hitLayers=Layers.ENEMY pomija sojusznika i właściciela.",
           "objective": "Użyć ciągłego wykrywania kolizji na całym odcinku ruchu pocisku.",
           "criteria": [
             "Przy kroku 0.1 s szybki pocisk wykrywa cel o promieniu r = 8 pomiędzy początkiem a końcem ruchu, nawet jeśli na końcu kroku byłby już za celem.",
@@ -294,115 +402,7 @@ export const courseManifest = {
       ],
       "scaffolding": "Gotowe Health, FireWeapon, ContactDamage i EnemyAI pozwalają grać. W tej lekcji zmieniasz trafienie; Health rozbudujesz w lekcji 10, Weapon w 11, AI w 14, a efekty w 19."
     },
-    {
-      "id": "g2d.components",
-      "order": 6,
-      "title": "Własna klasa komponentu i cykl życia",
-      "objectives": [
-        "Piszesz klasę dziedziczącą po Component i dodajesz jej instancję do obiektu. Odróżniasz stan instancji od wspólnego stanu oraz tworzenie od aktualizacji i usuwania."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.components.guided",
-          "mode": "guided",
-          "title": "Licznik aktualizacji",
-          "prompt": "Masz gotową klasę Counter i scenę. Dopisz zwiększenie counts o 1 w onUpdate.",
-          "objective": "Uzupełnić pola i metodę własnego komponentu.",
-          "criteria": [
-            "Po uruchomieniu counts=0; po trzech aktualizacjach counts=3.",
-            "Znacznik inicjalizacji ma wartość 1 również po trzeciej aktualizacji.",
-            "Komponent ma poprawnego właściciela Player; nie tworzysz kolejnych Player w onUpdate."
-          ],
-          "learningStage": "Z przykładem",
-          "solutionExplanation": "Pole counts należy do instancji komponentu. counts++ zapisuje kolejną aktualizację; tworzenie obiektu i inicjalizacja pozostają poza pętlą."
-        },
-        {
-          "id": "g2d.components.modified",
-          "mode": "modified",
-          "title": "Dwa liczniki",
-          "prompt": "Dodaj osobne instancje Counter do obiektów PlayerA i PlayerB; po dwóch aktualizacjach wyłącz tylko licznik obiektu PlayerB i wykonaj jeszcze trzy aktualizacje.",
-          "objective": "Przechowywać stan w osobnych instancjach i sterować polem enabled.",
-          "criteria": [
-            "Po pierwszych dwóch aktualizacjach oba liczniki wynoszą 2.",
-            "Po wyłączeniu komponentu B i trzech kolejnych aktualizacjach licznik A wynosi 5, a B wynosi 2.",
-            "Ponowne włączenie komponentu B i jedna aktualizacja dają A = 6 oraz B = 3, bez ponownej inicjalizacji."
-          ],
-          "learningStage": "Samodzielnie"
-        },
-        {
-          "id": "g2d.components.independent",
-          "mode": "independent",
-          "title": "Obiekt z określonym czasem życia",
-          "prompt": "Napisz komponent Lifetime z polem remaining = 0.3 s. Dodaj go do obiektu Spark i usuń obiekt po upływie tego czasu. W metodzie onDestroy zwiększ pomocniczy licznik cleanup.",
-          "objective": "Odliczać czas życia w komponencie i wykonać sprzątanie dokładnie raz.",
-          "criteria": [
-            "Po 0.2 s obiekt Spark jeszcze istnieje; po 0.3 s zostaje zniszczony i usunięty z aktywnej sceny.",
-            "Licznik cleanup zwiększa się dokładnie raz, także po kolejnych aktualizacjach i powtórnym wywołaniu destroy.",
-            "Dwa obiekty Spark utworzone w różnych chwilach odliczają swój czas remaining niezależnie.",
-            "Zniszczony obiekt Spark nie jest już aktualizowany ani rysowany."
-          ],
-          "learningStage": "Rozbudowa"
-        }
-      ],
-      "prerequisites": [
-        "g2d.projectiles"
-      ]
-    },
-    {
-      "id": "g2d.time",
-      "order": 7,
-      "title": "Czas, wektory i stała prędkość",
-      "objectives": [
-        "Liczysz przesunięcie jako prędkość razy czas. Normalizujesz wektor kierunku i obsługujesz wektor zerowy."
-      ],
-      "tasks": [
-        {
-          "id": "g2d.time.guided",
-          "mode": "guided",
-          "title": "80 pikseli na sekundę",
-          "prompt": "Masz gotowy Mover z velocityX=80 i delta. Dopisz przesunięcie transform.x o velocityX*delta.",
-          "objective": "Zastosować delta w ruchu.",
-          "criteria": [
-            "Po 0.5 s pozycja wynosi (140,80), po 1 s (180,80).",
-            "10 kroków po 0.1 s i 20 kroków po 0.05 s daje tę samą pozycję końcową.",
-            "Krok o delta=0 nie zmienia pozycji."
-          ],
-          "learningStage": "Z przykładem",
-          "solutionExplanation": "Prędkość jest w px/s, a delta w sekundach. Ich iloczyn daje przesunięcie w tej aktualizacji, niezależne od liczby klatek."
-        },
-        {
-          "id": "g2d.time.modified",
-          "mode": "modified",
-          "title": "Prędkość jako konfiguracja",
-          "prompt": "Dodaj w komponencie Mover pola velocityX oraz velocityY. Obiekt Drop w (200, 40) ma prędkość (0, 60), a Spark w (20, 30) ma prędkość (-40, 20).",
-          "objective": "Użyć jednej klasy komponentu z różnymi parametrami dla różnych obiektów.",
-          "criteria": [
-            "Po 0.5 s obiekt Drop jest w (200, 70), a Spark w (0, 40).",
-            "Po 1 s obiekt Drop jest w (200, 100), a Spark w (-20, 50), bez automatycznego zatrzymywania na krawędzi ekranu.",
-            "Zmiana prędkości obiektu Drop nie zmienia prędkości obiektu Spark."
-          ],
-          "learningStage": "Samodzielnie"
-        },
-        {
-          "id": "g2d.time.independent",
-          "mode": "independent",
-          "title": "Ten sam dystans w każdym kierunku",
-          "prompt": "Napisz komponent DirectionMover z polami direction i speed. Dla kierunku (3, 4) i speed = 100 obiekt ma pokonać dokładnie 100 px w sekundę; kierunek zerowy (0, 0) zatrzymuje ruch.",
-          "objective": "Znormalizować wektor kierunku bez dzielenia przez zero.",
-          "criteria": [
-            "Startując z (100, 100), po sekundzie ruchu w kierunku (3, 4) obiekt dociera do (160, 180).",
-            "Dla kierunku (1, 1) długość przesunięcia po sekundzie wynosi 100 px, a nie około 141.421 px.",
-            "Dla kierunku (0, 0) pozycja się nie zmienia, a współrzędne pozostają poprawnymi liczbami (bez NaN).",
-            "Zmiana kierunku na przeciwny odwraca zwrot ruchu bez zmiany prędkości."
-          ],
-          "learningStage": "Rozbudowa"
-        }
-      ],
-      "prerequisites": [
-        "g2d.components"
-      ]
-    },
-    {
+      {
       "id": "g2d.graphics",
       "order": 8,
       "title": "Sprite, kafelki, odbicie i warstwy",
@@ -432,7 +432,7 @@ export const courseManifest = {
           "objective": "Odbijać sam wygląd postaci bez zmiany jej fizyki.",
           "criteria": [
             "Tło używa tekstury sand i kafelka 48 px.",
-            "Po ruchu w lewo (A) sprite.flipX wynosi true i pozostaje true po zatrzymaniu; po ruchu w prawo (D) zmienia się na false.",
+            "Po ruchu w lewo (A) sprite.flipX wynosi false; po ruchu w prawo (D) zmienia się na true i pozostaje true po zatrzymaniu.",
             "Podczas odbicia Transform.rotation wynosi 0, scale.x wynosi 1, a rozmiar collidera się nie zmienia."
           ],
           "learningStage": "Samodzielnie"
@@ -441,7 +441,7 @@ export const courseManifest = {
           "id": "g2d.graphics.independent",
           "mode": "independent",
           "title": "Arena z czytelnymi warstwami",
-          "prompt": "Zbuduj tło, ścieżkę jako ShapeRenderer 400×32 ze środkiem w (320, 180), obiekt Player oraz dekorację. Ustaw jawne warstwy (layer): tło -10, ścieżka -5, Player 0, dekoracja 5.",
+          "prompt": "Scena jest zbudowana: tło z TileMap, ścieżka „Path” jako ShapeRenderer 400×32 ze środkiem w (320, 180), Player i dekoracja. Ustaw jawne warstwy (layer): tło -10, ścieżka -5, Player 0, dekoracja 5.",
           "objective": "Sterować kolejnością rysowania za pomocą warstw niezależnie od kolejności tworzenia obiektów.",
           "criteria": [
             "Kolejność rysowania odpowiada wartościom layer nawet po odwróceniu kolejności tworzenia obiektów.",
@@ -456,7 +456,7 @@ export const courseManifest = {
         "g2d.time"
       ]
     },
-    {
+      {
       "id": "g2d.waves",
       "order": 9,
       "title": "Fale, konfiguracja i powtarzalny spawn",
@@ -513,7 +513,7 @@ export const courseManifest = {
         "g2d.graphics"
       ]
     },
-    {
+      {
       "id": "g2d.health",
       "order": 10,
       "title": "Health, obrażenia i nietykalność gracza",
@@ -571,7 +571,7 @@ export const courseManifest = {
         "g2d.waves"
       ]
     },
-    {
+      {
       "id": "g2d.weapons",
       "order": 11,
       "title": "Weapon, czas odnowienia i automatyczny atak",
@@ -628,7 +628,7 @@ export const courseManifest = {
         "g2d.health"
       ]
     },
-    {
+      {
       "id": "g2d.triggers",
       "order": 12,
       "title": "Triggery, monety i własny Wallet",
@@ -684,7 +684,7 @@ export const courseManifest = {
         "g2d.weapons"
       ]
     },
-    {
+      {
       "id": "g2d.loot-xp",
       "order": 13,
       "title": "Śmierć przeciwnika, łup i doświadczenie",
@@ -741,7 +741,7 @@ export const courseManifest = {
         "g2d.triggers"
       ]
     },
-    {
+      {
       "id": "g2d.enemy-tactics",
       "order": 14,
       "title": "AI: wykrywanie, flankowanie i ucieczka",
@@ -791,7 +791,7 @@ export const courseManifest = {
         "g2d.loot-xp"
       ]
     },
-    {
+      {
       "id": "g2d.camera",
       "order": 15,
       "title": "Kamera i przestrzenie współrzędnych",
@@ -846,7 +846,7 @@ export const courseManifest = {
         "g2d.enemy-tactics"
       ]
     },
-    {
+      {
       "id": "g2d.canvas-ui",
       "order": 16,
       "title": "Canvas, ręczne rysowanie i HUD",
@@ -902,7 +902,7 @@ export const courseManifest = {
         "g2d.camera"
       ]
     },
-    {
+      {
       "id": "g2d.ui-flow",
       "order": 17,
       "title": "Pauza i działające menu",
@@ -961,7 +961,7 @@ export const courseManifest = {
         "g2d.canvas-ui"
       ]
     },
-    {
+      {
       "id": "g2d.upgrades",
       "order": 18,
       "title": "Wybór ulepszenia i własne reguły zakupów",
@@ -1019,7 +1019,7 @@ export const courseManifest = {
         "g2d.ui-flow"
       ]
     },
-    {
+      {
       "id": "g2d.feedback",
       "order": 19,
       "title": "Efekty trafienia, tweeny i unoszący się tekst",
@@ -1081,7 +1081,7 @@ export const courseManifest = {
         "g2d.upgrades"
       ]
     },
-    {
+      {
       "id": "g2d.projectile-types",
       "order": 20,
       "title": "Pociski naprowadzane i przebijające",
@@ -1133,7 +1133,7 @@ export const courseManifest = {
         "g2d.feedback"
       ]
     },
-    {
+      {
       "id": "g2d.composition",
       "order": 21,
       "title": "Kompozycja, fabryki i wyposażenie",
@@ -1190,7 +1190,7 @@ export const courseManifest = {
         "g2d.projectile-types"
       ]
     },
-    {
+      {
       "id": "g2d.run-state",
       "order": 22,
       "title": "Start, przegrana, zwycięstwo i restart",
@@ -1247,7 +1247,7 @@ export const courseManifest = {
         "g2d.composition"
       ]
     },
-    {
+      {
       "id": "g2d.performance",
       "order": 23,
       "title": "Wydajność, testowanie i zapis projektu",
@@ -1307,7 +1307,7 @@ export const courseManifest = {
         "g2d.run-state"
       ]
     },
-    {
+      {
       "id": "g2d.survivor",
       "order": 24,
       "title": "Projekt końcowy: Łąka przetrwania",
@@ -1370,5 +1370,5 @@ export const courseManifest = {
         "g2d.performance"
       ]
     }
-  ]
+    ]
 };

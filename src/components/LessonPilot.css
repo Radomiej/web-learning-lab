@@ -575,3 +575,38 @@
 @media (max-width: 560px) {
   .pilot-lb-name { flex-basis: 100%; min-width: 0; }
 }
+
+.pilot-canvas-board { margin: 14px 0; padding: 14px 16px 12px; border: 1px solid #2b4160; border-radius: 12px; background: #101c2e; color: #e8eef4; }
+.pilot-canvas-help { margin: 0 0 8px; font-size: .9rem; color: #b9c6d8; }
+.pilot-canvas-stage { position: relative; }
+.pilot-canvas-stage svg { display: block; width: 100%; max-width: 420px; margin: 0 auto; }
+.pilot-canvas-world { fill: #0a1524; stroke: #2b4160; }
+.pilot-canvas-track { fill: #1c2c44; stroke: #33506b; }
+.pilot-canvas-fill { fill: #76b9f2; transition: x .15s, y .15s, width .15s, height .15s; }
+.pilot-canvas-fill-green { fill: #70c994; transition: width .15s; }
+.pilot-canvas-text { fill: #fff; font: 700 15px var(--mono); }
+.pilot-canvas-guide { stroke: #33506b; stroke-dasharray: 3 4; }
+.pilot-canvas-pin { stroke: #f8dd90; stroke-width: 2; }
+.pilot-canvas-pin-label { fill: #f8dd90; font: 600 9.5px var(--mono); }
+.pilot-canvas-measure { stroke: #66e1cd; stroke-width: 1.4; }
+.pilot-canvas-measure-label { fill: #66e1cd; font: 600 9.5px var(--mono); }
+.pilot-canvas-center { fill: #f8dd90; }
+.pilot-canvas-center-dot { fill: none; }
+.pilot-canvas-center-label { fill: #b9c6d8; font: 600 9.5px var(--mono); }
+.pilot-canvas-hint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #173f55; border: 1px solid #33506b; color: #e8eef4; font-weight: 700; font-size: .9rem; animation: pilot-canvas-bounce 1.6s ease-in-out infinite; pointer-events: none; }
+.pilot-canvas-hint > svg { flex-shrink: 0; }
+@keyframes pilot-canvas-bounce { 0%, 100% { transform: translateX(-50%); } 50% { transform: translate(-50%, -5px); } }
+.pilot-canvas-controls { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 12px 0 8px; }
+.pilot-canvas-slider { display: flex; flex-direction: column; gap: 2px; min-width: 110px; flex: 1 1 110px; }
+.pilot-canvas-slider-label { font-size: .82rem; color: #b9c6d8; }
+.pilot-canvas-slider input[type="range"] { width: 100%; accent-color: #66e1cd; }
+.pilot-canvas-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: .88rem; color: #e8eef4; cursor: pointer; }
+.pilot-canvas-toggle input { accent-color: #66e1cd; }
+.pilot-canvas-formula { align-self: center; font: 600 .9rem var(--mono); color: #b9c6d8; }
+.pilot-canvas-formula strong { color: #66e1cd; }
+.pilot-canvas-code { margin: 4px 0 0; padding: 8px 10px; border-radius: 8px; background: #10263a; color: #66e1cd; font-family: var(--mono); font-size: .9rem; white-space: pre-wrap; }
+.pilot-canvas-status { margin: 8px 0 0; min-height: 1.3em; font-size: .92rem; }
+@media (prefers-reduced-motion: reduce) {
+  .pilot-canvas-hint { animation: none; }
+  .pilot-canvas-fill { transition: none; }
+}
