@@ -8,32 +8,35 @@ function HandIcon() {
 }
 
 const FPS_OPTIONS = [30, 60, 120];
-const MAX_EVENTS = 7;
+const TEMPO_OPTIONS = [0.5, 1, 2];
 
 // Plansza cyklu życia komponentu: tworzy obiekt, tick'uje onUpdate(delta)
-// w wybranym tempie FPS i pokazuje dziennik zdarzeń oraz oś czasu ticków.
-// Mniej FPS = większe delta, ale elapsed idzie tym samym tempem — silnik
-// mnoży ruch przez delta, więc 0.3 s symulacji to zawsze 0.3 s.
+// w wybranym tempie FPS i loguje kamienie milowe (onCreate, onCollision,
+// onDestroy). Wariant lifetime: iskra leci do ściany — w połowie drogi
+// odpala onCollision(Wall), a po `life` sekundach onDestroy i zniknięcie.
+// Mniej FPS = większe delta, ale elapsed idzie tym samym tempem.
 // Bajtowo identyczna w java-lab i web-learning-lab.
-export default function LifecycleBoard({ variant = 'counter', life = 0.3, objectName = 'Spark' }) {
+export default function LifecycleBoard({ variant = 'counter', life = 3, objectName = 'Spark' }) {
   const helpId = useId();
   const [hintVisible, setHintVisible] = useState(true);
   const touch = () => setHintVisible(false);
 
   const [fps, setFps] = useState(60);
+  const [tempo, setTempo] = useState(1);
   const [alive, setAlive] = useState(false);
-  const [snap, setSnap] = useState({ ticks: 0, elapsed: 0, events: [] });
-  const sim = useRef({ ticks: 0, elapsed: 0, events: [] });
+  const [snap, setSnap] = useState({ ticks: 0, elapsed: 0, collided: false, events: [] });
+  const sim = useRef({ ticks: 0, elapsed: 0, collided: false, events: [] });
 
   const delta = 1 / fps;
+  const collisionAt = life * 0.4;
 
   const pushEvent = (text) => {
-    sim.current.events = [...sim.current.events, { t: sim.current.elapsed, text }].slice(-MAX_EVENTS);
+    sim.current.events = [...sim.current.events, { t: sim.current.elapsed, text }];
   };
 
   const create = () => {
     touch();
-    sim.current = { ticks: 0, elapsed: 0, events: [{ t: 0, text: 'onCreate() — raz, przy utworzeniu' }] };
+    sim.current = { ticks: 0, elapsed: 0, collided: false, events: [{ t: 0, text: 'onCreate() — raz, przy utworzeniu' }] };
     setSnap({ ...sim.current });
     setAlive(true);
   };
@@ -51,18 +54,25 @@ export default function LifecycleBoard({ variant = 'counter', life = 0.3, object
     const id = setInterval(() => {
       sim.current.elapsed += step;
       sim.current.ticks += 1;
-      if (variant === 'lifetime' && sim.current.elapsed >= life) {
-        destroy(false);
-        return;
+      if (variant === 'lifetime') {
+        if (!sim.current.collided && sim.current.elapsed >= collisionAt) {
+          sim.current.collided = true;
+          pushEvent('onCollision(Wall) — zdarzenie w trakcie życia');
+        }
+        if (sim.current.elapsed >= life) {
+          destroy(false);
+          return;
+        }
       }
-      pushEvent(`onUpdate(${step.toFixed(3)}) → ticks = ${sim.current.ticks}`);
       setSnap({ ...sim.current });
-    }, 1000 / fps);
+    }, (1000 / fps) / tempo);
     return () => clearInterval(id);
-  }, [alive, fps]);
+  }, [alive, fps, tempo]);
 
   const remaining = Math.max(life - snap.elapsed, 0);
-  const progress = variant === 'lifetime' ? Math.min(snap.elapsed / life, 1) : 0;
+  const progress = Math.min(snap.elapsed / life, 1);
+  const fly = Math.min(snap.elapsed / collisionAt, 1); // 0→1 do ściany
+  const sparkX = 40 + fly * 200;
 
   // Oś czasu: kreski ticków z ostatnich 1.2 s — przy 30 FPS rzadkie,
   // przy 120 gęste, ale elapsed na końcu okna jest ten sam.
@@ -74,27 +84,33 @@ export default function LifecycleBoard({ variant = 'counter', life = 0.3, object
       tickMarks.push(t);
     }
   }
-  const axisX = (t) => 40 + (t / 1.2) * 240;
+  const axisX = (t) => 40 + ((t - Math.max(0, snap.elapsed - 1.2)) / 1.2) * 240;
 
   return <div className="pilot-lifecycle-board" role="group"
     aria-label="Plansza cyklu życia komponentu" aria-describedby={helpId}>
     <p id={helpId} className="pilot-lifecycle-help">
-      Utwórz obiekt — onCreate() odpala raz, onUpdate(delta) co klatkę. Zmień FPS: mniej klatek = większe delta, ale elapsed idzie tak samo.
+      Utwórz obiekt — onCreate() odpala raz, onUpdate(delta) co klatkę, onCollision w locie, onDestroy na końcu. Zmień FPS: mniej klatek = większe delta, ale elapsed idzie tak samo.
     </p>
     <div className="pilot-lifecycle-stage">
       <svg viewBox="0 0 320 120" aria-hidden="true">
         <rect x="2" y="2" width="316" height="116" rx="8" className="pilot-lifecycle-world" />
-        {alive ? <>
+        {variant === 'lifetime' && <>
+          <rect x="250" y="20" width="16" height="60" rx="3" className="pilot-lifecycle-wall" />
+          <text x="258" y="14" textAnchor="middle" className="pilot-lifecycle-axis-label">Wall</text>
+        </>}
+        {alive ? (variant === 'lifetime' ? <>
+          <g transform={`translate(${sparkX} 50)`}>
+            <circle r="9" className={`pilot-lifecycle-spark${snap.collided ? ' is-hit' : ''}`} />
+            <text y="-14" textAnchor="middle" className="pilot-lifecycle-name">{objectName}</text>
+          </g>
+          <rect x="40" y="70" width="200" height="6" rx="3" className="pilot-lifecycle-track" />
+          <rect x="40" y="70" width={200 * progress} height="6" rx="3" className="pilot-lifecycle-fill" />
+          <text x="40" y="66" className="pilot-lifecycle-axis-label">remaining = {remaining.toFixed(2)} s</text>
+        </> : <>
           <rect x="110" y="18" width="100" height="44" rx="8" className="pilot-lifecycle-object" />
           <text x="160" y="36" textAnchor="middle" className="pilot-lifecycle-name">{objectName}</text>
-          <text x="160" y="52" textAnchor="middle" className="pilot-lifecycle-ticks">
-            {variant === 'lifetime' ? `remaining = ${remaining.toFixed(2)} s` : `ticks = ${snap.ticks}`}
-          </text>
-          {variant === 'lifetime' && <>
-            <rect x="110" y="68" width="100" height="6" rx="3" className="pilot-lifecycle-track" />
-            <rect x="110" y="68" width={100 * progress} height="6" rx="3" className="pilot-lifecycle-fill" />
-          </>}
-        </> : <>
+          <text x="160" y="52" textAnchor="middle" className="pilot-lifecycle-ticks">ticks = {snap.ticks}</text>
+        </>) : <>
           <rect x="110" y="18" width="100" height="44" rx="8" className="pilot-lifecycle-ghost" />
           <text x="160" y="44" textAnchor="middle" className="pilot-lifecycle-ghost-label">
             {snap.events.length ? 'zniszczony' : 'brak obiektu'}
@@ -103,7 +119,7 @@ export default function LifecycleBoard({ variant = 'counter', life = 0.3, object
         <line x1="40" y1="98" x2="280" y2="98" className="pilot-lifecycle-axis" />
         {tickMarks.map((t) => <line key={t.toFixed(4)} x1={axisX(t)} y1="93" x2={axisX(t)} y2="103"
           className="pilot-lifecycle-mark" />)}
-        <text x="40" y="112" className="pilot-lifecycle-axis-label">ticki ({fps} FPS)</text>
+        <text x="40" y="112" className="pilot-lifecycle-axis-label">ticki ({fps} FPS, ostatnie 1.2 s)</text>
       </svg>
       {hintVisible && <div className="pilot-lifecycle-hint"><HandIcon /><span>Utwórz obiekt!</span></div>}
     </div>
@@ -113,13 +129,22 @@ export default function LifecycleBoard({ variant = 'counter', life = 0.3, object
             {snap.events.length ? 'Utwórz ponownie' : 'Utwórz obiekt'}
           </button>
         : <button type="button" className="pilot-lifecycle-btn" onClick={() => destroy(true)}>Usuń obiekt</button>}
-      <span className="pilot-lifecycle-fps" role="group" aria-label="Tempo symulacji">
+      <span className="pilot-lifecycle-fps" role="group" aria-label="Tempo symulacji w klatkach na sekundę">
         {FPS_OPTIONS.map((f) => <button key={f} type="button"
           className={`pilot-lifecycle-fps-btn${f === fps ? ' is-active' : ''}`}
           aria-pressed={f === fps} onClick={() => { touch(); setFps(f); }}>{f}</button>)}
         <span className="pilot-lifecycle-fps-unit">FPS</span>
       </span>
+      <span className="pilot-lifecycle-fps" role="group" aria-label="Prędkość odtwarzania">
+        {TEMPO_OPTIONS.map((f) => <button key={f} type="button"
+          className={`pilot-lifecycle-fps-btn${f === tempo ? ' is-active' : ''}`}
+          aria-pressed={f === tempo} onClick={() => { touch(); setTempo(f); }}>×{f}</button>)}
+        <span className="pilot-lifecycle-fps-unit">tempo</span>
+      </span>
     </div>
+    <p className="pilot-lifecycle-live" aria-hidden="true">
+      {alive ? `onUpdate(${delta.toFixed(3)}) — wywołanie #${snap.ticks}` : 'onUpdate(delta) czeka na obiekt'}
+    </p>
     <ol className="pilot-lifecycle-log">
       {snap.events.map((e, i) => <li key={`${i}-${e.text}`}>
         <span className="pilot-lifecycle-log-t">t={e.t.toFixed(2)}s</span>{e.text}

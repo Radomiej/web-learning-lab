@@ -214,7 +214,7 @@ export const gameDevTaskLearning = {
     'onDestroy() {\n    this.game.cleanup++;\n}',
     'Uruchom scenę i odczekaj ponad 0.3 s. Sprawdź, czy Spark zniknął i czy cleanup wynosi 1.',
     'Obiekt znika, a onDestroy zwiększa cleanup dokładnie raz.',
-  { board: { kind: 'lifecycle', variant: 'lifetime', life: 0.3, objectName: 'Spark' } }),
+  { board: { kind: 'lifecycle', variant: 'lifetime', life: 3, objectName: 'Spark' } }),
   'g2d.time.guided': note(
     'Po co mnożyć prędkość przez delta?',
     'Delta to czas ostatniej aktualizacji w sekundach. Przesunięcie = prędkość × delta: przy velocityX = 80 px/s obiekt pokona 80 px w sekundę niezależnie od liczby klatek.',
@@ -244,7 +244,7 @@ export const gameDevTaskLearning = {
     'const n = Math.hypot(this.direction.x, this.direction.y);\nthis.transform.x += this.direction.x / n * this.speed * delta;',
     'W teorii porównaj kierunek przed i po normalizacji. W grze zmierz przesunięcie po sekundzie.',
     'Dokładnie 100 px — znormalizowany (3, 4) ma długość 1. Bez normalizacji byłoby 500 px.',
-  ),
+  { board: { kind: 'vector-race', code: 'const n = Math.hypot(direction.x, direction.y);\ntransform.x += direction.x / n * speed * delta;' } }),
   'g2d.graphics.guided': note(
     'Czym TileMap różni się od Sprite?',
     'TileMap wypełnia tło powtarzalną teksturą kafelka podanego rozmiaru. Jeden obiekt Ground z TileMap(GameLab.Assets.GRASS, 32) rysuje całą podłogę — nie potrzebujesz setek osobnych obiektów.',
@@ -423,7 +423,7 @@ export const gameDevTaskLearning = {
     'Experience startuje z xp = 0 i level = 1. Próg to 5 XP na poziom.',
     'while (this.xp >= 5 * this.level) {\n    this.xp -= 5 * this.level;\n    this.level++;\n}',
     'Dodaj naraz 12 XP i sprawdź level oraz pozostałe xp.',
-    'Level 3 i 2 XP — pętla odejmuje 5, potem 10 i zostawia resztę 2.',
+    'Level 2 i 7 XP — pętla odejmuje 5, a próg 10 przerasta resztę 7.',
   ),
   'g2d.enemy-tactics.guided': note(
     'Skąd wróg wie, że gracz uciekł?',
@@ -567,7 +567,7 @@ export const gameDevTaskLearning = {
     'Cooldown startuje od 0.5 s; każdy wybór mnoży go przez 0.8 z podłogą 0.1.',
     'weapon.cooldown = Math.max(0.1, weapon.cooldown * 0.8);',
     'Wybierz każdą z trzech opcji i sprawdź w raporcie, jak zmieniły się pola broni.',
-    '0.32 — kolejno 0.4, 0.32, 0.256 i dalej w dół, ale nigdy poniżej 0.1.',
+    '0.256 — kolejno 0.4, 0.32, 0.256 i dalej w dół, ale nigdy poniżej 0.1.',
     { visual: { kind: 'flow', nodes: ['awans', 'pauza + wybór', 'zmiana komponentu'], note: 'Zatwierdzenie zużywa jeden oczekujący wybór.' } },
   ),
   'g2d.upgrades.independent': note(
@@ -769,3 +769,379 @@ export const gameDevTaskLearning = {
     { visual: { kind: 'flow', nodes: ['start + sterowanie', 'walka + koniec', 'restart + eksport'], note: 'W rozwiązaniu pierwsze Slime pojawiają się po 1.5 s.' } },
   ),
 };
+
+// Szybkie pytania ABCD do sekcji „Przewidź i sprawdź" — dokładnie jedna opcja
+// ma correct: true, a why tłumaczy każdą odpowiedź. Pytanie quizu to pole
+// question notatki, kopiowane w pętli. g2d.time.independent celowo bez quizu.
+const quizzes = {
+  'g2d.scene.guided': [
+    { label: 'W pozycji Playera pojawi się prostokąt', correct: true, why: 'Renderer rysuje figurę tam, gdzie stoi obiekt — w (80, 90).' },
+    { label: 'Nic — samo ustawienie pozycji rysuje obiekt', correct: false, why: 'Pozycja niczego nie rysuje — grafikę daje komponent.' },
+    { label: 'Cała scena zmieni kolor tła', correct: false, why: 'Renderer rysuje prostokąt w miejscu obiektu, nie tło.' },
+  ],
+  'g2d.scene.modified': [
+    { label: 'Tylko PlatformB przesunie się o 40 px w prawo', correct: true, why: 'Zmiana `transform.x` dotyczy jednego obiektu.' },
+    { label: 'Obie platformy przesuną się o 40 px', correct: false, why: 'Każdy obiekt ma własny transform — zmiana jest lokalna.' },
+    { label: 'PlatformB przesunie się o 40 px w dół', correct: false, why: '`x` to oś pozioma — przesuwa w prawo, nie w dół.' },
+  ],
+  'g2d.scene.independent': [
+    { label: 'Po teksturze i rozmiarze — Enemy 32 × 32, Coin 16 × 16', correct: true, why: 'Każdy `Sprite` dostaje własną teksturę i wymiary.' },
+    { label: 'Nijak — oba obiekty wyglądają tak samo', correct: false, why: 'Różne `Sprite` rysują różne tekstury — widać różnicę.' },
+    { label: 'Oba dostaną teksturę monety — dodano ją ostatnią', correct: false, why: 'Każdy obiekt ma osobny komponent `Sprite`.' },
+  ],
+  'g2d.input.guided': [
+    { label: 'Gracz zatrzyma się — kierunek spadnie do (0, 0)', correct: true, why: 'Bez wciśniętego klawisza `x` wynosi 0 — `move` nie przesuwa.' },
+    { label: 'Potoczy się dalej z prędkością 120', correct: false, why: '`move` liczy z bieżącego kierunku, nie z pamięci — kierunek to 0.' },
+    { label: 'Wróci do pozycji startowej', correct: false, why: 'Nic nie cofa gracza — po prostu staje w miejscu.' },
+  ],
+  'g2d.input.modified': [
+    { label: 'Taki sam czas trzymania D — raz z `GameLab.Keys.SHIFT`, raz bez', correct: true, why: 'Zmienia się tylko prędkość — reszta próby identyczna.' },
+    { label: 'Raz kierunek w prawo, raz w lewo', correct: false, why: 'Porównujesz prędkość, nie kierunek ruchu.' },
+    { label: 'Dwie próby o różnej długości', correct: false, why: 'Różny czas zaburza porównanie — czas ma być ten sam.' },
+  ],
+  'g2d.input.independent': [
+    { label: 'Jeden — `isKeyPressed` wykrywa tylko moment naciśnięcia', correct: true, why: 'Kolejny strzał wymaga puszczenia i ponownego wciśnięcia Space.' },
+    { label: 'Tyle, ile klatek trzymałem Space', correct: false, why: 'To dałoby `isKeyDown` — pressed to jedno zdarzenie na naciśnięcie.' },
+    { label: 'Zero — trzeba przytrzymać dłużej', correct: false, why: '`isKeyPressed` reaguje od razu — tylko raz na naciśnięcie.' },
+  ],
+  'g2d.collisions.guided': [
+    { label: 'Gracz stanie na x = 174 — collidery się dotkną', correct: true, why: '`Collider2D` ściany blokuje dalszy ruch gracza.' },
+    { label: 'Gracz stanie na x = 184', correct: false, why: 'Odjęłeś tylko połowę gracza — collider ściany też ma połowę szerokości.' },
+    { label: 'Gracz przejdzie przez ścianę', correct: false, why: '`Collider2D` nie przepuszcza wnikania w przeszkodę.' },
+  ],
+  'g2d.collisions.modified': [
+    { label: 'Większy obraz, a obrys collidera to koło o promieniu 12 px', correct: true, why: 'Skala zmienia grafikę — promień collidera to osobna wartość.' },
+    { label: 'Collider urośnie do promienia 24 px', correct: false, why: '`transform.scale` nie zmienia promienia — `GameLab.CircleCollider2D(12)` zostaje.' },
+    { label: 'Collider dopasuje się do rozmiaru grafiki', correct: false, why: 'Promień ustawia argument konstruktora — nie skala sprite’a.' },
+  ],
+  'g2d.collisions.independent': [
+    { label: 'Ruch w ścianę się zablokuje, a wzdłuż niej potrwa', correct: true, why: 'Collider kasuje tylko składową prostopadłą do ściany.' },
+    { label: 'Gracz zatrzyma się całkowicie', correct: false, why: 'Składowa wzdłuż ściany jest wolna — ruch trwa.' },
+    { label: 'Gracz przejdzie przez ścianę po skosie', correct: false, why: 'Collider nadal blokuje wejście w przeszkodę.' },
+  ],
+  'g2d.enemy-ai.guided': [
+    { label: 'Zaktualizuje kierunek i pobiegnie do nowej pozycji', correct: true, why: '`dx` i `dy` liczone są od `target` w każdej klatce.' },
+    { label: 'Pobiegnie dalej w starym kierunku', correct: false, why: 'Wektor do celu przelicza się w każdej aktualizacji.' },
+    { label: 'Zatrzyma się, bo cel się ruszył', correct: false, why: 'Ruch celu nie zatrzymuje AI — zmienia tylko kierunek.' },
+  ],
+  'g2d.enemy-ai.modified': [
+    { label: 'Bat — pokona 80 px, a Slime 40 px', correct: true, why: 'Pole `speed` w `EnemyAI` ustala tempo — Bat ma 80.' },
+    { label: 'Oba pokonają tyle samo — normalizacja wyrównuje', correct: false, why: 'Normalizacja daje kierunek o długości 1 — prędkość to osobne pole.' },
+    { label: 'Slime — bo jest bliżej gracza', correct: false, why: 'Oba są dość daleko — rozstrzyga prędkość, a Bat ma większą.' },
+  ],
+  'g2d.enemy-ai.independent': [
+    { label: 'Stanie w miejscu — 120 nie jest mniejsze niż 120', correct: true, why: 'Warunek to `distance < 120` — ostra nierówność.' },
+    { label: 'Zacznie uciekać', correct: false, why: 'Ucieczka startuje dopiero poniżej 120 px — przy równości warunek nie przechodzi.' },
+    { label: 'Pogoni gracza', correct: false, why: '`FleeAI` tylko ucieka albo stoi — nie goni.' },
+  ],
+  'g2d.projectiles.guided': [
+    { label: '3 HP przed kontaktem, 2 HP po trafieniu', correct: true, why: '`damage(1)` odejmuje 1 przy kontakcie.' },
+    { label: '3 HP przed i po — pocisk znika bez obrażeń', correct: false, why: '`onTrigger` wywołuje `damage` przy trafieniu — HP spada.' },
+    { label: '2 HP przed, 1 HP po', correct: false, why: 'Cel zaczyna z 3 HP — pomyliłeś stan początkowy.' },
+  ],
+  'g2d.projectiles.modified': [
+    { label: 'Zniknie po 0.5 s, a HP celu zostanie bez zmian', correct: true, why: '`lifetime` kończy lot — bez kontaktu nie ma obrażeń.' },
+    { label: 'Poleci dalej i zniknie dopiero za ekranem', correct: false, why: '`lifetime` 0.5 s usuwa pocisk niezależnie od trasy.' },
+    { label: 'Cel straci 1 HP, bo pocisk był blisko', correct: false, why: 'Obrażenia wymagają kontaktu — nie bliskości.' },
+  ],
+  'g2d.projectiles.independent': [
+    { label: 'Pierwszego wroga — `hitLayers = GameLab.Layers.ENEMY` pomija Ally', correct: true, why: 'Maska warstw decyduje, co liczy się jako trafienie.' },
+    { label: 'Ally — stoi pierwszy na linii strzału', correct: false, why: 'Ally nie ma warstwy ENEMY — sweep go przelatuje.' },
+    { label: 'Obu naraz — pocisk przebija wszystkich', correct: false, why: 'Pocisk zatrzymuje się na pierwszym trafieniu z maski.' },
+  ],
+  'g2d.components.guided': [
+    { label: 'Raz — `onCreate` wykonuje się przy powstaniu komponentu', correct: true, why: 'To `onUpdate` powtarza się w każdej aktualizacji.' },
+    { label: 'Tyle razy, ile aktualizacji — jak `onUpdate`', correct: false, why: 'Pomylone callbacki — `onCreate` to jednorazowy start.' },
+    { label: 'Zero — rusza dopiero przy pierwszej klatce', correct: false, why: '`onCreate` odpala przy utworzeniu, zanim klatki ruszą.' },
+  ],
+  'g2d.components.modified': [
+    { label: '2 — tyle zdążył naliczyć przed `enabled = false`', correct: true, why: 'Wyłączenie zatrzymuje aktualizacje tylko tej instancji.' },
+    { label: '5 — licznik dolicza do końca sceny', correct: false, why: 'Po `enabled = false` ta instancja nie dostaje już `onUpdate`.' },
+    { label: '0 — wyłączenie zeruje pole', correct: false, why: '`enabled` nie kasuje pola — zatrzymuje tylko aktualizacje.' },
+  ],
+  'g2d.components.independent': [
+    { label: 'Spark zniknie, a `onDestroy` zwiększy cleanup raz', correct: true, why: '`destroy()` uruchamia `onDestroy` dokładnie raz.' },
+    { label: 'Spark zostanie na scenie jako nieaktywny', correct: false, why: 'Usuwa go `this.gameObject.destroy()` — `active = false` tylko ukrywa.' },
+    { label: '`onDestroy` będzie się powtarzał co klatkę', correct: false, why: '`onDestroy` to jednorazowe sprzątanie przy usuwaniu obiektu.' },
+  ],
+  'g2d.time.guided': [
+    { label: 'O 40 px — 80 px/s razy 0.5 s', correct: true, why: 'Przesunięcie to prędkość razy `delta`.' },
+    { label: 'O 80 px — tyle, ile wynosi prędkość', correct: false, why: 'Zapomniano pomnożyć przez `delta` = 0.5 s.' },
+    { label: 'O 160 px — 80 podzielone przez 0.5', correct: false, why: 'Mnożysz prędkość przez czas — nie dzielisz.' },
+  ],
+  'g2d.time.modified': [
+    { label: 'W lewo i w dół — ujemny X, dodatni Y', correct: true, why: '`velocityX` = −40 cofa, `velocityY` = 20 obniża.' },
+    { label: 'W prawo i w górę', correct: false, why: 'Odwrócone znaki — minus X to w lewo, plus Y to w dół.' },
+    { label: 'W lewo i w górę', correct: false, why: '`velocityY` = 20 jest dodatnie — obiekt leci w dół.' },
+  ],
+  'g2d.graphics.guided': [
+    { label: 'Powtarzalna trawa wypełni tło za graczem', correct: true, why: '`TileMap` kładzie kafelek na całym obszarze obiektu.' },
+    { label: 'Jeden kafelek 32 px przy obiekcie', correct: false, why: '`TileMap` powtarza teksturę — to nie pojedynczy `Sprite`.' },
+    { label: 'Nic — GameObject dalej będzie niewidoczny', correct: false, why: 'Komponent `TileMap` to właśnie rysowanie — obiekt dostaje tło.' },
+  ],
+  'g2d.graphics.modified': [
+    { label: 'Teksturę Sand i kafelek 48 px', correct: true, why: '`TileMap` przyjmuje teksturę i rozmiar kafelka — tu SAND i 48.' },
+    { label: 'Sand z kafelkiem 32 px', correct: false, why: 'Rozmiar kafelka to drugi argument — tu 48, nie 32.' },
+    { label: 'Grass — zostanie z poprzedniej sceny', correct: false, why: 'Przekazujesz `GameLab.Assets.SAND`, nie GRASS.' },
+  ],
+  'g2d.graphics.independent': [
+    { label: 'Dekoracja z `layer = 5`', correct: true, why: 'Wyższa wartość `layer` rysuje się na wierzchu.' },
+    { label: 'Ścieżka — utworzono ją wcześniej', correct: false, why: 'Kolejność tworzenia nie gra roli — liczy się `layer`.' },
+    { label: 'Gracz z `layer = 0`', correct: false, why: '0 < 5 — dekoracja wygrywa wartością warstwy.' },
+  ],
+  'g2d.waves.guided': [
+    { label: 'Po 1 sekundzie — pierwszy wpis harmonogramu', correct: true, why: 'Spawn pada, gdy `elapsed` osiągnie pierwszy wpis: 1.' },
+    { label: 'Od razu na starcie sceny', correct: false, why: '`elapsed` startuje od 0 — pierwszy wpis to 1 s.' },
+    { label: 'Po 3 sekundach', correct: false, why: 'To ostatni wpis [1, 2, 3] — pierwszy mija już po 1 s.' },
+  ],
+  'g2d.waves.modified': [
+    { label: 'O t = 5.5 — start 5 plus jeden interwał 0.5', correct: true, why: 'Pierwszy spawn pada po jednym odstępie od startu fali.' },
+    { label: 'O t = 5 — dokładnie na starcie fali', correct: false, why: 'Spawn jest po interwale, nie w chwili startu.' },
+    { label: 'O t = 6', correct: false, why: 'To już drugi spawn fali 2 — pierwszy mija o 5.5.' },
+  ],
+  'g2d.waves.independent': [
+    { label: 'Bieżący spawn zostanie pominięty', correct: true, why: 'Limit odrzuca nadwyżkę — `continue` bez kolejki.' },
+    { label: 'Spawn trafi do kolejki na później', correct: false, why: 'Kod pomija moment spawna — nie odkłada go.' },
+    { label: 'Najstarszy wróg zniknie, robiąc miejsce', correct: false, why: 'Nic nie usuwa starych — nowy po prostu nie powstaje.' },
+  ],
+  'g2d.health.guided': [
+    { label: '0 — `Math.max(0, …)` przytrzymuje wynik na zerze', correct: true, why: '`Math.max` blokuje zejście poniżej zera.' },
+    { label: '−2 — cios przechodzi w całości', correct: false, why: 'Bez `Math.max` byłoby −2 — tu podłoga to 0.' },
+    { label: '3 — za duże obrażenia nie przechodzą', correct: false, why: 'Cios przechodzi — HP spada do zera, a `dead` się ustawia.' },
+  ],
+  'g2d.health.modified': [
+    { label: 'Jeden — drugi wpada w okno ochrony 0.75 s', correct: true, why: '`this.invulnerability > 0` odrzuca cios — `damage` zwraca false.' },
+    { label: 'Dwa — każdy cios odbiera HP', correct: false, why: 'Drugi cios wpada w 0.75 s ochrony po pierwszym.' },
+    { label: 'Zero — ochrona działa od razu', correct: false, why: 'Ochrona startuje dopiero po pierwszym przyjętym ciosie.' },
+  ],
+  'g2d.health.independent': [
+    { label: 'Nic — PlayerB ma własny licznik HP', correct: true, why: 'Każdy `Health` liczy osobno — trafienia są lokalne.' },
+    { label: 'Też straci 3 HP', correct: false, why: '`Health` to pole instancji — nie dzieli się między obiekty.' },
+    { label: 'Umrze razem z PlayerA', correct: false, why: 'Nie dostał żadnego trafienia — jego HP zostaje pełne.' },
+  ],
+  'g2d.weapons.guided': [
+    { label: 'Najwyżej dwa — cooldown 0.6 s po każdym strzale', correct: true, why: 'Po strzale `this.timer = this.cooldown` blokuje kolejny.' },
+    { label: 'Tyle, ile klatek w sekundzie', correct: false, why: '`this.timer > 0` odcina strzały — nie decyduje klatka.' },
+    { label: 'Dokładnie jeden', correct: false, why: 'Po 0.6 s timer dochodzi do zera i drugi strzał przechodzi.' },
+  ],
+  'g2d.weapons.modified': [
+    { label: 'Po 0.5 s — gdy timer dojdzie do zera', correct: true, why: 'Timer startuje od `cooldown` — broń strzela sama przy celu w zasięgu.' },
+    { label: 'Od razu — broń jest automatyczna', correct: false, why: 'Timer startuje od 0.5 — pierwszy strzał czeka jeden cykl.' },
+    { label: 'Nigdy — bez klawisza nie ma strzału', correct: false, why: 'Ta broń jest automatyczna — klawisz nie jest potrzebny.' },
+  ],
+  'g2d.weapons.independent': [
+    { label: 'Tego o mniejszym id — reguła remisu', correct: true, why: 'Przy `d === best` wygrywa `candidate.id < target.id`.' },
+    { label: 'Tego o większym id', correct: false, why: 'Porównanie to `candidate.id < target.id` — mniejsze wygrywa.' },
+    { label: 'Losowego z tej pary', correct: false, why: 'Reguła jest deterministyczna — zawsze ten sam wybór.' },
+  ],
+  'g2d.triggers.guided': [
+    { label: '1 — moneta ma value = 1, gracz startuje z 0', correct: true, why: '`wallet.gold += this.value` dopisuje wartość tej monety.' },
+    { label: '0 — moneta jeszcze nie podniesiona', correct: false, why: 'Kontakt uruchamia `onTrigger` — złoto dopisuje się od razu.' },
+    { label: '2 — value dolicza się dwa razy', correct: false, why: 'Flaga `claimed` pilnuje jednokrotnego przyznania.' },
+  ],
+  'g2d.triggers.modified': [
+    { label: 'Nic — bez Wallet metoda wychodzi od razu', correct: true, why: '`getComponent` zwraca null — `return` przed nagrodą.' },
+    { label: 'Dopisze złoto przeciwnikowi', correct: false, why: 'Wróg nie ma `Wallet` — nie ma komu dopisać gold.' },
+    { label: 'Zniszczy monetę bez nagrody', correct: false, why: 'Moneta zostaje — wyjście następuje przed `destroy()`.' },
+  ],
+  'g2d.triggers.independent': [
+    { label: '20 — flaga `opened` przepuszcza tylko pierwszy kontakt', correct: true, why: 'Drugie wejście kończy się na warunku.' },
+    { label: '40 — po 20 za każde wejście', correct: false, why: '`this.opened = true` blokuje kolejne nagrody.' },
+    { label: '0 — skrzynia jest już otwarta', correct: false, why: '`opened` startuje od false — pierwsze wejście daje 20.' },
+  ],
+  'g2d.loot-xp.guided': [
+    { label: 'Jeden — `onDeath` wykonuje się raz przy śmierci', correct: true, why: 'Callback śmierci to jednokrotny sygnał.' },
+    { label: 'Tyle, ile trafień zadał gracz', correct: false, why: 'Orby tworzy śmierć, nie każde trafienie.' },
+    { label: 'Zero — orb pojawi się przy następnym wrogu', correct: false, why: 'Orb powstaje od razu w pozycji pokonanego.' },
+  ],
+  'g2d.loot-xp.modified': [
+    { label: '7 — 3 z OrbA plus 4 z OrbB', correct: true, why: 'Każdy orb dokłada własne `value` do tego samego `xp`.' },
+    { label: '4 — liczy się ostatni orb', correct: false, why: 'XP się sumuje — nie nadpisuje.' },
+    { label: '3 — tyle, ile pierwszy orb', correct: false, why: 'Oba orby oddają swoje wartości temu samemu licznikowi.' },
+  ],
+  'g2d.loot-xp.independent': [
+    { label: 'Level 3 i 2 XP', correct: false, why: 'Trzeci poziom wymaga 15 kolejnych XP — z 12 odejdzie tylko próg 5.' },
+    { label: 'Level 2 i 7 XP', correct: true, why: 'Pętla odejmuje 5 (próg poziomu 1), a próg 10 przerasta resztę 7.' },
+    { label: 'Level 3 i 0 XP', correct: false, why: 'Reszta po odjęciu progów przechodzi dalej — nie zeruje się.' },
+    { label: 'Level 12 i 0 XP', correct: false, why: 'Próg rośnie z poziomem — nie da się przeskoczyć tak daleko.' },
+  ],
+  'g2d.enemy-tactics.guided': [
+    { label: 'Nic — 200 px jest poza zasięgiem 150', correct: true, why: 'Warunek `d > 150` przerywa przed podaniem ruchu.' },
+    { label: 'Pobiegnie do gracza pełną prędkością', correct: false, why: 'Powyżej 150 px `return` ucina pościg.' },
+    { label: 'Zacznie uciekać', correct: false, why: 'To pościg, nie ucieczka — wróg po prostu czeka.' },
+  ],
+  'g2d.enemy-tactics.modified': [
+    { label: 'Do punktu 80 px obok gracza', correct: true, why: 'Wektor prostopadły (−dy, dx) przesuwa cel w bok.' },
+    { label: 'Dokładnie na gracza — jak w zwykłym pościgu', correct: false, why: 'Dodajesz 80 px prostopadle — tor zakrzywia się.' },
+    { label: 'Za plecy gracza o 160 px', correct: false, why: 'Przesunięcie to 80 px w bok — nie przejście na drugą stronę.' },
+  ],
+  'g2d.enemy-tactics.independent': [
+    { label: 'Ucieknie — 90 px mieści się w zasięgu 120', correct: true, why: 'W zasięgu podaje (−dx, −dy) — przeciwny kierunek.' },
+    { label: 'Stanie w miejscu', correct: false, why: 'Stoi dopiero poza 120 px — 90 jest w środku.' },
+    { label: 'Pogoni gracza', correct: false, why: 'Minus przy kierunku odwraca ruch — to ucieczka.' },
+  ],
+  'g2d.camera.guided': [
+    { label: 'W lewym górnym rogu ekranu — (0, 0)', correct: true, why: 'Pozycja ekranu to świat minus offset: 80 − 80, 40 − 40.' },
+    { label: 'W punkcie ekranu (160, 80)', correct: false, why: 'Offset odejmuje się od współrzędnych — nie dodaje.' },
+    { label: 'Na środku ekranu', correct: false, why: 'Środek nie gra roli — liczy się świat minus offset.' },
+  ],
+  'g2d.camera.modified': [
+    { label: 'Tło i mapa — kamera dokłada offset za graczem', correct: true, why: '`follow` przesuwa widok — gracz zostaje na swoim miejscu ekranu.' },
+    { label: 'Gracz sunie się w prawy brzeg ekranu', correct: false, why: 'Kamera podąża — jego pozycja ekranu jest stabilna.' },
+    { label: 'Nic — offset stoi w miejscu', correct: false, why: '`follow` aktualizuje offset co klatkę za celem.' },
+  ],
+  'g2d.camera.independent': [
+    { label: 'W (80, 180) — ekran plus początek widoku', correct: true, why: '`screenToWorld` dodaje offset: 20 + 60, 30 + 150.' },
+    { label: 'W (−40, −120) — ekran minus offset', correct: false, why: 'To nie odejmowanie — `screenToWorld` dodaje początek widoku.' },
+    { label: 'W (20, 30) — te same liczby', correct: false, why: 'Ekran to nie świat — trzeba dodać offset (60, 150).' },
+  ],
+  'g2d.canvas-ui.guided': [
+    { label: '12 px od lewego górnego rogu ekranu', correct: true, why: '`anchor = "TOP_LEFT"` liczy pozycję od tego rogu — kamera nie przesuwa.' },
+    { label: 'Na środku ekranu', correct: false, why: 'Kotwica to TOP_LEFT, nie środek.' },
+    { label: '12 px od pozycji kamery w świecie', correct: false, why: '`UITransform` wiąże z ekranem — pozycja kamery nie gra roli.' },
+  ],
+  'g2d.canvas-ui.modified': [
+    { label: '40 × 30 px, środek w (80, 90)', correct: true, why: 'Punkt w `drawRect` to środek figury — wymiary to kolejne argumenty.' },
+    { label: '40 × 30 px, lewy górny róg w (80, 90)', correct: false, why: 'Na canvas pozycja to środek — nie róg.' },
+    { label: '80 × 90 px', correct: false, why: 'Pomyliłeś pozycję z wymiarem — wymiary to 40 i 30.' },
+  ],
+  'g2d.canvas-ui.independent': [
+    { label: '120 px — trzy piąte z 200', correct: true, why: 'Wypełnienie to maksymalna szerokość × `current / max`.' },
+    { label: '200 px — cały pasek', correct: false, why: 'Pełny pasek to 5/5 — tu jest 3/5.' },
+    { label: '60 px — trzy na dziesięć', correct: false, why: '3/5 z 200 to 120 — nie 3/10.' },
+  ],
+  'g2d.ui-flow.guided': [
+    { label: 'Znikną — `active = open` wiąże je ze stanem menu', correct: true, why: '`opened = false` ustawia `active = false` na wszystkich.' },
+    { label: 'Zostaną — to osobne obiekty', correct: false, why: 'MenuView nadpisuje ich `active` stanem `open`.' },
+    { label: 'Zniknie tylko pierwszy', correct: false, why: 'Pętla ustawia `active` na każdym przycisku z listy.' },
+  ],
+  'g2d.ui-flow.modified': [
+    { label: 'Po kontaktach, przed rysowaniem — w tej samej klatce', correct: true, why: '`onLateUpdate` widzi stan po trafieniach danej klatki.' },
+    { label: 'W kolejnej klatce', correct: false, why: '`onLateUpdate` jest jeszcze w tej klatce — po update, przed draw.' },
+    { label: 'W `onCreate` na starcie', correct: false, why: '`onCreate` to jednorazowa inicjalizacja, nie odświeżanie.' },
+  ],
+  'g2d.ui-flow.independent': [
+    { label: 'Pierwszy przycisk — `focus()` przy otwarciu', correct: true, why: '`open && !this.wasOpen` ustawia fokus na `buttons[0]`.' },
+    { label: 'Żaden — fokus trzeba kliknąć', correct: false, why: 'Otwarcie samo ustawia `focus` na pierwszym przycisku.' },
+    { label: 'Ostatnio użyty przycisk', correct: false, why: 'Fokus startuje od `buttons[0]`, nie z pamięci.' },
+  ],
+  'g2d.upgrades.guided': [
+    { label: '150 px/s — 120 plus 30', correct: true, why: 'Ulepszenie dopisuje 30 do pola `speed`.' },
+    { label: '120 px/s — bez zmian', correct: false, why: 'Opcja 1 dodaje 30 — pole rośnie.' },
+    { label: '30 px/s — nowa wartość', correct: false, why: 'To dodatek, nie nadpisanie — `speed` rośnie o 30.' },
+  ],
+  'g2d.upgrades.modified': [
+    { label: '0.256 — trzy mnożenia przez 0.8', correct: true, why: 'Każdy wybór mnoży `cooldown`: 0.5 → 0.4 → 0.32 → 0.256.' },
+    { label: '0.32 — po dwóch wyborach', correct: false, why: 'To wynik po drugim wyborze — trzecie mnożenie daje 0.256.' },
+    { label: '0.1 — podłoga od razu', correct: false, why: 'Podłoga 0.1 pilnuje małych wartości — po tych mnożeniach jest wyżej.' },
+    { label: '0.5 — cooldown się nie zmienia', correct: false, why: 'Opcja 3 mnoży `cooldown` przez 0.8 za każdym razem.' },
+  ],
+  'g2d.upgrades.independent': [
+    { label: 'Nic — 15 < 20 odcina zakup', correct: true, why: 'Warunek wychodzi przed pobraniem złota i ulepszeniem.' },
+    { label: 'Złoto spadnie do −5', correct: false, why: 'Przy nieudanym zakupie nie odejmujemy pieniędzy.' },
+    { label: 'Kupi się za 15', correct: false, why: 'Cena to 20 — warunek `wallet.gold < 20` nie przepuści.' },
+  ],
+  'g2d.feedback.guided': [
+    { label: 'W (160, 100) — cel tweena', correct: true, why: '`GameLab.Tweens.position` interpoluje do podanego punktu w 1 s.' },
+    { label: 'W (160, 160) — zostanie na starcie', correct: false, why: 'Tween przesuwa obiekt — nie zostaje w miejscu.' },
+    { label: 'W (100, 160)', correct: false, why: 'Zamienione współrzędne — cel to x = 160, y = 100.' },
+  ],
+  'g2d.feedback.modified': [
+    { label: 'Wstrząs grafiki i kamery plus unoszący się „−1”', correct: true, why: '`onDamage` odpala oba tweens raz na przyjęty cios.' },
+    { label: 'Transform gracza przesunie się o 8 px', correct: false, why: '`GameLab.Tweens.shake` rusza grafiką — fizyczna pozycja zostaje.' },
+    { label: 'Nic — cios został odrzucony', correct: false, why: 'HitFeedback reaguje na przyjęte obrażenie — to właśnie `onDamage`.' },
+  ],
+  'g2d.feedback.independent': [
+    { label: 'Do (200, 100) — nowy tween przejmuje właściwość', correct: true, why: 'Drugi tween zastępuje pierwszy, nie sumuje się.' },
+    { label: 'Do (100, 100) — pierwotny cel', correct: false, why: 'Pierwszy tween jest przerywany w t = 0.25.' },
+    { label: 'Do (300, 100) — suma obu celów', correct: false, why: 'Tweeny się nie sumują — nowy zastępuje stary.' },
+  ],
+  'g2d.projectile-types.guided': [
+    { label: 'Skoryguje lot za nową pozycją celu', correct: true, why: '`Homing` aktualizuje `direction` w każdej klatce.' },
+    { label: 'Poleci dalej w pierwotnym kierunku', correct: false, why: 'Kierunek przelicza się każdej aktualizacji.' },
+    { label: 'Zniknie po zmianie pozycji celu', correct: false, why: 'Ruch celu zmienia tylko wektor — nie usuwa pocisku.' },
+  ],
+  'g2d.projectile-types.modified': [
+    { label: 'Obaj stracą po 1 HP, a pocisk zniknie po drugim trafieniu', correct: true, why: '`motion.maxHits = 2` pozwala przebić pierwszego celu.' },
+    { label: 'Tylko pierwszy straci HP i pocisk zniknie', correct: false, why: 'Przy `maxHits = 2` pocisk leci przez pierwszego.' },
+    { label: 'Pierwszy straci 2 HP', correct: false, why: 'Każde trafienie to 1 HP — pocisk nie wraca.' },
+  ],
+  'g2d.projectile-types.independent': [
+    { label: 'Pierwszego wroga na odcinku — sweep go wykrywa', correct: true, why: '`hitLayers = ENEMY` przepuszcza sojusznika.' },
+    { label: 'Sojusznika — stoi pierwszy w linii', correct: false, why: 'Maska ENEMY go pomija — nie jest celem.' },
+    { label: 'Obu — przy 3000 px/s wszystkich', correct: false, why: 'Pocisk kończy na pierwszym trafieniu z maski.' },
+  ],
+  'g2d.composition.guided': [
+    { label: '40 px/s — wartość ze spec Slime', correct: true, why: 'Fabryka przekazuje `spec.speed` do `EnemyAI`.' },
+    { label: '80 px/s', correct: false, why: 'To prędkość Bata — Slime ma 40 w swoim spec.' },
+    { label: '0 — AI trzeba uruchomić osobno', correct: false, why: '`addComponent` z `EnemyAI` działa od razu.' },
+  ],
+  'g2d.composition.modified': [
+    { label: 'Nic specjalnego — wystarczy `GameLab.Layers.ENEMY` na colliderze', correct: true, why: 'Broń rozpoznaje cele po warstwie, nie po klasie.' },
+    { label: 'Nowe klasy GhostAI i GhostHealth', correct: false, why: 'Te same komponenty — zmieniają się tylko dane spec.' },
+    { label: 'Trzeba dopisać go do listy celów broni', correct: false, why: 'Maska warstw działa automatycznie — taka lista nie istnieje.' },
+  ],
+  'g2d.composition.independent': [
+    { label: 'Po 1 s — własny cooldown Orba', correct: true, why: 'Timer każdej broni liczy osobno.' },
+    { label: 'Po 0.5 s — razem z Daggerem', correct: false, why: '`Orb` ma `cooldown = 1` — 0.5 s to rytm Daggera.' },
+    { label: 'Po 1.5 s — po kolejce za Daggerem', correct: false, why: 'Bronie strzelają niezależnie — nie naprzemiennie.' },
+  ],
+  'g2d.run-state.guided': [
+    { label: 'Nic — stan RUNNING odcina powtórne `start()`', correct: true, why: 'Warunek wymaga stanu innego niż `RUNNING`.' },
+    { label: 'Druga runda nałoży się na pierwszą', correct: false, why: '`this.state !== "RUNNING"` pilnuje jednego startu.' },
+    { label: 'Gra zrestartuje scenę', correct: false, why: 'Enter po starcie niczego nie odpala — stan broni.' },
+  ],
+  'g2d.run-state.modified': [
+    { label: 'Stan LOST, pauza i statystyki rundy', correct: true, why: '`onDeath` ustawia `LOST` i pauzuje świat.' },
+    { label: 'RUNNING — gra toczy się dalej', correct: false, why: 'Śmierć przełącza stan — runda się kończy.' },
+    { label: 'Ekran startowy READY', correct: false, why: 'READY to stan sprzed startu — po śmierci jest LOST.' },
+  ],
+  'g2d.run-state.independent': [
+    { label: 'WON z pauzą — gracz żyje, a minęło 120 s', correct: true, why: '`onLateUpdate` ustawia `WON` przy żywym graczu i 120 s.' },
+    { label: 'LOST — śmierć wygrywa zawsze', correct: false, why: 'Gracz żyje — `LOST` tylko przy śmiertelnym ciosie w tej klatce.' },
+    { label: 'RUNNING — zegar nie kończy gry', correct: false, why: '`elapsed >= 120` przy żywym graczu ustawia `WON`.' },
+  ],
+  'g2d.performance.guided': [
+    { label: 'Nic — bez utworzenia nie ma czego zliczać', correct: true, why: '`this.shots++` wykonuje się tylko po faktycznym spawnie.' },
+    { label: 'Jeden — fixture próbował strzelić', correct: false, why: 'Próba bez utworzenia nie zwiększa licznika.' },
+    { label: '300 — tyle żyje na scenie', correct: false, why: '`shots` liczy nowe strzały — nie żyjące pociski.' },
+  ],
+  'g2d.performance.modified': [
+    { label: 'Zero — pętla startuje po odblokowaniu broni', correct: true, why: '`this.timer > 1e-9` wychodzi przed pętlą kandydatów.' },
+    { label: 'Tyle, ilu wrogów w zasięgu', correct: false, why: '`return` przed pętlą — żaden kandydat nie jest liczony.' },
+    { label: 'Jeden na klatkę', correct: false, why: 'Przy wstrzymanym timerze nic się nie liczy.' },
+  ],
+  'g2d.performance.independent': [
+    { label: 'Żaden nowy — +1 XP wpada w pierwszy orb', correct: true, why: 'Limit podnosi `value` najstarszego zamiast tworzyć obiekt.' },
+    { label: 'Nowy orb o wartości 1', correct: false, why: 'Przy 200 orbach nowych nie tworzymy.' },
+    { label: 'Nagroda przepada', correct: false, why: 'XP ląduje w istniejącym orbie — suma się zgadza.' },
+  ],
+  'g2d.survivor.guided': [
+    { label: 'Broń sama zacznie strzelać do wroga w zasięgu', correct: true, why: '`Weapon` wybiera cel i strzela automatycznie.' },
+    { label: 'Nic — trzeba wcisnąć klawisz', correct: false, why: 'Ta broń jest automatyczna — klawiatura nie jest potrzebna.' },
+    { label: 'Gracz pobiegnie do wroga', correct: false, why: 'Ruch jest ręczny — automatyczna jest tylko broń.' },
+  ],
+  'g2d.survivor.modified': [
+    { label: 'Tylko Slime — Bat wchodzi od fali 2', correct: true, why: 'Nowe typy startują od fali 2 i 3.' },
+    { label: 'Bat — wchodzi losowo', correct: false, why: 'Bat dopiero od fali 2 — przed t = 30 go nie ma.' },
+    { label: 'Ghost — pojawia się od razu', correct: false, why: 'Ghost startuje od fali 3 — pierwszy jest Slime.' },
+  ],
+  'g2d.survivor.independent': [
+    { label: '20 — dokładnie tyle, ile kosztuje ulepszenie', correct: true, why: '`ShopChest` daje 20 złota i otwiera sklep.' },
+    { label: '10 — połowa ceny', correct: false, why: 'Skrzynia daje 20 — wystarcza na ulepszenie za 20.' },
+    { label: '40 — dwa depozyty', correct: false, why: 'Jedna nagroda 20 — nie dwa wpływy.' },
+  ],
+  'g2d.time.independent': [
+    { label: '100 px — kierunek znormalizowany ma długość 1', correct: true, why: 'Dzielisz składowe przez |v| = 5: (0.6, 0.8) × 100 = dokładnie 100 px/s.' },
+    { label: '500 px', correct: false, why: 'Tyle przejdzie BEZ normalizacji — 3·100 i 4·100 to pominięcie dzielenia.' },
+    { label: '300 px', correct: false, why: 'To sama składowa x razy speed — dystans liczy długość wektora, nie jedna oś.' },
+    { label: '400 px', correct: false, why: 'Suma składowych (3+4) zamiast długości — |v| = √(9+16) = 5.' },
+  ],
+};
+for (const [id, options] of Object.entries(quizzes)) {
+  const entry = gameDevTaskLearning[id];
+  if (entry?.prediction) {
+    entry.prediction.options = options;
+    entry.prediction.quizQuestion = entry.question;
+  }
+}
