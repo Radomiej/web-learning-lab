@@ -45,7 +45,7 @@ function encodeParams(values) {
   return params.toString();
 }
 
-function requestKey(request = {}) {
+export function requestKey(request = {}) {
   const normalized = {
     method: String(request.method || 'GET').toUpperCase(),
     query: asRecord(request.query),

@@ -1,8 +1,9 @@
-import { createMonacoEnvironment, registerPhpLanguage } from './monacoRuntime.js';
+import { createMonacoEnvironment, phpIndentationConfiguration, registerPhpLanguage } from './monacoRuntime.js';
 
 function createFakeMonaco() {
   return {
     languages: {
+      IndentAction: { None: 0, Indent: 1, IndentOutdent: 2, Outdent: 3 },
       registered: [],
       registrations: [],
       getLanguages() {
@@ -33,8 +34,34 @@ test('registers PHP syntax and configuration only once', () => {
   );
   expect(monaco.languages.setLanguageConfiguration).toHaveBeenCalledWith(
     'php',
-    phpLanguage.conf,
+    expect.objectContaining({ brackets: [], onEnterRules: expect.any(Array), indentationRules: expect.any(Object) }),
   );
+});
+
+test('php indentation rules cover HTML tags and nested PHP blocks', () => {
+  const monaco = createFakeMonaco();
+  const { onEnterRules, indentationRules } = phpIndentationConfiguration(monaco);
+  const { increaseIndentPattern, decreaseIndentPattern } = indentationRules;
+
+  const indents = (line) => onEnterRules.some((rule) => rule.beforeText.test(line));
+
+  expect(indents('      <ul id="result">')).toBe(true);
+  expect(indents('        <?php for ($i = 1; $i <= 3; $i++): ?>')).toBe(true);
+  expect(indents('        <?php if ($view === \'card\'): ?>')).toBe(true);
+  expect(indents('  <?php')).toBe(true);
+  expect(indents('if ($ok) {')).toBe(true);
+  expect(indents('      <input name="skills">')).toBe(false);
+  expect(indents('        <?php endforeach; ?>')).toBe(false);
+
+  expect(increaseIndentPattern.test('      <ul>')).toBe(true);
+  expect(increaseIndentPattern.test('<?php foreach ($skills as $skill): ?>')).toBe(true);
+  expect(decreaseIndentPattern.test('        <?php endforeach; ?>')).toBe(true);
+  expect(decreaseIndentPattern.test('        <?php endif; ?>')).toBe(true);
+  expect(decreaseIndentPattern.test('      </ul>')).toBe(true);
+  expect(decreaseIndentPattern.test('  ?>')).toBe(true);
+  expect(decreaseIndentPattern.test('    }')).toBe(true);
+  expect(decreaseIndentPattern.test('        <?php else: ?>')).toBe(true);
+  expect(decreaseIndentPattern.test('      <p id="result">tekst</p>')).toBe(false);
 });
 
 test('routes language workers to their local Monaco worker bundles', () => {

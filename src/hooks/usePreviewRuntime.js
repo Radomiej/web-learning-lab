@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { evaluateChecks } from '../services/lessonValidator.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
-import { buildPhpErrorDocument, buildPhpPreviewDocument } from '../services/phpPreview.js';
-import { runPhpProject } from '../services/phpRuntime.js';
+import { buildPhpErrorDocument, buildPhpPreviewDocument, describePhpResponse } from '../services/phpPreview.js';
+import { requestKey as phpRequestKey, runPhpProject } from '../services/phpRuntime.js';
 
 const emptySignals = () => ({
   dom: {},
@@ -13,6 +13,7 @@ const emptySignals = () => ({
   consoleOutput: [],
   react: {},
   phpRequest: null,
+  phpRequests: {},
   gameScenarios: {},
   probes: {},
 });
@@ -74,6 +75,9 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   const scopeKeyRef = useRef(scopeKey);
   const signalsRef = useRef(emptySignals());
   const pendingCheckRef = useRef(false);
+  // Interakcje i snapshoty mają sens dopiero na docelowym dokumencie —
+  // placeholder „Uruchamiam PHP.wasm…" też wysyła ready, ale nie ma tam formularzy.
+  const previewSettledRef = useRef(false);
   const evaluationTimerRef = useRef(null);
   const autoPreviewTimerRef = useRef(null);
   const previewSignatureRef = useRef(JSON.stringify(files));
@@ -110,6 +114,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     pathRef.current = nextFiles.files && !Object.hasOwn(nextFiles.files, path) ? nextFiles.entry : path;
     setPath(pathRef.current);
     runIdRef.current = crypto.randomUUID();
+    previewSettledRef.current = true;
     setPreviewDocument(buildRequestedPreviewDocument(
       nextFiles,
       trackRef.current,
@@ -141,7 +146,10 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     }, 25);
   }, [clearEvaluationTimer]);
 
-  const runPhpPreview = useCallback((nextFiles = filesRef.current, documentPath = pathRef.current, request = {}) => {
+  // Checki phpRequest mogą wymagać kilku różnych żądań (np. POST i GET).
+  // Każde uruchamiamy sekwencyjnie; podgląd pokazuje pierwszy wynik albo
+  // pierwszy dokument błędu, a snapshoty DOM trafiają do signals.phpRequests.
+  const runPhpPreview = useCallback((nextFiles = filesRef.current, documentPath = pathRef.current, requests = [{}]) => {
     const activePath = nextFiles.files && !Object.hasOwn(nextFiles.files, documentPath)
       ? nextFiles.entry
       : (documentPath || nextFiles.entry);
@@ -149,50 +157,96 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     setPath(activePath);
     const requestedRunId = crypto.randomUUID();
     runIdRef.current = requestedRunId;
+    previewSettledRef.current = false;
     setPreviewDocument(buildPhpPreviewDocument(
       '<main><p>Uruchamiam PHP.wasm…</p></main>',
       nextFiles,
       { track: trackRef.current, requestedSignals: checksRef.current, documentPath: activePath, runId: requestedRunId },
     ));
     setPreviewKey((key) => key + 1);
-    runPhpProject({ files: nextFiles.files, entry: nextFiles.entry, request })
-      .then((result) => {
-        if (runIdRef.current !== requestedRunId) return;
-        const errors = result.errors || (result.exitCode ? [`PHP zakończył pracę z kodem ${result.exitCode}.`] : []);
-        const errorText = errors.join('\n') || `PHP zakończył pracę z kodem ${result.exitCode}.`;
-        signalsRef.current = {
-          ...signalsRef.current,
-          phpRequest: { requestKey: result.requestKey, exitCode: result.exitCode },
+    const queue = (Array.isArray(requests) ? requests : [requests])
+      .filter((request) => request && typeof request === 'object');
+    const runList = queue.length ? queue : [{}];
+    const phpSelectors = [...new Set(checksRef.current
+      .filter((check) => check.type === 'phpRequest' && check.selector)
+      .map((check) => check.selector))];
+    const results = [];
+    // stderr z PHP może nieść tylko Warning/Notice — na hostingu z
+    // display_errors strona i tak się renderuje. Za błąd krytyczny uznajemy
+    // niezerowy kod wyjścia albo Fatal/Parse/Uncaught; resztę pokazujemy
+    // w konsoli, ale dokument zostaje (uczeń widzi i stronę, i ostrzeżenie).
+    const isFatalStderr = (text) => /fatal error|parse error|uncaught/i.test(text);
+    const finish = () => {
+      if (runIdRef.current !== requestedRunId || results.length === 0) return;
+      const isFatal = (result) => Boolean(result.exitCode) || (result.errors || []).some(isFatalStderr);
+      const shown = results.find(isFatal) || results[0];
+      const fatal = isFatal(shown);
+      const errors = results.flatMap((result) => result.errors || (result.exitCode ? [`PHP zakończył pracę z kodem ${result.exitCode}.`] : []));
+      const errorText = errors.join('\n') || `PHP zakończył pracę z kodem ${shown.exitCode}.`;
+      signalsRef.current = {
+        ...signalsRef.current,
+        phpRequest: { requestKey: shown.requestKey, exitCode: shown.exitCode },
+        runtimeErrors: errors,
+      };
+      setRuntimeState((current) => ({
+        ...current,
+        status: fatal ? 'error' : 'running',
+        errors,
+        signals: {
+          ...current.signals,
+          phpRequest: signalsRef.current.phpRequest,
+          phpRequests: signalsRef.current.phpRequests,
           runtimeErrors: errors,
-        };
-        setRuntimeState((current) => ({
-          ...current,
-          status: errors.length || result.exitCode ? 'error' : 'running',
-          errors,
-          signals: { ...current.signals, phpRequest: { requestKey: result.requestKey, exitCode: result.exitCode }, runtimeErrors: errors },
-        }));
-        setPreviewDocument(errors.length || result.exitCode
-          ? buildPhpErrorDocument(errorText, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, runId: requestedRunId })
-          : buildPhpPreviewDocument(result.html, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, documentPath: activePath, runId: requestedRunId }));
-        setPreviewKey((key) => key + 1);
-        if (errors.length || result.exitCode) {
+        },
+      }));
+      previewSettledRef.current = true;
+      setPreviewDocument(fatal
+        ? buildPhpErrorDocument(errorText, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, runId: requestedRunId })
+        : buildPhpPreviewDocument(shown.html, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, documentPath: activePath, runId: requestedRunId }));
+      setPreviewKey((key) => key + 1);
+      if (fatal && pendingCheckRef.current) scheduleCheckEvaluation();
+    };
+    const runNext = (index) => {
+      if (index >= runList.length) {
+        finish();
+        return;
+      }
+      runPhpProject({ files: nextFiles.files, entry: nextFiles.entry, request: runList[index] })
+        .then((result) => {
+          if (runIdRef.current !== requestedRunId) return;
+          results.push(result);
+          if (result.requestKey != null) {
+            signalsRef.current = {
+              ...signalsRef.current,
+              phpRequests: {
+                ...(signalsRef.current.phpRequests || {}),
+                [result.requestKey]: {
+                  requestKey: result.requestKey,
+                  exitCode: result.exitCode,
+                  ...describePhpResponse(result.html, phpSelectors),
+                },
+              },
+            };
+          }
+          runNext(index + 1);
+        })
+        .catch((error) => {
+          if (runIdRef.current !== requestedRunId) return;
+          const message = error?.message || 'Nie udało się uruchomić PHP.';
+          signalsRef.current = { ...signalsRef.current, runtimeErrors: [message] };
+          setRuntimeState((current) => ({
+            ...current,
+            status: 'error',
+            errors: [message],
+            signals: { ...current.signals, runtimeErrors: [message] },
+          }));
+          previewSettledRef.current = true;
+          setPreviewDocument(buildPhpErrorDocument(message, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, runId: requestedRunId }));
+          setPreviewKey((key) => key + 1);
           if (pendingCheckRef.current) scheduleCheckEvaluation();
-        }
-      })
-      .catch((error) => {
-        if (runIdRef.current !== requestedRunId) return;
-        const message = error?.message || 'Nie udało się uruchomić PHP.';
-        signalsRef.current = { ...signalsRef.current, runtimeErrors: [message] };
-        setRuntimeState((current) => ({
-          ...current,
-          status: 'error',
-          errors: [message],
-          signals: { ...current.signals, runtimeErrors: [message] },
-        }));
-        setPreviewDocument(buildPhpErrorDocument(message, nextFiles, { track: trackRef.current, requestedSignals: checksRef.current, runId: requestedRunId }));
-        setPreviewKey((key) => key + 1);
-        if (pendingCheckRef.current) scheduleCheckEvaluation();
-      });
+        });
+    };
+    runNext(0);
   }, [scheduleCheckEvaluation]);
 
   // Interactions run one at a time — an action (np. fetch → php-wasm) may take
@@ -229,7 +283,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
 
     if (message.type === 'ready') {
       setRuntimeState((current) => ({ ...current, status: current.errors.length ? 'error' : 'ready' }));
-      if (pendingCheckRef.current) {
+      if (pendingCheckRef.current && previewSettledRef.current) {
         sendToFrame({ source: 'web-learning-lab', type: 'collect-signals', payload: { checks: checksRef.current } });
         sendDeclaredActions();
       }
@@ -320,8 +374,17 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     signalsRef.current = emptySignals();
     setRuntimeState({ ...initialRuntimeState(scopeKeyRef.current), status: 'running' });
     const activeFiles = filesRef.current;
-    const request = checksRef.current.find((check) => check.type === 'phpRequest')?.request || {};
-    if (isPhpProject(activeFiles, trackRef.current)) runPhpPreview(activeFiles, activeFiles.entry, request);
+    const seenRequests = new Set();
+    const requests = [];
+    for (const check of checksRef.current) {
+      if (check.type !== 'phpRequest') continue;
+      const request = check.request || {};
+      const key = phpRequestKey(request);
+      if (seenRequests.has(key)) continue;
+      seenRequests.add(key);
+      requests.push(request);
+    }
+    if (isPhpProject(activeFiles, trackRef.current)) runPhpPreview(activeFiles, activeFiles.entry, requests.length ? requests : [{}]);
     else refreshPreview(activeFiles, activeFiles.entry || 'index.html');
     notifyRun(activeFiles);
   }, [clearAutoPreviewTimer, clearEvaluationTimer, isPhpProject, refreshPreview, runPhpPreview]);
@@ -350,6 +413,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     pathRef.current = filesRef.current.entry || 'index.html';
     setPath(pathRef.current);
     runIdRef.current = crypto.randomUUID();
+    previewSettledRef.current = true;
     previewSignatureRef.current = JSON.stringify(filesRef.current);
     setPreviewDocument(buildRequestedPreviewDocument(
       filesRef.current,

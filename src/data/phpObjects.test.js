@@ -16,6 +16,43 @@ const domFor = (task) => {
   return { dom, interactions: {} };
 };
 
+// Tak buduje klucze signals.phpRequests runtime: po jednym wpisie na żądanie.
+const phpRequestKey = (request) => JSON.stringify({
+  method: String(request.method || 'GET').toUpperCase(),
+  query: request.query || {},
+  form: request.form || {},
+  body: request.body == null ? '' : String(request.body),
+});
+
+// Sygnały, które zebrałby podgląd dla sprawnego rozwiązania: run per żądanie,
+// interakcje zakończone sukcesem i DOM z elementami opisanymi checkami.
+const seedSignalsFor = (task) => {
+  const phpRequests = {};
+  const interactions = {};
+  const dom = {};
+  for (const check of task.checks) {
+    if (check.type === 'phpRequest') {
+      const key = phpRequestKey(check.request);
+      phpRequests[key] = phpRequests[key] || { requestKey: key, exitCode: 0, text: '', dom: {} };
+      phpRequests[key].dom[check.selector] = { exists: true, text: check.expected, attrs: {} };
+      phpRequests[key].text = check.expected;
+    } else if (check.type === 'interaction') {
+      interactions[check.id] = {
+        ok: true,
+        text: check.expected?.textEquals ?? check.expected?.text ?? '',
+        before: check.expected?.beforeText == null ? {} : { text: check.expected.beforeText },
+      };
+    } else if (check.selector) {
+      dom[check.selector] = {
+        exists: true,
+        text: typeof check.expected === 'string' ? check.expected : '',
+        attrs: check.attribute ? { [check.attribute]: check.expected } : {},
+      };
+    }
+  }
+  return { phpRequests, interactions, dom, runtimeErrors: [] };
+};
+
 // Typowy błąd: h1 wpisany na sztywno zamiast przez metodę obiektu.
 const wrongObjects = objectsLesson.tasks[0].solution.files['index.php']
   .replace('<?= e($profile->label()) ?>', 'Ala — uczeń');
@@ -83,15 +120,17 @@ describe('objects lesson checks', () => {
 describe('608 profile project checks', () => {
   it('rejects the old gameable shape — literal list and no escaping helper', () => {
     const task = profileLesson.tasks[0];
-    const signals = domFor(task);
-    const { results } = evaluateChecks(task.checks, { files: { 'index.php': wrongProfile }, signals });
-    const failures = results.map((result) => result.id).filter((id, i) => !results[i].passed);
-    expect(failures).toEqual(['php-08-guided-0', 'php-08-guided-5']);
+    const { results } = evaluateChecks(task.checks, { files: { 'index.php': wrongProfile }, signals: seedSignalsFor(task) });
+    const sourceIds = task.checks
+      .filter((check) => ['sourceIncludes', 'sourceMatches', 'sourceNotMatches'].includes(check.type))
+      .map((check) => check.id);
+    const failures = results.filter((result) => !result.passed).map((result) => result.id);
+    expect(failures).toEqual(expect.arrayContaining(sourceIds));
   });
 
   it('passes the official solutions', () => {
     for (const task of profileLesson.tasks) {
-      const { results } = evaluateChecks(task.checks, { files: task.solution.files, signals: domFor(task) });
+      const { results } = evaluateChecks(task.checks, { files: task.solution.files, signals: seedSignalsFor(task) });
       expect(results.filter((result) => !result.passed).map((result) => `${result.id}: ${result.message}`), task.id).toEqual([]);
     }
   });

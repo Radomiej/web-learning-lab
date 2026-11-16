@@ -81,6 +81,49 @@ ${script || '        // Dodaj obsługę kliknięcia.'}
       </script>`);
 }
 
+// Skrypt podglądu symuluje natywne wysłanie formularza: submit → fetch do pliku
+// PHP (most fetch→php.wasm) → podmiana <body> na odpowiedź, jak przeładowanie.
+// Na zwykłym hostingu przeglądarka sama wyśle POST do action — skryptu nie trzeba.
+const formSubmitScript = `    <script>
+  // Mechanizm laboratorium — nie jest częścią kodu PHP do nauki.
+  document.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.target;
+    const params = new URLSearchParams(new FormData(form));
+    const method = String(form.getAttribute('method') || 'get').toUpperCase();
+    const action = form.getAttribute('action') || 'index.php';
+    const response = await fetch(
+      method === 'GET' ? action + '?' + params : action,
+      method === 'GET' ? {} : { method, body: params });
+    const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+    document.title = doc.title;
+    document.body.replaceChildren(...doc.body.childNodes);
+  });
+    </script>`;
+
+// Strona z prawdziwym formularzem — submit działa w podglądzie przez skrypt wyżej.
+function formPage(setup, content, title) {
+  return `<?php
+${setup}
+?>
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+</head>
+<body>
+  <main>
+    <article class="profile">
+${content}
+    </article>
+  </main>
+${formSubmitScript}
+</body>
+</html>
+`;
+}
+
 // json_encode musi przepuścić wartość przez flagi HEX — to nie jest e() i nie
 // wolno osadzać czystego <?= $zmienna ?> w skrypcie.
 const jsonFlags = (variable) => {
@@ -200,7 +243,7 @@ const bookList = `      <ul id="books">
       </ul>`;
 
 export const phpProfileExercises = {
-  609: [
+  603: [
     {
       title: 'Wstaw imię do nagłówka',
       prompt: 'W index.php wstaw zmienną $name do środka h1 za pomocą <?= … ?>. Pozostaw szkielet strony w zwykłym HTML.',
@@ -216,16 +259,15 @@ export const phpProfileExercises = {
       checks: [source('e($bio)'), text('#bio', '<b>Uczę się PHP</b>')],
     },
     {
-      title: 'Wygeneruj listę zainteresowań',
-      prompt: 'Pod opisem dodaj listę #interests. Użyj foreach w szablonie i utwórz po jednym li na zainteresowanie. Wyświetl każdą nazwę przez e().',
-      starter: profilePage(bioSetup + "\n$interests = ['Fotografia', 'Gry'];", bioCard + '\n      <ul id="interests"></ul>'),
-      solution: profilePage(bioSetup + "\n$interests = ['Fotografia', 'Gry'];", bioCard + `
-      <ul id="interests">
-        <?php foreach ($interests as $interest): ?>
-          <li><?= e($interest) ?></li>
-        <?php endforeach; ?>
-      </ul>`),
-      checks: [source('foreach'), text('#interests li:nth-child(1)', 'Fotografia'), text('#interests li:nth-child(2)', 'Gry')],
+      title: 'Wstaw wartość do atrybutu',
+      prompt: 'Szablon ma już nagłówek i opis. Dodaj pod nimi odnośnik <a id="link">Moja strona</a>, którego href wypisuje PHP: href="<?= e($link) ?>".',
+      starter: profilePage(bioSetup + "\n$link = 'https://example.com';", bioCard + '\n      <!-- TODO: <a id="link"> z atrybutem href z $link -->'),
+      solution: profilePage(bioSetup + "\n$link = 'https://example.com';", bioCard + '\n      <a id="link" href="<?= e($link) ?>">Moja strona</a>'),
+      checks: [
+        phpAttribute('href', '$link'),
+        ['attributeEquals', 'Odnośnik #link ma href wygenerowany przez PHP.', { selector: '#link', attribute: 'href', expected: 'https://example.com' }],
+        text('#link', 'Moja strona'),
+      ],
     },
   ],
   610: [
@@ -559,25 +601,24 @@ export const phpProfileExercises = {
     },
     {
       suffix: 'independent',
-      title: 'Wizytówka modułu',
-      prompt: 'Zbuduj wizytówkę: `$course = \'Podstawy PHP\'`, `$module = 2`, `$finished = true` i `$status` wyliczony warunkiem (`?:` lub if). Wypisz kurs w `h1` i „Moduł 2: ukończony” w `#result`.',
-      starter: profilePage('// TODO: $course, $module, $finished, $status', '      <h1><?php // TODO ?></h1>\n      <p id="result"><?php // TODO ?></p>'),
-      solution: profilePage('$course = \'Podstawy PHP\';\n$module = 2;\n$finished = true;\n$status = $finished ? \'ukończony\' : \'w toku\';', '      <h1><?= $course ?></h1>\n      <p id="result">Moduł <?= $module ?>: <?= $status ?></p>'),
+      title: 'Kalkulator BMI',
+      prompt: 'Dla `$waga = 70` (kg) i `$wzrost = 1.80` (m) oblicz BMI = waga ÷ wzrost² — użyj `$wzrost * $wzrost` albo `** 2`. Wynik zaokrąglij `round(…, 1)` do zmiennej `$bmi` i wypisz „BMI: 21.6” w `#result`.',
+      starter: profilePage('$waga = 70;\n$wzrost = 1.80;\n// TODO: $bmi = waga / wzrost², zaokrąglona round(…, 1)', '      <h1>Kalkulator BMI</h1>\n      <p id="result">BMI: <?php // TODO: wypisz $bmi ?></p>'),
+      solution: profilePage('$waga = 70;\n$wzrost = 1.80;\n$bmi = round($waga / ($wzrost * $wzrost), 1);', '      <h1>Kalkulator BMI</h1>\n      <p id="result">BMI: <?= $bmi ?></p>'),
       checks: [
-        codeLine('$course', 'Zadeklaruj `$course`.', '\\$course\\s*='),
-        codeLine('$module', 'Zadeklaruj `$module`.', '\\$module\\s*='),
-        text('h1', 'Podstawy PHP'),
-        text('#result', 'Moduł 2: ukończony'),
-        notHandLiteral('>Moduł 2: ukończony<', 'Wynik ma skleić się ze zmiennych — nie ze stałego tekstu.'),
+        codeLine('$bmi', 'Oblicz BMI do zmiennej `$bmi`.', '\\$bmi\\s*='),
+        codeLine('round(', 'Zaokrąglij wynik przez `round(…, 1)`.', 'round\\('),
+        text('#result', 'BMI: 21.6'),
+        notHandLiteral('21\\.6', 'Wartość ma wyliczyć formuła — nie stały tekst.'),
       ],
     },
   ],
-  603: [
+  604: [
     {
       suffix: 'guided',
       title: 'Warunek if/else',
       prompt: 'Dla `$age = 18` napisz `if`/`else`: „Możesz wejść” dla 18+, „Jeszcze poczekaj” poniżej. Wynik wypisz w `#result`.',
-      starter: profilePage('$age = 18;\n// TODO: if/else ustawia $message', '      <p id="result"><?= $message ?></p>'),
+      starter: profilePage('$age = 18;\n$message = \'\';\n// TODO: if/else ustawia $message', '      <p id="result"><?= $message ?></p>'),
       solution: profilePage('$age = 18;\nif ($age >= 18) {\n  $message = \'Możesz wejść\';\n} else {\n  $message = \'Jeszcze poczekaj\';\n}', '      <p id="result"><?= $message ?></p>'),
       steps: [
         'Napisz `if ($age >= 18) { … } else { … }`.',
@@ -593,31 +634,32 @@ export const phpProfileExercises = {
     },
     {
       suffix: 'modified',
-      title: 'Trzecia gałąź',
-      prompt: 'Warunek działa. Dodaj `elseif`: dla `$age = 17` pokaż „Prawie — jeszcze rok” (gałęzie: 18+, dokładnie 17, reszta).',
-      starter: profilePage('$age = 17;\nif ($age >= 18) {\n  $message = \'Możesz wejść\';\n} else {\n  $message = \'Jeszcze poczekaj\';\n}\n// TODO: gałąź elseif dla dokładnie 17', '      <p id="result"><?= $message ?></p>'),
-      solution: profilePage('$age = 17;\nif ($age >= 18) {\n  $message = \'Możesz wejść\';\n} elseif ($age === 17) {\n  $message = \'Prawie — jeszcze rok\';\n} else {\n  $message = \'Jeszcze poczekaj\';\n}', '      <p id="result"><?= $message ?></p>'),
+      title: 'Cennik biletów',
+      prompt: 'Wiek ustala cenę biletu: dzieci do 7 lat — „Bilet: 0 zł”, do 18 — „Bilet: 10 zł”, starsi — „Bilet: 20 zł”. Dla `$age = 10` ustaw `$message` łańcuchem `if/elseif/else` — kolejność progów ma znaczenie.',
+      starter: profilePage('$age = 10;\n$message = \'\';\n// TODO: progi <7 → 0 zł, <18 → 10 zł, reszta → 20 zł', '      <p id="result"><?= $message ?></p>'),
+      solution: profilePage('$age = 10;\nif ($age < 7) {\n  $message = \'Bilet: 0 zł\';\n} elseif ($age < 18) {\n  $message = \'Bilet: 10 zł\';\n} else {\n  $message = \'Bilet: 20 zł\';\n}', '      <p id="result"><?= $message ?></p>'),
       checks: [
-        codeLine('elseif', 'Dodaj gałąź `elseif`.', 'else\\s*if|elseif'),
-        text('#result', 'Prawie — jeszcze rok'),
-        notHandLiteral('>Prawie — jeszcze rok<', 'Komunikat ma wybierać warunek — nie stały tekst.'),
+        codeLine('elseif', 'Środkowy próg zrealizuj gałęzią `elseif`/`else if`.', 'else\\s*if|elseif'),
+        codeLine('$age', 'Progi porównują `$age`.', '\\$age\\s*[<>=]'),
+        text('#result', 'Bilet: 10 zł'),
+        notHandLiteral('>Bilet: 10 zł<', 'Cenę ma wybrać warunek — nie stały tekst.'),
       ],
     },
     {
       suffix: 'independent',
-      title: 'Ocena wyniku',
-      prompt: 'Dla `$score = 80` napisz warunek: `>= 50` → „Zaliczone”, inaczej „Spróbuj ponownie”. Wynik w `#result`.',
-      starter: profilePage('$score = 80;\n// TODO: if/else i $message', '      <p id="result"><?= $message ?></p>'),
-      solution: profilePage('$score = 80;\nif ($score >= 50) {\n  $message = \'Zaliczone\';\n} else {\n  $message = \'Spróbuj ponownie\';\n}', '      <p id="result"><?= $message ?></p>'),
+      title: 'Skala ocen',
+      prompt: 'Przelicz `$points = 87` na ocenę: `>= 90` → „bdb”, `>= 75` → „db”, `>= 50` → „dst”, `>= 30` → „dop”, mniej → „ndst”. Wypisz „Ocena: db” w `#result`. Progi sprawdzaj od najwyższego — `elseif` zatrzymuje się na pierwszym spełnionym.',
+      starter: profilePage('$points = 87;\n// TODO: łańcuch if/elseif/else ustawia $grade', '      <p id="result">Ocena: <?php // TODO: $grade ?></p>'),
+      solution: profilePage('$points = 87;\nif ($points >= 90) {\n  $grade = \'bdb\';\n} elseif ($points >= 75) {\n  $grade = \'db\';\n} elseif ($points >= 50) {\n  $grade = \'dst\';\n} elseif ($points >= 30) {\n  $grade = \'dop\';\n} else {\n  $grade = \'ndst\';\n}', '      <p id="result">Ocena: <?= $grade ?></p>'),
       checks: [
-        codeLine('$score', 'Użyj zmiennej `$score` w warunku.', '\\$score'),
-        codeLine('if', 'Użyj `if` i `else`.', 'if\\s*\\('),
-        text('#result', 'Zaliczone'),
-        notHandLiteral('>Zaliczone<', 'Wynik ma ustawiać warunek.'),
+        codeLine('elseif', 'Skala potrzebuje kilku gałęzi `elseif`/`else if`.', 'else\\s*if|elseif'),
+        codeLine('$points', 'Warunki porównują `$points`.', '\\$points\\s*>='),
+        text('#result', 'Ocena: db'),
+        notHandLiteral('>Ocena: db<', 'Ocenę ma wyliczyć skala — nie stały tekst.'),
       ],
     },
   ],
-  604: [
+  605: [
     {
       suffix: 'guided',
       title: 'Pętla for',
@@ -638,31 +680,35 @@ export const phpProfileExercises = {
     },
     {
       suffix: 'modified',
-      title: 'Odliczanie wstecz',
-      prompt: 'Pętla działa. Zmień ją na odliczanie malejące: „Krok 3”, „Krok 2”, „Krok 1” (licznik od 3 do 1).',
-      starter: profilePage('', '      <ul id="result">\n        <?php for ($i = 1; $i <= 3; $i++): ?>\n          <li>Krok <?= $i ?></li>\n        <?php endfor; ?>\n        <!-- TODO: zamień na liczenie wstecz -->\n      </ul>'),
-      solution: profilePage('', '      <ul id="result">\n        <?php for ($i = 3; $i >= 1; $i--): ?>\n          <li>Krok <?= $i ?></li>\n        <?php endfor; ?>\n      </ul>'),
+      title: 'Suma zakresu',
+      prompt: 'Zamiast wypisywać każdy obrót, zsumuj go: pętla `for` od 1 do 10 dodaje `$i` do `$sum` (np. `$sum += $i`), a potem wypisz „Suma 1–10: 55” w `#result`.',
+      starter: profilePage('$sum = 0;\n// TODO: for ($i = 1; $i <= 10; $i++) dodaje $i do $sum', '      <p id="result">Suma 1–10: <?= $sum ?></p>'),
+      solution: profilePage('$sum = 0;\nfor ($i = 1; $i <= 10; $i++) {\n  $sum += $i;\n}', '      <p id="result">Suma 1–10: <?= $sum ?></p>'),
       checks: [
-        codeLine('--', 'Licznik schodzi w dół (`$i--` lub odwrotny zakres).', '\\$i--|-\\s*\\$i|3\\s*;\\s*\\$i\\s*>='),
-        text('#result li:nth-child(1)', 'Krok 3'),
-        text('#result li:nth-child(3)', 'Krok 1'),
-        notHandLiteral('<li>Krok 3<', 'Kroki mają pochodzić z pętli.'),
+        codeLine('for', 'Użyj pętli `for` (nie w komentarzu).', 'for\\s*\\('),
+        codeLine('$sum', 'Dodawaj licznik do `$sum` w każdej iteracji.', '\\$sum\\s*\\+=|\\$sum\\s*=\\s*\\$sum\\s*\\+'),
+        text('#result', 'Suma 1–10: 55'),
+        notHandLiteral('>Suma 1–10: 55<', 'Sumę ma wyliczyć pętla — nie stały tekst.'),
       ],
     },
     {
       suffix: 'independent',
-      title: 'Tabela mnożenia',
-      prompt: 'Pętlą `while` wypisz w `<ul id="result">` trzy `<li>` mnożenia dla 2: „2 × 1 = 2” … „2 × 3 = 6”.',
-      starter: profilePage('$number = 2;\n$i = 1;\n// TODO: while ($i <= 3)', '      <ul id="result">\n        <?php // TODO: pętla while ?>\n      </ul>'),
-      solution: profilePage('$number = 2;\n$i = 1;', '      <ul id="result">\n        <?php while ($i <= 3): ?>\n          <li><?= $number ?> × <?= $i ?> = <?= $number * $i ?></li>\n          <?php $i++; ?>\n        <?php endwhile; ?>\n      </ul>'),
+      title: 'FizzBuzz',
+      prompt: 'Pętla `for` od 1 do 15 wypisuje `<li>` w `<ul id="result">`: podzielne przez 15 → „FizzBuzz”, przez 3 → „Fizz”, przez 5 → „Buzz”, reszta → sam licznik. Podzielność sprawdź resztą `$i % 3 === 0` — właściwą kolejność warunków dobierz sam.',
+      starter: profilePage('// TODO: for 1..15 + warunki %15 / %3 / %5', '      <ul id="result">\n        <?php // TODO ?>\n      </ul>'),
+      solution: profilePage('', '      <ul id="result">\n        <?php for ($i = 1; $i <= 15; $i++): ?>\n          <?php if ($i % 15 === 0): ?>\n            <li>FizzBuzz</li>\n          <?php elseif ($i % 3 === 0): ?>\n            <li>Fizz</li>\n          <?php elseif ($i % 5 === 0): ?>\n            <li>Buzz</li>\n          <?php else: ?>\n            <li><?= $i ?></li>\n          <?php endif; ?>\n        <?php endfor; ?>\n      </ul>'),
       checks: [
-        codeLine('while', 'Użyj pętli `while` (nie w komentarzu).', 'while\\s*\\('),
-        ['elementExists', 'Lista ma trzeci wiersz.', { selector: '#result li:nth-child(3)' }],
-        text('#result li:nth-child(3)', '2 × 3 = 6'),
+        codeLine('%', 'Podzielność sprawdź resztą z dzielenia `%`.', '\\$i\\s*%'),
+        codeLine('if', 'Wybór wypisanego tekstu robi warunek.', 'if\\s*\\('),
+        codeLine('for', 'Wypisywanie robi pętla `for`.', 'for\\s*\\('),
+        ['elementExists', 'Lista ma piętnaście elementów.', { selector: '#result li:nth-child(15)' }],
+        text('#result li:nth-child(9)', 'Fizz'),
+        text('#result li:nth-child(10)', 'Buzz'),
+        text('#result li:nth-child(15)', 'FizzBuzz'),
       ],
     },
   ],
-  605: [
+  606: [
     {
       suffix: 'guided',
       title: 'Tablica i foreach',
@@ -684,32 +730,33 @@ export const phpProfileExercises = {
     },
     {
       suffix: 'modified',
-      title: 'Czwarty element',
-      prompt: 'Lista działa. Dodaj do `$skills` czwarty element `\'JavaScript\'` i pokaż licznik „Razem: 4” przez `count($skills)` w `#count`.',
-      starter: pageE('$skills = [\'HTML\', \'CSS\', \'PHP\'];', '      <ul id="result">\n        <?php foreach ($skills as $skill): ?>\n          <li><?= e($skill) ?></li>\n        <?php endforeach; ?>\n      </ul>\n      <!-- TODO: dodaj \'JavaScript\' i <p id="count"> z count($skills) -->'),
-      solution: pageE('$skills = [\'HTML\', \'CSS\', \'PHP\', \'JavaScript\'];', '      <ul id="result">\n        <?php foreach ($skills as $skill): ?>\n          <li><?= e($skill) ?></li>\n        <?php endforeach; ?>\n      </ul>\n      <p id="count">Razem: <?= e(count($skills)) ?></p>'),
+      title: 'Średnia ocen',
+      prompt: 'Zamiast wypisywać każdą ocenę, policz średnią: `$scores = [4, 6, 8, 10]` — zsumuj elementy (akumulator albo `array_sum`) i podziel przez `count($scores)`. Wynik „Średnia: 7” wypisz w `#result`.',
+      starter: pageE('$scores = [4, 6, 8, 10];\n// TODO: $avg = suma / count($scores)', '      <p id="result">Średnia: <?php // TODO: $avg ?></p>'),
+      solution: pageE('$scores = [4, 6, 8, 10];\n$sum = 0;\nforeach ($scores as $score) {\n  $sum += $score;\n}\n$avg = $sum / count($scores);', '      <p id="result">Średnia: <?= e($avg) ?></p>'),
       checks: [
-        codeLine('JavaScript', 'Dopisz `\'JavaScript\'` do tablicy.', 'JavaScript'),
-        codeLine('count(', 'Policz elementy przez `count()`.', 'count\\('),
-        text('#result li:nth-child(4)', 'JavaScript'),
-        text('#count', 'Razem: 4'),
+        codeLine('count(', 'Licznik dzielenia to `count($scores)`.', 'count\\('),
+        codeLine('$sum', 'Zbierz sumę elementów (`+=` lub `array_sum`).', '\\+=|array_sum'),
+        text('#result', 'Średnia: 7'),
+        notHandLiteral('>Średnia: 7<', 'Średnią ma wyliczyć kod — nie stały tekst.'),
       ],
     },
     {
       suffix: 'independent',
-      title: 'Cennik produktów',
-      prompt: 'Utwórz `$products = [\'Książka\', \'Notes\', \'Kubek\']` i przez `foreach` wypisz `<li>` „Nazwa — 10 zł” w `<ul id="result">`.',
-      starter: profilePage('$products = [];\n// TODO: tablica + foreach', '      <ul id="result">\n        <?php // TODO ?>\n      </ul>'),
-      solution: pageE('$products = [\'Książka\', \'Notes\', \'Kubek\'];', '      <ul id="result">\n        <?php foreach ($products as $product): ?>\n          <li><?= e($product) ?> — 10 zł</li>\n        <?php endforeach; ?>\n      </ul>'),
+      title: 'Najwyższy wynik',
+      prompt: 'Dla `$scores = [4, 9, 7, 2]` znajdź najwyższy wynik **pętlą**: zacznij od `$max = $scores[0]`, a w `foreach` podbijaj go, gdy `$score > $max`. Wypisz „Najlepszy: 9” w `#result` — bez wbudowanego `max()`.',
+      starter: pageE('$scores = [4, 9, 7, 2];\n// TODO: $max przez foreach i porównanie >', '      <p id="result">Najlepszy: <?php // TODO: $max ?></p>'),
+      solution: pageE('$scores = [4, 9, 7, 2];\n$max = $scores[0];\nforeach ($scores as $score) {\n  if ($score > $max) {\n    $max = $score;\n  }\n}', '      <p id="result">Najlepszy: <?= e($max) ?></p>'),
       checks: [
-        codeLine('$products', 'Zdefiniuj tablicę `$products`.', '\\$products\\s*=\\s*\\['),
-        codeLine('foreach', 'Użyj `foreach`.', 'foreach\\s*\\('),
-        ['elementExists', 'Lista ma trzy produkty.', { selector: '#result li:nth-child(3)' }],
-        text('#result li:nth-child(3)', 'Kubek — 10 zł'),
+        codeLine('foreach', 'Przejdź po wynikach pętlą `foreach`.', 'foreach\\s*\\('),
+        codeLine('>', 'Podbijaj `$max` porównaniem `$score > $max`.', '\\$score\\s*>\\s*\\$max|\\$max\\s*<\\s*\\$score'),
+        notHandLiteral('max\\s*\\(', 'Nie używaj wbudowanego `max()` — to zadanie o algorytmie.'),
+        text('#result', 'Najlepszy: 9'),
+        notHandLiteral('>Najlepszy: 9<', 'Wynik ma wyjść z porównań — nie ze stałego tekstu.'),
       ],
     },
   ],
-  606: [
+  607: [
     {
       suffix: 'guided',
       title: 'Funkcja greet',
@@ -730,165 +777,313 @@ export const phpProfileExercises = {
     },
     {
       suffix: 'modified',
-      title: 'Drugie wywołanie',
-      prompt: 'Funkcja działa. Wywołaj `greet` drugi raz z argumentem `\'Ada\'` i pokaż wynik w `#second`.',
-      starter: pageE('function greet($name) {\n  return \'Cześć, \' . $name . \'!\';\n}', '      <p id="result"><?= e(greet(\'Ola\')) ?></p>\n      <!-- TODO: <p id="second"> z greet(\'Ada\') -->'),
-      solution: pageE('function greet($name) {\n  return \'Cześć, \' . $name . \'!\';\n}', '      <p id="result"><?= e(greet(\'Ola\')) ?></p>\n      <p id="second"><?= e(greet(\'Ada\')) ?></p>'),
+      title: 'isAdult podejmuje decyzję',
+      prompt: 'Funkcja może zwracać decyzję: napisz `function isAdult($age)` zwracającą `true`/`false` (`return $age >= 18;`). Dla `$age = 16` użyj jej w warunku i wypisz w `#result` „Osoba nieletnia” — a dla pełnoletnich „Osoba pełnoletnia”.',
+      starter: profilePage('$age = 16;\n// TODO: function isAdult($age) { return …; } i warunek używający wyniku', '      <p id="result"><?php // TODO: $label z warunku ?></p>'),
+      solution: pageE('$age = 16;\nfunction isAdult($age) {\n  return $age >= 18;\n}\n$label = isAdult($age) ? \'Osoba pełnoletnia\' : \'Osoba nieletnia\';', '      <p id="result"><?= e($label) ?></p>'),
       checks: [
-        codeLine('greet(', 'Wywołaj `greet` także dla Ady.', 'greet\\([\'"]Ada'),
-        text('#second', 'Cześć, Ada!'),
-        text('#result', 'Cześć, Ola!'),
+        codeLine('function isAdult', 'Zdefiniuj `function isAdult($age)`.', 'function\\s+isAdult'),
+        codeLine('return', 'Funkcja zwraca decyzję przez `return`.', 'return'),
+        codeLine('isAdult(', 'Warunek używa wyniku `isAdult($age)`.', 'isAdult\\('),
+        text('#result', 'Osoba nieletnia'),
+        notHandLiteral('>Osoba nieletnia<', 'Wynik ma ustawiać funkcja i warunek.'),
       ],
     },
     {
       suffix: 'independent',
-      title: 'Funkcja formatPrice',
-      prompt: 'Napisz `function formatPrice($price)` zwracającą „<cena> zł”. Wywołaj ją dla 25 i pokaż „Cena: 25 zł” w `#result`.',
-      starter: profilePage('// TODO: function formatPrice($price)', '      <p id="result">Cena: <?php // TODO: echo formatPrice(25) ?></p>'),
-      solution: pageE('function formatPrice($price) {\n  return $price . \' zł\';\n}', '      <p id="result">Cena: <?= e(formatPrice(25)) ?></p>'),
+      title: 'Celsjusz na Fahrenheit',
+      prompt: 'Napisz `function toFahrenheit($c)` zwracającą przeliczenie `$c * 9 / 5 + 32`. Dla `$tempC = 20` wypisz w `#result` „20 °C = 68 °F” — wartość °F ma pochodzić z wywołania funkcji.',
+      starter: profilePage('$tempC = 20;\n// TODO: function toFahrenheit($c) zwraca $c * 9 / 5 + 32', '      <p id="result"><?= $tempC ?> °C = <?php // TODO: toFahrenheit($tempC) ?> °F</p>'),
+      solution: pageE('$tempC = 20;\nfunction toFahrenheit($c) {\n  return $c * 9 / 5 + 32;\n}', '      <p id="result"><?= e($tempC) ?> °C = <?= e(toFahrenheit($tempC)) ?> °F</p>'),
       checks: [
-        codeLine('formatPrice', 'Zdefiniuj `function formatPrice($price)`.', 'function\\s+formatPrice'),
-        codeLine('return', 'Zwróć wynik przez `return`.', 'return'),
-        text('#result', 'Cena: 25 zł'),
-        notHandLiteral('>Cena: 25 zł<', 'Wynik ma zwracać funkcja.'),
-      ],
-    },
-  ],
-  607: [
-    {
-      suffix: 'guided',
-      title: 'Imię z formularza POST',
-      prompt: 'Odczytaj `$_POST[\'name\']` (z domyślnym „Gościu” przez `??`), zabezpiecz przez `htmlspecialchars` i wypisz „Witaj, <imię>!” w `#result`. Test wyśle POST z imieniem Ala.',
-      starter: profilePage('// TODO: $name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');', '      <p id="result">Witaj, <?= $name ?>!</p>'),
-      solution: profilePage('$name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');', '      <p id="result">Witaj, <?= $name ?>!</p>'),
-      steps: [
-        'Przypisz `$name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');`.',
-        'Wypisz ją w `#result` przez `<?=`.',
-        'Uruchom — test wyśle POST z name=Ala.',
-      ],
-      checks: [
-        source('$_POST'),
-        source('htmlspecialchars'),
-        ['phpRequest', 'Dla POST z imieniem Ala pokaż bezpieczne powitanie.', { request: { method: 'POST', form: { name: 'Ala' } }, selector: '#result', expected: 'Witaj, Ala!' }],
-      ],
-    },
-    {
-      suffix: 'modified',
-      title: 'Tylko POST, nie GET',
-      prompt: 'Odczyt działa. Sprawdź `$_SERVER[\'REQUEST_METHOD\'] === \'POST\'` — dla innych metod pokaż w `#result` „Wyślij formularz.”.',
-      starter: profilePage('$name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');\n// TODO: gałąź na REQUEST_METHOD', '      <p id="result">Witaj, <?= $name ?>!</p>'),
-      solution: profilePage('if ($_SERVER[\'REQUEST_METHOD\'] === \'POST\') {\n  $name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');\n  $message = "Witaj, $name!";\n} else {\n  $message = \'Wyślij formularz.\';\n}', '      <p id="result"><?= $message ?></p>'),
-      checks: [
-        codeLine('REQUEST_METHOD', 'Sprawdź `$_SERVER[\'REQUEST_METHOD\']`.', 'REQUEST_METHOD'),
-        ['phpRequest', 'POST nadal pokazuje powitanie.', { request: { method: 'POST', form: { name: 'Ala' } }, selector: '#result', expected: 'Witaj, Ala!' }],
-        ['phpRequest', 'GET pokazuje „Wyślij formularz.”.', { request: { method: 'GET' }, selector: '#result', expected: 'Wyślij formularz.' }],
-      ],
-    },
-    {
-      suffix: 'independent',
-      title: 'Wiadomość z POST',
-      prompt: 'Odczytaj `$_POST[\'message\']` (domyślne „Brak wiadomości”), zabezpiecz i wypisz „Wiadomość: <tekst>” w `#result`. Test wyśle POST z message=Cześć!.',
-      starter: profilePage('// TODO: $message z $_POST[\'message\']', '      <p id="result">Wiadomość: <?= $message ?></p>'),
-      solution: profilePage('$message = htmlspecialchars($_POST[\'message\'] ?? \'Brak wiadomości\', ENT_QUOTES, \'UTF-8\');', '      <p id="result">Wiadomość: <?= $message ?></p>'),
-      checks: [
-        source('$_POST'),
-        source('htmlspecialchars'),
-        codeLine('message', 'Odczytaj pole `message` z `$_POST`.', '\\$_POST\\[[^\\]]*message'),
-        ['phpRequest', 'POST z „Cześć!” pokazuje wiadomość.', { request: { method: 'POST', form: { message: 'Cześć!' } }, selector: '#result', expected: 'Wiadomość: Cześć!' }],
+        codeLine('function toFahrenheit', 'Zdefiniuj `function toFahrenheit($c)`.', 'function\\s+toFahrenheit'),
+        codeLine('return', 'Funkcja zwraca wynik przez `return`.', 'return'),
+        codeLine('toFahrenheit(', 'Wypisz wartość z wywołania `toFahrenheit($tempC)`.', 'toFahrenheit\\('),
+        text('#result', '20 °C = 68 °F'),
+        notHandLiteral('>68 °F<', 'Wartość °F ma wyliczyć funkcja — nie stały tekst.'),
       ],
     },
   ],
   608: [
     {
       suffix: 'guided',
-      title: 'Karta profilu PHP',
-      prompt: 'W `index.php` zbuduj kartę profilu: przypisz `$author`, `$bio` i `$skills` (tablica), zdefiniuj funkcję `e()` przez `htmlspecialchars` i wypisz nagłówek `h1` z autorem, akapit z bio i `<li>` dla każdej umiejętności przez `foreach`.',
-      starter: profilePage(`// TODO: przypisz $author, $bio i $skills
-// TODO: e() ma zwracać htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
-function e($text) { return $text; }`, '      <h1><?= e($author) ?></h1>\n      <p id="bio"><?= e($bio) ?></p>\n      <ul id="skills"></ul>'),
-      solution: profilePage(`$author = 'Kamil';
-$bio = 'Uczę się programowania webowego';
-$skills = ['HTML', 'PHP', '<em>git</em>'];
-${escapeText}`, `      <h1><?= e($author) ?></h1>
-      <p id="bio"><?= e($bio) ?></p>
-      <ul id="skills">
-        <?php foreach ($skills as $skill): ?>
-          <li><?= e($skill) ?></li>
-        <?php endforeach; ?>
-      </ul>`),
+      title: 'Formularz wita po imieniu',
+      prompt: 'Strona ma prawdziwy formularz `method="post"` z polem `name="name"`. Rozdziel widok po metodzie żądania: dla POST ustaw `$message` na „Witaj, <imię>!” — imię z `$_POST[\'name\']` (domyślnie „Gościu”) zabezpieczone `htmlspecialchars`; dla innych metod zostaw zachętę „Wypełnij formularz i wyślij.”. W podglądzie możesz wpisać imię i kliknąć Wyślij — to prawdziwe żądanie POST do PHP.',
+      starter: formPage('// TODO: dla POST ustaw powitanie z $_POST[\'name\'] (htmlspecialchars)\n$message = \'Wypełnij formularz i wyślij.\';', '      <h1>Powitanie</h1>\n      <p id="result"><?= $message ?></p>\n      <form id="hello" method="post" action="index.php">\n        <label for="person">Imię</label>\n        <input id="person" name="name" required>\n        <button type="submit">Wyślij</button>\n      </form>', 'Powitanie'),
+      solution: formPage('if ($_SERVER[\'REQUEST_METHOD\'] === \'POST\') {\n  $name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');\n  $message = "Witaj, $name!";\n} else {\n  $message = \'Wypełnij formularz i wyślij.\';\n}', '      <h1>Powitanie</h1>\n      <p id="result"><?= $message ?></p>\n      <form id="hello" method="post" action="index.php">\n        <label for="person">Imię</label>\n        <input id="person" name="name" required>\n        <button type="submit">Wyślij</button>\n      </form>', 'Powitanie'),
       steps: [
-        'Przypisz zmienne `$author = \'Kamil\'`, `$bio` i `$skills = [\'HTML\', \'PHP\', \'<em>git</em>\']`.',
-        'Zdefiniuj `function e($text)` zwracającą `htmlspecialchars($text, ENT_QUOTES, \'UTF-8\')`.',
-        'Wypisz `h1` z `e($author)`, `#bio` z `e($bio)` i `<li>` przez `foreach` z `e($skill)`.',
-        'Uruchom ▶ Play — `<em>git</em>` musi wyświetlić się dosłownie, nie kursywą.',
+        'Atrybut `name="name"` pola tworzy klucz w `$_POST` — to name, nie id.',
+        'Rozdziel metody: `if ($_SERVER[\'REQUEST_METHOD\'] === \'POST\') { … } else { … }`.',
+        'W gałęzi POST ustaw `$message = "Witaj, " . htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\') . "!";`.',
+        'W `else` zostaw `$message = \'Wypełnij formularz i wyślij.\';`.',
+        '▶ Play pokazuje widok GET; wpisz imię i kliknij Wyślij — skrypt podglądu wyśle POST do tego samego pliku.',
       ],
       checks: [
-        codeLine('e(', 'Wypisz wartości przez e()/htmlspecialchars (nie w komentarzu).', 'e\\(\\s*\\$'),
-        ['textEquals', 'h1 pokazuje autora „Kamil”.', { selector: 'h1', expected: 'Kamil' }],
-        ['textEquals', '#bio pokazuje opis profilu.', { selector: '#bio', expected: 'Uczę się programowania webowego' }],
-        ['textEquals', 'Drugi <li> pokazuje „PHP”.', { selector: '#skills li:nth-child(2)', expected: 'PHP' }],
-        ['textEquals', 'Umiejętność „<em>git</em>” wypisana jest dosłownie (escapowana).', { selector: '#skills li:nth-child(3)', expected: '<em>git</em>' }],
-        notHandLiteral('>Kamil<', 'Nie wpisuj „Kamil” na sztywno w HTML — ma go wypisać PHP z $author.'),
+        codeLine('REQUEST_METHOD', 'Rozdziel widok po `$_SERVER[\'REQUEST_METHOD\']`.', 'REQUEST_METHOD'),
+        source('$_POST'),
+        source('htmlspecialchars'),
+        ['phpRequest', 'GET pokazuje zachętę „Wypełnij formularz i wyślij.”.', { request: { method: 'GET' }, selector: '#result', expected: 'Wypełnij formularz i wyślij.' }],
+        ['phpRequest', 'POST z imieniem Ala pokazuje „Witaj, Ala!”.', { request: { method: 'POST', form: { name: 'Ala' } }, selector: '#result', expected: 'Witaj, Ala!' }],
+        ['interaction', 'Wpisz imię „Zosia” w pole formularza.', { selector: '#person', action: 'input', value: 'Zosia', expected: {} }],
+        ['interaction', 'Kliknięcie Wyślij wysyła POST i pokazuje „Witaj, Zosia!”.', { selector: '#hello button[type="submit"]', resultSelector: '#result', expected: { beforeText: 'Wypełnij formularz i wyślij.', textEquals: 'Witaj, Zosia!' } }],
       ],
     },
     {
       suffix: 'modified',
-      title: 'Komunikat przy pustej liście',
-      prompt: 'Karta działa. Dodaj gałąź: gdy `$skills` jest pustą tablicą (`[]`), wypisz `<p class="empty">Brak umiejętności.</p>` zamiast pustej listy. Lista musi nadal działać, gdy umiejętności są.',
-      starter: profilePage(`$author = 'Kamil';
-$bio = 'Uczę się programowania webowego';
-$skills = ['HTML', 'PHP', '<em>git</em>'];
-${escapeText}`, `      <h1><?= e($author) ?></h1>
-      <p id="bio"><?= e($bio) ?></p>
-      <ul id="skills">
-        <?php foreach ($skills as $skill): ?>
-          <li><?= e($skill) ?></li>
-        <?php endforeach; ?>
-      </ul>
-      <!-- TODO: gdy $skills jest puste, pokaż "Brak umiejętności." zamiast listy -->`),
-      solution: profilePage(`$author = 'Kamil';
-$bio = 'Uczę się programowania webowego';
-$skills = ['HTML', 'PHP', '<em>git</em>'];
-${escapeText}`, `      <h1><?= e($author) ?></h1>
-      <p id="bio"><?= e($bio) ?></p>
-      <?php if (count($skills) === 0): ?>
-        <p class="empty">Brak umiejętności.</p>
-      <?php else: ?>
+      title: 'Puste imię nie przejdzie',
+      prompt: '`required` w HTML przepuszcza same spacje — walidację trzeba powtórzyć w PHP. W gałęzi POST odczytaj pole, sprawdź `is_string`, zrób `trim`: pusty wynik → „Podaj imię.”, poprawny → „Witaj, <imię>!” przez `htmlspecialchars` jak wcześniej.',
+      starter: formPage('if ($_SERVER[\'REQUEST_METHOD\'] === \'POST\') {\n  $name = htmlspecialchars($_POST[\'name\'] ?? \'Gościu\', ENT_QUOTES, \'UTF-8\');\n  $message = "Witaj, $name!";\n} else {\n  $message = \'Wypełnij formularz i wyślij.\';\n}\n// TODO: puste/spacjowe imię w POST → „Podaj imię.”', '      <h1>Powitanie</h1>\n      <p id="result"><?= $message ?></p>\n      <form id="hello" method="post" action="index.php">\n        <label for="person">Imię</label>\n        <input id="person" name="name" required>\n        <button type="submit">Wyślij</button>\n      </form>', 'Powitanie'),
+      solution: formPage('if ($_SERVER[\'REQUEST_METHOD\'] === \'POST\') {\n  $raw = $_POST[\'name\'] ?? \'\';\n  $name = is_string($raw) ? trim($raw) : \'\';\n  $message = $name === \'\'\n    ? \'Podaj imię.\'\n    : \'Witaj, \' . htmlspecialchars($name, ENT_QUOTES, \'UTF-8\') . \'!\';\n} else {\n  $message = \'Wypełnij formularz i wyślij.\';\n}', '      <h1>Powitanie</h1>\n      <p id="result"><?= $message ?></p>\n      <form id="hello" method="post" action="index.php">\n        <label for="person">Imię</label>\n        <input id="person" name="name" required>\n        <button type="submit">Wyślij</button>\n      </form>', 'Powitanie'),
+      checks: [
+        codeLine('is_string', 'Sprawdź `is_string`, zanim przyjmiesz wartość pola.', 'is_string'),
+        codeLine('trim', 'Użyj `trim` — same spacje to puste imię.', 'trim\\s*\\('),
+        ['phpRequest', 'GET nadal pokazuje zachętę.', { request: { method: 'GET' }, selector: '#result', expected: 'Wypełnij formularz i wyślij.' }],
+        ['phpRequest', 'POST z imieniem Ola pokazuje „Witaj, Ola!”.', { request: { method: 'POST', form: { name: 'Ola' } }, selector: '#result', expected: 'Witaj, Ola!' }],
+        ['phpRequest', 'POST z samymi spacjami pokazuje „Podaj imię.”.', { request: { method: 'POST', form: { name: '   ' } }, selector: '#result', expected: 'Podaj imię.' }],
+        ['interaction', 'Wpisz same spacje — `required` je przepuści.', { selector: '#person', action: 'input', value: '   ', expected: {} }],
+        ['interaction', 'Po wysłaniu spacji PHP odpowiada „Podaj imię.”.', { selector: '#hello button[type="submit"]', resultSelector: '#result', expected: { beforeText: 'Wypełnij formularz i wyślij.', textEquals: 'Podaj imię.' } }],
+      ],
+    },
+    {
+      suffix: 'independent',
+      title: 'Ankieta: formularz i podziękowanie',
+      prompt: 'Ta sama strona ma dwa widoki. GET pokazuje `#survey`: imię (`#person`, `name="name"`, required) i radiogrupę `name="przedmiot"` z wartościami matematyka/polski/angielski. Poprawny POST pokazuje `#thanks` z „Dziękujemy, <imię>!” i „Twój głos: <przedmiot>.” — oba przez `htmlspecialchars`. POST z błędnymi danymi wraca do formularza z `#error` „Wypełnij wszystkie pola ankiety.” — przedmiot sprawdź `in_array` wobec listy opcji.',
+      starter: formPage('$view = \'form\';\n$error = \'\';\n// TODO: POST — odczytaj name i przedmiot; puste imię lub zły przedmiot → $error,\n// poprawne dane → $view = \'thanks\' i bezpieczne $safeName/$safeSubject', '      <?php if ($view === \'thanks\'): ?>\n        <section id="thanks">\n          <h1>Dziękujemy, <?= $safeName ?? \'\' ?>!</h1>\n          <p>Twój głos: <?= $safeSubject ?? \'\' ?>.</p>\n        </section>\n      <?php else: ?>\n        <h1>Ankieta</h1>\n        <form id="survey" method="post" action="index.php">\n          <p id="error"><?= $error ?></p>\n          <label for="person">Imię</label>\n          <input id="person" name="name" required>\n          <fieldset>\n            <legend>Ulubiony przedmiot</legend>\n            <label><input type="radio" name="przedmiot" id="r-mat" value="matematyka"> matematyka</label>\n            <label><input type="radio" name="przedmiot" id="r-pol" value="polski"> polski</label>\n            <label><input type="radio" name="przedmiot" id="r-ang" value="angielski"> angielski</label>\n          </fieldset>\n          <button type="submit">Wyślij ankietę</button>\n        </form>\n      <?php endif; ?>', 'Ankieta'),
+      solution: formPage('$view = \'form\';\n$error = \'\';\nif ($_SERVER[\'REQUEST_METHOD\'] === \'POST\') {\n  $rawName = $_POST[\'name\'] ?? \'\';\n  $name = is_string($rawName) ? trim($rawName) : \'\';\n  $subject = $_POST[\'przedmiot\'] ?? \'\';\n  if ($name === \'\' || !in_array($subject, [\'matematyka\', \'polski\', \'angielski\'], true)) {\n    $error = \'Wypełnij wszystkie pola ankiety.\';\n  } else {\n    $view = \'thanks\';\n    $safeName = htmlspecialchars($name, ENT_QUOTES, \'UTF-8\');\n    $safeSubject = htmlspecialchars($subject, ENT_QUOTES, \'UTF-8\');\n  }\n}', '      <?php if ($view === \'thanks\'): ?>\n        <section id="thanks">\n          <h1>Dziękujemy, <?= $safeName ?? \'\' ?>!</h1>\n          <p>Twój głos: <?= $safeSubject ?? \'\' ?>.</p>\n        </section>\n      <?php else: ?>\n        <h1>Ankieta</h1>\n        <form id="survey" method="post" action="index.php">\n          <p id="error"><?= $error ?></p>\n          <label for="person">Imię</label>\n          <input id="person" name="name" required>\n          <fieldset>\n            <legend>Ulubiony przedmiot</legend>\n            <label><input type="radio" name="przedmiot" id="r-mat" value="matematyka"> matematyka</label>\n            <label><input type="radio" name="przedmiot" id="r-pol" value="polski"> polski</label>\n            <label><input type="radio" name="przedmiot" id="r-ang" value="angielski"> angielski</label>\n          </fieldset>\n          <button type="submit">Wyślij ankietę</button>\n        </form>\n      <?php endif; ?>', 'Ankieta'),
+      checks: [
+        codeLine('REQUEST_METHOD', 'Rozpoznaj metodę żądania.', 'REQUEST_METHOD'),
+        source('$_POST'),
+        codeLine('in_array', 'Przedmiot sprawdź przez `in_array` z listą dozwolonych wartości.', 'in_array'),
+        source('htmlspecialchars'),
+        ['phpRequest', 'GET pokazuje formularz ankiety.', { request: { method: 'GET' }, selector: '#survey', expected: 'Ulubiony przedmiot' }],
+        ['phpRequest', 'Poprawny POST pokazuje „Dziękujemy, Ola!”.', { request: { method: 'POST', form: { name: 'Ola', przedmiot: 'matematyka' } }, selector: '#thanks h1', expected: 'Dziękujemy, Ola!' }],
+        ['phpRequest', 'Poprawny POST powtarza wybrany głos.', { request: { method: 'POST', form: { name: 'Ola', przedmiot: 'matematyka' } }, selector: '#thanks p', expected: 'matematyka' }],
+        ['phpRequest', 'POST bez przedmiotu pokazuje błąd w formularzu.', { request: { method: 'POST', form: { name: 'Ola' } }, selector: '#error', expected: 'Wypełnij wszystkie pola ankiety.' }],
+        ['interaction', 'Wpisz imię „Ola” w ankietę.', { selector: '#person', action: 'input', value: 'Ola', expected: {} }],
+        ['interaction', 'Zaznacz opcję „matematyka”.', { selector: '#r-mat', expected: {} }],
+        ['interaction', 'Wysłanie ankiety pokazuje podziękowanie.', { selector: '#survey button[type="submit"]', resultSelector: '#thanks h1', expected: { textEquals: 'Dziękujemy, Ola!' } }],
+      ],
+    },
+  ],
+  609: [
+    {
+      suffix: 'guided',
+      title: 'Formularz buduje kartę',
+      prompt: 'Projekt łączy wszystko z poprzednich lekcji. GET pokazuje `#profile-form` z polami `author`, `bio` i `skills` (umiejętności po przecinku). POST zbiera dane: `$author` i `$bio` przez `is_string` + `trim`, `$skills` przez `explode(\',\', …)` + `array_map(\'trim\', …)` + `array_filter`. Gdy autor nie jest pusty, przełącz `$view` na `\'card\'` — widok karty wypisuje `h1`, `#bio` i `<li>` przez `foreach` z `e()`.',
+      starter: formPage(`$view = 'form';
+$author = ''; $bio = ''; $skills = [];
+${escapeText}
+// TODO: POST — odczytaj author/bio/skills z $_POST (is_string, trim, explode)
+// i gdy $author nie jest pusty przełącz $view na 'card'`, `      <?php if ($view === 'card'): ?>
+        <h1><?= e($author) ?></h1>
+        <p id="bio"><?= e($bio) ?></p>
         <ul id="skills">
           <?php foreach ($skills as $skill): ?>
             <li><?= e($skill) ?></li>
           <?php endforeach; ?>
         </ul>
-      <?php endif; ?>`),
+      <?php else: ?>
+        <h1>Karta profilu</h1>
+        <form id="profile-form" method="post" action="index.php">
+          <label for="f-author">Autor</label>
+          <input id="f-author" name="author" required>
+          <label for="f-bio">Bio</label>
+          <input id="f-bio" name="bio">
+          <label for="f-skills">Umiejętności (po przecinku)</label>
+          <input id="f-skills" name="skills" placeholder="HTML, PHP">
+          <button type="submit">Generuj kartę</button>
+        </form>
+      <?php endif; ?>`, 'Karta profilu'),
+      solution: formPage(`$view = 'form';
+$author = ''; $bio = ''; $skills = [];
+${escapeText}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $author = is_string($_POST['author'] ?? '') ? trim($_POST['author']) : '';
+  $bio = is_string($_POST['bio'] ?? '') ? trim($_POST['bio']) : '';
+  $skills = array_filter(array_map('trim', explode(',', (string)($_POST['skills'] ?? ''))));
+  if ($author !== '') $view = 'card';
+}`, `      <?php if ($view === 'card'): ?>
+        <h1><?= e($author) ?></h1>
+        <p id="bio"><?= e($bio) ?></p>
+        <ul id="skills">
+          <?php foreach ($skills as $skill): ?>
+            <li><?= e($skill) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      <?php else: ?>
+        <h1>Karta profilu</h1>
+        <form id="profile-form" method="post" action="index.php">
+          <label for="f-author">Autor</label>
+          <input id="f-author" name="author" required>
+          <label for="f-bio">Bio</label>
+          <input id="f-bio" name="bio">
+          <label for="f-skills">Umiejętności (po przecinku)</label>
+          <input id="f-skills" name="skills" placeholder="HTML, PHP">
+          <button type="submit">Generuj kartę</button>
+        </form>
+      <?php endif; ?>`, 'Karta profilu'),
+      steps: [
+        'Dane karty przychodzą z `$_POST` — najpierw `is_string`, potem `trim`.',
+        'Pole `skills` to jeden tekst — `explode(\',\', …)` + `array_map(\'trim\', …)` + `array_filter` daje czystą tablicę.',
+        'Niepusty `$author` przełącza `$view` na `\'card\'` — formularz znika, pojawia się karta.',
+        'W widoku karty każdą wartość wypisuj przez `e()` — dane z formularza są niezaufane.',
+        '▶ Play pokazuje formularz; wypełnij go i kliknij Generuj kartę — skrypt podglądu wyśle POST.',
+      ],
+      checks: [
+        codeLine('REQUEST_METHOD', 'Rozdziel widok po `$_SERVER[\'REQUEST_METHOD\']`.', 'REQUEST_METHOD'),
+        source('$_POST'),
+        codeLine('explode', 'Pole skills rozbij przez `explode`.', 'explode\\s*\\('),
+        source('foreach'),
+        codeLine('e(', 'Wypisz wartości przez e()/htmlspecialchars (nie w komentarzu).', 'e\\(\\s*\\$'),
+        ['phpRequest', 'GET pokazuje formularz profilu.', { request: { method: 'GET' }, selector: '#profile-form', expected: 'Generuj kartę' }],
+        ['phpRequest', 'POST buduje kartę z autorem „Kamil”.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: 'HTML, PHP, <em>git</em>' } }, selector: 'h1', expected: 'Kamil' }],
+        ['phpRequest', 'POST wypisuje bio z formularza.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: 'HTML, PHP, <em>git</em>' } }, selector: '#bio', expected: 'Uczę się programowania webowego' }],
+        ['phpRequest', 'POST renderuje umiejętność „PHP”.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: 'HTML, PHP, <em>git</em>' } }, selector: '#skills li:nth-child(2)', expected: 'PHP' }],
+        ['phpRequest', 'Umiejętność „<em>git</em>” wypisana jest dosłownie.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: 'HTML, PHP, <em>git</em>' } }, selector: '#skills li:nth-child(3)', expected: '<em>git</em>' }],
+        ['interaction', 'Wpisz autora „Kamil”.', { selector: '#f-author', action: 'input', value: 'Kamil', expected: {} }],
+        ['interaction', 'Wpisz umiejętności „HTML, PHP”.', { selector: '#f-skills', action: 'input', value: 'HTML, PHP', expected: {} }],
+        ['interaction', 'Generuj kartę pokazuje h1 z autorem.', { selector: '#profile-form button[type="submit"]', resultSelector: 'h1', expected: { textEquals: 'Kamil' } }],
+        notHandLiteral('>Kamil<', 'Nie wpisuj „Kamil” na sztywno w HTML — autor ma pochodzić z $_POST.'),
+      ],
+    },
+    {
+      suffix: 'modified',
+      title: 'Komunikat przy pustej liście',
+      prompt: 'Karta działa. Dodaj gałąź w widoku `card`: gdy `$skills` jest pustą tablicą, wypisz `<p class="empty">Brak umiejętności.</p>` zamiast pustego `<ul>`. Pełna lista ma nadal działać.',
+      starter: formPage(`$view = 'form';
+$author = ''; $bio = ''; $skills = [];
+${escapeText}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $author = is_string($_POST['author'] ?? '') ? trim($_POST['author']) : '';
+  $bio = is_string($_POST['bio'] ?? '') ? trim($_POST['bio']) : '';
+  $skills = array_filter(array_map('trim', explode(',', (string)($_POST['skills'] ?? ''))));
+  if ($author !== '') $view = 'card';
+}`, `      <?php if ($view === 'card'): ?>
+        <h1><?= e($author) ?></h1>
+        <p id="bio"><?= e($bio) ?></p>
+        <ul id="skills">
+          <?php foreach ($skills as $skill): ?>
+            <li><?= e($skill) ?></li>
+          <?php endforeach; ?>
+        </ul>
+        <!-- TODO: gdy $skills jest puste, pokaż "Brak umiejętności." zamiast listy -->
+      <?php else: ?>
+        <h1>Karta profilu</h1>
+        <form id="profile-form" method="post" action="index.php">
+          <label for="f-author">Autor</label>
+          <input id="f-author" name="author" required>
+          <label for="f-bio">Bio</label>
+          <input id="f-bio" name="bio">
+          <label for="f-skills">Umiejętności (po przecinku)</label>
+          <input id="f-skills" name="skills" placeholder="HTML, PHP">
+          <button type="submit">Generuj kartę</button>
+        </form>
+      <?php endif; ?>`, 'Karta profilu'),
+      solution: formPage(`$view = 'form';
+$author = ''; $bio = ''; $skills = [];
+${escapeText}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $author = is_string($_POST['author'] ?? '') ? trim($_POST['author']) : '';
+  $bio = is_string($_POST['bio'] ?? '') ? trim($_POST['bio']) : '';
+  $skills = array_filter(array_map('trim', explode(',', (string)($_POST['skills'] ?? ''))));
+  if ($author !== '') $view = 'card';
+}`, `      <?php if ($view === 'card'): ?>
+        <h1><?= e($author) ?></h1>
+        <p id="bio"><?= e($bio) ?></p>
+        <?php if (count($skills) === 0): ?>
+          <p class="empty">Brak umiejętności.</p>
+        <?php else: ?>
+          <ul id="skills">
+            <?php foreach ($skills as $skill): ?>
+              <li><?= e($skill) ?></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      <?php else: ?>
+        <h1>Karta profilu</h1>
+        <form id="profile-form" method="post" action="index.php">
+          <label for="f-author">Autor</label>
+          <input id="f-author" name="author" required>
+          <label for="f-bio">Bio</label>
+          <input id="f-bio" name="bio">
+          <label for="f-skills">Umiejętności (po przecinku)</label>
+          <input id="f-skills" name="skills" placeholder="HTML, PHP">
+          <button type="submit">Generuj kartę</button>
+        </form>
+      <?php endif; ?>`, 'Karta profilu'),
       checks: [
         codeLine('count(', 'Sprawdź pustą listę przez count()/empty() lub porównanie z [].', '(count\\(\\$skills\\)|empty\\(\\$skills\\)|\\$skills\\s*===?\\s*\\[\\s*\\])'),
         source('Brak umiejętności.'),
-        ['textEquals', 'h1 pokazuje autora „Kamil”.', { selector: 'h1', expected: 'Kamil' }],
-        ['textEquals', 'Drugi <li> pokazuje „PHP”.', { selector: '#skills li:nth-child(2)', expected: 'PHP' }],
-        ['textEquals', 'Umiejętność „<em>git</em>” wypisana jest dosłownie.', { selector: '#skills li:nth-child(3)', expected: '<em>git</em>' }],
+        ['phpRequest', 'GET nadal pokazuje formularz.', { request: { method: 'GET' }, selector: '#profile-form', expected: 'Generuj kartę' }],
+        ['phpRequest', 'POST bez umiejętności pokazuje komunikat.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: '' } }, selector: '.empty', expected: 'Brak umiejętności.' }],
+        ['phpRequest', 'POST z listą nadal renderuje umiejętności.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: 'HTML, PHP, <em>git</em>' } }, selector: '#skills li:nth-child(2)', expected: 'PHP' }],
+        ['phpRequest', 'Umiejętność „<em>git</em>” wypisana jest dosłownie.', { request: { method: 'POST', form: { author: 'Kamil', bio: 'Uczę się programowania webowego', skills: 'HTML, PHP, <em>git</em>' } }, selector: '#skills li:nth-child(3)', expected: '<em>git</em>' }],
+        ['interaction', 'Wpisz autora „Kamil” bez umiejętności.', { selector: '#f-author', action: 'input', value: 'Kamil', expected: {} }],
+        ['interaction', 'Generuj kartę pokazuje komunikat o pustej liście.', { selector: '#profile-form button[type="submit"]', resultSelector: '.empty', expected: { textEquals: 'Brak umiejętności.' } }],
       ],
     },
     {
       suffix: 'independent',
-      title: 'Własna karta autora',
-      prompt: 'Zbuduj własną kartę autora od zera: inne imię, krótkie bio i co najmniej 3 umiejętności — jedna musi zawierać znak `<` lub `>`, żeby sprawdzić escapowanie. Wypisz `h1`, akapit z bio i `<li>` przez `foreach` z `e()`.',
-      starter: profilePage('// Napisz własną kartę autora.', ''),
-      solution: profilePage(`$author = 'Ania';
-$bio = 'Koduje w szkole i po szkole';
-$skills = ['CSS', 'JavaScript', 'a > b'];
-${escapeText}`, `      <h1><?= e($author) ?></h1>
-      <p id="bio"><?= e($bio) ?></p>
-      <ul id="skills">
-        <?php foreach ($skills as $skill): ?>
-          <li><?= e($skill) ?></li>
-        <?php endforeach; ?>
-      </ul>`),
+      title: 'Własna karta z walidacją',
+      prompt: 'Zbuduj własną kartę od zera — Ty decydujesz o polach. Wymagania: GET pokazuje formularz `#profile-form` z polami `author` (`#f-author`) i `skills`; POST z pustym/spacjowym autorem wraca do formularza z `#error` „Podaj autora.”, a poprawny POST pokazuje kartę: `h1` z autorem, `#bio` (może być puste) i `#skills` z `<li>` przez `foreach` + `e()`. Jedna umiejętność w teście zawiera `a > b` — musi wypisać się dosłownie.',
+      starter: formPage('// Napisz własną kartę: $view \'form\'/\'card\', walidacja autora, foreach + e().', `      <h1>Karta profilu</h1>
+      <form id="profile-form" method="post" action="index.php">
+        <p id="error"></p>
+        <label for="f-author">Autor</label>
+        <input id="f-author" name="author" required>
+        <label for="f-bio">Bio</label>
+        <input id="f-bio" name="bio">
+        <label for="f-skills">Umiejętności (po przecinku)</label>
+        <input id="f-skills" name="skills" placeholder="HTML, PHP">
+        <button type="submit">Generuj kartę</button>
+      </form>`, 'Karta profilu'),
+      solution: formPage(`$view = 'form';
+$author = ''; $bio = ''; $skills = []; $error = '';
+${escapeText}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $author = is_string($_POST['author'] ?? '') ? trim($_POST['author']) : '';
+  $bio = is_string($_POST['bio'] ?? '') ? trim($_POST['bio']) : '';
+  $skills = array_filter(array_map('trim', explode(',', (string)($_POST['skills'] ?? ''))));
+  if ($author === '') {
+    $error = 'Podaj autora.';
+  } else {
+    $view = 'card';
+  }
+}`, `      <?php if ($view === 'card'): ?>
+        <h1><?= e($author) ?></h1>
+        <p id="bio"><?= e($bio) ?></p>
+        <ul id="skills">
+          <?php foreach ($skills as $skill): ?>
+            <li><?= e($skill) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      <?php else: ?>
+        <h1>Karta profilu</h1>
+        <form id="profile-form" method="post" action="index.php">
+          <p id="error"><?= $error ?></p>
+          <label for="f-author">Autor</label>
+          <input id="f-author" name="author" required>
+          <label for="f-bio">Bio</label>
+          <input id="f-bio" name="bio">
+          <label for="f-skills">Umiejętności (po przecinku)</label>
+          <input id="f-skills" name="skills" placeholder="HTML, PHP">
+          <button type="submit">Generuj kartę</button>
+        </form>
+      <?php endif; ?>`, 'Karta profilu'),
       checks: [
-        codeLine('e(', 'Wypisz wartości przez e()/htmlspecialchars (nie w komentarzu).', 'e\\(\\s*\\$'),
+        codeLine('REQUEST_METHOD', 'Rozpoznaj metodę żądania.', 'REQUEST_METHOD'),
+        source('$_POST'),
+        codeLine('trim', 'Autor przejdź przez `trim` — same spacje to puste pole.', 'trim\\s*\\('),
+        codeLine('$error', 'Błąd walidacji zapisz do `$error` i wypisz go w `#error`.', '\\$error'),
         source('foreach'),
-        notHandLiteral('Kamil', 'Użyj innego imienia niż „Kamil” — to ma być Twoja własna karta.'),
-        ['elementExists', 'Strona ma nagłówek h1.', { selector: 'h1' }],
-        ['elementExists', 'Lista #skills ma co najmniej 3 elementy <li>.', { selector: '#skills li:nth-child(3)' }],
+        codeLine('e(', 'Wypisz wartości przez e()/htmlspecialchars.', 'e\\(\\s*\\$'),
+        ['phpRequest', 'GET pokazuje formularz.', { request: { method: 'GET' }, selector: '#profile-form', expected: 'Generuj kartę' }],
+        ['phpRequest', 'POST pokazuje kartę „Ania”.', { request: { method: 'POST', form: { author: 'Ania', bio: 'Koduje w szkole i po szkole', skills: 'CSS, JavaScript, a > b' } }, selector: 'h1', expected: 'Ania' }],
+        ['phpRequest', 'POST renderuje trzecią umiejętność.', { request: { method: 'POST', form: { author: 'Ania', bio: 'Koduje w szkole i po szkole', skills: 'CSS, JavaScript, a > b' } }, selector: '#skills li:nth-child(3)', expected: 'a > b' }],
+        ['phpRequest', 'POST ze spacjowym autorem pokazuje błąd.', { request: { method: 'POST', form: { author: '   ', bio: '', skills: 'HTML' } }, selector: '#error', expected: 'Podaj autora.' }],
+        ['interaction', 'Wpisz autora „Ania”.', { selector: '#f-author', action: 'input', value: 'Ania', expected: {} }],
+        ['interaction', 'Wpisz umiejętności „CSS, a > b”.', { selector: '#f-skills', action: 'input', value: 'CSS, a > b', expected: {} }],
+        ['interaction', 'Generuj kartę pokazuje h1 z autorem.', { selector: '#profile-form button[type="submit"]', resultSelector: 'h1', expected: { textEquals: 'Ania' } }],
       ],
     },
   ],

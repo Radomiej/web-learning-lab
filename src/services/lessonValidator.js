@@ -322,12 +322,12 @@ function evaluateOne(check = {}, context = {}) {
           : resultFor(check, false, 'React nie wyrenderował oczekiwanego elementu lub tekstu.');
       }
       case 'phpRequest': {
-        const request = signals.phpRequest || {};
         const expectedRequest = phpRequestKey(check.request || {});
-        const requestPasses = safeString(request.requestKey) === expectedRequest;
-        const signal = check.selector ? getDomSignal(signals, check.selector) : null;
+        const run = signals.phpRequests?.[expectedRequest] || null;
+        const requestPasses = Boolean(run) || safeString(signals.phpRequest?.requestKey) === expectedRequest;
+        const signal = check.selector ? (run?.dom?.[check.selector] ?? getDomSignal(signals, check.selector)) : null;
         const expectedText = safeString(expectedValue(check));
-        const textPasses = expectedText === '' || textMatches(check, signal?.text ?? signals.text, expectedText);
+        const textPasses = expectedText === '' || textMatches(check, signal?.text ?? run?.text ?? signals.text, expectedText);
         return requestPasses && textPasses
           ? resultFor(check, true, 'PHP otrzymał żądanie i zwrócił oczekiwany wynik.')
           : resultFor(check, false, requestPasses

@@ -31,6 +31,42 @@ export function createMonacoEnvironment({
   };
 }
 
+// basic-languages/php nie ma reguł wcinania — plik .php to u nas HTML z
+// wplatanymi blokami PHP, więc reguły łączą oba światy: klamry i składnię
+// z dwukropkiem (if: … endif, foreach: … endforeach) oraz tagi HTML.
+export function phpIndentationConfiguration(monaco) {
+  const { Indent, IndentOutdent } = monaco.languages.IndentAction;
+  const empty = 'area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr|menuitem';
+  const openTag = new RegExp(`<(?!(?:${empty})\\b|\\/|\\?|!)[\\w:-]+(\\s[^>]*[^/\\s>])?\\s*>\\s*$`, 'i');
+  const phpBlockOpen = /(\{[^'"}]*|(if|elseif|foreach|for|while|switch)\s*\([^)]*\)\s*:|else\s*:|case\s+[^:]+:|default\s*:)\s*(\?>)?\s*$/;
+  const phpTagOpen = /<\?(php|=)?\s*$/;
+  return {
+    onEnterRules: [
+      {
+        // <tag>\n</tag> — wciśnięta zawartość między znacznikami (jak w HTML).
+        beforeText: new RegExp(`<(?!(?:${empty})\\b)([_:\\w][_:\\w-.\\d]*)([^/>]*(?!/)>)[^<]*$`, 'i'),
+        afterText: /^<\/([_:\w][_:\w-.\d]*)\s*>$/i,
+        action: { indentAction: IndentOutdent },
+      },
+      { beforeText: openTag, action: { indentAction: Indent } },
+      { beforeText: phpBlockOpen, action: { indentAction: Indent } },
+      { beforeText: phpTagOpen, action: { indentAction: Indent } },
+    ],
+    indentationRules: {
+      increaseIndentPattern: new RegExp(
+        `\\{[^'"}]*\\s*(\\?>)?\\s*$` +
+        `|(if|elseif|foreach|for|while|switch)\\s*\\([^)]*\\)\\s*:\\s*(\\?>)?\\s*$` +
+        `|(else|default)\\s*:\\s*(\\?>)?\\s*$` +
+        `|case\\s+[^:]+:\\s*(\\?>)?\\s*$` +
+        `|<\\?(php|=)?\\s*$` +
+        `|<(?!(?:${empty})\\b|\\/|\\?|!)[\\w:-]+(\\s[^>]*[^/\\s>])?\\s*>\\s*$`,
+        'i',
+      ),
+      decreaseIndentPattern: /^\s*(\}|\?>|<\/|end(if|for|foreach|while|switch)\b|(else|elseif|case|default)\b|<\?(php)?\s*(\}|\b(end(if|for|foreach|while|switch)|else|elseif)\b))/,
+    },
+  };
+}
+
 export function registerPhpLanguage(monaco, phpLanguage) {
   const alreadyRegistered = monaco.languages
     .getLanguages()
@@ -46,7 +82,10 @@ export function registerPhpLanguage(monaco, phpLanguage) {
     extensions: ['.php'],
   });
   monaco.languages.setMonarchTokensProvider('php', phpLanguage.language);
-  monaco.languages.setLanguageConfiguration('php', phpLanguage.conf);
+  monaco.languages.setLanguageConfiguration('php', {
+    ...phpLanguage.conf,
+    ...phpIndentationConfiguration(monaco),
+  });
 
   return true;
 }

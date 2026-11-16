@@ -167,6 +167,46 @@ test('sourceMatches accepts flexible reassignment forms and rejects constants', 
   expect(evaluateChecks([check], { files: { 'script.js': hardcoded } }).passed).toBe(0);
 });
 
+const phpReqKey = (request = {}) => JSON.stringify({
+  method: String(request.method || 'GET').toUpperCase(),
+  query: request.query || {},
+  form: request.form || {},
+  body: request.body == null ? '' : String(request.body),
+});
+
+test('phpRequest evaluates each check against its own request run', () => {
+  const checks = [
+    { id: 'post', type: 'phpRequest', request: { method: 'POST', form: { name: 'Ala' } }, selector: '#result', expected: 'Witaj, Ala!', label: 'POST' },
+    { id: 'get', type: 'phpRequest', request: { method: 'GET' }, selector: '#result', expected: 'Wyślij formularz.', label: 'GET' },
+  ];
+  const runFor = (key, text) => ({
+    requestKey: key, exitCode: 0, text,
+    dom: { '#result': { exists: true, text, attrs: {} } },
+  });
+  const postKey = phpReqKey({ method: 'POST', form: { name: 'Ala' } });
+  const getKey = phpReqKey({ method: 'GET' });
+  const phpRequests = {
+    [postKey]: runFor(postKey, 'Witaj, Ala!'),
+    [getKey]: runFor(getKey, 'Wyślij formularz.'),
+  };
+  expect(evaluateChecks(checks, { signals: { phpRequests } }).passed).toBe(2);
+
+  // Selektor liczy się w obrębie własnego żądania — nie wolno „pożyczyć"
+  // tekstu z odpowiedzi innego runu ani z całej strony.
+  const wrongSelector = evaluateChecks(checks, {
+    signals: { phpRequests: { ...phpRequests, [getKey]: { ...phpRequests[getKey], dom: { '#result': { exists: true, text: 'Co innego', attrs: {} } } } } },
+  });
+  expect(wrongSelector.results.map((result) => result.passed)).toEqual([true, false]);
+  expect(wrongSelector.results[1].message).toContain('Wyślij formularz.');
+
+  // Zgodność wsteczna: pojedynczy run bez mapy phpRequests działa jak dawniej.
+  const legacy = evaluateChecks(checks, {
+    signals: { phpRequest: { requestKey: getKey, exitCode: 0 }, text: 'Wyślij formularz.' },
+  });
+  expect(legacy.results.map((result) => result.passed)).toEqual([false, true]);
+  expect(legacy.results[0].message).toContain('wymaganym żądaniem PHP');
+});
+
 test('reads exact filenames from a project and a flat filename map',()=>{
   const checks=[{id:'doctype',type:'sourceIncludes',file:'index.html',value:'<!doctype html>'}];
   for(const files of [{'index.html':'<!doctype html><p>Ok</p>'},{entry:'index.html',files:{'index.html':'<!doctype html><p>Ok</p>'}}]) {

@@ -16,6 +16,12 @@ function extractAttributeText(openingTag = '') {
     .trim();
 }
 
+function serializeAttributes(element) {
+  return [...element.attributes]
+    .map((a) => `${a.name}="${a.value.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)
+    .join(' ');
+}
+
 export function normalizeHtmlDocument(html = '') {
   // The editor shows ordinary file references. The sandbox supplies their
   // current contents inline, so they must not also load from the Vite server.
@@ -33,10 +39,26 @@ export function normalizeHtmlDocument(html = '') {
       htmlAttributes: 'lang="pl"',
       headMarkup: '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">',
       bodyMarkup: source,
+      bodyAttributes: '',
     };
   }
 
   const doctype = source.match(/<!doctype[^>]*>/i)?.[0] ?? '<!doctype html>';
+
+  // Parse like a browser: stray text outside head/body (np. echo przed
+  // <!doctype> w wyjściu PHP) trafia do <body>, a atrybuty <html>/<body>
+  // są zachowane. Regex fallback dla środowisk bez DOMParser.
+  if (typeof DOMParser === 'function') {
+    const doc = new DOMParser().parseFromString(source, 'text/html');
+    return {
+      doctype,
+      htmlAttributes: serializeAttributes(doc.documentElement) || 'lang="pl"',
+      headMarkup: doc.head?.innerHTML ?? '',
+      bodyMarkup: doc.body?.innerHTML ?? '',
+      bodyAttributes: doc.body ? serializeAttributes(doc.body) : '',
+    };
+  }
+
   const htmlOpeningTag = source.match(/<html\b[^>]*>/i)?.[0] ?? '<html lang="pl">';
   const headMarkup = source.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? '';
   const bodyMarkup = source.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? '';
@@ -46,6 +68,7 @@ export function normalizeHtmlDocument(html = '') {
     htmlAttributes: extractAttributeText(htmlOpeningTag) || 'lang="pl"',
     headMarkup,
     bodyMarkup,
+    bodyAttributes: '',
   };
 }
 
@@ -444,5 +467,5 @@ export function buildPreviewDocument(files = {}, options = {}) {
     `<style data-file="theme.css">${themeCss}</style>`,
   ].join('');
 
-  return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${styleMarkup}</head><body>${normalized.bodyMarkup}${bridgeScript}${runtimeScripts}<script data-file="script.js">${studentJavaScript}</script></body></html>`;
+  return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${styleMarkup}</head><body ${normalized.bodyAttributes || ''}>${normalized.bodyMarkup}${bridgeScript}${runtimeScripts}<script data-file="script.js">${studentJavaScript}</script></body></html>`;
 }

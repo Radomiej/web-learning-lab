@@ -136,6 +136,21 @@ test('waits for the iframe load event before collecting the initial snapshot', (
   expect(document).toContain("window.addEventListener('load'");
 });
 
+test('relocates stray text around the document into body like a browser does', () => {
+  const document = buildPreviewDocument({
+    html: 'Echem przed<!doctype html><html lang="pl"><head><title>T</title></head><body class="profile"><h1>Start</h1></body></html>',
+    baseCss: '',
+    themeCss: '',
+    js: '',
+  }, { track: 'html' });
+  const dom = new JSDOM(document);
+
+  expect(dom.window.document.body.textContent).toContain('Echem przed');
+  expect(dom.window.document.body.className).toBe('profile');
+  expect(dom.window.document.querySelector('h1')?.textContent).toBe('Start');
+  dom.window.close();
+});
+
 test('does not duplicate head or body for a full HTML document', () => {
   const document = buildPreviewDocument({
     html: '<!doctype html><html lang="pl"><head><title>Ćwiczenie</title></head><body><h1>Start</h1></body></html>',

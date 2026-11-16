@@ -31,7 +31,7 @@ export function buildPhpPreviewDocument(output = '', files = {}, options = {}) {
     runId: options.runId,
   }).replace('TRACK_PLACEHOLDER', String(options.track || 'php'));
   const bridgeScript = `<script data-runtime="bridge">${escapeInlineScript(bridge)}</script>`;
-  return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${inlineStyles(files)}</head><body>${normalized.bodyMarkup}${bridgeScript}</body></html>`;
+  return `${normalized.doctype}<html ${normalized.htmlAttributes}><head>${normalized.headMarkup}${inlineStyles(files)}</head><body ${normalized.bodyAttributes || ''}>${normalized.bodyMarkup}${bridgeScript}</body></html>`;
 }
 
 export function buildPhpErrorDocument(message, files = {}, options = {}) {
@@ -41,4 +41,31 @@ export function buildPhpErrorDocument(message, files = {}, options = {}) {
     files,
     options,
   );
+}
+
+// Signały DOM z odpowiedzi PHP bez renderowania jej w iframe — dla checków
+// phpRequest każde żądanie dostaje własny snapshot. Kształt `dom` zgodny
+// z describeElement z mostka podglądu (exists/text/attrs).
+export function describePhpResponse(html = '', selectors = []) {
+  const dom = {};
+  if (typeof DOMParser !== 'function') return { text: String(html), dom };
+  const doc = new DOMParser().parseFromString(String(html), 'text/html');
+  for (const selector of selectors) {
+    let element = null;
+    try { element = doc.querySelector(selector); } catch { /* nieprawidłowy selektor */ }
+    dom[selector] = element
+      ? {
+        exists: true,
+        text: element.textContent || '',
+        attrs: Array.from(element.attributes).reduce((result, attribute) => {
+          result[attribute.name] = attribute.value;
+          return result;
+        }, {}),
+      }
+      : { exists: false, text: '', attrs: {} };
+  }
+  // Odpowiednik body.innerText: bez kodu script/style/template.
+  const body = doc.body ? doc.body.cloneNode(true) : null;
+  body?.querySelectorAll('script,style,template,noscript').forEach((node) => node.remove());
+  return { text: body ? body.textContent || '' : '', dom };
 }

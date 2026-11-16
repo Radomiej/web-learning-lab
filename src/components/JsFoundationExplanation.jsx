@@ -30,7 +30,7 @@ export default function JsFoundationExplanation({ lesson, pages = jsCoursePages[
       {page.code && <CodeExample key={page.code} code={page.code} />}
       {page.parts && <dl className="js-code-parts">{page.parts.map(([code, meaning]) => <div key={code}><dt><code>{code}</code></dt><dd>{meaning}</dd></div>)}</dl>}
       <aside className="js-program-result"><strong>Co się dzieje?</strong><p>{page.result}</p></aside>
-      {lesson.id === 'php-html-template' && page.title === 'Powtórz fragment HTML' && <PhpForeachDiagram />}
+      {lesson.id === 'php-arrays-foreach' && page.title === 'Powtórz fragment HTML' && <PhpForeachDiagram />}
       {(comparisonDiagram || logicDiagram) && <PhpConditionDiagram logic={logicDiagram} />}
       {lesson.track==='html' && !illustration && <HtmlLessonExample page={page}/>}
       {lesson.track==='html-gd' && !illustration && <>

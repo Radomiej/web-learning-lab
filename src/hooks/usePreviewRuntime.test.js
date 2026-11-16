@@ -1,5 +1,18 @@
 import { renderHook, act } from '@testing-library/react';
 import { usePreviewRuntime } from './usePreviewRuntime.js';
+import { runPhpProject } from '../services/phpRuntime.js';
+
+vi.mock('../services/phpRuntime.js', () => ({
+  PHP_VERSION: '8.4',
+  resetPhpRuntime: vi.fn(),
+  runPhpProject: vi.fn(),
+  requestKey: (request = {}) => JSON.stringify({
+    method: String(request?.method || 'GET').toUpperCase(),
+    query: request?.query || {},
+    form: request?.form || {},
+    body: request?.body == null ? '' : String(request.body),
+  }),
+}));
 
 test('waits for asynchronous lesson output instead of grading the loading message', async () => {
   const checks = [{ id: 'fetch', type: 'textEquals', selector: '#result', expected: 'Dane', pendingText: 'Ładowanie…' }];
@@ -257,4 +270,74 @@ test('checking cancels a queued auto-preview so verification can finish', () => 
   } finally {
     vi.useRealTimers();
   }
+});
+
+test('runs every phpRequest check against its own request', async () => {
+  const key = (request = {}) => JSON.stringify({
+    method: String(request.method || 'GET').toUpperCase(),
+    query: request.query || {},
+    form: request.form || {},
+    body: request.body == null ? '' : String(request.body),
+  });
+  runPhpProject.mockImplementation(({ request }) => Promise.resolve({
+    html: request.method === 'POST'
+      ? '<main><p id="result">Witaj, Ala!</p></main>'
+      : '<main><p id="result">Wyślij formularz.</p></main>',
+    status: 200,
+    headers: {},
+    errors: [],
+    exitCode: 0,
+    requestKey: key(request),
+  }));
+  const checks = [
+    { id: 'post', type: 'phpRequest', request: { method: 'POST', form: { name: 'Ala' } }, selector: '#result', expected: 'Witaj, Ala!' },
+    { id: 'get', type: 'phpRequest', request: { method: 'GET' }, selector: '#result', expected: 'Wyślij formularz.' },
+  ];
+  const project = { entry: 'index.php', files: { 'index.php': '<?php ?>' }, runtime: { kind: 'php-wasm' } };
+  const { result } = renderHook(() => usePreviewRuntime(project, checks, 'php'));
+
+  await act(async () => {
+    result.current.checkPreview();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+  expect(runPhpProject).toHaveBeenCalledTimes(2);
+  expect(runPhpProject.mock.calls.map((call) => call[0].request.method)).toEqual(['POST', 'GET']);
+  expect(result.current.previewDocument).toContain('Witaj, Ala!');
+
+  await act(async () => {
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'ready' });
+    result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: {}, text: 'Witaj, Ala!' } });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+
+  expect(result.current.runtimeState.checkResults.map((check) => check.passed)).toEqual([true, true]);
+});
+
+test('holds signal collection and interactions until the final preview document loads', async () => {
+  let resolveRun;
+  runPhpProject.mockImplementation(() => new Promise((resolve) => { resolveRun = resolve; }));
+  const checks = [
+    { id: 'post', type: 'phpRequest', request: { method: 'POST', form: { name: 'Ala' } }, selector: '#result', expected: 'Witaj, Ala!' },
+    { id: 'type-name', type: 'interaction', action: 'input', selector: '#person', value: 'Zosia' },
+  ];
+  const project = { entry: 'index.php', files: { 'index.php': '<?php ?>' }, runtime: { kind: 'php-wasm' } };
+  const { result } = renderHook(() => usePreviewRuntime(project, checks, 'php'));
+  const postSpy = vi.fn();
+  act(() => result.current.setFrame({ contentWindow: { postMessage: postSpy } }));
+
+  act(() => result.current.checkPreview());
+  // The loading placeholder still fires ready — actions must not run there.
+  act(() => result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'ready' }));
+  expect(postSpy.mock.calls.map((call) => call[0].type)).toEqual([]);
+
+  await act(async () => {
+    resolveRun({ html: '<main><p id="result">Witaj, Ala!</p></main>', status: 200, headers: {}, errors: [], exitCode: 0, requestKey: 'k' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  act(() => result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'ready' }));
+  const sentTypes = postSpy.mock.calls.map((call) => call[0].type);
+  expect(sentTypes).toContain('collect-signals');
+  expect(sentTypes).toContain('run-action');
 });
