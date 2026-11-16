@@ -19,6 +19,7 @@ const domFor = (task) => {
 // Tak buduje klucze signals.phpRequests runtime: po jednym wpisie na żądanie.
 const phpRequestKey = (request) => JSON.stringify({
   method: String(request.method || 'GET').toUpperCase(),
+  path: String(request.path || ''),
   query: request.query || {},
   form: request.form || {},
   body: request.body == null ? '' : String(request.body),

@@ -21,13 +21,13 @@ export const htmlGdTasks = {
     },
     modified: {
       title: 'Stopka i podpis w sekcji',
-      goal: 'Dokończ ekran tytułowy: dodaj akapit `<p>` w sekcji `id="credits"` oraz stopkę `<footer>` z akapitem `<p>` „© Studio Smok · wersja 1.0” za `</main>`.',
+      goal: 'Dokończ ekran tytułowy: dodaj akapit `<p>` w sekcji `id="credits"` oraz stopkę `<footer>` z akapitem `<p>` „© Studio Smok · wersja 1.0” za `</main>` (typowalne zamienniki `(c)` i `-` też przejdą).',
       starter: '<main>\n  <h1>Kroniki Smoka</h1>\n  <section id="play"><h2>Graj</h2><p>Rozpocznij nową przygodę.</p></section>\n  <section id="options"><h2>Opcje</h2><p>Dostrój dźwięk i sterowanie.</p></section>\n  <section id="credits"><h2>Autorzy</h2><!-- TODO: dodaj <p> z podpisem twórców --></section>\n</main>\n<!-- TODO: dodaj <footer> z akapitem <p> „© Studio Smok · wersja 1.0” -->',
       solution: '<main>\n  <h1>Kroniki Smoka</h1>\n  <section id="play"><h2>Graj</h2><p>Rozpocznij nową przygodę.</p></section>\n  <section id="options"><h2>Opcje</h2><p>Dostrój dźwięk i sterowanie.</p></section>\n  <section id="credits"><h2>Autorzy</h2><p>Zespół: Lena, Marek, Ola.</p></section>\n</main>\n<footer><p>© Studio Smok · wersja 1.0</p></footer>',
       checks: [
         ['elementExists', 'W sekcji `id="credits"` dodaj akapit `<p>` z podpisem twórców.', { selector: 'section#credits > p' }],
         ['elementExists', 'Po zamknięciu `</main>` dodaj `<footer>`, a w nim akapit `<p>`.', { selector: 'footer > p' }],
-        ['textEquals', 'Stopka ma zawierać tekst „© Studio Smok · wersja 1.0”.', { selector: 'footer > p', expected: '© Studio Smok · wersja 1.0' }],
+        ['textEquals', 'Stopka ma zawierać tekst „© Studio Smok · wersja 1.0” — zamiast znaków spoza klawiatury możesz wpisać `(c)` i `-`.', { selector: 'footer > p', expected: '© Studio Smok · wersja 1.0', variants: ['© Studio Smok - wersja 1.0'] }],
       ],
     },
     independent: {
@@ -339,6 +339,44 @@ export const htmlGdTasks = {
         ['elementExists', 'Sekcję FAQ powiąż z nagłówkiem przez `aria-labelledby="faq-title"`.', { selector: 'main > section[aria-labelledby="faq-title"]' }],
         ['elementExists', 'Dodaj drugi element `<details>` z innym pytaniem w `<summary>`.', { selector: 'section > details:nth-of-type(2) > summary' }],
         ['elementExists', 'W drugim `<details>`, po `<summary>`, dodaj odpowiedź w `<p>`.', { selector: 'section > details:nth-of-type(2) > p' }],
+      ],
+    },
+  },
+  10: {
+    guided: {
+      goal: 'Wiersze statystyk w sekcji HUD są wypisane luźnym tekstem. Otocz każdy wiersz własnym `<div>`, a wartości liczbowe liniowym `<span>`.',
+      steps: [
+        'Znajdź w sekcji `id="hud"` dwa wiersze statystyk wypisane gołym tekstem.',
+        'Otocz każdy wiersz znacznikami `<div>`…`</div>` — `<div>` to pudełko blokowe bez własnego znaczenia.',
+        'Wartość liczbową owiń w `<span>`…`</span>` — liniowy fragment, który CSS oznaczy osobno.',
+      ],
+      starter: '<main>\n  <h1>Panel HUD</h1>\n  <section id="hud">\n    <h2>Stan bohatera</h2>\n    <!-- TODO: każdy wiersz otocz <div>, wartości owiń w <span> -->\n    Punkty życia: 820\n    Mana: 340\n  </section>\n</main>',
+      solution: '<main>\n  <h1>Panel HUD</h1>\n  <section id="hud">\n    <h2>Stan bohatera</h2>\n    <div>Punkty życia: <span>820</span></div>\n    <div>Mana: <span>340</span></div>\n  </section>\n</main>',
+      checks: [
+        ['elementExists', 'Każdy wiersz statystyk otocz własnym `<div>` w sekcji `id="hud"`.', { selector: 'section#hud > div:nth-of-type(2)' }],
+        ['elementExists', 'Wartości liczbowe owiń liniowym `<span>` wewnątrz `<div>`.', { selector: 'section#hud > div > span' }],
+      ],
+    },
+    modified: {
+      title: 'Siatka slotów',
+      goal: 'W sekcji „Sloty szybkiego dostępu” dodaj pojemnik `<div class="slots">` z trzema slotami `<div class="slot">` — po jednym na przedmiot. Klasy to nazwy własne, które wybierze CSS.',
+      starter: '<main>\n  <h1>Ekwipunek</h1>\n  <section>\n    <h2>Plecak</h2>\n    <ul>\n      <li>Miecz</li>\n      <li>Tarcza</li>\n      <li>Mikstura</li>\n    </ul>\n  </section>\n  <section>\n    <h2>Sloty szybkiego dostępu</h2>\n    <!-- TODO: dodaj <div class="slots"> z trzema <div class="slot"> z nazwą przedmiotu -->\n  </section>\n</main>',
+      solution: '<main>\n  <h1>Ekwipunek</h1>\n  <section>\n    <h2>Plecak</h2>\n    <ul>\n      <li>Miecz</li>\n      <li>Tarcza</li>\n      <li>Mikstura</li>\n    </ul>\n  </section>\n  <section>\n    <h2>Sloty szybkiego dostępu</h2>\n    <div class="slots">\n      <div class="slot">Miecz</div>\n      <div class="slot">Tarcza</div>\n      <div class="slot">Mikstura</div>\n    </div>\n  </section>\n</main>',
+      checks: [
+        ['elementExists', 'Dodaj pojemnik `<div class="slots">` — pudełko na siatkę slotów.', { selector: 'div.slots' }],
+        ['elementExists', 'W środku umieść trzy `<div class="slot">` — po jednym na przedmiot.', { selector: 'div.slots > div.slot:nth-child(3)' }],
+        ['textEquals', 'Pierwszy slot ma czytać „Miecz”.', { selector: 'div.slots > div.slot', expected: 'Miecz' }],
+      ],
+    },
+    independent: {
+      title: 'Dziennik tropień',
+      goal: 'Zbuduj listę tropień: w `<div class="tracker">` dodaj dwa `<div class="quest">`, każdy z nagłówkiem `<h3>` i akapitem `<p>` z nagrodą owiniętą w `<span class="reward">`.',
+      starter: '<main>\n  <h1>Dziennik tropień</h1>\n  <!-- TODO: dodaj <div class="tracker"> z dwoma <div class="quest"> z <h3> i <p> ze <span class="reward"> -->\n</main>',
+      solution: '<main>\n  <h1>Dziennik tropień</h1>\n  <div class="tracker">\n    <div class="quest">\n      <h3>Ślad smoka</h3>\n      <p>Nagroda: <span class="reward">500 złota</span></p>\n    </div>\n    <div class="quest">\n      <h3>Zaginiona karawana</h3>\n      <p>Nagroda: <span class="reward">200 złota</span></p>\n    </div>\n  </div>\n</main>',
+      checks: [
+        ['elementExists', 'Dodaj `<div class="tracker">` z dwoma `<div class="quest">` w środku.', { selector: 'div.tracker > div.quest:nth-child(2)' }],
+        ['elementExists', 'Każdy quest zacznij nagłówkiem `<h3>`.', { selector: 'div.quest > h3' }],
+        ['elementExists', 'Nagrodę w akapicie owiń w `<span class="reward">`.', { selector: 'div.quest > p > span.reward' }],
       ],
     },
   },

@@ -12,6 +12,7 @@ const svgDiagramLessons = new Set([
   'flex-axis', 'flex-wrap-gap', 'flex-sizing', 'flex-exceptions',
   'flex-patterns', 'grid-basics', 'grid-areas', 'responsive-layouts',
   'php-html-template', 'php-javascript-data', 'php-sqlite-pdo',
+  'php-json-data', 'php-fetch-api', 'php-objects', 'php-xampp-cinema',
 ]);
 
 export const lessonInfographics = Object.fromEntries(

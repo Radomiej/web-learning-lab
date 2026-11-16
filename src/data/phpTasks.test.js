@@ -4,6 +4,7 @@ import { evaluateChecks } from '../services/lessonValidator.js';
 // Tak buduje klucze signals.phpRequests runtime: po jednym wpisie na żądanie.
 const phpRequestKey = (request) => JSON.stringify({
   method: String(request.method || 'GET').toUpperCase(),
+  path: String(request.path || ''),
   query: request.query || {},
   form: request.form || {},
   body: request.body == null ? '' : String(request.body),
@@ -77,8 +78,8 @@ test.each(reworkedTaskIds)('starter of %s still fails at least one check', (id) 
 });
 
 test('builds the PHP lesson track from numbered definitions', () => {
-  expect(phpLessons.map(({ order }) => order)).toEqual([601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614]);
-  expect(phpLessons.map((lesson) => lesson.tasks.length)).toEqual([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]);
+  expect(phpLessons.map(({ order }) => order)).toEqual([601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615]);
+  expect(phpLessons.map((lesson) => lesson.tasks.length)).toEqual([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1]);
   expect(phpLessons.flatMap(({ tasks }) => tasks).every(({ mode }) => mode === 'exercise')).toBe(true);
   expect(phpLessons.flatMap(({ tasks }) => tasks).map(({ id }) => id)).toEqual([
     'php-01-guided', 'php-01-modified', 'php-01-independent',
@@ -95,6 +96,7 @@ test('builds the PHP lesson track from numbered definitions', () => {
     'php-fetch-api-exercise-1', 'php-fetch-api-exercise-2', 'php-fetch-api-exercise-3',
     'php-objects-exercise-1', 'php-objects-exercise-2', 'php-objects-exercise-3',
     'php-611-exercise-1', 'php-611-exercise-2', 'php-611-exercise-3',
+    'php-xampp-cinema-exercise-1',
   ]);
 });
 

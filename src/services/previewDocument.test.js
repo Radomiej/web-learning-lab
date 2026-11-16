@@ -214,7 +214,9 @@ async function runActionOn(dom, checkId = 't-submit') {
     type: 'run-action',
     payload: { checkId, selector: '#action', action: 'click', resultSelector: '#result' },
   }, '*');
-  await new Promise((resolve) => setTimeout(resolve, 120));
+  // Round-trip postMessage → klik → natywny submit jsdom → finishInteraction
+  // potrafi przekroczyć 120 ms pod obciążeniem suity — czekamy z zapasem.
+  await new Promise((resolve) => setTimeout(resolve, 1500));
   return messages
     .filter((message) => message.type === 'signals')
     .map((message) => message.payload?.interactions?.[checkId])

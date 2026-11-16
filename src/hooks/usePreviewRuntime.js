@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { evaluateChecks } from '../services/lessonValidator.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
+import { warmGameUiFonts } from '../data/gameUiTheme.js';
 import { buildPhpErrorDocument, buildPhpPreviewDocument, describePhpResponse } from '../services/phpPreview.js';
 import { requestKey as phpRequestKey, runPhpProject } from '../services/phpRuntime.js';
 
@@ -85,6 +86,21 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
   useEffect(() => { filesRef.current = files; }, [files]);
   useEffect(() => { checksRef.current = checks; }, [checks]);
   useEffect(() => { trackRef.current = track; }, [track]);
+
+  // Pierwszy dokument może powstać zanim fonty trafią do cache'u data-URI —
+  // po rozgrzaniu przebudowujemy go raz, żeby Cinzel działał także w srcdoc.
+  useEffect(() => {
+    let active = true;
+    warmGameUiFonts().then((ok) => {
+      if (!active || !ok) return;
+      setPreviewDocument((current) => (
+        current && current.includes('.woff2')
+          ? buildRequestedPreviewDocument(filesRef.current, trackRef.current, checksRef.current, pathRef.current, runIdRef.current)
+          : current
+      ));
+    });
+    return () => { active = false; };
+  }, []);
 
   if (scopeKeyRef.current !== scopeKey) scopeKeyRef.current = scopeKey;
 
@@ -211,7 +227,7 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
         finish();
         return;
       }
-      runPhpProject({ files: nextFiles.files, entry: nextFiles.entry, request: runList[index] })
+      runPhpProject({ files: nextFiles.files, entry: runList[index]?.path || nextFiles.entry, request: runList[index] })
         .then((result) => {
           if (runIdRef.current !== requestedRunId) return;
           results.push(result);
@@ -331,6 +347,10 @@ export function usePreviewRuntime(files, checks = [], track = 'html', scopeKey =
     }
 
     if (message.type === 'signals') {
+      // The PHP placeholder ("Uruchamiam PHP.wasm…") also sends a snapshot on
+      // load — grading it would read selectors from an empty document before
+      // the real page arrives. Only signals from the settled document count.
+      if (!previewSettledRef.current) return;
       const inFlight = actionQueueRef.current[0];
       if (inFlight && message.payload?.interactions?.[inFlight.id]) {
         actionQueueRef.current = actionQueueRef.current.slice(1);

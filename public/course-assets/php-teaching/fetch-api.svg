@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150" role="img">
+  <title>fetch z JavaScript → api.php → Odpowiedź JSON</title>
+  <rect width="600" height="150" rx="20" fill="#f5f3fb"/>
+  <g fill="#fff" stroke="#b9a7db" stroke-width="2">
+    <rect x="16" y="42" width="162" height="66" rx="12"/>
+    <rect x="219" y="42" width="162" height="66" rx="12"/>
+    <rect x="422" y="42" width="162" height="66" rx="12"/>
+  </g>
+  <path d="M184 75h27m-7-7 7 7-7 7m183-7h27m-7-7 7 7-7 7" fill="none" stroke="#63459a" stroke-width="3"/>
+  <g fill="#24233a" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">
+    <text x="97" y="73">fetch()</text>
+    <text x="97" y="93" font-size="13" fill="#63459a">w skrypcie</text>
+    <text x="300" y="73">api.php</text>
+    <text x="300" y="93" font-size="13" fill="#63459a">$_GET / $_POST</text>
+    <text x="503" y="81">JSON</text>
+  </g>
+</svg>

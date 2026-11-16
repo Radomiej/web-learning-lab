@@ -3,16 +3,16 @@ import { lessons } from './lessons.js';
 import { evaluateChecks } from '../services/lessonValidator.js';
 
 test('reserves a numbered lesson range for every track', () => {
-  expect(allLessons).toHaveLength(99);
+  expect(allLessons).toHaveLength(101);
   const expected = {
     html: Array.from({ length: 9 }, (_, index) => 101 + index),
-    'html-gd': Array.from({ length: 9 }, (_, index) => 901 + index),
+    'html-gd': Array.from({ length: 10 }, (_, index) => 901 + index),
     css: Array.from({ length: 6 }, (_, index) => 201 + index),
     'css-gd': Array.from({ length: 6 }, (_, index) => 1001 + index),
     layout: Array.from({ length: 8 }, (_, index) => 301 + index),
     js: Array.from({ length: 14 }, (_, index) => 401 + index),
     react: Array.from({ length: 8 }, (_, index) => 501 + index),
-    php: Array.from({ length: 14 }, (_, index) => 601 + index),
+    php: Array.from({ length: 15 }, (_, index) => 601 + index),
     'game-dev': Array.from({ length: 24 }, (_, index) => 701 + index),
     playground: [801],
   };

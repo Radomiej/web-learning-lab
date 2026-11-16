@@ -4,6 +4,7 @@ import {
   BOOTSTRAP_CSS_RESOURCE,
   getBootstrapCss,
 } from "./bootstrapRuntime.js";
+import { inlineGameUiFonts } from "../data/gameUiTheme.js";
 
 const safeScript = (text) =>
   String(text).replace(/<\/script/gi, "\\x3c/script");
@@ -70,7 +71,7 @@ export function resolveDocumentResources(
   function style(path) {
     const element = doc.createElement("style");
     element.dataset.file = path === BOOTSTRAP_CSS_RESOURCE ? "bootstrap.min.css" : path;
-    element.textContent = safeStyle(cssSource(path));
+    element.textContent = safeStyle(inlineGameUiFonts(cssSource(path)));
     return element;
   }
   for (const element of [

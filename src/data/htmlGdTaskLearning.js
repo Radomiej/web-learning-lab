@@ -449,6 +449,56 @@ export const htmlGdTaskLearning = {
     ] },
     'aria-labelledby wiąże sekcję; details = natywne rozwijanie.',
   ),
+  'html-gd-910-guided': note(
+    'div to pudełko, span to wycinek',
+    '`<div>` to pudełko blokowe bez własnego znaczenia — grupuje elementy, żeby CSS miał się czego złapać. `<span>` to jego liniowy odpowiednik: otacza fragment tekstu w wierszu. W HUD każda statystyka to osobny div, a liczba w nim to span.',
+    themed('<section id="hud"><h2>Stan bohatera</h2><div>Punkty życia: <span>820</span></div><div>Mana: <span>340</span></div></section>'),
+    '<div>Punkty życia: <span>820</span></div>\n<div>Mana: <span>340</span></div>',
+    'Kiedy użyć `<div>` zamiast `<section>`?',
+    'Gdy nie ma semantycznego elementu — div jest neutralny.',
+    '<div>Punkty życia: <span>820</span></div>\n<div>Mana: <span>340</span></div>',
+    'Przejdź krokami przez otoczenie wierszy.',
+    { steps: [
+      { caption: 'Luźny tekst w sekcji — brak struktury.', active: 'html', panels: { html: 'Punkty życia: 820' } },
+      { caption: '`<div>` — osobny blok na statystykę.', active: 'html', panels: { html: '<div>Punkty życia: <span>820</span></div>' } },
+      { caption: '`<span>` w środku — liczba jako liniowy hak.', active: 'html', panels: { html: '<span>820</span>' } },
+      { caption: 'Dwa div-y w HUD — gotowe haki dla CSS.', active: 'dom', panels: { dom: 'Stan bohatera\nPunkty życia: 820\nMana: 340' } },
+    ] },
+    'div = pudełko blokowe; span = liniowy wycinek tekstu.',
+  ),
+  'html-gd-910-modified-v2': note(
+    'class nadaje divom nazwy',
+    'Sam `<div>` jest anonimowy. `class="slots"` i `class="slot"` nadają mu nazwę własną — CSS złapie dokładnie te pudełka selektorem `.slot`. Jeden pojemnik trzyma siatkę, każdy slot to kolejny div.',
+    themed('<section><h2>Sloty szybkiego dostępu</h2><div class="slots"><div class="slot">Miecz</div><div class="slot">Tarcza</div><div class="slot">Mikstura</div></div></section>'),
+    '<div class="slots">\n  <div class="slot">Miecz</div>\n  …\n</div>',
+    'Po co `class` na `<div>`?',
+    'Nadaje nazwę własną — hak dla selektora CSS.',
+    '<div class="slots">\n  <div class="slot">Miecz</div>\n  <div class="slot">Tarcza</div>\n  <div class="slot">Mikstura</div>\n</div>',
+    'Przejdź krokami przez siatkę slotów.',
+    { steps: [
+      { caption: '`class="slots"` — pojemnik na siatkę.', active: 'html', panels: { html: '<div class="slots">' } },
+      { caption: '`class="slot"` — pudełko na przedmiot.', active: 'html', panels: { html: '<div class="slot">\n  Miecz\n</div>' } },
+      { caption: 'Trzy sloty w pojemniku — CSS złapie .slot.', active: 'dom', panels: { dom: 'Sloty szybkiego dostępu\nMiecz · Tarcza · Mikstura' } },
+    ] },
+    'class nazywa pudełko — selektor .slot trafi wszystkie.',
+  ),
+  'html-gd-910-independent-v2': note(
+    'Pudełko w pudełku',
+    '`div.tracker` to zewnętrzny pojemnik listy, `div.quest` to jedna karta questa. Wewnątrz karty semantyka wraca: `<h3>` nagłówek, `<p>` opis, a `<span class="reward">` liniowo zaznacza nagrodę. Divy dają szkielet, elementy w nich dają znaczenie.',
+    themed('<div class="tracker"><div class="quest"><h3>Ślad smoka</h3><p>Nagroda: <span class="reward">500 złota</span></p></div></div>'),
+    '<div class="quest">\n  <h3>Ślad smoka</h3>\n  <p>Nagroda: <span class="reward">500 złota</span></p>\n</div>',
+    'Dlaczego quest to `<div>`, a nie `<article>`?',
+    'Obie opcje działają — div wystarczy, gdy karta to czysty pojemnik UI.',
+    '<div class="tracker">\n  <div class="quest"><h3>…</h3><p>…<span class="reward">…</span></p></div>\n</div>',
+    'Przejdź krokami przez kartę questa.',
+    { steps: [
+      { caption: '`div.tracker` — pojemnik listy tropień.', active: 'html', panels: { html: '<div class="tracker">' } },
+      { caption: '`div.quest` — karta z h3 i p.', active: 'html', panels: { html: '<div class="quest">\n  <h3>Ślad smoka</h3>' } },
+      { caption: '`span.reward` — nagroda liniowo w akapicie.', active: 'html', panels: { html: '<span class="reward">\n  500 złota\n</span>' } },
+      { caption: 'Dwie karty questów w trackerze.', active: 'dom', panels: { dom: 'Ślad smoka — 500 złota\nZaginiona karawana — 200 złota' } },
+    ] },
+    'divy = szkielet UI; h3/p/span w nich niosą znaczenie.',
+  ),
 };
 
 // Szybkie pytania — jedna poprawna opcja, `why` tłumaczy każdą.
@@ -587,6 +637,21 @@ const quizzes = {
     { label: 'wiąże sekcję z jej nagłówkiem', correct: true, why: 'aria-labelledby=id mówi, co opisuje sekcja.' },
     { label: 'nadaje tytuł stronie', correct: false, why: 'To title — atrybut łączy elementy.' },
     { label: 'ukrywa nagłówek', correct: false, why: 'Nie ukrywa — opisuje relację.' },
+  ],
+  'html-gd-910-guided': [
+    { label: 'gdy nie ma semantycznego elementu', correct: true, why: 'div jest neutralny — section niesie znaczenie.' },
+    { label: 'zawsze — div jest bezpieczniejszy', correct: false, why: 'Nadużyty div traci semantykę dla narzędzi.' },
+    { label: 'tylko w head', correct: false, why: 'Div to widoczne pudełko w body.' },
+  ],
+  'html-gd-910-modified-v2': [
+    { label: 'nazywa pudełko dla CSS', correct: true, why: 'Selektor .slot trafia dokładnie w te divy.' },
+    { label: 'zmienia tag na inny element', correct: false, why: 'Class to atrybut nazwy — div zostaje divem.' },
+    { label: 'dodaje treść do slotu', correct: false, why: 'Treść to tekst wewnątrz — class to nazwa.' },
+  ],
+  'html-gd-910-independent-v2': [
+    { label: 'szkielet UI, a h3/p niosą znaczenie', correct: true, why: 'Div grupuje; semantyka żyje w elementach wewnątrz.' },
+    { label: 'div zastępuje h3 i p', correct: false, why: 'Div nie ma roli nagłówka ani akapitu.' },
+    { label: 'article jest tu zabroniony', correct: false, why: 'Article też pasuje — div wystarczy dla UI.' },
   ],
 };
 for (const [id, options] of Object.entries(quizzes)) {

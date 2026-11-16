@@ -102,9 +102,20 @@ function expectedValue(check, fallback = '') {
   return check.expected ?? check.value ?? check.needle ?? fallback;
 }
 
-// Znaki mnożenia spoza klawiatury traktuj jak zwykłe „x” — uczeń wpisze „x” albo „*”.
+// Ozdobna interpunkcja spoza klawiatury traktuj jak typowalne odpowiedniki:
+// znaki mnożenia → „x”, myślniki → „-”, © → „(c)”, wielokropek → „...”,
+// cudzysłowy drukarskie → proste cudzysłowy, twarda spacja → spacja.
 function normalizeTextValue(value) {
-  return safeString(value).replace(/[×✕✖∗·∙⋅*]/g, 'x');
+  return safeString(value)
+    .replace(/[×✕✖∗·∙⋅*]/g, 'x')
+    .replace(/[‐‑‒–—―−]/g, '-')
+    .replace(/©/g, '(c)')
+    .replace(/®/g, '(r)')
+    .replace(/™/g, 'tm')
+    .replace(/…/g, '...')
+    .replace(/[„”«»‟″]/g, '"')
+    .replace(/[‚‘’‛′`]/g, "'")
+    .replace(/ /g, ' ');
 }
 
 function textMatches(check, actual, expected, { exact = false } = {}) {
@@ -118,6 +129,7 @@ function phpRequestKey(request = {}) {
   const value = request && typeof request === 'object' && !Array.isArray(request) ? request : {};
   return JSON.stringify({
     method: safeString(value.method || 'GET').toUpperCase(),
+    path: safeString(value.path || ''),
     query: value.query && typeof value.query === 'object' ? value.query : {},
     form: value.form && typeof value.form === 'object' ? value.form : {},
     body: value.body == null ? '' : safeString(value.body),

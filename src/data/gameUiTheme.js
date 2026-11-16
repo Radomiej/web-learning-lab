@@ -630,3 +630,41 @@ address { margin: 10px 0; }
   }
 }
 `;
+
+// Podgląd leci w sandboxowanym iframe srcdoc z opaque origin — żądania woff2
+// są cross-origin i CORS je blokuje, a utkniony fetch wstrzymuje zdarzenie
+// load, na które czeka mostek podglądu. Rodzic pobiera pliki raz (to samo
+// pochodzenie) i podmienia adresy na data: przy budowie dokumentu.
+const gameUiFontData = new Map();
+let gameUiFontWarmup = null;
+const gameUiFontUrls = [...gameUiFontFaceCss.matchAll(/url\('([^']+\.woff2)'\)/g)]
+  .map((match) => match[1]);
+
+export function warmGameUiFonts() {
+  if (gameUiFontWarmup || typeof fetch !== 'function' || typeof btoa !== 'function') {
+    return gameUiFontWarmup ?? Promise.resolve(false);
+  }
+  gameUiFontWarmup = Promise.all(gameUiFontUrls.map(async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    let binary = '';
+    for (let index = 0; index < bytes.length; index += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    }
+    return [url, `data:font/woff2;base64,${btoa(binary)}`];
+  })).then((entries) => {
+    for (const entry of entries) if (entry) gameUiFontData.set(entry[0], entry[1]);
+    return gameUiFontData.size > 0;
+  }).catch(() => false);
+  return gameUiFontWarmup;
+}
+
+export function inlineGameUiFonts(css) {
+  const source = String(css ?? '');
+  if (!gameUiFontData.size) return source;
+  return source.replace(/url\(\s*['"]?([^'")\s]+\.woff2)['"]?\s*\)/g,
+    (match, url) => (gameUiFontData.has(url) ? `url('${gameUiFontData.get(url)}')` : match));
+}
+
+if (typeof window !== 'undefined') warmGameUiFonts();

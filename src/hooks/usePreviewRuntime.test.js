@@ -8,6 +8,7 @@ vi.mock('../services/phpRuntime.js', () => ({
   runPhpProject: vi.fn(),
   requestKey: (request = {}) => JSON.stringify({
     method: String(request?.method || 'GET').toUpperCase(),
+    path: String(request?.path || ''),
     query: request?.query || {},
     form: request?.form || {},
     body: request?.body == null ? '' : String(request.body),
@@ -275,6 +276,7 @@ test('checking cancels a queued auto-preview so verification can finish', () => 
 test('runs every phpRequest check against its own request', async () => {
   const key = (request = {}) => JSON.stringify({
     method: String(request.method || 'GET').toUpperCase(),
+    path: String(request.path || ''),
     query: request.query || {},
     form: request.form || {},
     body: request.body == null ? '' : String(request.body),
@@ -340,4 +342,33 @@ test('holds signal collection and interactions until the final preview document 
   const sentTypes = postSpy.mock.calls.map((call) => call[0].type);
   expect(sentTypes).toContain('collect-signals');
   expect(sentTypes).toContain('run-action');
+});
+
+test('ignores DOM snapshots sent by the PHP loading placeholder', async () => {
+  let resolveRun;
+  runPhpProject.mockImplementation(() => new Promise((resolve) => { resolveRun = resolve; }));
+  const checks = [
+    { id: 'count', type: 'textEquals', selector: '#result', expected: 'Książek: 8' },
+  ];
+  const project = { entry: 'index.php', files: { 'index.php': '<?php ?>' }, runtime: { kind: 'php-wasm' } };
+  const { result } = renderHook(() => usePreviewRuntime(project, checks, 'php'));
+  const postSpy = vi.fn();
+  act(() => result.current.setFrame({ contentWindow: { postMessage: postSpy } }));
+
+  act(() => result.current.checkPreview());
+  // The placeholder fires ready + a DOM-less snapshot — grading it would fail
+  // #result before the real document exists, so it must be ignored entirely.
+  act(() => result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'ready' }));
+  act(() => result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: { '#result': { text: '' } }, text: '', elements: [] } }));
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+  expect(result.current.runtimeState.checkResults).toEqual([]);
+
+  await act(async () => {
+    resolveRun({ html: '<main><p id="result">Książek: 8</p></main>', status: 200, headers: {}, errors: [], exitCode: 0, requestKey: null });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  act(() => result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'ready' }));
+  act(() => result.current.handleMessage({ source: 'web-learning-lab', runId: result.current.runId, type: 'signals', payload: { dom: { '#result': { exists: true, text: 'Książek: 8' } }, text: 'Książek: 8', elements: [] } }));
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+  expect(result.current.runtimeState.checkResults.map((check) => check.passed)).toEqual([true]);
 });

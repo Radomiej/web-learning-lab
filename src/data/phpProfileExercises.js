@@ -1,5 +1,4 @@
 import librarySeed from './phpLibrarySeed.js';
-import { createMysqlDatabaseFile, mysqlAdapterFile, shellDatabaseFile } from './phpMysqlSimulator.js';
 
 const escapeText = `function e($text) {
   return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
@@ -214,33 +213,934 @@ ${code}
         });`;
 
 
-const databaseFiles = {
-  'db.php': shellDatabaseFile,
-  'mysql-adapter.php': mysqlAdapterFile,
-  'biblioteka.sql': librarySeed,
-};
-const openDatabase = "$db = require __DIR__ . '/db.php';";
-const countPage = profilePage(`${openDatabase}
-$count = $db ? $db->query('SELECT COUNT(*) FROM ksiazki')->fetchColumn() : null;`, `      <h1>Książki w bazie</h1>
-      <p id="result"><?= $count ?? 'Uzupełnij połączenie w db.php.' ?></p>`, 'Biblioteka');
+// Baza w labie to prawdziwy plik SQLite obok kodu — PDO otwiera go wprost
+// (new PDO('sqlite:…')), a przy pierwszym starcie seed z biblioteka.sql.
+const sqliteConnect = `$db = new PDO('sqlite:' . $path);
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);`;
 
-function searchPage(query, render) {
-  return profilePage(`${openDatabase}
+const sqliteDbFile = (connection) => `<?php
+$path = __DIR__ . '/biblioteka.sqlite';
+$initialize = !is_file($path);
+${connection}
+if (isset($db)) {
+  $db->exec('PRAGMA foreign_keys = ON');
+  if ($initialize) {
+    $db->exec(file_get_contents(__DIR__ . '/biblioteka.sql'));
+  }
+}
+return $db ?? null;
+`;
+
+const solvedDbFile = sqliteDbFile(sqliteConnect);
+const sqliteFiles = (dbFile) => ({ 'db.php': dbFile, 'biblioteka.sql': librarySeed });
+const openDb = "$db = require __DIR__ . '/db.php';";
+
+const libraryCountPage = profilePage(`${openDb}
+$count = $db ? $db->query('SELECT COUNT(*) FROM ksiazki')->fetchColumn() : null;`, `      <h1>Książki w bazie</h1>
+      <p id="result"><?= $count === null ? 'Uzupełnij połączenie w db.php.' : 'Książek: ' . $count ?></p>`, 'Biblioteka');
+
+// Strona wyszukiwania: formularz GET ?rok= działa w podglądzie jak na hostingu —
+// submit przez skrypt mostka wysyła nowe żądanie GET do index.php.
+function librarySearchPage(query, item) {
+  return formPage(`${openDb}
 $year = (int) ($_GET['rok'] ?? 1834);
 ${query}
-${escapeText}`, `      <h1>Książki według roku wydania</h1>
-      <p>Wybrany rok: <?= $year ?></p>
-${render}`, 'Biblioteka');
+${escapeText}`, `      <h1>Książki według roku</h1>
+      <form id="search" method="get" action="index.php">
+        <label for="rok">Rok wydania</label>
+        <input id="rok" name="rok" type="number" value="1834" required>
+        <button type="submit">Szukaj</button>
+      </form>
+      <?php if ($books === []): ?>
+        <p id="result">Brak pasujących książek.</p>
+      <?php else: ?>
+        <ul id="books">
+          <?php foreach ($books as $book): ?>
+            ${item}
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>`, 'Biblioteka');
 }
 
-const filteredQuery = `$query = $db->prepare('SELECT tytul FROM ksiazki WHERE rok_wydania = :rok ORDER BY id');
+const yearQuery = `$query = $db->prepare('SELECT tytul FROM ksiazki WHERE rok_wydania = :rok ORDER BY id');
 $query->execute(['rok' => $year]);
 $books = $query->fetchAll(PDO::FETCH_ASSOC);`;
-const bookList = `      <ul id="books">
-        <?php foreach ($books as $book): ?>
-          <li><?= e($book['tytul']) ?></li>
+const joinQuery = `$query = $db->prepare('SELECT k.tytul, a.imie, a.nazwisko FROM ksiazki AS k JOIN autorzy AS a ON a.id = k.autor_id WHERE k.rok_wydania = :rok ORDER BY k.id');
+$query->execute(['rok' => $year]);
+$books = $query->fetchAll(PDO::FETCH_ASSOC);`;
+const bookItem = `<li><?= e($book['tytul']) ?></li>`;
+const joinItem = `<li><?= e($book['tytul'] . ' — ' . $book['imie'] . ' ' . $book['nazwisko']) ?></li>`;
+
+// ── Lekcja 615: portal „Klatka” — kompletny, wielostronicowy projekt ──
+// Jedna strona = jeden samodzielny plik PHP, bez include — styl i układ
+// wzorowane na prawdziwej aplikacji katalogowej. Blok połączenia powtarza
+// się na górze każdej strony: w labie DSN wskazuje SQLite w klatka.sqlite
+// (auto-import z baza.sqlite.sql), na XAMPP uczeń zamienia jedną linię
+// na mysql:… i importuje baza.sql w phpMyAdmin.
+
+const klatkaConnect = `// ── Połączenie z bazą ──
+// LAB: SQLite w pliku klatka.sqlite — tabele i dane założą się same
+// z pliku baza.sqlite.sql przy pierwszym żądaniu.
+// XAMPP: podmień $dsn na 'mysql:host=localhost;dbname=klatka;charset=utf8mb4'
+//        (schemat i dane wklejasz wtedy raz w phpMyAdmin — plik baza.sql).
+$dsn = 'sqlite:' . __DIR__ . '/klatka.sqlite';
+$db = new PDO($dsn, 'root', '');
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+if (str_starts_with($dsn, 'sqlite:')) {
+  $db->exec('PRAGMA foreign_keys = ON');
+  $tables = $db->query("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'filmy'");
+  if ((int) $tables->fetchColumn() === 0) {
+    $db->exec(file_get_contents(__DIR__ . '/baza.sqlite.sql'));
+  }
+}
+function e($text) {
+  return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+}
+function inicjal($text) {
+  return preg_match('/^./us', (string) $text, $m) ? $m[0] : '?';
+}`;
+
+// Wspólny nagłówek i stopka — w prawdziwym projekcie trafiłyby do
+// header.php/footer.php; tu każda strona jest kompletna, więc markup
+// powtarza się w każdym pliku (ustaw $activePage przed renderem).
+const klatkaTop = (title) => `<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title}</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.php" aria-label="Klatka — strona główna"><span class="brand-mark">K</span><span>KLATKA<span class="brand-period">.</span></span></a>
+  <nav class="main-nav" aria-label="Nawigacja główna">
+    <a class="<?= $activePage === 'filmy' ? 'is-active' : '' ?>" href="index.php">Filmy</a>
+    <a class="<?= $activePage === 'aktorzy' ? 'is-active' : '' ?>" href="aktor.php">Aktorzy</a>
+    <a class="nav-add" href="dodaj_film.php">+ Film</a>
+    <a class="nav-add" href="dodaj_aktora.php">+ Aktor</a>
+  </nav>
+</header>
+<main>`;
+
+const klatkaBottom = `</main>
+<footer class="site-footer">
+  <a class="brand footer-brand" href="index.php"><span class="brand-mark">K</span><span>KLATKA<span class="brand-period">.</span></span></a>
+  <p>Małe kino. Wielkie rozmowy.</p>
+  <span class="footer-year">Klatka · projekt PHP + baza</span>
+</footer>
+</body>
+</html>
+`;
+
+const klatkaIndex = `<?php
+${klatkaConnect}
+
+$activePage = 'filmy';
+$q = trim((string) ($_GET['q'] ?? ''));
+if ($q !== '') {
+  $stmt = $db->prepare(
+    "SELECT id, tytul, rok, gatunek, opis, plakat_url FROM filmy
+     WHERE tytul LIKE :q OR gatunek LIKE :q OR opis LIKE :q
+     ORDER BY rok DESC, tytul"
+  );
+  $stmt->execute(['q' => '%' . $q . '%']);
+  $filmy = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+  $filmy = $db->query(
+    'SELECT id, tytul, rok, gatunek, opis, plakat_url FROM filmy ORDER BY rok DESC, tytul'
+  )->fetchAll(PDO::FETCH_ASSOC);
+}
+?>
+${klatkaTop('Klatka | Odkryj następny ulubiony film')}
+<section class="catalog-hero">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="eyebrow-line"></span> Twoje miejsce w pierwszym rzędzie</p>
+    <h1>Filmy, które<br><em>zostają</em> po napisach.</h1>
+    <p class="hero-description">Katalog na prawdziwej bazie: wyszukuj seanse, dodawaj własne filmy i aktorów, zarządzaj obsadą.</p>
+    <a class="text-link" href="#katalog">Przeglądaj katalog <span aria-hidden="true">↘</span></a>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <div class="poster-placeholder hero-placeholder"><span>K</span><small>KLATKA / KATALOG</small></div>
+    <span class="hero-stamp">KINO<br>NA<br>WŁASNYCH<br>ZASADACH</span>
+  </div>
+</section>
+<section class="catalog-section" id="katalog">
+  <div class="section-topline"><span>Katalog filmów</span><span><?= count($filmy) ?> pozycji</span></div>
+  <div class="catalog-heading">
+    <div>
+      <p class="eyebrow">Selekcja dla ciekawych</p>
+      <h2>Wybierz swój seans<span class="brand-period">.</span></h2>
+    </div>
+    <form class="search-form" action="index.php#katalog" method="get" role="search">
+      <label class="visually-hidden" for="film-search">Szukaj filmów</label>
+      <input id="film-search" type="search" name="q" value="<?= e($q) ?>" placeholder="Tytuł, gatunek, opis…">
+      <button type="submit" aria-label="Szukaj">⌕</button>
+    </form>
+  </div>
+  <?php if ($filmy === []): ?>
+    <div class="empty-state">
+      <span class="empty-mark">⌕</span>
+      <h3>Nie znaleźliśmy takiego filmu.</h3>
+      <p>Spróbuj innego tytułu albo dodaj własny film przez „+ Film” w menu.</p>
+    </div>
+  <?php else: ?>
+    <div class="film-grid">
+      <?php foreach ($filmy as $index => $film): ?>
+        <article class="film-card" style="--card-index: <?= (int) $index ?>">
+          <a class="poster-link" href="film.php?id=<?= (int) $film['id'] ?>" aria-label="Szczegóły: <?= e($film['tytul']) ?>">
+            <div class="poster-frame">
+              <?php if (!empty($film['plakat_url'])): ?>
+                <img src="<?= e($film['plakat_url']) ?>" alt="Plakat: <?= e($film['tytul']) ?>" loading="lazy">
+              <?php else: ?>
+                <div class="poster-placeholder"><span><?= e(inicjal($film['tytul'])) ?></span><small>KLATKA / <?= (int) $film['rok'] ?></small></div>
+              <?php endif; ?>
+              <span class="poster-number"><?= str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
+              <span class="poster-arrow" aria-hidden="true">↗</span>
+            </div>
+          </a>
+          <div class="film-meta"><span><?= (int) $film['rok'] ?></span><span class="meta-dot"></span><span><?= e($film['gatunek']) ?></span></div>
+          <h3><a href="film.php?id=<?= (int) $film['id'] ?>"><?= e($film['tytul']) ?></a></h3>
+          <p class="film-description"><?= e($film['opis']) ?></p>
+        </article>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+</section>
+${klatkaBottom}
+`;
+
+const klatkaFilm = `<?php
+${klatkaConnect}
+
+$activePage = 'filmy';
+$id = (int) ($_GET['id'] ?? 0);
+$info = '';
+
+// POST: przypnij albo odepnij aktora od tego filmu (tabela łącząca obsada).
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $id = (int) ($_POST['film_id'] ?? $id);
+  $akcja = (string) ($_POST['akcja'] ?? '');
+  $aktorId = (int) ($_POST['aktor_id'] ?? 0);
+  if ($akcja === 'polacz' && $id > 0 && $aktorId > 0) {
+    $rola = trim((string) ($_POST['rola'] ?? ''));
+    $exists = $db->prepare('SELECT 1 FROM obsada WHERE film_id = :f AND aktor_id = :a');
+    $exists->execute(['f' => $id, 'a' => $aktorId]);
+    if ($exists->fetchColumn()) {
+      $info = 'Ten aktor jest już w obsadzie.';
+    } else {
+      $db->prepare('INSERT INTO obsada (film_id, aktor_id, rola) VALUES (:f, :a, :r)')
+        ->execute(['f' => $id, 'a' => $aktorId, 'r' => $rola !== '' ? $rola : null]);
+      $info = 'Dopisano aktora do obsady.';
+    }
+  } elseif ($akcja === 'rozlacz' && $id > 0 && $aktorId > 0) {
+    $db->prepare('DELETE FROM obsada WHERE film_id = :f AND aktor_id = :a')
+      ->execute(['f' => $id, 'a' => $aktorId]);
+    $info = 'Usunięto aktora z obsady.';
+  }
+}
+
+$film = null;
+$obsada = [];
+$aktorzy = [];
+if ($id > 0) {
+  $query = $db->prepare('SELECT * FROM filmy WHERE id = :id');
+  $query->execute(['id' => $id]);
+  $film = $query->fetch(PDO::FETCH_ASSOC) ?: null;
+  if ($film) {
+    $cast = $db->prepare(
+      'SELECT a.id, a.imie, a.nazwisko, o.rola
+       FROM obsada AS o JOIN aktorzy AS a ON a.id = o.aktor_id
+       WHERE o.film_id = :id ORDER BY a.nazwisko, a.imie'
+    );
+    $cast->execute(['id' => $id]);
+    $obsada = $cast->fetchAll(PDO::FETCH_ASSOC);
+    $aktorzy = $db->query('SELECT id, imie, nazwisko FROM aktorzy ORDER BY nazwisko, imie')
+      ->fetchAll(PDO::FETCH_ASSOC);
+  }
+}
+?>
+${klatkaTop('Klatka | Film')}
+<div class="detail-shell">
+  <a class="back-link" href="index.php">← Wróć do katalogu</a>
+  <?php if (!$film): ?>
+    <div class="empty-state detail-empty">
+      <span class="empty-mark">×</span>
+      <h1>Nie znaleziono filmu.</h1>
+      <p>Ten tytuł nie jest dostępny w katalogu.</p>
+      <a class="button-link" href="index.php">Wróć do filmów</a>
+    </div>
+  <?php else: ?>
+    <section class="film-detail">
+      <div class="detail-poster">
+        <?php if (!empty($film['plakat_url'])): ?>
+          <img src="<?= e($film['plakat_url']) ?>" alt="Plakat: <?= e($film['tytul']) ?>">
+        <?php else: ?>
+          <div class="poster-placeholder detail-placeholder"><span><?= e(inicjal($film['tytul'])) ?></span><small>KLATKA / <?= (int) $film['rok'] ?></small></div>
+        <?php endif; ?>
+        <span class="poster-ribbon">KATALOG KLATKI</span>
+      </div>
+      <div class="detail-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> <?= e($film['gatunek']) ?> · <?= (int) $film['rok'] ?></p>
+        <h1 id="film-title"><?= e($film['tytul']) ?><span class="brand-period">.</span></h1>
+        <p class="detail-description"><?= nl2br(e($film['opis'])) ?></p>
+        <a class="text-link" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj dane filmu <span aria-hidden="true">→</span></a>
+        <div class="cast-block">
+          <h2>Na ekranie</h2>
+          <?php if ($info !== ''): ?>
+            <p class="notice notice-success" id="info"><?= e($info) ?></p>
+          <?php endif; ?>
+          <?php if ($obsada === []): ?>
+            <p class="muted-copy">Obsada nie została jeszcze dodana — przypisz pierwszego aktora poniżej.</p>
+          <?php else: ?>
+            <ul class="cast-list" id="obsada-list">
+              <?php foreach ($obsada as $osoba): ?>
+                <li>
+                  <a href="aktor.php?id=<?= (int) $osoba['id'] ?>"><?= e($osoba['imie'] . ' ' . $osoba['nazwisko']) ?></a>
+                  <span><?= e($osoba['rola'] ?: 'Obsada') ?></span>
+                  <form method="post" action="film.php" class="inline-form">
+                    <input type="hidden" name="akcja" value="rozlacz">
+                    <input type="hidden" name="film_id" value="<?= (int) $id ?>">
+                    <input type="hidden" name="aktor_id" value="<?= (int) $osoba['id'] ?>">
+                    <button type="submit" class="link-button">usuń</button>
+                  </form>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php endif; ?>
+          <form method="post" action="film.php" class="cast-add">
+            <input type="hidden" name="akcja" value="polacz">
+            <input type="hidden" name="film_id" value="<?= (int) $id ?>">
+            <select name="aktor_id" aria-label="Aktor">
+              <?php foreach ($aktorzy as $aktor): ?>
+                <option value="<?= (int) $aktor['id'] ?>"><?= e($aktor['imie'] . ' ' . $aktor['nazwisko']) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <input name="rola" placeholder="Rola (opcjonalnie)">
+            <button type="submit" class="submit-button">Dodaj do obsady</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  <?php endif; ?>
+</div>
+${klatkaBottom}
+`;
+
+const klatkaAktor = `<?php
+${klatkaConnect}
+
+$activePage = 'aktorzy';
+$id = (int) ($_GET['id'] ?? 0);
+$aktor = null;
+$filmografia = [];
+$aktorzy = [];
+if ($id > 0) {
+  $query = $db->prepare('SELECT * FROM aktorzy WHERE id = :id');
+  $query->execute(['id' => $id]);
+  $aktor = $query->fetch(PDO::FETCH_ASSOC) ?: null;
+  if ($aktor) {
+    $filmy = $db->prepare(
+      'SELECT f.id, f.tytul, f.rok, f.gatunek, o.rola
+       FROM obsada AS o JOIN filmy AS f ON f.id = o.film_id
+       WHERE o.aktor_id = :id ORDER BY f.rok DESC'
+    );
+    $filmy->execute(['id' => $id]);
+    $filmografia = $filmy->fetchAll(PDO::FETCH_ASSOC);
+  }
+} else {
+  $aktorzy = $db->query(
+    'SELECT a.id, a.imie, a.nazwisko, COUNT(o.film_id) AS ile
+     FROM aktorzy AS a LEFT JOIN obsada AS o ON o.aktor_id = a.id
+     GROUP BY a.id ORDER BY a.nazwisko, a.imie'
+  )->fetchAll(PDO::FETCH_ASSOC);
+}
+?>
+${klatkaTop('Klatka | Aktorzy')}
+<section class="people-page">
+  <div class="section-topline"><span>Indeks / Twórcy</span><span><?= $aktor ? 'Profil aktora' : 'Aktorzy' ?></span></div>
+  <?php if ($id > 0 && !$aktor): ?>
+    <div class="empty-state detail-empty">
+      <span class="empty-mark">×</span>
+      <h1>Nie znaleziono aktora.</h1>
+      <p>Ta osoba nie jest dostępna w katalogu.</p>
+      <a class="button-link" href="aktor.php">Wszyscy aktorzy</a>
+    </div>
+  <?php elseif ($aktor): ?>
+    <a class="back-link" href="aktor.php">← Wszyscy aktorzy</a>
+    <div class="person-profile">
+      <div class="person-monogram"><?= e(inicjal($aktor['imie']) . inicjal($aktor['nazwisko'])) ?></div>
+      <div>
+        <p class="eyebrow">Osoba przed kamerą</p>
+        <h1 id="actor-name"><?= e($aktor['imie'] . ' ' . $aktor['nazwisko']) ?><span class="brand-period">.</span></h1>
+        <p class="person-bio"><?= $aktor['bio'] ? nl2br(e($aktor['bio'])) : 'Biografia tej osoby wkrótce pojawi się w katalogu.' ?></p>
+      </div>
+    </div>
+    <div class="people-list-heading"><h2>Filmy w katalogu</h2><span><?= count($filmografia) ?> pozycji</span></div>
+    <?php if ($filmografia === []): ?>
+      <p class="muted-copy">Ta osoba nie ma jeszcze przypisanych filmów — dodaj ją do obsady na stronie filmu.</p>
+    <?php else: ?>
+      <div class="filmography">
+        <?php foreach ($filmografia as $film): ?>
+          <a class="filmography-row" href="film.php?id=<?= (int) $film['id'] ?>">
+            <span class="filmography-year"><?= (int) $film['rok'] ?></span>
+            <strong><?= e($film['tytul']) ?></strong>
+            <span><?= e($film['rola'] ?: $film['gatunek']) ?></span>
+            <span class="row-arrow">↗</span>
+          </a>
         <?php endforeach; ?>
-      </ul>`;
+      </div>
+    <?php endif; ?>
+  <?php else: ?>
+    <div class="people-heading">
+      <p class="eyebrow">Ludzie, których warto znać</p>
+      <h1>Twarze opowieści<span class="brand-period">.</span></h1>
+      <p>Aktorzy i aktorki, którzy zostają w pamięci na długo po seansie.</p>
+    </div>
+    <?php if ($aktorzy === []): ?>
+      <div class="empty-state">
+        <span class="empty-mark">✳</span>
+        <h3>Indeks aktorów jest pusty.</h3>
+        <p>Dodaj osoby przez „+ Aktor” w menu, by pojawiły się tutaj.</p>
+      </div>
+    <?php else: ?>
+      <div class="actor-grid">
+        <?php foreach ($aktorzy as $index => $osoba): ?>
+          <a class="actor-card" style="--card-index: <?= (int) $index ?>" href="aktor.php?id=<?= (int) $osoba['id'] ?>">
+            <span class="actor-initials"><?= e(inicjal($osoba['imie']) . inicjal($osoba['nazwisko'])) ?></span>
+            <span class="actor-card-index"><?= str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
+            <strong><?= e($osoba['imie'] . ' ' . $osoba['nazwisko']) ?></strong>
+            <span><?= (int) $osoba['ile'] ?> filmów <i aria-hidden="true">↗</i></span>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  <?php endif; ?>
+</section>
+${klatkaBottom}
+`;
+
+const klatkaDodajFilm = `<?php
+${klatkaConnect}
+
+$activePage = '';
+$errors = [];
+$added = '';
+$addedId = 0;
+$tytul = '';
+$rok = '';
+$gatunek = '';
+$opis = '';
+$plakat = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $tytul = trim((string) ($_POST['tytul'] ?? ''));
+  $rok = (int) ($_POST['rok'] ?? 0);
+  $gatunek = trim((string) ($_POST['gatunek'] ?? ''));
+  $opis = trim((string) ($_POST['opis'] ?? ''));
+  $plakat = trim((string) ($_POST['plakat_url'] ?? ''));
+  if ($tytul === '') {
+    $errors[] = 'Podaj tytuł filmu.';
+  }
+  if ($rok < 1888 || $rok > 2100) {
+    $errors[] = 'Rok musi być liczbą z zakresu 1888–2100.';
+  }
+  if ($gatunek === '') {
+    $errors[] = 'Podaj gatunek.';
+  }
+  if ($opis === '') {
+    $errors[] = 'Napisz krótki opis filmu.';
+  }
+  if ($errors === []) {
+    $stmt = $db->prepare(
+      'INSERT INTO filmy (tytul, rok, gatunek, opis, plakat_url) VALUES (:t, :r, :g, :o, :p)'
+    );
+    $stmt->execute([
+      't' => $tytul,
+      'r' => $rok,
+      'g' => $gatunek,
+      'o' => $opis,
+      'p' => $plakat !== '' ? $plakat : null,
+    ]);
+    $addedId = (int) $db->lastInsertId();
+    $added = 'Dodano film „' . $tytul . '”.';
+    $tytul = '';
+    $rok = '';
+    $gatunek = '';
+    $opis = '';
+    $plakat = '';
+  }
+}
+?>
+${klatkaTop('Klatka | Dodaj film')}
+<div class="form-shell">
+  <a class="back-link" href="index.php">← Wróć do katalogu</a>
+  <div class="form-panel">
+    <p class="eyebrow">Nowa pozycja w katalogu</p>
+    <h1>Dodaj film<span class="brand-period">.</span></h1>
+    <?php if ($added !== ''): ?>
+      <p class="notice notice-success" id="added"><?= e($added) ?> <a href="film.php?id=<?= (int) $addedId ?>">Zobacz stronę filmu →</a></p>
+    <?php endif; ?>
+    <?php if ($errors !== []): ?>
+      <div class="notice notice-error" id="errors"><ul><?php foreach ($errors as $blad): ?><li><?= e($blad) ?></li><?php endforeach; ?></ul></div>
+    <?php endif; ?>
+    <form class="film-form" method="post" action="dodaj_film.php">
+      <label for="f-tytul">Tytuł</label>
+      <input id="f-tytul" name="tytul" value="<?= e($tytul) ?>" required>
+      <label for="f-rok">Rok <span class="label-hint">1888 — 2100</span></label>
+      <input id="f-rok" name="rok" type="number" min="1888" max="2100" value="<?= e($rok) ?>" required>
+      <label for="f-gatunek">Gatunek</label>
+      <input id="f-gatunek" name="gatunek" value="<?= e($gatunek) ?>" placeholder="Dramat / Sci-fi…" required>
+      <label for="f-plakat">Plakat <span class="label-hint">adres obrazka</span></label>
+      <input id="f-plakat" name="plakat_url" value="<?= e($plakat) ?>" placeholder="https://images.unsplash.com/… albo img/plakat.jpg">
+      <label for="f-opis">Opis</label>
+      <textarea id="f-opis" name="opis" rows="5" required><?= e($opis) ?></textarea>
+      <button class="submit-button" type="submit">Dodaj do katalogu <span aria-hidden="true">↗</span></button>
+    </form>
+    <p class="form-hint">Plakat to adres obrazka zapisany w bazie (kolumna plakat_url) — może być linkiem z portalu ze zdjęciami (Unsplash, Pexels) albo ścieżką do pliku w katalogu projektu, np. img/plakat.jpg. Strona renderuje go przez &lt;img&gt;.</p>
+  </div>
+</div>
+${klatkaBottom}
+`;
+
+const klatkaDodajAktora = `<?php
+${klatkaConnect}
+
+$activePage = '';
+$errors = [];
+$added = '';
+$addedId = 0;
+$imie = '';
+$nazwisko = '';
+$bio = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $imie = trim((string) ($_POST['imie'] ?? ''));
+  $nazwisko = trim((string) ($_POST['nazwisko'] ?? ''));
+  $bio = trim((string) ($_POST['bio'] ?? ''));
+  if ($imie === '' || $nazwisko === '') {
+    $errors[] = 'Podaj imię i nazwisko aktora.';
+  }
+  if ($errors === []) {
+    $stmt = $db->prepare('INSERT INTO aktorzy (imie, nazwisko, bio) VALUES (:i, :n, :b)');
+    $stmt->execute(['i' => $imie, 'n' => $nazwisko, 'b' => $bio !== '' ? $bio : null]);
+    $addedId = (int) $db->lastInsertId();
+    $added = 'Dodano aktora: ' . $imie . ' ' . $nazwisko . '.';
+    $imie = '';
+    $nazwisko = '';
+    $bio = '';
+  }
+}
+?>
+${klatkaTop('Klatka | Dodaj aktora')}
+<div class="form-shell">
+  <a class="back-link" href="aktor.php">← Wszyscy aktorzy</a>
+  <div class="form-panel">
+    <p class="eyebrow">Nowa osoba w indeksie</p>
+    <h1>Dodaj aktora<span class="brand-period">.</span></h1>
+    <?php if ($added !== ''): ?>
+      <p class="notice notice-success" id="added"><?= e($added) ?> <a href="aktor.php?id=<?= (int) $addedId ?>">Zobacz profil →</a></p>
+    <?php endif; ?>
+    <?php if ($errors !== []): ?>
+      <div class="notice notice-error" id="errors"><ul><?php foreach ($errors as $blad): ?><li><?= e($blad) ?></li><?php endforeach; ?></ul></div>
+    <?php endif; ?>
+    <form class="film-form" method="post" action="dodaj_aktora.php">
+      <label for="a-imie">Imię</label>
+      <input id="a-imie" name="imie" value="<?= e($imie) ?>" required>
+      <label for="a-nazwisko">Nazwisko</label>
+      <input id="a-nazwisko" name="nazwisko" value="<?= e($nazwisko) ?>" required>
+      <label for="a-bio">Biografia <span class="label-hint">opcjonalnie</span></label>
+      <textarea id="a-bio" name="bio" rows="4" placeholder="Kilka zdań o osobie…"><?= e($bio) ?></textarea>
+      <button class="submit-button" type="submit">Dodaj do indeksu <span aria-hidden="true">↗</span></button>
+    </form>
+    <p class="form-hint">Nowa osoba trafia do tabeli aktorzy — od razu możesz przypisać ją do filmu na jego stronie (sekcja „Na ekranie”).</p>
+  </div>
+</div>
+${klatkaBottom}
+`;
+
+const klatkaEdytujFilm = `<?php
+${klatkaConnect}
+
+$activePage = '';
+$errors = [];
+$added = '';
+$id = (int) ($_POST['id'] ?? $_GET['id'] ?? 0);
+$film = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $tytul = trim((string) ($_POST['tytul'] ?? ''));
+  $rok = (int) ($_POST['rok'] ?? 0);
+  $gatunek = trim((string) ($_POST['gatunek'] ?? ''));
+  $opis = trim((string) ($_POST['opis'] ?? ''));
+  $plakat = trim((string) ($_POST['plakat_url'] ?? ''));
+  if ($tytul === '') {
+    $errors[] = 'Podaj tytuł filmu.';
+  }
+  if ($rok < 1888 || $rok > 2100) {
+    $errors[] = 'Rok musi być liczbą z zakresu 1888–2100.';
+  }
+  if ($gatunek === '') {
+    $errors[] = 'Podaj gatunek.';
+  }
+  if ($errors === []) {
+    $stmt = $db->prepare(
+      'UPDATE filmy SET tytul = :t, rok = :r, gatunek = :g, opis = :o, plakat_url = :p WHERE id = :id'
+    );
+    $stmt->execute([
+      't' => $tytul,
+      'r' => $rok,
+      'g' => $gatunek,
+      'o' => $opis,
+      'p' => $plakat !== '' ? $plakat : null,
+      'id' => $id,
+    ]);
+    $added = 'Zapisano zmiany w filmie „' . $tytul . '”.';
+  } else {
+    $film = ['id' => $id, 'tytul' => $tytul, 'rok' => $rok, 'gatunek' => $gatunek, 'opis' => $opis, 'plakat_url' => $plakat];
+  }
+}
+if (!$film && $id > 0) {
+  $query = $db->prepare('SELECT * FROM filmy WHERE id = :id');
+  $query->execute(['id' => $id]);
+  $film = $query->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+?>
+${klatkaTop('Klatka | Edytuj film')}
+<div class="form-shell">
+  <a class="back-link" href="<?= $film ? 'film.php?id=' . (int) $film['id'] : 'index.php' ?>">← Wróć</a>
+  <?php if (!$film): ?>
+    <div class="empty-state detail-empty">
+      <span class="empty-mark">×</span>
+      <h1>Nie znaleziono filmu.</h1>
+      <p>Wybierz film do edycji na jego stronie — link „Edytuj dane filmu”.</p>
+      <a class="button-link" href="index.php">Wróć do katalogu</a>
+    </div>
+  <?php else: ?>
+    <div class="form-panel">
+      <p class="eyebrow">Edycja pozycji #<?= (int) $film['id'] ?></p>
+      <h1>Edytuj film<span class="brand-period">.</span></h1>
+      <?php if ($added !== ''): ?>
+        <p class="notice notice-success" id="added"><?= e($added) ?> <a href="film.php?id=<?= (int) $id ?>">Zobacz stronę filmu →</a></p>
+      <?php endif; ?>
+      <?php if ($errors !== []): ?>
+        <div class="notice notice-error" id="errors"><ul><?php foreach ($errors as $blad): ?><li><?= e($blad) ?></li><?php endforeach; ?></ul></div>
+      <?php endif; ?>
+      <form class="film-form" method="post" action="edytuj_film.php">
+        <input type="hidden" name="id" value="<?= (int) $film['id'] ?>">
+        <label for="e-tytul">Tytuł</label>
+        <input id="e-tytul" name="tytul" value="<?= e($film['tytul']) ?>" required>
+        <label for="e-rok">Rok <span class="label-hint">1888 — 2100</span></label>
+        <input id="e-rok" name="rok" type="number" min="1888" max="2100" value="<?= (int) $film['rok'] ?>" required>
+        <label for="e-gatunek">Gatunek</label>
+        <input id="e-gatunek" name="gatunek" value="<?= e($film['gatunek']) ?>" required>
+        <label for="e-plakat">Plakat <span class="label-hint">adres obrazka</span></label>
+        <input id="e-plakat" name="plakat_url" value="<?= e($film['plakat_url']) ?>" placeholder="https://… albo img/plakat.jpg">
+        <label for="e-opis">Opis</label>
+        <textarea id="e-opis" name="opis" rows="6" required><?= e($film['opis']) ?></textarea>
+        <button class="submit-button" type="submit">Zapisz zmiany <span aria-hidden="true">↗</span></button>
+      </form>
+      <p class="form-hint">Formularz jest wypełniony danymi z bazy — UPDATE podmienia rekord o kluczu id przesłanym w ukrytym polu.</p>
+    </div>
+  <?php endif; ?>
+</div>
+${klatkaBottom}
+`;
+
+// Dwa dialekty tego samego schematu: baza.sql wklejasz w phpMyAdmin (MySQL),
+// baza.sqlite.sql importuje się sama przy pierwszym żądaniu w labie.
+const klatkaSchemaMysql = `-- KLATKA — schemat i dane startowe (MySQL)
+-- Wklej całość w phpMyAdmin → zakładka SQL → Wykonaj.
+CREATE DATABASE IF NOT EXISTS klatka CHARACTER SET utf8mb4 COLLATE utf8mb4_polish_ci;
+USE klatka;
+
+CREATE TABLE IF NOT EXISTS filmy (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tytul VARCHAR(180) NOT NULL,
+  rok SMALLINT UNSIGNED NOT NULL,
+  gatunek VARCHAR(80) NOT NULL,
+  opis TEXT NOT NULL,
+  plakat_url VARCHAR(500) NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS aktorzy (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  imie VARCHAR(80) NOT NULL,
+  nazwisko VARCHAR(100) NOT NULL,
+  bio TEXT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS obsada (
+  film_id INT UNSIGNED NOT NULL,
+  aktor_id INT UNSIGNED NOT NULL,
+  rola VARCHAR(120) NULL,
+  PRIMARY KEY (film_id, aktor_id),
+  CONSTRAINT fk_obsada_film FOREIGN KEY (film_id) REFERENCES filmy(id) ON DELETE CASCADE,
+  CONSTRAINT fk_obsada_aktor FOREIGN KEY (aktor_id) REFERENCES aktorzy(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+INSERT INTO filmy (id, tytul, rok, gatunek, opis, plakat_url) VALUES
+(1, 'Wielki błękit', 1988, 'Dramat', 'Dwaj przyjaciele, których od dzieciństwa łączy pasja do nurkowania, stają naprzeciw własnym ambicjom i granicom ludzkich możliwości.', 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=900&q=80'),
+(2, 'Między słowami', 2003, 'Dramat / Romans', 'W Tokio spotykają się dwie zagubione osoby. Krótka znajomość staje się cichą opowieścią o bliskości, samotności i tym, czego nie umiemy powiedzieć.', 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80'),
+(3, 'Amelia', 2001, 'Komedia / Romans', 'Nieśmiała paryżanka postanawia odmienić życie ludzi wokół siebie. Przy okazji odkrywa, że na własne szczęście też trzeba czasem zapracować.', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80'),
+(4, 'Na rauszu', 2020, 'Dramat / Komedia', 'Czterech nauczycieli testuje teorię o idealnym poziomie alkoholu we krwi. Eksperyment szybko zaczyna dotyczyć czegoś więcej niż szkolnych lekcji.', 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=900&q=80'),
+(5, 'Wszystko wszędzie naraz', 2022, 'Sci-fi / Przygodowy', 'Właścicielka pralni trafia do wieloświata pełnego alternatywnych wersji własnego życia. Najważniejsza misja czeka jednak tu, w domu.', 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80'),
+(6, 'Perfect Days', 2023, 'Dramat', 'Hirayama odnajduje sens w codziennym rytmie Tokio: muzyce, książkach, drzewach i drobnych spotkaniach, które składają się na pełne życie.', 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80');
+
+INSERT INTO aktorzy (id, imie, nazwisko, bio) VALUES
+(1, 'Jean-Marc', 'Barr', 'Francusko-amerykański aktor i reżyser, znany z ról w europejskim kinie autorskim.'),
+(2, 'Rosanna', 'Arquette', 'Amerykańska aktorka i reżyserka, która od dekad współpracuje z twórcami kina niezależnego.'),
+(3, 'Bill', 'Murray', 'Amerykański aktor i komik, którego styl łączy subtelny humor z melancholią.'),
+(4, 'Scarlett', 'Johansson', 'Amerykańska aktorka i reżyserka, laureatka nagród za role filmowe i teatralne.'),
+(5, 'Audrey', 'Tautou', 'Francuska aktorka, rozpoznawalna dzięki rolom w kinie francuskim i międzynarodowym.'),
+(6, 'Mads', 'Mikkelsen', 'Duński aktor filmowy i teatralny, występujący w produkcjach skandynawskich i międzynarodowych.'),
+(7, 'Michelle', 'Yeoh', 'Malezyjska aktorka, znana z ról dramatycznych, kina akcji oraz produkcji międzynarodowych.'),
+(8, 'Ke', 'Huy Quan', 'Amerykański aktor i kaskader, który powrócił do kina po kilkunastoletniej przerwie.'),
+(9, 'Koji', 'Yakusho', 'Japoński aktor filmowy i teatralny, ceniony za role w kinie współczesnym.'),
+(10, 'Miki', 'Nakatani', 'Japońska aktorka i piosenkarka, występująca w filmach i serialach telewizyjnych.');
+
+INSERT INTO obsada (film_id, aktor_id, rola) VALUES
+(1, 1, 'Jacques Mayol'), (1, 2, 'Johana Baker'),
+(2, 3, 'Bob Harris'), (2, 4, 'Charlotte'),
+(3, 5, 'Amélie Poulain'),
+(4, 6, 'Martin'),
+(5, 7, 'Evelyn Wang'), (5, 8, 'Waymond Wang'),
+(6, 9, 'Hirayama'), (6, 10, 'Keiko');
+`;
+
+const klatkaSchemaSqlite = `CREATE TABLE IF NOT EXISTS filmy (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tytul TEXT NOT NULL,
+  rok INTEGER NOT NULL CHECK (rok BETWEEN 1888 AND 2100),
+  gatunek TEXT NOT NULL,
+  opis TEXT NOT NULL,
+  plakat_url TEXT
+);
+CREATE TABLE IF NOT EXISTS aktorzy (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  imie TEXT NOT NULL,
+  nazwisko TEXT NOT NULL,
+  bio TEXT
+);
+CREATE TABLE IF NOT EXISTS obsada (
+  film_id INTEGER NOT NULL REFERENCES filmy(id) ON DELETE CASCADE,
+  aktor_id INTEGER NOT NULL REFERENCES aktorzy(id) ON DELETE CASCADE,
+  rola TEXT,
+  PRIMARY KEY (film_id, aktor_id)
+);
+INSERT OR IGNORE INTO filmy (id, tytul, rok, gatunek, opis, plakat_url) VALUES
+(1, 'Wielki błękit', 1988, 'Dramat', 'Dwaj przyjaciele, których od dzieciństwa łączy pasja do nurkowania, stają naprzeciw własnym ambicjom i granicom ludzkich możliwości.', 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=900&q=80'),
+(2, 'Między słowami', 2003, 'Dramat / Romans', 'W Tokio spotykają się dwie zagubione osoby. Krótka znajomość staje się cichą opowieścią o bliskości, samotności i tym, czego nie umiemy powiedzieć.', 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80'),
+(3, 'Amelia', 2001, 'Komedia / Romans', 'Nieśmiała paryżanka postanawia odmienić życie ludzi wokół siebie. Przy okazji odkrywa, że na własne szczęście też trzeba czasem zapracować.', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80'),
+(4, 'Na rauszu', 2020, 'Dramat / Komedia', 'Czterech nauczycieli testuje teorię o idealnym poziomie alkoholu we krwi. Eksperyment szybko zaczyna dotyczyć czegoś więcej niż szkolnych lekcji.', 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=900&q=80'),
+(5, 'Wszystko wszędzie naraz', 2022, 'Sci-fi / Przygodowy', 'Właścicielka pralni trafia do wieloświata pełnego alternatywnych wersji własnego życia. Najważniejsza misja czeka jednak tu, w domu.', 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80'),
+(6, 'Perfect Days', 2023, 'Dramat', 'Hirayama odnajduje sens w codziennym rytmie Tokio: muzyce, książkach, drzewach i drobnych spotkaniach, które składają się na pełne życie.', 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80');
+INSERT OR IGNORE INTO aktorzy (id, imie, nazwisko, bio) VALUES
+(1, 'Jean-Marc', 'Barr', 'Francusko-amerykański aktor i reżyser, znany z ról w europejskim kinie autorskim.'),
+(2, 'Rosanna', 'Arquette', 'Amerykańska aktorka i reżyserka, która od dekad współpracuje z twórcami kina niezależnego.'),
+(3, 'Bill', 'Murray', 'Amerykański aktor i komik, którego styl łączy subtelny humor z melancholią.'),
+(4, 'Scarlett', 'Johansson', 'Amerykańska aktorka i reżyserka, laureatka nagród za role filmowe i teatralne.'),
+(5, 'Audrey', 'Tautou', 'Francuska aktorka, rozpoznawalna dzięki rolom w kinie francuskim i międzynarodowym.'),
+(6, 'Mads', 'Mikkelsen', 'Duński aktor filmowy i teatralny, występujący w produkcjach skandynawskich i międzynarodowych.'),
+(7, 'Michelle', 'Yeoh', 'Malezyjska aktorka, znana z ról dramatycznych, kina akcji oraz produkcji międzynarodowych.'),
+(8, 'Ke', 'Huy Quan', 'Amerykański aktor i kaskader, który powrócił do kina po kilkunastoletniej przerwie.'),
+(9, 'Koji', 'Yakusho', 'Japoński aktor filmowy i teatralny, ceniony za role w kinie współczesnym.'),
+(10, 'Miki', 'Nakatani', 'Japońska aktorka i piosenkarka, występująca w filmach i serialach telewizyjnych.');
+INSERT OR IGNORE INTO obsada (film_id, aktor_id, rola) VALUES
+(1, 1, 'Jacques Mayol'), (1, 2, 'Johana Baker'),
+(2, 3, 'Bob Harris'), (2, 4, 'Charlotte'),
+(3, 5, 'Amélie Poulain'),
+(4, 6, 'Martin'),
+(5, 7, 'Evelyn Wang'), (5, 8, 'Waymond Wang'),
+(6, 9, 'Hirayama'), (6, 10, 'Keiko');
+`;
+
+// Ciemny, wydawniczy styl wzorowany na oryginalnej Klatce — ten sam plik
+// kopiujesz do htdocs obok stron .php.
+const klatkaStyles = `:root {
+  --ink: #171a18;
+  --ink-soft: #202522;
+  --paper: #f0efe8;
+  --paper-dim: #b7bbb1;
+  --lime: #d8f56a;
+  --coral: #ef8567;
+  --line: rgba(240, 239, 232, .16);
+  --font-body: 'Segoe UI', 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Segoe UI', 'Space Grotesk', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--ink); color: var(--paper); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--lime); }
+button, input, textarea, select { font: inherit; }
+h1, h2, h3, p { margin-top: 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ── Nagłówek i nawigacja ── */
+.site-header { height: 82px; padding: 0 6.2%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); position: relative; z-index: 2; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: 1.6px; }
+.brand-mark { width: 28px; height: 28px; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-size: 16px; font-weight: 700; }
+.brand-period { color: var(--lime); }
+.main-nav { display: flex; gap: 34px; height: 100%; align-items: center; }
+.main-nav a { height: 100%; display: flex; align-items: center; color: #a6aaa2; font-size: 13px; border-bottom: 2px solid transparent; }
+.main-nav a:hover, .main-nav a.is-active { color: var(--paper); border-color: var(--lime); }
+.main-nav .nav-add { color: var(--lime); font-weight: 600; }
+
+/* ── Hero i katalog ── */
+.catalog-hero { min-height: 420px; padding: 60px 6.2% 64px; display: grid; grid-template-columns: 1fr 1.06fr; gap: 6.5%; align-items: center; }
+.eyebrow { display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1.4px; font-size: 10px; color: var(--lime); font-weight: 600; margin: 0 0 20px; }
+.eyebrow-line { height: 1px; width: 25px; background: var(--lime); }
+.hero-copy h1 { font: 500 clamp(40px, 5vw, 66px)/1.02 var(--font-display); margin: 0 0 22px; }
+.hero-copy h1 em { font-family: Georgia, serif; font-weight: 400; color: var(--lime); }
+.hero-description { max-width: 380px; color: #afb3aa; font-size: 15px; line-height: 1.8; margin: 0 0 29px; }
+.text-link { display: inline-flex; align-items: center; gap: 16px; padding-bottom: 7px; border-bottom: 1px solid var(--lime); font-size: 12px; font-weight: 600; }
+.text-link span { font-size: 18px; color: var(--lime); }
+.hero-art { height: 340px; position: relative; overflow: hidden; background: #343935; }
+.hero-placeholder { height: 100%; }
+.hero-stamp { position: absolute; top: 20px; right: 20px; border: 1px solid rgba(240,239,232,.7); padding: 10px 12px; color: #fff; font-size: 9px; line-height: 1.45; letter-spacing: 1.5px; text-align: center; transform: rotate(5deg); }
+.catalog-section { padding: 36px 6.2% 80px; border-top: 1px solid var(--line); }
+.section-topline { display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 1.3px; font-size: 9px; color: #8f968d; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.catalog-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 40px 0 30px; flex-wrap: wrap; }
+.catalog-heading .eyebrow, .people-heading .eyebrow { margin-bottom: 11px; }
+.catalog-heading h2 { font: 500 36px/1.1 var(--font-display); margin: 0; }
+.search-form { display: flex; align-items: center; border-bottom: 1px solid #6d746a; width: min(330px, 100%); }
+.search-form input { width: 100%; border: 0; background: transparent; color: var(--paper); padding: 11px 5px; outline: none; font-size: 12px; }
+.search-form input::placeholder { color: #858c82; }
+.search-form button { width: 38px; height: 38px; border: 0; background: transparent; color: var(--lime); font-size: 28px; cursor: pointer; }
+.film-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 24px; }
+.film-card { min-width: 0; animation: rise-in .5s both; animation-delay: calc(var(--card-index) * .07s); }
+.poster-link { display: block; }
+.poster-frame { position: relative; height: clamp(245px, 31vw, 400px); overflow: hidden; background: #292f2b; }
+.poster-frame img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .65s cubic-bezier(.2,.7,.2,1), filter .4s; filter: saturate(.78); }
+.poster-link:hover img { transform: scale(1.045); filter: saturate(1); }
+.poster-number { position: absolute; top: 14px; left: 15px; font: 11px var(--font-display); color: #fff; text-shadow: 0 1px 5px #000; }
+.poster-arrow { position: absolute; bottom: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%; background: var(--lime); color: var(--ink); display: grid; place-items: center; opacity: 0; transform: translateY(4px); transition: .2s; }
+.poster-link:hover .poster-arrow { opacity: 1; transform: translateY(0); }
+.poster-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(ellipse at 50% 70%, #575f45, #252b27 64%); color: var(--lime); }
+.poster-placeholder > span { font: 300 108px/.9 Georgia, serif; }
+.poster-placeholder small { margin-top: 18px; color: #d6d7cd; font-size: 8px; letter-spacing: 2px; }
+.film-meta { display: flex; align-items: center; gap: 8px; color: #9da39a; font-size: 10px; margin-top: 16px; }
+.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--coral); }
+.film-card h3 { font: 600 19px/1.3 var(--font-display); margin: 6px 0; }
+.film-card h3 a:hover { color: var(--lime); }
+.film-description { font-size: 12px; color: #9fa59c; line-height: 1.7; margin: 0; min-height: 41px; }
+
+/* ── Strona filmu ── */
+.detail-shell, .form-shell { padding: 35px 9% 80px; max-width: 1280px; margin: auto; }
+.back-link { display: inline-flex; gap: 10px; color: #a8ada4; font-size: 12px; margin: 0 0 27px; }
+.back-link:first-letter { color: var(--lime); }
+.film-detail { display: grid; grid-template-columns: minmax(230px, .75fr) 1.5fr; gap: 8%; align-items: start; padding: 9px 0 60px; }
+.detail-poster { height: 400px; position: relative; overflow: hidden; background: #292f2b; }
+.detail-poster > img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.8); }
+.detail-placeholder > span { font-size: 140px; }
+.poster-ribbon { position: absolute; bottom: 14px; left: 14px; background: var(--lime); color: var(--ink); font-size: 8px; letter-spacing: 1.2px; padding: 6px 9px; }
+.detail-copy .eyebrow { margin-bottom: 17px; }
+.detail-copy h1 { font: 500 clamp(36px, 5vw, 60px)/1.04 var(--font-display); margin: 0 0 17px; }
+.detail-description { font-size: 14px; line-height: 1.9; color: #c0c4bb; margin: 24px 0 26px; max-width: 700px; }
+.cast-block { margin-top: 40px; }
+.cast-block h2, .people-list-heading h2 { font: 500 17px var(--font-display); margin-bottom: 13px; }
+.cast-list { padding: 0; margin: 0 0 22px; list-style: none; border-top: 1px solid var(--line); }
+.cast-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.cast-list li > span { color: #8f968d; font-size: 11px; margin-left: auto; }
+.cast-add { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 16px; background: var(--ink-soft); border: 1px solid rgba(240,239,232,.08); }
+.cast-add select, .cast-add input { color: var(--paper); background: var(--ink); border: 1px solid #414841; padding: 9px 10px; font-size: 12px; }
+.cast-add input { flex: 1; min-width: 140px; }
+.inline-form { display: inline; }
+.link-button { background: none; border: 0; color: #b98d7e; font-size: 11px; cursor: pointer; padding: 4px 6px; text-decoration: underline; }
+.link-button:hover { color: var(--coral); }
+
+/* ── Aktorzy ── */
+.people-page { padding: 35px 8% 90px; max-width: 1350px; margin: auto; }
+.people-heading { padding: 60px 0 44px; }
+.people-heading h1 { font: 500 clamp(40px, 5vw, 66px)/1.02 var(--font-display); margin-bottom: 14px; }
+.people-heading > p:last-child { color: #a7ada3; max-width: 480px; }
+.actor-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.actor-card { min-height: 200px; padding: 22px; position: relative; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 7px; animation: rise-in .45s both; animation-delay: calc(var(--card-index) * .05s); transition: background .2s; }
+.actor-card:hover { background: var(--ink-soft); }
+.actor-initials, .person-monogram { display: grid; place-items: center; background: #394239; color: var(--lime); font-family: var(--font-display); }
+.actor-initials { width: 64px; height: 64px; font-size: 20px; margin-bottom: auto; }
+.actor-card-index { position: absolute; right: 18px; top: 19px; color: #818980; font: 10px var(--font-display); }
+.actor-card strong { font: 500 16px var(--font-display); }
+.actor-card > span:last-child { color: #90988e; font-size: 10px; }
+.actor-card i { font-style: normal; color: var(--lime); margin-left: 7px; }
+.person-profile { display: grid; grid-template-columns: 180px 1fr; gap: 42px; padding: 56px 0 60px; align-items: center; }
+.person-monogram { width: 180px; aspect-ratio: 1; font-size: 48px; background: radial-gradient(circle at 30% 25%, #66704e, #343a32 70%); }
+.person-profile h1 { font: 500 clamp(34px, 4.4vw, 52px)/1.05 var(--font-display); margin-bottom: 13px; }
+.person-bio { color: #aeb3a9; max-width: 650px; line-height: 1.8; }
+.people-list-heading { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.people-list-heading span { color: #929a90; font-size: 11px; }
+.filmography-row { display: grid; grid-template-columns: 70px 1fr 1fr 25px; align-items: center; gap: 15px; padding: 17px 7px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.filmography-row:hover { background: var(--ink-soft); }
+.filmography-year, .filmography-row > span:nth-child(3) { color: #969e93; }
+.filmography-row strong { font: 500 16px var(--font-display); }
+.row-arrow { color: var(--lime); text-align: right; }
+
+/* ── Formularze dodawania i edycji ── */
+.form-panel { max-width: 560px; padding: 28px; background: var(--ink-soft); border: 1px solid rgba(240,239,232,.08); }
+.form-panel h1 { font: 500 34px/1.15 var(--font-display); margin-bottom: 22px; }
+.form-panel .eyebrow { margin-bottom: 13px; }
+.film-form { display: flex; flex-direction: column; }
+.film-form label { font-size: 10px; color: #c2c7bd; margin: 0 0 6px; }
+.label-hint { color: #8d958a; margin-left: 5px; }
+.film-form input, .film-form select, .film-form textarea { width: 100%; color: var(--paper); background: var(--ink); border: 1px solid #414841; padding: 11px; margin-bottom: 16px; outline: none; font-size: 12px; }
+.film-form input:focus, .film-form textarea:focus { border-color: var(--lime); }
+.film-form textarea { resize: vertical; }
+.film-form input::placeholder, .film-form textarea::placeholder { color: #737b72; }
+.submit-button, .button-link { display: inline-flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--lime); color: var(--ink); border: 0; padding: 13px 15px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.submit-button:hover, .button-link:hover { background: #e8ff9c; color: var(--ink); }
+.submit-button span { font-size: 16px; }
+.form-hint { margin: 18px 0 0; font-size: 11px; color: #8f968d; line-height: 1.7; }
+.form-hint code { color: var(--lime); }
+
+/* ── Komunikaty i stany ── */
+.notice { padding: 15px 17px; margin: 0 0 22px; border-left: 2px solid var(--coral); background: #242521; font-size: 12px; }
+.notice a { color: var(--lime); font-weight: 600; }
+.notice-success { border-color: var(--lime); }
+.notice-error ul { padding-left: 17px; margin: 0; }
+.notice-error li { color: #e8b4a0; }
+.empty-state { text-align: center; border: 1px solid var(--line); padding: 55px 20px; color: #a8afa5; }
+.empty-state h3, .empty-state h1 { font: 500 21px var(--font-display); color: var(--paper); margin: 14px 0 7px; }
+.empty-state p { font-size: 12px; margin: 0 0 10px; }
+.empty-mark { font: 32px var(--font-display); color: var(--lime); }
+.detail-empty { margin: 50px 0; }
+.detail-empty .button-link { display: inline-flex; margin-top: 20px; }
+.muted-copy { color: #929a90; font-size: 12px; }
+
+/* ── Stopka ── */
+.site-footer { min-height: 103px; padding: 25px 6.2%; display: flex; align-items: center; justify-content: space-between; color: #92988f; }
+.footer-brand { color: var(--paper); font-size: 13px; }
+.footer-brand .brand-mark { width: 24px; height: 24px; font-size: 13px; }
+.site-footer p, .footer-year { margin: 0; font-size: 10px; }
+
+@keyframes rise-in { from { opacity: 0; transform: translateY(13px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 850px) {
+  .site-header { padding: 0 4%; height: 70px; }
+  .main-nav { gap: 18px; }
+  .main-nav a { font-size: 12px; }
+  .catalog-hero { grid-template-columns: 1fr; gap: 30px; padding: 44px 5% 56px; }
+  .hero-art { height: 240px; }
+  .catalog-section, .detail-shell, .form-shell, .people-page { padding-left: 5%; padding-right: 5%; }
+  .film-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 18px; }
+  .film-detail { grid-template-columns: 1fr; gap: 30px; }
+  .detail-poster { height: 320px; max-width: 300px; }
+  .actor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .person-profile { grid-template-columns: 84px 1fr; gap: 20px; padding: 44px 0; }
+  .person-monogram { width: 84px; font-size: 24px; }
+  .person-bio { grid-column: 1 / -1; }
+  .filmography-row { grid-template-columns: 46px 1fr 20px; }
+  .filmography-row > span:nth-child(3) { display: none; }
+  .form-panel { padding: 20px; }
+}
+`;
+
+const klatkaFiles = {
+  'film.php': klatkaFilm,
+  'aktor.php': klatkaAktor,
+  'dodaj_film.php': klatkaDodajFilm,
+  'dodaj_aktora.php': klatkaDodajAktora,
+  'edytuj_film.php': klatkaEdytujFilm,
+  'baza.sql': klatkaSchemaMysql,
+  'baza.sqlite.sql': klatkaSchemaSqlite,
+  'styles.css': klatkaStyles,
+};
 
 export const phpProfileExercises = {
   603: [
@@ -1304,38 +2204,104 @@ ${escapeText}
   ],
   614: [
     {
-      title: 'Otwórz bazę biblioteki',
-      prompt: 'W db.php połącz się z lokalną bazą Biblioteka przez mysqlowy adapter. Utwórz $dsn w formacie mysql:host=localhost;dbname=biblioteka;charset=utf8mb4 i otwórz połączenie przez connectMysqlStyle($dsn, $path). Adapter mapuje nazwę bazy na plik SQLite. Kod startowy wczyta dane Database Lab, a index.php pokaże liczbę książek.',
-      starter: countPage,
-      solution: countPage,
-      starterFiles: { ...databaseFiles, 'db.php': createMysqlDatabaseFile('// Utwórz tu połączenie i zapisz je w $db.') },
-      solutionFiles: databaseFiles,
-      checks: [source("mysql:host=localhost;dbname=", 'db.php'), source('connectMysqlStyle($dsn, $path)', 'db.php'),
-        source("new PDO('sqlite:'", 'mysql-adapter.php'), source('dbname=', 'mysql-adapter.php'), text('#result', '8')],
+      title: 'Połącz się z bazą SQLite',
+      prompt: 'W db.php utwórz połączenie: `$db = new PDO(\'sqlite:\' . $path);` i włącz tryb błędów `$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);`. Baza to plik biblioteka.sqlite obok kodu — przy pierwszym otwarciu db.php wczyta do niego dane z biblioteka.sql. Połączona baza pokaże w index.php liczbę książek.',
+      starter: libraryCountPage,
+      solution: libraryCountPage,
+      starterFiles: sqliteFiles(sqliteDbFile(`// TODO: utwórz połączenie PDO ze sterownikiem sqlite
+// i włącz tryb wyjątków (ERRMODE) — patrz kroki pod zadaniem.`)),
+      solutionFiles: sqliteFiles(solvedDbFile),
+      steps: [
+        'W db.php dopisz `$db = new PDO(\'sqlite:\' . $path);` — baza to jeden plik obok kodu.',
+        'Włącz wyjątki: `$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);` — błąd SQL rzuci PDOException zamiast milczeć.',
+        'Blok `if (isset($db))` włącza klucze obce (PRAGMA) i przy pierwszym starcie wczytuje biblioteka.sql — nie zmieniaj go.',
+        'Uruchom ▶ Play — index.php pokaże „Książek: 8”.',
+      ],
+      checks: [
+        ['sourceMatches', 'Utwórz PDO przez `new PDO(\'sqlite:\' . $path)` w db.php.', { file: 'db.php', pattern: 'new\\s+PDO\\(\\s*[\'"]sqlite:' }],
+        source('ERRMODE_EXCEPTION', 'db.php'),
+        text('#result', 'Książek: 8'),
+      ],
     },
     {
-      title: 'Filtruj książki według roku',
-      prompt: 'W index.php przygotuj SELECT z WHERE rok_wydania = :rok, przekaż $year do execute i odczytaj wyniki przez fetchAll(PDO::FETCH_ASSOC). Lista pokaże książki z 1834 roku w kolejności id.',
-      starter: searchPage('$books = []; // Zastąp pustą listę wynikiem zapytania.', bookList),
-      solution: searchPage(filteredQuery, bookList),
-      starterFiles: databaseFiles,
-      checks: [source('prepare'), source(':rok'), source('execute'), source('PDO::FETCH_ASSOC'),
-        text('#books li:nth-child(1)', 'Pan Tadeusz'), text('#books li:nth-child(2):last-child', 'Kordian')],
+      title: 'Szukaj książki po roku',
+      prompt: 'Formularz GET wysyła `?rok=` do tego samego index.php — możesz wpisać rok i kliknąć Szukaj. Zastąp pustą listę zapytaniem: `$db->prepare(\'SELECT tytul FROM ksiazki WHERE rok_wydania = :rok ORDER BY id\')`, `execute([\'rok\' => $year])` i `fetchAll(PDO::FETCH_ASSOC)`. Parametr `:rok` zostaje w SQL — nie wklejaj `$year` do zapytania.',
+      starter: librarySearchPage('$books = []; // TODO: prepare → SELECT z :rok → execute → fetchAll', bookItem),
+      solution: librarySearchPage(yearQuery, bookItem),
+      starterFiles: sqliteFiles(solvedDbFile),
+      solutionFiles: sqliteFiles(solvedDbFile),
+      steps: [
+        'Rok trafia do `$_GET[\'rok\']` przez formularz — `$year` już go rzutuje na int.',
+        'Napisz `$query = $db->prepare(\'SELECT tytul FROM ksiazki WHERE rok_wydania = :rok ORDER BY id\');`.',
+        'Wykonaj `$query->execute([\'rok\' => $year]);` — wartość idzie do parametru, nie do SQL.',
+        'Pobierz `$books = $query->fetchAll(PDO::FETCH_ASSOC);`.',
+        'Wpisz 1834 i kliknij Szukaj — „Pan Tadeusz” i „Kordian”; rok 2000 pokaże komunikat o braku wyników.',
+      ],
+      checks: [
+        source('prepare'),
+        source(':rok'),
+        source('execute'),
+        source('PDO::FETCH_ASSOC'),
+        ['phpRequest', 'Dla ?rok=1834 pokazuje „Pan Tadeusz” jako pierwszą książkę.', { request: { method: 'GET', query: { rok: '1834' } }, selector: '#books li:nth-child(1)', expected: 'Pan Tadeusz' }],
+        ['phpRequest', 'Dla ?rok=1834 pokazuje też „Kordian”.', { request: { method: 'GET', query: { rok: '1834' } }, selector: '#books li:nth-child(2)', expected: 'Kordian' }],
+        ['phpRequest', 'Dla ?rok=2000 pokazuje „Brak pasujących książek.”.', { request: { method: 'GET', query: { rok: '2000' } }, selector: '#result', expected: 'Brak pasujących książek.' }],
+        ['interaction', 'Wpisz rok 1890 w polu wyszukiwania.', { selector: '#rok', action: 'input', value: '1890', expected: {} }],
+        ['interaction', 'Kliknięcie Szukaj pokazuje „Lalka” z roku 1890.', { selector: '#search button[type="submit"]', resultSelector: '#books li:nth-child(1)', expected: { beforeText: 'Pan Tadeusz', textEquals: 'Lalka' } }],
+      ],
     },
     {
-      title: 'Obsłuż pusty wynik',
-      prompt: 'Zachowaj filtrowanie książek. Gdy $books jest pustą tablicą, pokaż „Brak pasujących książek.” w #result. W przeciwnym razie pokaż listę. Play sprawdzi rok 2000, dla którego w bazie nie ma książek.',
-      starter: searchPage(filteredQuery, bookList),
-      solution: searchPage(filteredQuery, `      <?php if ($books === []): ?>
-        <p id="result">Brak pasujących książek.</p>
-      <?php else: ?>
-${bookList}
-      <?php endif; ?>`),
-      starterFiles: databaseFiles,
-      checks: [source('if ('), [
-        'phpRequest', 'Dla roku 2000 pokaż komunikat o braku wyników.',
-        { request: { method: 'GET', query: { rok: '2000' } }, selector: '#result', expected: 'Brak pasujących książek.' },
-      ], text('#result', 'Brak pasujących książek.')],
+      title: 'Pokaż autorów przez JOIN',
+      prompt: 'Wyszukiwanie działa, ale lista pokazuje same tytuły. Rozszerz zapytanie o autora: `SELECT k.tytul, a.imie, a.nazwisko FROM ksiazki AS k JOIN autorzy AS a ON a.id = k.autor_id WHERE k.rok_wydania = :rok ORDER BY k.id` — klucz `autor_id` z ksiazki wskazuje wiersz w autorzy. Każdy `<li>` ma pokazać „tytuł — imię i nazwisko”.',
+      starter: librarySearchPage(yearQuery, bookItem),
+      solution: librarySearchPage(joinQuery, joinItem),
+      starterFiles: sqliteFiles(solvedDbFile),
+      solutionFiles: sqliteFiles(solvedDbFile),
+      steps: [
+        'W SELECT zamień `tytul` na `k.tytul, a.imie, a.nazwisko` — `k` i `a` to aliasy (skróty) tabel.',
+        'Dopisz `FROM ksiazki AS k JOIN autorzy AS a ON a.id = k.autor_id` — książka łączy się ze swoim autorem po kluczu.',
+        'Warunek `k.rok_wydania = :rok` zostaje bez zmian.',
+        'W `<li>` wypisz `e($book[\'tytul\'] . \' — \' . $book[\'imie\'] . \' \' . $book[\'nazwisko\'])`.',
+        'Wpisz 1896 i kliknij Szukaj — „Quo vadis — Henryk Sienkiewicz”.',
+      ],
+      checks: [
+        source('JOIN'),
+        source('autor_id'),
+        ['phpRequest', 'Dla ?rok=1834 pokazuje „Pan Tadeusz — Adam Mickiewicz”.', { request: { method: 'GET', query: { rok: '1834' } }, selector: '#books li:nth-child(1)', expected: 'Pan Tadeusz — Adam Mickiewicz' }],
+        ['phpRequest', 'Dla ?rok=1834 pokazuje też „Kordian — Juliusz Słowacki”.', { request: { method: 'GET', query: { rok: '1834' } }, selector: '#books li:nth-child(2)', expected: 'Kordian — Juliusz Słowacki' }],
+        ['phpRequest', 'Dla ?rok=2000 nadal pokazuje komunikat o braku wyników.', { request: { method: 'GET', query: { rok: '2000' } }, selector: '#result', expected: 'Brak pasujących książek.' }],
+        ['interaction', 'Wpisz rok 1896 w polu wyszukiwania.', { selector: '#rok', action: 'input', value: '1896', expected: {} }],
+        ['interaction', 'Kliknięcie Szukaj pokazuje „Quo vadis — Henryk Sienkiewicz”.', { selector: '#search button[type="submit"]', resultSelector: '#books li:nth-child(1)', expected: { beforeText: 'Pan Tadeusz — Adam Mickiewicz', textEquals: 'Quo vadis — Henryk Sienkiewicz' } }],
+      ],
+    },
+  ],
+  615: [
+    {
+      title: 'Klatka — kompletny portal filmowy',
+      prompt: 'To jest gotowy projekt z przewodnika w zakładce Nauka: katalog filmów z plakatami, strony szczegółów, indeks aktorów i zarządzanie obsadą — każda strona to osobny plik PHP. Uruchom ▶ Play i poklikaj: wyszukaj film, wejdź w szczegóły, dodaj film przez „+ Film”, aktora przez „+ Aktor”, edytuj dane filmu i przypisuj aktorów do obsady. Potem skopiuj pliki do C:\\xampp\\htdocs\\klatka, wklej baza.sql w phpMyAdmin i podmień linię $dsn na mysql: — ta sama aplikacja zadziała na XAMPP.',
+      starter: klatkaIndex,
+      solution: klatkaIndex,
+      starterFiles: klatkaFiles,
+      checks: [
+        source('new PDO'),
+        source('plakat_url'),
+        ['sourceIncludes', 'Strona dodawania zapisuje film przez INSERT.', { file: 'dodaj_film.php', value: 'INSERT INTO filmy' }],
+        ['sourceIncludes', 'Strona edycji zapisuje zmiany przez UPDATE.', { file: 'edytuj_film.php', value: 'UPDATE filmy' }],
+        ['phpRequest', 'Katalog index.php pokazuje siatkę kart z filmami.', { request: { path: 'index.php' }, selector: '.film-card h3 a', expected: 'Perfect Days' }],
+        ['phpRequest', 'Katalog dla ?q=amelia pokazuje kartę „Amelia”.', { request: { path: 'index.php', query: { q: 'amelia' } }, selector: '.film-card h3 a', expected: 'Amelia' }],
+        ['phpRequest', 'Strona film.php?id=2 pokazuje tytuł i obsadę.', { request: { path: 'film.php', query: { id: '2' } }, selector: '#film-title', expected: 'Między słowami' }],
+        ['phpRequest', 'Profil aktor.php?id=3 pokazuje Billa Murraya.', { request: { path: 'aktor.php', query: { id: '3' } }, selector: '#actor-name', expected: 'Bill Murray' }],
+        ['phpRequest', 'POST w dodaj_film.php zapisuje film i pokazuje sukces.', { request: { method: 'POST', path: 'dodaj_film.php', form: { tytul: 'Matrix', rok: '1999', gatunek: 'Sci-fi', opis: 'Klasyczna cyberopowieść o iluzji rzeczywistości.', plakat_url: '' } }, selector: '#added', expected: 'Dodano film „Matrix”' }],
+        ['phpRequest', 'POST polacz w film.php dopisuje aktora do obsady.', { request: { method: 'POST', path: 'film.php', form: { akcja: 'polacz', film_id: '3', aktor_id: '3', rola: 'Étienne' } }, selector: '#obsada-list', expected: 'Bill Murray' }],
+        ['phpRequest', 'POST w edytuj_film.php zapisuje zmiany przez UPDATE.', { request: { method: 'POST', path: 'edytuj_film.php', form: { id: '3', tytul: 'Amelia z Montmartre', rok: '2001', gatunek: 'Komedia', opis: 'Nowy opis filmu.', plakat_url: '' } }, selector: '#added', expected: 'Zapisano zmiany' }],
+        ['interaction', 'Kliknięcie plakatu „Między słowami” otwiera stronę filmu.', { selector: 'a.poster-link[href="film.php?id=2"]', resultSelector: '#film-title', expected: { text: 'Między słowami' } }],
+      ],
+      steps: [
+        '▶ Play otwiera index.php — katalog: wyszukiwarka GET `?q=`, siatka kart z plakatami z kolumny `plakat_url`.',
+        'Kliknij plakat — przejdziesz do `film.php?id=…`: szczegóły, obsada z JOIN-a i formularze przypisywania aktorów.',
+        '„+ Film” i „+ Aktor” w menu to osobne strony POST — INSERT z parametrami i walidacja pól.',
+        '„Edytuj dane filmu” na stronie filmu otwiera formularz wypełniony danymi rekorda — submit robi UPDATE.',
+        'Ten sam kod działa na XAMPP: skopiuj pliki do htdocs\\klatka, wklej `baza.sql` w phpMyAdmin, zamień `$dsn` na `mysql:host=localhost;dbname=klatka;charset=utf8mb4`.',
+      ],
     },
   ],
 };

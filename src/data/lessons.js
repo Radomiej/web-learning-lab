@@ -299,6 +299,13 @@ const definitions = [
     theory: htmlCssTeachingPages['html-semantics'],
   },
   {
+    order: lessonNumber('html-gd', 10), id: 'html-gd-hud-slots', track: 'html-gd', title: 'Sloty interfejsu',
+    summary: 'Grupuj elementy HUD w kontenery div i span oraz nazwij je przez class i id.',
+    focus: 'div, span, class i id jako haki dla CSS', file: 'index.html', token: '<div',
+    objectives: ['Grupuj bloki w `div` i fragmenty tekstu w `span`.', 'Nadawaj `class` i `id` tam, gdzie nie ma semantycznego elementu.'],
+    theory: htmlCssTeachingPages['html-semantics'],
+  },
+  {
     order: lessonNumber('css', 1), id: 'css-intro', track: 'css', title: 'CSS i dołączanie arkuszy',
     summary: 'Poznaj selektor, właściwość, wartość i kolejność arkuszy.',
     focus: 'link, selektor, właściwość, wartość i komentarz CSS', file: 'styles.css', token: 'color:',

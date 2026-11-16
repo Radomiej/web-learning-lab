@@ -12,6 +12,7 @@ const htmlGdTags = {
   7: ['table', 'caption', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'],
   8: ['form', 'label', 'input', 'textarea', 'select', 'option', 'button', 'fieldset', 'legend'],
   9: ['header', 'main', 'section', 'article', 'aside', 'footer', 'time', 'div', 'span'],
+  10: ['div', 'span', 'class', 'id'],
 };
 
 // Identyfikatory lekcji HTML GD → id lekcji HTML, z której przejmujemy
@@ -26,6 +27,7 @@ export const htmlGdTheorySource = {
   'html-gd-leaderboard': 'html-tables',
   'html-gd-character': 'html-forms',
   'html-gd-launch-page': 'html-semantics',
+  'html-gd-hud-slots': 'html-semantics',
 };
 
 export const htmlGdLessons = Object.entries(htmlGdTags).map(([order, requiredTags]) => ({

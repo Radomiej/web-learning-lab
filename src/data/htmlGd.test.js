@@ -44,15 +44,15 @@ async function signalsFor(project, track, checks) {
   }
 }
 
-describe('HTML GD lessons 901–909', () => {
+describe('HTML GD lessons 901–910', () => {
   it('defines 9 lessons in the 900 block with file index.html', () => {
-    expect(gdLessons.map((lesson) => lesson.order)).toEqual([901, 902, 903, 904, 905, 906, 907, 908, 909]);
+    expect(gdLessons.map((lesson) => lesson.order)).toEqual([901, 902, 903, 904, 905, 906, 907, 908, 909, 910]);
     expect(gdLessons.every((lesson) => lesson.file === 'index.html')).toBe(true);
   });
 
   it('keeps stable unique task ids: guided / modified-v2 / independent-v2', () => {
     const ids = allTasks.map((task) => task.id);
-    expect(new Set(ids).size).toBe(27);
+    expect(new Set(ids).size).toBe(30);
     for (const lesson of gdLessons) {
       const stem = `html-gd-${lesson.order}`;
       expect(lesson.tasks.map((task) => task.id)).toEqual([`${stem}-guided`, `${stem}-modified-v2`, `${stem}-independent-v2`]);
@@ -67,7 +67,7 @@ describe('HTML GD lessons 901–909', () => {
     }
   });
 
-  it('covers all 27 tasks with pilot learning entries, traces and quiz options', () => {
+  it('covers all 30 tasks with pilot learning entries, traces and quiz options', () => {
     for (const task of allTasks) {
       const entry = taskLearningFor(task.id);
       expect(entry, task.id).toBeTruthy();

@@ -169,6 +169,7 @@ test('sourceMatches accepts flexible reassignment forms and rejects constants', 
 
 const phpReqKey = (request = {}) => JSON.stringify({
   method: String(request.method || 'GET').toUpperCase(),
+  path: String(request.path || ''),
   query: request.query || {},
   form: request.form || {},
   body: request.body == null ? '' : String(request.body),

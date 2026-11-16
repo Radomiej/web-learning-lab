@@ -2,6 +2,7 @@ const BRIDGE_SOURCE = 'web-learning-lab';
 import { compileJsx, getReactRuntimeScripts } from './reactRuntimeAssets.js';
 import { resolveDocumentResources } from './localResources.js';
 import { getGameRuntimeScript } from './gameRuntime.js';
+import { inlineGameUiFonts } from '../data/gameUiTheme.js';
 
 function escapeInlineScript(source = '') {
   return String(source)
@@ -324,6 +325,71 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
       else if (!lastFormSubmit) replayFormSubmit(form);
     }, 0);
   }, true);
+
+  // Nawigacja między stronami .php: sandbox blokuje prawdziwe przejścia,
+  // więc link i submit lecą przez shim fetch do php.wasm, a odpowiedź
+  // podmienia dokument — jak natywna nawigacja przeglądarki. Kod strony,
+  // który sam preventuje submit/click (np. własny fetch), ma pierwszeństwo.
+  function isPhpHref(url) {
+    return Boolean(url) && !/^[a-z][a-z0-9+.-]*:/i.test(url) && !url.startsWith('//') && /\.php($|[?#])/i.test(url);
+  }
+  function swapPhpDocument(html, fragment) {
+    const doc = new DOMParser().parseFromString(String(html), 'text/html');
+    document.title = doc.title;
+    document.body.replaceChildren(...doc.body.childNodes);
+    if (fragment) {
+      const target = document.getElementById(fragment);
+      if (target && typeof target.scrollIntoView === 'function') target.scrollIntoView();
+    }
+  }
+  function navigatePhp(url, options = {}, depth = 0) {
+    let target = String(url);
+    let fragment = '';
+    const hashIndex = target.indexOf('#');
+    if (hashIndex !== -1) {
+      fragment = target.slice(hashIndex + 1);
+      target = target.slice(0, hashIndex) || 'index.php';
+    }
+    window.fetch(target, options).then(async (response) => {
+      const location = response.headers && typeof response.headers.get === 'function'
+        ? response.headers.get('location') : null;
+      if (location && response.status >= 300 && response.status < 400 && depth < 4) {
+        navigatePhp(location, {}, depth + 1);
+        return;
+      }
+      swapPhpDocument(await response.text(), fragment);
+    }).catch(() => {});
+  }
+  document.addEventListener('submit', (event) => {
+    if (event.defaultPrevented) return;
+    const form = event.target;
+    if (!form || typeof form.getAttribute !== 'function' || typeof FormData !== 'function') return;
+    const method = String(form.getAttribute('method') || 'get').toUpperCase();
+    const action = form.getAttribute('action');
+    if (!action || !isPhpHref(action)) return;
+    event.preventDefault();
+    const params = new URLSearchParams(new FormData(form));
+    if (method === 'POST') {
+      navigatePhp(action, { method: 'POST', body: params });
+    } else {
+      // Przeglądarka przy GET wymienia query z action na pola formularza;
+      // fragment (#kotwica) zostaje z action i doklejamy go po query.
+      const [pathAndFrag] = action.split('?');
+      const [path, frag] = pathAndFrag.split('#');
+      const target = params.toString() ? path + '?' + params : path;
+      navigatePhp(frag ? target + '#' + frag : target);
+    }
+  });
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const anchor = event.target && typeof event.target.closest === 'function'
+      ? event.target.closest('a[href]') : null;
+    if (!anchor) return;
+    const href = anchor.getAttribute('href') || '';
+    if (!isPhpHref(href)) return;
+    event.preventDefault();
+    navigatePhp(href);
+  });
   window.addEventListener('keydown', event => {
     if (!window.GameLab) return;
     if (event.key === 'Escape') send('exit-game-fullscreen', {});
@@ -417,9 +483,23 @@ export function createRuntimeBridge({ requestedSignals = [], runId = null } = {}
       pendingSnapshot = window.setTimeout(snapshot, 10);
     }).observe(document.documentElement, { childList: true, characterData: true, subtree: true });
   }
+  // Ready meldujemy przy DOMContentLoaded — load czeka na podzasoby (fonty,
+  // media), a ich utknięte żądanie zatrzymywało podgląd w stanie running.
+  // Snapshot zostaje na load: wtedy obrazy i media mają już wymiary.
+  let announced = false;
+  function announce() {
+    if (announced) return;
+    announced = true;
+    send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.setTimeout(announce, 100));
+  } else {
+    window.setTimeout(announce, 100);
+  }
   window.addEventListener('load', () => {
     window.setTimeout(() => {
-      send('ready', { track: ${JSON.stringify('TRACK_PLACEHOLDER')} });
+      announce();
       collectGameScenarios();
       snapshot();
     }, 100);
@@ -444,11 +524,11 @@ export function buildPreviewDocument(files = {}, options = {}) {
     const gameRuntime = files.runtime?.kind === 'game-js' ? [getGameRuntimeScript()] : [];
     const scripts=[bridge,...runtime,...gameRuntime,...(options.runtimeScripts ?? [])].map(code=>`<script data-runtime="true">${escapeInlineScript(code)}</script>`).join('');
     const errorScript=document.errors.length ? `<script>throw new Error(${JSON.stringify(document.errors.join('\n')).replace(/</g,'\\u003c')});</script>` : '';
-    return `${document.doctype}<html ${document.htmlAttributes}><head>${scripts}${document.headMarkup}</head><body ${document.bodyAttributes || ''}>${document.bodyMarkup}${errorScript}</body></html>`;
+    return `${document.doctype}<html ${document.htmlAttributes}><head>${scripts}${inlineGameUiFonts(document.headMarkup)}</head><body ${document.bodyAttributes || ''}>${document.bodyMarkup}${errorScript}</body></html>`;
   }
   const normalized = normalizeHtmlDocument(files.html ?? '');
-  const baseCss = String(files.baseCss ?? '');
-  const themeCss = String(files.themeCss ?? '');
+  const baseCss = inlineGameUiFonts(files.baseCss ?? '');
+  const themeCss = inlineGameUiFonts(files.themeCss ?? '');
   const isReactTrack = options.track === 'react';
   const compilation = isReactTrack ? compileJsx(files.js ?? '') : null;
   const compiledStudentCode = compilation?.warnings.length ? 'throw new Error(' + JSON.stringify(compilation.warnings.join('\n')) + ');' : isReactTrack ? compilation.code : String(files.js ?? '');
