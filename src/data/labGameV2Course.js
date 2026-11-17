@@ -2,9 +2,117 @@ import {guidedStarter} from '../../shared/lab-game-v2/course/guidedStarters.js';
 import {earlyStarter} from '../../shared/lab-game-v2/course/earlyStarters.js';
 // Course source is deliberately separate from either editor's project adapter.
 // A missing recipe remains visibly unfinished; it must never masquerade as a solution.
+
+// Hoists java.util/java.lang-style qualified names into import statements.
+function hoistJavaImports(src) {
+  const seen = {};
+  let collision = false;
+  const body = src.replace(/\bjava\.([\w.]+)\.([A-Z]\w*)/g, (match, pkg, name) => {
+    const full = `java.${pkg}.${name}`;
+    if (seen[name] && seen[name] !== full) { collision = true; return match; }
+    seen[name] = full;
+    return name;
+  });
+  if (collision) return src;
+  const imports = [...new Set(Object.values(seen))].sort().map(name => `import ${name};`).join('\n');
+  return imports ? `${imports}\n${body}` : body;
+}
+
+// Structural formatter: line breaks at {}, ; and dedent; expression braces stay inline.
+export function formatCourseSource(src) {
+  const INLINE_PREV = new Set(['=', '(', ',', ':', '[', ']', '?', '!', '&', '|', '+', '-', '*', '/', '%', '<', ';']);
+  const INLINE_WORD = new Set(['return', 'new', 'throw', 'case']);
+  const JOIN_WORD = /^(else|catch|finally|while)\b/;
+  const CONTROL_WORD = new Set(['if', 'for', 'while', 'switch', 'catch', 'synchronized']);
+  let out = '';
+  const stack = [];
+  const parenWords = [];
+  let parens = 0, i = 0;
+  const n = src.length;
+  const depth = () => stack.reduce((a, e) => a + (e.b ? 1 : 0), 0);
+  const parenBlocks = () => stack.reduce((a, e) => a + (e.b && e.p ? 1 : 0), 0);
+  const nl = () => { out = out.replace(/[ \t]+$/, ''); if (out.length && !out.endsWith('\n')) out += '\n'; out += '    '.repeat(depth()); };
+  const nlBody = () => { out = out.replace(/[ \t]+$/, ''); if (out.length && !out.endsWith('\n')) out += '\n'; out += '    '.repeat(depth() + 1); };
+  const prev = () => { const t = out.trimEnd(); return t ? t[t.length - 1] : ''; };
+  const prevWord = () => (/([A-Za-z_$][\w$]*)\s*$/.exec(out) || [])[1] || '';
+  const nextToken = () => { let j = i; while (j < n && /\s/.test(src[j])) j++; return src[j] || ''; };
+  const openBrace = inParens => {
+    const arrow = out.replace(/\s+$/, '').endsWith('->');
+    const inline = !arrow && (INLINE_PREV.has(prev()) || INLINE_WORD.has(prevWord()));
+    stack.push({ b: !inline, p: inParens });
+    out += '{'; i++;
+    if (!inline) nl();
+  };
+  const closeBrace = () => {
+    const entry = stack.pop() || { b: false };
+    i++;
+    out = out.replace(/\s+$/, '');
+    if (entry.b) {
+      if (prev() === '{') out += '}';
+      else { nl(); out += '}'; }
+      let j = i; while (j < n && /\s/.test(src[j])) j++;
+      const rest = src.slice(j);
+      const join = JOIN_WORD.exec(rest);
+      if (join) { out += ' ' + join[1]; i = j + join[1].length; }
+      else if (rest[0] === ';' || rest[0] === ',') { out += rest[0]; i = j + 1; nl(); }
+      else if (rest[0] === ')') { i = j; }
+      else nl();
+    }
+    else out += '}';
+  };
+  while (i < n) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === '`') {
+      const q = c; out += c; i++;
+      while (i < n) { const d = src[i]; out += d; i++; if (d === '\\') { if (i < n) { out += src[i]; i++; } continue; } if (d === q) break; if (q !== '`' && d === '\n') break; }
+      continue;
+    }
+    if (c === '/' && src[i + 1] === '/') { out += '//'; i += 2; while (i < n && src[i] !== '\n') { out += src[i]; i++; } nl(); continue; }
+    if (c === '/' && src[i + 1] === '*') { out += '/*'; i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { out += src[i]; i++; } out += '*/'; i += 2; continue; }
+    if (/\s/.test(c)) { if (out && !out.endsWith('\n') && !out.endsWith(' ')) out += ' '; i++; continue; }
+    if (parens > 0) {
+      if (c === '(') { parens++; parenWords.push(''); }
+      else if (c === ')') {
+        parens--;
+        const word = parenWords.pop() || '';
+        out += c; i++;
+        if (CONTROL_WORD.has(word) && (parens === 0 || parenBlocks() > 0)) {
+          const next = nextToken();
+          if (next && next !== '{' && next !== ';' && !'.-,?:)]'.includes(next) && !'+-*/%<>=!&|^~'.includes(next)) nlBody();
+        }
+        continue;
+      }
+      else if (c === '{') { openBrace(true); continue; }
+      else if (c === '}') { closeBrace(); continue; }
+      else if (c === ';' && parenBlocks() > 0) { out += ';'; i++; nl(); continue; }
+      out += c; i++; continue;
+    }
+    if (c === '(') { parens++; parenWords.push(prevWord()); out += c; i++; continue; }
+    if (c === '{') { openBrace(false); continue; }
+    if (c === '}') { closeBrace(); continue; }
+    if (c === ';') { out += ';'; i++; nl(); continue; }
+    out += c; i++;
+  }
+  return out.replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+function formatCourseFiles(files) {
+  for (const [name, source] of Object.entries(files)) {
+    if (name.endsWith('.java')) files[name] = formatCourseSource(hoistJavaImports(source));
+    else if (name.endsWith('.js')) files[name] = formatCourseSource(source);
+  }
+  return files;
+}
+
 export function buildCourseProject(language, chapter, mode, solved = true, useEnemyAiScene = true) {
+  const result = buildCourseProjectRaw(language, chapter, mode, solved, useEnemyAiScene);
+  if (result?.files) result.files = formatCourseFiles(result.files);
+  return result;
+}
+
+function buildCourseProjectRaw(language, chapter, mode, solved = true, useEnemyAiScene = true) {
   if(!solved) {
-    const solution=buildCourseProject(language,chapter,mode,true,useEnemyAiScene);
+    const solution=buildCourseProjectRaw(language,chapter,mode,true,useEnemyAiScene);
     const scaffold=earlyStarter(language,chapter==='projectile-types'&&mode==='independent'?'projectiles':chapter,mode,solution);
     if(scaffold)return scaffold;
     const guided=guidedStarter(language,chapter,mode,solution);
@@ -26,7 +134,7 @@ export function buildCourseProject(language, chapter, mode, solved = true, useEn
       return {files,ready:solution.ready};
     }
     const targets={
-      scene:[entry,'onCreate'],components:[`${mode==='independent'?'Lifetime':'Counter'}.${extension}`,'onUpdate'],
+      scene:[entry,'onCreate'],components:[mode==='independent'?`Lifetime.${extension}`:mode==='modified'?entry:`Counter.${extension}`,'onUpdate'],
       time:[`${mode==='independent'?'DirectionMover':'Mover'}.${extension}`,'onUpdate'],input:[`${mode==='independent'?'SpaceShooter':'PlayerController'}.${extension}`,'onUpdate'],
       graphics:[mode==='modified'?`FacingVisual.${extension}`:entry,mode==='modified'?'onUpdate':'onCreate'],collisions:[entry,'onCreate'],
       triggers:[`${mode==='independent'?'Chest':'Pickup'}.${extension}`,'onTrigger'],camera:[mode==='independent'?`CursorMarker.${extension}`:entry,mode==='independent'?'onUpdate':'onCreate'],
@@ -61,7 +169,7 @@ export function buildCourseProject(language, chapter, mode, solved = true, useEn
     return {files,ready:solution.ready};
   }
   if(chapter==='enemy-tactics') {
-    const project=buildCourseProject(language,'enemy-ai',mode,true,false),java=language==='java',ext=java?'java':'js';
+    const project=buildCourseProjectRaw(language,'enemy-ai',mode,true,false),java=language==='java',ext=java?'java':'js';
     if(mode!=='independent') {
       const file=`EnemyAI.${ext}`;
       if(mode==='guided')project.files[file]=project.files[file].replace(java?'requireComponent(CharacterController2D.class).move':'this.requireComponent(GameLab.CharacterController2D).move',`if(Math.hypot(dx,dy)>150)return; ${java?'requireComponent(CharacterController2D.class).move':'this.requireComponent(GameLab.CharacterController2D).move'}`);
@@ -70,7 +178,7 @@ export function buildCourseProject(language, chapter, mode, solved = true, useEn
     return project;
   }
   if(chapter==='projectile-types') {
-    if(mode==='independent')return buildCourseProject(language,'projectiles','independent',true);
+    if(mode==='independent')return buildCourseProjectRaw(language,'projectiles','independent',true);
     const java=language==='java',ext=java?'java':'js',files={};
     const klass=(name,js,j)=>files[`${name}.${ext}`]=java?`public class ${name} extends Component {${j}}`:`export default class ${name} extends GameLab.Component {${js}}`;
     klass('TargetHp','hp=3;','public int hp=3;');
@@ -161,8 +269,8 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     component('ContactDamage','onCollision(other) {const hp=other.getComponent(Health);if(hp)hp.damage(1);}','@Override public void onCollision(GameObject other) {Health hp=other.getComponent(Health.class);if(hp!=null)hp.damage(1);}');
     component('RunClock','elapsed=0;onUpdate(delta) {this.elapsed+=delta;}','public double elapsed=0;@Override public void onUpdate(double delta) {elapsed+=delta;}');
     const advanced=survivor && mode!=='guided';
-    component('SurvivorSpawner',`elapsed=0;next=1.5;wave=0;random=new GameLab.Random(42);onUpdate(delta) {this.elapsed+=delta;const intervals=[1.5,1,0.75,0.5];while(this.next<=this.elapsed+1e-9) {${advanced?'if(this.wave<3 && this.next>=30*(this.wave+1)-1e-9) {this.wave++;this.next=this.wave*30+intervals[this.wave];continue;}':''}this.next+=intervals[this.wave];const player=this.game.find("Player");if(!player)return;if(this.game.getObjects().filter(o=>o.getComponent(EnemyAI)).length>=200)continue;const angle=this.random.next()*Math.PI*2;const type=Math.floor(this.random.next()*(this.wave>=2?3:this.wave>=1?2:1));const spec=type===0?new EnemySpec("Slime",GameLab.Assets.SLIME,2,40,12):type===1?new EnemySpec("Bat",GameLab.Assets.BAT,1,65,10):new EnemySpec("Ghost",GameLab.Assets.GHOST,3,35,12);const radius=0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40;const enemy=player.getComponent(EnemyFactory).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`,
-    `public double elapsed=0;private double next=1.5;public int wave=0;private Random random=new Random(42);@Override public void onUpdate(double delta) {elapsed+=delta;double[] intervals={1.5,1,.75,.5};while(next<=elapsed+1e-9) {${advanced?'if(wave<3 && next>=30*(wave+1)-1e-9) {wave++;next=wave*30+intervals[wave];continue;}':''}next+=intervals[wave];GameObject player=getGame().find("Player");if(player==null)return;if(getGame().getObjects().stream().filter(o->o.hasComponent(EnemyAI.class)).count()>=200)continue;double angle=random.next()*Math.PI*2;int type=(int)(random.next()*(wave>=2?3:wave>=1?2:1));EnemySpec spec=type==0?new EnemySpec("Slime",Assets.SLIME,2,40,12):type==1?new EnemySpec("Bat",Assets.BAT,1,65,10):new EnemySpec("Ghost",Assets.GHOST,3,35,12);double radius=.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40;GameObject enemy=player.getComponent(EnemyFactory.class).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`);
+    component('SurvivorSpawner',`elapsed=0;next=1.5;wave=0;onUpdate(delta) {this.elapsed+=delta;const intervals=[1.5,1,0.75,0.5];while(this.next<=this.elapsed+1e-9) {${advanced?'if(this.wave<3 && this.next>=30*(this.wave+1)-1e-9) {this.wave++;this.next=this.wave*30+intervals[this.wave];continue;}':''}this.next+=intervals[this.wave];const player=this.game.find("Player");if(!player)return;if(this.game.getObjects().filter(o=>o.getComponent(EnemyAI)).length>=200)continue;const angle=this.game.random.next()*Math.PI*2;const type=Math.floor(this.game.random.next()*(this.wave>=2?3:this.wave>=1?2:1));const spec=type===0?new EnemySpec("Slime",GameLab.Assets.SLIME,2,40,12):type===1?new EnemySpec("Bat",GameLab.Assets.BAT,1,65,10):new EnemySpec("Ghost",GameLab.Assets.GHOST,3,35,12);const radius=0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40;const enemy=player.getComponent(EnemyFactory).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`,
+    `public double elapsed=0;private double next=1.5;public int wave=0;@Override public void onUpdate(double delta) {elapsed+=delta;double[] intervals={1.5,1,.75,.5};while(next<=elapsed+1e-9) {${advanced?'if(wave<3 && next>=30*(wave+1)-1e-9) {wave++;next=wave*30+intervals[wave];continue;}':''}next+=intervals[wave];GameObject player=getGame().find("Player");if(player==null)return;if(getGame().getObjects().stream().filter(o->o.hasComponent(EnemyAI.class)).count()>=200)continue;double angle=getGame().random.next()*Math.PI*2;int type=(int)(getGame().random.next()*(wave>=2?3:wave>=1?2:1));EnemySpec spec=type==0?new EnemySpec("Slime",Assets.SLIME,2,40,12):type==1?new EnemySpec("Bat",Assets.BAT,1,65,10):new EnemySpec("Ghost",Assets.GHOST,3,35,12);double radius=.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40;GameObject enemy=player.getComponent(EnemyFactory.class).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`);
     const extraJs=survivor && mode==='independent'?'const orb=p.addComponent(new Weapon());orb.cooldown=1;orb.timer=1;orb.damage=2;orb.projectileSpeed=220;orb.lifetime=3;orb.range=240;const chest=this.game.createObject("Chest");chest.setPosition(420,180);chest.addComponent(new GameLab.Sprite(GameLab.Assets.CHEST,32,32));chest.addComponent(new GameLab.Collider2D(24,24).asTrigger());chest.addComponent(new ShopChest());':'';
     const extraJava=survivor && mode==='independent'?'Weapon orb=p.addComponent(new Weapon());orb.cooldown=1;orb.timer=1;orb.damage=2;orb.projectileSpeed=220;orb.lifetime=3;orb.range=240;GameObject chest=getGame().createObject("Chest");chest.setPosition(420,180);chest.addComponent(new Sprite(Assets.CHEST,32,32));chest.addComponent(new Collider2D(24,24).asTrigger());chest.addComponent(new ShopChest());':'';
     if(survivor && mode==='independent')component('ShopChest','opened=false;onTrigger(other) {const wallet=other.getComponent(Wallet),menu=other.getComponent(UpgradeController);if(this.opened || !wallet || !menu)return;this.opened=true;wallet.gold+=20;menu.shop=true;menu.opened=true;other.getComponent(PauseController).request("upgrade");}','public boolean opened=false;@Override public void onTrigger(GameObject other) {Wallet wallet=other.getComponent(Wallet.class);UpgradeController menu=other.getComponent(UpgradeController.class);if(opened || wallet==null || menu==null)return;opened=true;wallet.gold+=20;menu.shop=true;menu.opened=true;other.getComponent(PauseController.class).request("upgrade");}');
@@ -183,12 +291,12 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     case 'components':
       if (mode === 'independent') {
         fields = java ? 'public int cleanup = 0;' : 'cleanup = 0;';
-        component('Lifetime','remaining = 0.3; onUpdate(delta) { this.remaining -= delta; if (this.remaining <= 1e-9) this.gameObject.destroy(); } onDestroy() { this.game.cleanup++; }','public double remaining = 0.3; @Override public void onUpdate(double delta) { remaining -= delta; if (remaining <= 1e-9) gameObject.destroy(); } @Override public void onDestroy() { ((GameMain)getGame()).cleanup++; }');
+        component('Lifetime','remaining = 0.3; onUpdate(delta) { this.remaining -= delta; if (this.remaining <= 0) this.gameObject.destroy(); } onDestroy() { this.game.cleanup++; }','public double remaining = 0.3; @Override public void onUpdate(double delta) { remaining -= delta; if (remaining <= 0) gameObject.destroy(); } @Override public void onDestroy() { ((GameMain)getGame()).cleanup++; }');
         object('Spark',100,100,[sprite('FIREBALL',16,16),'Lifetime()']);
       } else {
         component('Counter','counts = 0; creates = 0; onCreate() { this.creates++; } onUpdate() { this.counts++; }','public int counts = 0, creates = 0; @Override public void onCreate() { creates++; } @Override public void onUpdate(double delta) { counts++; }');
         if (mode==='guided') object('Player',100,100,[sprite('PLAYER01'),'Counter()']);
-        else { object('PlayerA',100,100,[sprite('PLAYER01'),'Counter()']); object('PlayerB',200,100,[sprite('PLAYER01'),'Counter()']); fields=java?'private int updates = 0;':'updates = 0;'; update=`if (++${java?'':'this.'}updates == 3) ${get(`${java?'':'this.'}find("PlayerB")`,'Counter')}.enabled = false;`; }
+        else { object('PlayerA',100,100,[sprite('PLAYER01'),'Counter()']); object('PlayerB',200,100,[sprite('PLAYER01'),'Counter()']); fields=java?'private int updates = 0;':'updates = 0;'; update=`if (++${java?'':'this.'}updates ${java?'==':'==='} 3) ${java?'':'this.'}find("PlayerB").setActive(false);\nif (${java?'':'this.'}updates ${java?'==':'==='} 6) ${java?'':'this.'}find("PlayerB").setActive(true);`; }
       }
       break;
     case 'time': {
@@ -392,8 +500,8 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       }
       const schedule=mode==='guided'?'[1,2,3]':mode==='modified'?'[1,2,3,5.5,6,6.5,7]':'Array.from({length:120},(_,i)=>i+1)';
       const javaSchedule=mode==='guided'?'new double[]{1,2,3}':mode==='modified'?'new double[]{1,2,3,5.5,6,6.5,7}':'java.util.stream.IntStream.rangeClosed(1,120).mapToDouble(i->i).toArray()';
-      component('WaveSpawner',`elapsed=0;next=0;seed=42; schedule=${schedule}; onUpdate(delta) { this.elapsed+=delta; while(this.next<this.schedule.length && this.elapsed+1e-9>=this.schedule[this.next]) { const index=this.next++; ${mode==='independent'?'if(this.game.getObjects().filter(o=>o.name==="Slime" && !o.destroyed).length>=100)continue;':''} const target=this.game.find("Player"); const radius=${mode==='independent'?'0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40':'140'}; this.seed=(Math.imul(1664525,this.seed)+1013904223)>>>0;const angle=this.seed/4294967296*Math.PI*2; const enemy=this.game.createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new GameLab.CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'})); } }`,
-      `private double elapsed=0;private int next=0;private long seed=42;private double[] schedule=${javaSchedule}; @Override public void onUpdate(double delta) { elapsed+=delta;while(next<schedule.length && elapsed+1e-9>=schedule[next]) {int index=next++;${mode==='independent'?'if(getGame().getObjects().stream().filter(o->o.name.equals("Slime")&&!o.destroyed).count()>=100)continue;':''} GameObject target=getGame().find("Player");double radius=${mode==='independent'?'0.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40':'140'};seed=(1664525L*seed+1013904223L)&0xffffffffL;double angle=seed/4294967296.0*Math.PI*2;GameObject enemy=getGame().createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'}));} }`);
+      component('WaveSpawner',`elapsed=0;next=0;schedule=${schedule}; onUpdate(delta) { this.elapsed+=delta; while(this.next<this.schedule.length && this.elapsed+1e-9>=this.schedule[this.next]) { const index=this.next++; ${mode==='independent'?'if(this.game.getObjects().filter(o=>o.name==="Slime" && !o.destroyed).length>=100)continue;':''} const target=this.game.find("Player"); const radius=${mode==='independent'?'0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40':'140'}; const angle=this.game.random.next()*Math.PI*2; const enemy=this.game.createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new GameLab.CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'})); } }`,
+      `private double elapsed=0;private int next=0;private double[] schedule=${javaSchedule}; @Override public void onUpdate(double delta) { elapsed+=delta;while(next<schedule.length && elapsed+1e-9>=schedule[next]) {int index=next++;${mode==='independent'?'if(getGame().getObjects().stream().filter(o->o.name.equals("Slime")&&!o.destroyed).count()>=100)continue;':''} GameObject target=getGame().find("Player");double radius=${mode==='independent'?'0.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40':'140'};double angle=getGame().random.next()*Math.PI*2;GameObject enemy=getGame().createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'}));} }`);
       component('EnemyAI','constructor(target,speed) { super();this.target=target;this.speed=speed; } onUpdate() { if(!this.target || this.target.destroyed)return;this.requireComponent(GameLab.CharacterController2D).move(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y,this.speed); }','public GameObject target;public double speed;public EnemyAI(GameObject target,double speed) {this.target=target;this.speed=speed;} @Override public void onUpdate(double delta) {if(target==null || target.destroyed)return;requireComponent(CharacterController2D.class).move(target.transform.x-transform.x,target.transform.y-transform.y,speed);}');
       object('Spawner',0,0,['WaveSpawner()']);break;
     }
@@ -402,8 +510,8 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     case 'performance':
       if(mode==='modified') {weapon();player();setup+='player.addComponent(new Weapon());\n';object('Enemy',200,100,[sprite('SLIME'),'CircleCollider2D(12)','Health(3,0)']);setup+=`${get('enemy','CircleCollider2D')}.layer=Layers.ENEMY;\n`;break;}
       projectile();health();component('XpOrb','constructor(value) {super();this.value=value;}','public int value;public XpOrb(int value) {this.value=value;}');
-      component('LoadFixture',`elapsed=0;next=0.2;shots=0;reward=0;seed=42;onCreate() {${mode==='independent'?'for(let i=0;i<200;i++) {this.seed=(Math.imul(this.seed,1664525)+1013904223)>>>0;const enemy=this.game.createObject("Enemy");enemy.setPosition(100+this.seed/4294967296*440,100+Math.floor(i/20)*20);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} onUpdate(delta) {this.elapsed+=delta;while(this.next<=Math.min(this.elapsed,${mode==='guided'?20:60})+1e-9) {this.next+=0.2;const live=this.game.getObjects().filter(o=>o.name==="Projectile");if(live.length<300) {const shot=this.game.createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));this.shots++;}${mode==='independent'?'const orbs=this.game.getObjects().filter(o=>o.getComponent(XpOrb));this.reward++;if(orbs.length>=200)orbs[0].getComponent(XpOrb).value++;else {const orb=this.game.createObject("XpOrb");orb.setPosition(50+orbs.length%20*20,100+Math.floor(orbs.length/20)*20);orb.addComponent(new GameLab.Sprite(GameLab.Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`,
-      `public double elapsed=0,next=.2;public int shots=0,reward=0;private long seed=42;@Override public void onCreate() {${mode==='independent'?'for(int i=0;i<200;i++) {seed=(seed*1664525L+1013904223L)&0xffffffffL;GameObject enemy=getGame().createObject("Enemy");enemy.setPosition(100+seed/4294967296.0*440,100+(i/20)*20);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} @Override public void onUpdate(double delta) {elapsed+=delta;while(next<=Math.min(elapsed,${mode==='guided'?20:60})+1e-9) {next+=.2;long live=getGame().getObjects().stream().filter(o->o.name.equals("Projectile")).count();if(live<300) {GameObject shot=getGame().createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new Sprite(Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));shots++;}${mode==='independent'?'java.util.ArrayList<GameObject> orbs=new java.util.ArrayList<>();for(GameObject object:getGame().getObjects())if(object.hasComponent(XpOrb.class))orbs.add(object);reward++;if(orbs.size()>=200)orbs.get(0).getComponent(XpOrb.class).value++;else {GameObject orb=getGame().createObject("XpOrb");orb.setPosition(50+orbs.size()%20*20,100+(orbs.size()/20)*20);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`);object('LoadFixture',0,0,['LoadFixture()']);draw='canvas.drawText("Test obciazenia: pociski co 0.2 s",20,55,18,"#ffffff","left","middle");';break;
+      component('LoadFixture',`elapsed=0;next=0.2;shots=0;reward=0;onCreate() {${mode==='independent'?'for(let i=0;i<200;i++) {const enemy=this.game.createObject("Enemy");enemy.setPosition(100+this.game.random.next()*440,100+Math.floor(i/20)*20);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} onUpdate(delta) {this.elapsed+=delta;while(this.next<=Math.min(this.elapsed,${mode==='guided'?20:60})+1e-9) {this.next+=0.2;const live=this.game.getObjects().filter(o=>o.name==="Projectile");if(live.length<300) {const shot=this.game.createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));this.shots++;}${mode==='independent'?'const orbs=this.game.getObjects().filter(o=>o.getComponent(XpOrb));this.reward++;if(orbs.length>=200)orbs[0].getComponent(XpOrb).value++;else {const orb=this.game.createObject("XpOrb");orb.setPosition(50+orbs.length%20*20,100+Math.floor(orbs.length/20)*20);orb.addComponent(new GameLab.Sprite(GameLab.Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`,
+      `public double elapsed=0,next=.2;public int shots=0,reward=0;@Override public void onCreate() {${mode==='independent'?'for(int i=0;i<200;i++) {GameObject enemy=getGame().createObject("Enemy");enemy.setPosition(100+getGame().random.next()*440,100+(i/20)*20);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} @Override public void onUpdate(double delta) {elapsed+=delta;while(next<=Math.min(elapsed,${mode==='guided'?20:60})+1e-9) {next+=.2;long live=getGame().getObjects().stream().filter(o->o.name.equals("Projectile")).count();if(live<300) {GameObject shot=getGame().createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new Sprite(Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));shots++;}${mode==='independent'?'java.util.ArrayList<GameObject> orbs=new java.util.ArrayList<>();for(GameObject object:getGame().getObjects())if(object.hasComponent(XpOrb.class))orbs.add(object);reward++;if(orbs.size()>=200)orbs.get(0).getComponent(XpOrb.class).value++;else {GameObject orb=getGame().createObject("XpOrb");orb.setPosition(50+orbs.size()%20*20,100+(orbs.size()/20)*20);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`);object('LoadFixture',0,0,['LoadFixture()']);draw='canvas.drawText("Test obciazenia: pociski co 0.2 s",20,55,18,"#ffffff","left","middle");';break;
       
     default: ready=false;
   }
@@ -418,7 +526,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     const code=files[`LoadFixture.${ext}`];
     files[`LoadFixture.${ext}`]=java?code.replace('reward++;','GameObject victim=null;for(GameObject o:getGame().getObjects())if(o.name.equals("Enemy")) {victim=o;break;}if(victim!=null) {victim.getComponent(Health.class).damage(2);double x=victim.transform.x,y=victim.transform.y;victim.destroy();GameObject replacement=getGame().createObject("Enemy");replacement.setPosition(x,y);replacement.addComponent(new Sprite(Assets.SLIME,32,32));replacement.addComponent(new CircleCollider2D(12));replacement.addComponent(new Health(2,0));}reward++;'):code.replace('this.reward++;','const victim=this.game.getObjects().find(o=>o.name==="Enemy");if(victim) {victim.getComponent(Health).damage(2);const x=victim.transform.x,y=victim.transform.y;victim.destroy();const replacement=this.game.createObject("Enemy");replacement.setPosition(x,y);replacement.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));replacement.addComponent(new GameLab.CircleCollider2D(12));replacement.addComponent(new Health(2,0));}this.reward++;');
     files[`LoadFixture.${ext}`]=files[`LoadFixture.${ext}`].replace('orb.addComponent(new XpOrb(1));',`orb.addComponent(new XpOrb(1));orb.addComponent(new ${java?'':'GameLab.'}Collider2D(20,20).asTrigger());`);
-    files['REPORT.md']='Profil wspólny Java/JS: seed=42, 60 s symulacji, 200 wrogów, strzał co 0.2 s, lifetime=15 s, limit 300 pocisków i 200 orbów. Każdy termin eliminuje jednego wroga i zastępuje go świeżą instancją; XP w świecie jest łączona przy limicie. Sprawdź reward=300, shots=300 oraz Experience.totalXp plus XP pozostające = reward. Po zakończeniu usuń wrogów, zbierz XP i wykonaj jeszcze 15.1 s. Raportuj liczby aktywnych obiektów i kandydatów fizyki. Urządzenie: uzupełnij. FPS/p95: zmierz na własnym urządzeniu; brak danych nie jest wynikiem pomiaru.';
+    files['REPORT.md']='Profil wspólny Java/JS: deterministyczny game.random, 60 s symulacji, 200 wrogów, strzał co 0.2 s, lifetime=15 s, limit 300 pocisków i 200 orbów. Każdy termin eliminuje jednego wroga i zastępuje go świeżą instancją; XP w świecie jest łączona przy limicie. Sprawdź reward=300, shots=300 oraz Experience.totalXp plus XP pozostające = reward. Po zakończeniu usuń wrogów, zbierz XP i wykonaj jeszcze 15.1 s. Raportuj liczby aktywnych obiektów i kandydatów fizyki. Urządzenie: uzupełnij. FPS/p95: zmierz na własnym urządzeniu; brak danych nie jest wynikiem pomiaru.';
   }
   if(files[`Experience.${ext}`])files[`Experience.${ext}`]=java?files[`Experience.${ext}`].replace('public int level=1,xp=0,pendingChoices=0;','public int totalXp=0,level=1,xp=0,pendingChoices=0;').replace('xp+=value;','totalXp+=value;xp+=value;'):files[`Experience.${ext}`].replace('level=1;','totalXp=0;level=1;').replace('this.xp+=value;','this.totalXp+=value;this.xp+=value;');
   if(files[`LootOnDeath.${ext}`])files[`LootOnDeath.${ext}`]=files[`LootOnDeath.${ext}`].replace(java?'GameObject orb=getGame().createObject("XpOrb");':'const orb=this.game.createObject("XpOrb");',java?'java.util.ArrayList<GameObject> orbs=new java.util.ArrayList<>();for(GameObject o:getGame().getObjects())if(o.hasComponent(XpOrb.class))orbs.add(o);if(orbs.size()>=200) {orbs.get(0).getComponent(XpOrb.class).value++;gameObject.destroy();return;}GameObject orb=getGame().createObject("XpOrb");':'const orbs=this.game.getObjects().filter(o=>o.getComponent(XpOrb));if(orbs.length>=200) {orbs[0].getComponent(XpOrb).value++;this.gameObject.destroy();return;}const orb=this.game.createObject("XpOrb");');

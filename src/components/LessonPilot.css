@@ -734,3 +734,45 @@
 @media (prefers-reduced-motion: reduce) {
   .pilot-race-hint { animation: none; }
 }
+
+/* EventsBoard — plansza zdarzeń (gracz + pociski + setActive) */
+.pilot-events-board { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--line, #d9d4c3); border-radius: 12px; background: #f8f6ee; }
+.pilot-events-help { margin: 0 0 8px; font-size: 13px; color: #4a5568; }
+.pilot-events-stage { position: relative; }
+.pilot-events-stage svg { display: block; width: 100%; height: auto; }
+.pilot-events-world { fill: #10263a; }
+.pilot-events-player rect { fill: #76b9f2; transition: opacity .2s; }
+.pilot-events-player.is-off rect { opacity: .25; }
+.pilot-events-player.is-off .pilot-events-name { opacity: .5; }
+.pilot-events-eye { fill: #10263a; }
+.pilot-events-name { fill: #e8f4ff; font-size: 10px; }
+.pilot-events-hp-track { fill: #334155; }
+.pilot-events-hp-fill { fill: #4ade80; transition: width .2s; }
+.pilot-events-hp-label { fill: #4ade80; font-size: 9px; font-weight: 700; }
+.pilot-events-float { fill: #f87171; font-size: 12px; font-weight: 800; }
+.pilot-events-bullet { fill: #fbbf24; }
+.pilot-events-bullet-label { fill: #fde68a; font-size: 8px; }
+.pilot-events-axis { stroke: #476a8f; stroke-width: 1; }
+.pilot-events-tick { stroke: #60a5fa; stroke-width: 1.4; }
+.pilot-events-axis-label { fill: #8fb3d9; font-size: 8.5px; }
+.pilot-events-hint { position: absolute; right: 12px; bottom: 8px; display: flex; align-items: center; gap: 6px; background: #2c5282; color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 12px; pointer-events: none; animation: pilot-hint-bounce 1.6s ease-in-out infinite; }
+.pilot-events-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.pilot-events-btn { padding: 6px 14px; border: 1px solid #d97706; border-radius: 8px; background: #fbbf24; color: #78350f; font-weight: 700; font-size: 13px; cursor: pointer; }
+.pilot-events-btn:hover { background: #f59e0b; }
+.pilot-events-switch { padding: 6px 14px; border: 1px solid #cbd5e0; border-radius: 999px; background: #e2e8f0; color: #475569; font-weight: 700; font-size: 12px; cursor: pointer; }
+.pilot-events-switch.is-on { background: #4ade80; border-color: #16a34a; color: #14532d; }
+.pilot-events-fps { display: inline-flex; align-items: center; gap: 2px; }
+.pilot-events-fps-btn { padding: 4px 8px; border: 1px solid #cbd5e0; background: #fff; font-size: 12px; cursor: pointer; }
+.pilot-events-fps-btn:first-child { border-radius: 6px 0 0 6px; }
+.pilot-events-fps-btn.is-active { background: #76b9f2; border-color: #3182ce; color: #10263a; font-weight: 700; }
+.pilot-events-fps-unit { font-size: 11px; color: #64748b; margin-left: 4px; }
+.pilot-events-live { margin: 6px 0 0; font-family: ui-monospace, monospace; font-size: 12px; color: #1a202c; }
+.pilot-events-log { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; color: #4a5568; }
+.pilot-events-log li { display: flex; align-items: center; gap: 6px; opacity: .75; }
+.pilot-events-log li:first-child { color: #1a202c; font-weight: 600; opacity: 1; }
+.pilot-events-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pilot-events-log-t { color: #76b9f2; margin-right: 4px; min-width: 56px; }
+.pilot-events-log-empty { font-style: italic; color: var(--muted, #8a8676); }
+.pilot-events-status { margin: 8px 0 0; font-size: 13px; color: #2d3748; }
+.pilot-events-code { margin: 8px 0 0; padding: 8px 10px; background: #10263a; color: #d7ecff; border-radius: 8px; font-size: 12px; overflow-x: auto; }
+@media (prefers-reduced-motion: reduce) { .pilot-events-hint { animation: none; } .pilot-events-player rect, .pilot-events-hp-fill { transition: none; } }

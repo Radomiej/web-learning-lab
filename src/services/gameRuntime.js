@@ -38,7 +38,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     }
   }
   class Component {
-    constructor() { let enabled = true; Object.defineProperty(this,'enabled',{ enumerable:true,get:()=>enabled,set:value=>{ if (enabled !== Boolean(value)) { enabled=Boolean(value); if(!enabled && this instanceof Button)this.blur(); if(this.gameObject)this.gameObject.game.spatialRevision++; } } }); this.gameObject = null; this.created = false; this.destroyed = false; this.updateMode = 'WORLD'; }
+    constructor() { let enabled = true; Object.defineProperty(this,'enabled',{ enumerable:true,get:()=>enabled,set:value=>{ if (enabled !== Boolean(value)) { const wasEffective=enabled&&this.gameObject?.active!==false; enabled=Boolean(value); if(!enabled && this instanceof Button)this.blur(); if(this.gameObject)this.gameObject.game.spatialRevision++; const effective=enabled&&this.gameObject?.active!==false; if(this.created&&!this.destroyed&&effective!==wasEffective){if(effective)this.onEnable();else this.onDisable();} } } }); this.gameObject = null; this.created = false; this.destroyed = false; this.updateMode = 'WORLD'; }
     get transform() { return this.gameObject.transform; }
     setEnabled(value) { this.enabled = Boolean(value); }
     get game() { return this.gameObject ? this.gameObject.game : null; }
@@ -50,6 +50,8 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     getGame() { return this.game; }
     onComponentChange() {}
     onCreate() {}
+    onEnable() {}
+    onDisable() {}
     onUpdate() {}
     onLateUpdate() {}
     onDrawBackground() {}
@@ -161,13 +163,56 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       };
     }
   }
+  const lattice = (x, y, seed) => {
+    let h = (seed | 0) ^ Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263);
+    h = Math.imul(h, 1274126177); h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  };
+  const smooth = t => t * t * (3 - 2 * t);
+  const noise2 = (x, y, seed) => {
+    const xi = Math.floor(x), yi = Math.floor(y), fx = smooth(x - xi), fy = smooth(y - yi);
+    const ab = lattice(xi, yi, seed) + (lattice(xi + 1, yi, seed) - lattice(xi, yi, seed)) * fx;
+    const cd = lattice(xi, yi + 1, seed) + (lattice(xi + 1, yi + 1, seed) - lattice(xi, yi + 1, seed)) * fx;
+    return ab + (cd - ab) * fy;
+  };
+  const tileTexture = (t) => { if (!assetManifest.assets.some(a => a.key === t)) throw new Error(`TileMap: brak tekstury ${t}.`); return t; };
   class TileMap extends Component {
     constructor(texture = 'grass', tileSize = 32) {
       super();
-      if (!['grass', 'sand'].includes(texture)) throw new Error('TileMap obsługuje tekstury grass i sand.');
+      tileTexture(texture);
       finite(tileSize, 'Rozmiar kafelka');
       if (tileSize < 8) throw new Error('Kafelek TileMap musi mieć co najmniej 8 px.');
       this.texture = texture; this.tileSize = tileSize; this.layer = -100; this.order = 0;
+      this.cells = null;
+    }
+    setTile(column, row, texture) { (this.cells ||= new Map()).set(`${Math.trunc(column)},${Math.trunc(row)}`, tileTexture(texture)); return this; }
+    getTile(column, row) { return this.cells?.get(`${Math.trunc(column)},${Math.trunc(row)}`) ?? null; }
+    tileAt(x, y) { return this.getTile(Math.floor(x / this.tileSize), Math.floor(y / this.tileSize)); }
+    generate(width, height, seed = 0, ...layers) {
+      if (!layers.length) throw new Error('generate potrzebuje co najmniej jednej warstwy tekstury.');
+      for (const t of layers) tileTexture(t);
+      for (let row = 0; row < height; row++) for (let column = 0; column < width; column++) {
+        const n = noise2(column / 4, row / 4, seed);
+        this.setTile(column, row, layers[Math.min(layers.length - 1, Math.floor(n * layers.length))]);
+      }
+      return this;
+    }
+  }
+  class SpriteAnimator extends Component {
+    constructor(frames = [], fps = 6) {
+      super();
+      this.frames = frames; this.fps = fps; this.loop = true;
+      this.playing = frames.length > 0; this.elapsed = 0; this.frame = 0;
+    }
+    play(frames, fps) { if (frames) this.frames = frames; if (fps !== undefined) this.fps = fps; this.elapsed = 0; this.frame = 0; this.playing = true; return this; }
+    stop() { this.playing = false; return this; }
+    onUpdate(delta) {
+      if (!this.playing || !this.frames.length) return;
+      this.elapsed += delta;
+      const total = this.frames.length, index = Math.floor(this.elapsed * this.fps);
+      this.frame = this.loop ? index % total : Math.min(total - 1, index);
+      if (!this.loop && index >= total) this.playing = false;
+      const sprite = this.getComponent(Sprite); if (sprite) sprite.texture = this.frames[this.frame];
     }
   }
   class Tween extends Component {
@@ -278,7 +323,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   }
   class GameObject {
     setActive(value) { this.active=Boolean(value);if(!this.active)for(const b of this.getComponents(Button))b.blur();return this; }
-    constructor(game, name) { this.game = game; this.id = game.nextObjectId++; this.name = name; this.transform = new Transform(()=>game.spatialRevision++); let active=true;Object.defineProperty(this,'active',{enumerable:true,get:()=>active,set:value=>{if(active!==Boolean(value)){active=Boolean(value);game.spatialRevision++;}}});this.destroyed = false; this.components = []; this.listeners = new Set(); }
+    constructor(game, name) { this.game = game; this.id = game.nextObjectId++; this.name = name; this.transform = new Transform(()=>game.spatialRevision++); let active=true;Object.defineProperty(this,'active',{enumerable:true,get:()=>active,set:value=>{if(active!==Boolean(value)){active=Boolean(value);game.spatialRevision++;for(const c of this.components)if(c.created&&!c.destroyed&&c.enabled)value?c.onEnable():c.onDisable();}}});this.destroyed = false; this.components = []; this.listeners = new Set(); }
     setPosition(x, y) { this.transform.x = finite(x, 'Pozycja x'); this.transform.y = finite(y, 'Pozycja y'); return this; }
     addComponent(component) {
       if (!(component instanceof Component) || component.gameObject || this.destroyed) throw new Error('Dodaj nowy komponent do aktywnego obiektu.');
@@ -308,7 +353,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     }
   }
   const componentNames = new Map([
-    [ShapeRenderer, 'ShapeRenderer'], [Sprite, 'Sprite'], [TextRenderer, 'TextRenderer'], [ControlsHint, 'ControlsHint'], [Camera2D, 'Camera2D'], [TileMap, 'TileMap'], [Collider2D, 'Collider2D'],
+    [ShapeRenderer, 'ShapeRenderer'], [Sprite, 'Sprite'], [SpriteAnimator, 'SpriteAnimator'], [TextRenderer, 'TextRenderer'], [ControlsHint, 'ControlsHint'], [Camera2D, 'Camera2D'], [TileMap, 'TileMap'], [Collider2D, 'Collider2D'],
     [CharacterController2D, 'CharacterController2D'],
   ]);
   class Input {
@@ -388,13 +433,15 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     getHeight() { return this.height; }
     drawProgressBar(x, y, width, height, progress, frame, track, fill) { const command = { op: 'progress', x, y, width, height, progress, frame, track, fill }; this.commands.push(command); renderer.drawProgress(this.context, command); }
     drawNinePatch(texture, x, y, width, height, border = 8) { const command = { op: 'ninepatch', texture, x, y, width, height, border }; this.commands.push(command); renderer.drawNinePatch(this.context, command); }
-    drawTileMap(texture, tileSize) {
+    drawTileMap(tileMap) {
+      const { tileSize } = tileMap, overlap = 1;
       const columns = Math.ceil(this.width / tileSize) + 1, rows = Math.ceil(this.height / tileSize) + 1;
-      this.commands.push({ op: 'tilemap', texture, tileSize, columns, rows });
+      this.commands.push({ op: 'tilemap', texture: tileMap.texture, tileSize, columns, rows });
       const firstColumn = Math.floor(this.view.x / tileSize), firstRow = Math.floor(this.view.y / tileSize);
       for (let row = firstRow; row <= firstRow + rows; row++) for (let column = firstColumn; column <= firstColumn + columns; column++) {
-        const variant = (column * 31 + row * 17 + column * row * 7) & 3, grass = texture === 'grass';
-        renderer.drawSprite(this.context, { texture, x: (column + .5) * tileSize - this.view.x, y: (row + .5) * tileSize - this.view.y, width: tileSize, height: tileSize, rotation: 0, scaleX: grass && (variant & 1) ? -1 : 1, scaleY: grass && (variant & 2) ? -1 : 1 });
+        const variant = (column * 31 + row * 17 + column * row * 7) & 3;
+        const texture = tileMap.getTile(column, row) ?? tileMap.texture, grass = texture === 'grass';
+        renderer.drawSprite(this.context, { texture, x: (column + .5) * tileSize - this.view.x, y: (row + .5) * tileSize - this.view.y, width: tileSize + overlap, height: tileSize + overlap, rotation: 0, scaleX: grass && (variant & 1) ? -1 : 1, scaleY: grass && (variant & 2) ? -1 : 1 });
       }
     }
     drawSprite(sprite, transform) {
@@ -484,7 +531,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
         if (component instanceof TileMap) tiles.push(component); else component.onDrawBackground();
       }
       tiles.sort((a, b) => a.layer - b.layer || a.order - b.order);
-      for (const tileMap of tiles) this.canvas.drawTileMap(tileMap.texture, tileMap.tileSize);
+      for (const tileMap of tiles) this.canvas.drawTileMap(tileMap);
       const space = component => component.getComponent(UITransform)?.enabled || component.space === 'screen' ? 1 : 0;
       const renderers = this.objects.filter(o => o.active && !o.destroyed).flatMap(o => o.components)
         .filter(c => (c instanceof ShapeRenderer || c instanceof TextRenderer) && c.enabled && c.created && !c.destroyed)
@@ -838,7 +885,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   win.addEventListener('pagehide', dispose);
   const addons=createAddons({Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D});
   for(const [name,type] of Object.entries(addons))componentNames.set(type,name);
-  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Layers, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
+  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, SpriteAnimator, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Layers, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
 }
 
 export function getGameRuntimeScript() {

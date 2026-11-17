@@ -84,13 +84,13 @@
         {
           "id": "g2d.components.modified",
           "mode": "modified",
-          "title": "Dwa liczniki",
-          "prompt": "Dodaj osobne instancje Counter do obiektów PlayerA i PlayerB; po dwóch aktualizacjach wyłącz tylko licznik obiektu PlayerB i wykonaj jeszcze trzy aktualizacje.",
-          "objective": "Przechowywać stan w osobnych instancjach i sterować polem enabled.",
+          "title": "Uśpij i obudź obiekt",
+          "prompt": "Obiekty PlayerA i PlayerB mają komponent Counter naliczający aktualizacje. W GameMain.onUpdate uśpij PlayerB w 3. aktualizacji przez setActive(false) i obudź go w 6. przez setActive(true).",
+          "objective": "Włączać i wyłączać cały GameObject metodą setActive — uśpiony obiekt pamięta stan i wznawia działanie.",
           "criteria": [
-            "Po pierwszych dwóch aktualizacjach oba liczniki wynoszą 2.",
-            "Po wyłączeniu komponentu B i trzech kolejnych aktualizacjach licznik A wynosi 5, a B wynosi 2.",
-            "Ponowne włączenie komponentu B i jedna aktualizacja dają A = 6 oraz B = 3, bez ponownej inicjalizacji."
+            "Po 3. aktualizacji PlayerB.active = false: licznik zamraża się na 2 — nieaktywny obiekt nie dostaje onUpdate i nie jest rysowany.",
+            "Po 6. aktualizacji PlayerB.active = true: licznik wznawia od zamrożonej wartości — obiekt nie jest niszczony ani tworzony na nowo.",
+            "Po wszystkich aktualizacjach licznik PlayerA wynosi 11, a PlayerB 8."
           ],
           "learningStage": "Samodzielnie"
         },

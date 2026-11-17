@@ -18,7 +18,7 @@ export function courseScenario(chapter,mode) {
       // More frames prove onUpdate keeps running — a preset counter would not keep growing.
       phases=[phase(10)];
       if(mode==='guided') {expect(state('Player','Counter','counts'),11);expect(state('Player','Counter','creates'),1);}
-      else if(mode==='modified') {expect(state('PlayerA','Counter','counts'),11);expect(state('PlayerB','Counter','counts'),2);expect(state('PlayerB','Counter','enabled'),false);}
+      else if(mode==='modified') {expect(state('PlayerA','Counter','counts'),11);expect(state('PlayerB','Counter','counts'),8);expect(object('PlayerB','active'),true);expect(state('PlayerB','Counter','enabled'),true);expect('objects.length',2);}
       else expect('objects.length',0);
       break;
     case 'time':

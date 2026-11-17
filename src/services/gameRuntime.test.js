@@ -323,3 +323,93 @@ test('collider API: asTrigger, derived circle size, bounds, Layers and guarded o
   expect(mover.transform.x).toBe(140);
   lab.dispose();
 });
+
+test('matches Unity lifecycle: destroy fires onDisable+onDestroy once, setActive/setEnabled toggle callbacks and gate onUpdate', () => {
+  const { lab, canvas } = fixture();
+  const calls = [];
+  class Probe extends lab.Component {
+    onCreate() { calls.push('create'); }
+    onUpdate() { calls.push('update'); }
+    onEnable() { calls.push('enable'); }
+    onDisable() { calls.push('disable'); }
+    onDestroy() { calls.push('destroy'); }
+  }
+  class Scene extends lab.Game { onCreate() { this.createObject('Probe').addComponent(new Probe()); } }
+  lab.run(Scene, { canvas });
+  const game = lab.current;
+  game.step(0);
+  expect(calls.filter(c => c === 'create')).toHaveLength(1);
+  calls.length = 0; game.step(0.1);
+  expect(calls.filter(c => c === 'update')).toHaveLength(1);
+  const obj = game.find('Probe'), probe = obj.getComponent(Probe);
+  obj.setActive(false);
+  expect(calls.filter(c => c === 'disable')).toHaveLength(1);
+  calls.length = 0; game.step(0.1);
+  expect(calls).not.toContain('update');
+  obj.setActive(true);
+  expect(calls).toContain('enable');
+  calls.length = 0; game.step(0.1);
+  expect(calls).toContain('update');
+  calls.length = 0; probe.setEnabled(false);
+  expect(calls).toContain('disable');
+  game.step(0.1);
+  expect(calls).not.toContain('update');
+  probe.setEnabled(true);
+  expect(calls).toContain('enable');
+  calls.length = 0; obj.destroy(); game.step(0);
+  expect(calls.filter(c => c === 'disable')).toHaveLength(1);
+  expect(calls.filter(c => c === 'destroy')).toHaveLength(1);
+  game.step(0.1);
+  expect(calls.filter(c => c === 'destroy')).toHaveLength(1);
+  lab.dispose();
+});
+
+test('SpriteAnimator cycles frames by fps and stops on the last frame when loop is off', () => {
+  const { lab, canvas } = fixture();
+  class Scene extends lab.Game {
+    onCreate() {
+      const o = this.createObject('Slime');
+      o.addComponent(new lab.Sprite('slime'));
+      this.anim = o.addComponent(new lab.SpriteAnimator(['slime', 'slime-blue', 'slime-red'], 10));
+    }
+  }
+  lab.run(Scene, { canvas });
+  const game = lab.current;
+  game.step(0);
+  const sprite = game.find('Slime').getComponent(lab.Sprite);
+  game.step(0.11);
+  expect(sprite.texture).toBe('slime-blue');
+  game.step(0.1);
+  expect(sprite.texture).toBe('slime-red');
+  game.step(0.1);
+  expect(sprite.texture).toBe('slime');
+  const anim = game.find('Slime').getComponent(lab.SpriteAnimator);
+  anim.loop = false; anim.play(['slime', 'ghost'], 10);
+  for (let i = 0; i < 5; i++) game.step(0.1);
+  expect(sprite.texture).toBe('ghost');
+  expect(anim.playing).toBe(false);
+  lab.dispose();
+});
+
+test('TileMap setTile/getTile/tileAt and generate fill cells deterministically from a seed', () => {
+  const { lab, canvas } = fixture();
+  class Scene extends lab.Game {
+    onCreate() { this.map = this.createObject('Ground').addComponent(new lab.TileMap('grass', 32)); }
+  }
+  lab.run(Scene, { canvas });
+  const map = lab.current.find('Ground').getComponent(lab.TileMap);
+  expect(map.tileAt(0, 0)).toBeNull();
+  map.setTile(2, 3, 'sand');
+  expect(map.getTile(2, 3)).toBe('sand');
+  expect(map.tileAt(2 * 32 + 16, 3 * 32 + 16)).toBe('sand');
+  expect(map.tileAt(0, 0)).toBeNull();
+  map.generate(20, 15, 42, 'grass', 'sand', 'stone');
+  const first = map.getTile(0, 0);
+  map.cells.clear();
+  map.generate(20, 15, 42, 'grass', 'sand', 'stone');
+  expect(map.getTile(0, 0)).toBe(first);
+  const kinds = new Set([...map.cells.values()]);
+  expect(kinds.size).toBeGreaterThan(1);
+  expect(map.tileAt(100, 100)).not.toBeNull();
+  lab.dispose();
+});

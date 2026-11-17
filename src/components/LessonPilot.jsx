@@ -10,6 +10,7 @@ import CoordinateBoard from './CoordinateBoard.jsx';
 import ComponentToggleBoard from './ComponentToggleBoard.jsx';
 import KeyPressBoard from './KeyPressBoard.jsx';
 import LifecycleBoard from './LifecycleBoard.jsx';
+import EventsBoard from './EventsBoard.jsx';
 import NormalizeRaceBoard from './NormalizeRaceBoard.jsx';
 import SprintBoard from './SprintBoard.jsx';
 import FlexPlayground from './FlexPlayground.jsx';
@@ -54,6 +55,7 @@ function TheoryVisual({ learning }) {
   if (learning.board?.kind === 'keypress') return <KeyPressBoard {...learning.board} />;
   if (learning.board?.kind === 'canvas') return <CanvasDrawBoard {...learning.board} />;
   if (learning.board?.kind === 'lifecycle') return <LifecycleBoard {...learning.board} />;
+  if (learning.board?.kind === 'events') return <EventsBoard {...learning.board} />;
   if (learning.board?.kind === 'sprint') return <SprintBoard {...learning.board} />;
   if (learning.board?.kind === 'vector-race') return <NormalizeRaceBoard {...learning.board} />;
   if (learning.board?.kind === 'flex') return <FlexPlayground {...learning.board.props} />;

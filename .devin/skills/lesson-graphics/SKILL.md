@@ -48,17 +48,17 @@ Kontrakt `board` w notatce (`extra` w `note()`):
   (zawija się na krańcu), klawisz Shift (prawdziwy lub przełącznik role=switch)
   zamienia argument speed w move(x, y, speed) z `base` na `sprint`; duch
   pokazuje tempo bazowe, gap mierzy wyprzedzenie.
+- `{ board: { kind: 'events', code } }` — gracz w centrum planszy (HP 100),
+  pociski wystrzeliwane przyciskiem lecą w niego z prawej; trafienie zapisuje
+  `onCollision(Projectile)` w dzienniku kamieni milowych i na kolorowej osi,
+  schodzi 1 HP i wypuszcza unoszący się „-1". Przełącznik `active` usypia
+  cały GameObject (onDisable, ticki i render stają), powrót woła onEnable
+  i wznawia ten sam stan. Kod pod planszą pokazuje źródło zdarzeń.
+- `{ board: { kind: 'vector-race', vx?, vy?, distance?, seconds? } }` — wyścig
+  dwóch kulek z jednego punktu: „surowa" leci `|v|*distance` px i wylatuje
+  poza pole, „znormalizowana" ląduje dokładnie po `distance` px. Surowy (0,0)
+  jest blokowany z podpowiedzią o dzieleniu przez zero.
 
-- 
-  — symulacja cyklu życia: przycisk tworzy obiekt (onCreate raz), ticki
-  onUpdate(delta) lecą w tempie wybranego FPS (30/60/120); dziennik zdarzeń,
-  oś ticków i status pokazują, że elapsed nie zależy od liczby klatek
-  (delta = 1/FPS). Wariant  niszczy obiekt po  sekundach
-  (onDestroy),  liczy ticki do ręcznego usunięcia.
--  — postać biegnie po torze
-  (zawija się na krańcu), klawisz Shift (prawdziwy lub przełącznik role=switch)
-  zamienia argument speed w move(x, y, speed) z  na ; duch
-  pokazuje tempo bazowe, gap mierzy wyprzedzenie.
 
 
 Te widżety są BAJTOWO identyczne w java-lab i web-learning-lab (kopiuj, nie
@@ -68,5 +68,5 @@ składnia Javy).
 
 Testy: `src/components/<Board>.test.jsx` w obu labach + rozszerzony test
 pokrycia `src/data/gameDevTaskLearning.test.js` (`board.kind` ∈ chase |
-coordinates | components | keypress | canvas | lifecycle | sprint). Uruchom: `npx vitest run <pliki>
+coordinates | components | keypress | canvas | lifecycle | sprint | vector-race | events). Uruchom: `npx vitest run <pliki>
 --maxWorkers=1 --minWorkers=1` sekwencyjnie w każdym labie.

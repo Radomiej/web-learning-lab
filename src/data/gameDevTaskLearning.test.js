@@ -34,7 +34,7 @@ describe('gameDevTaskLearning', () => {
       expect(entry.prediction.context, `${id}.prediction.context`).toBeTruthy();
       expect(entry.prediction.code, `${id}.prediction.code`).toBeTruthy();
       if (entry.board) {
-        expect(['chase', 'coordinates', 'components', 'keypress', 'canvas', 'lifecycle', 'sprint', 'vector-race'], `${id} board.kind=${entry.board.kind}`).toContain(entry.board.kind);
+        expect(['chase', 'coordinates', 'components', 'keypress', 'canvas', 'lifecycle', 'sprint', 'vector-race', 'events'], `${id} board.kind=${entry.board.kind}`).toContain(entry.board.kind);
       }
       expect(supportedKinds.has(entry.visual?.kind), `${id} visual.kind=${entry.visual?.kind}`).toBe(true);
       if (entry.visual.kind === 'flow') {
