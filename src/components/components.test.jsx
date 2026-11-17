@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App.jsx";
 import { allLessons } from '../data/curriculum.js';
@@ -18,7 +18,8 @@ test('offers the next lesson only after completing every task', async () => {
 beforeEach(() => {localStorage.clear();history.replaceState(null,'','#/');});
 async function openTask(){const button=screen.queryByRole('button',{name:'Zadanie',exact:true});if(button)await userEvent.setup().click(button);}
 
-test("shows the first lesson, three editor files, preview status, and track navigation", async () => {
+test("shows the first lesson, three tasks, editor files, and an optional preview", async () => {
+  const user = userEvent.setup();
   render(<App />);
   await openTask();
   expect(screen.getByText("Web Learning Lab")).toBeInTheDocument();
@@ -31,8 +32,13 @@ test("shows the first lesson, three editor files, preview status, and track navi
     screen.queryByRole("tab", { name: "theme.css" }),
   ).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
+  expect(screen.queryByText("Podgląd na żywo")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Pokaż podgląd wyniku" }));
   expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
-  expect(screen.getByText("100 lekcji")).toBeInTheDocument();
+  expect(screen.getByText("101 lekcji")).toBeInTheDocument();
+  expect(
+    within(screen.getByRole("navigation", { name: "Wybierz zadanie" })).getAllByRole("button"),
+  ).toHaveLength(3);
 });
 
 test("opens the CRA public entry when the React track is selected", async () => {
@@ -222,6 +228,8 @@ test('opens Game Dev with its three files, engine guide, and console below the e
   await user.click(screen.getByRole('tab', { name: /Game Dev JS/ }));
   expect(screen.getByRole('heading', { name: 'Scena, obiekty i komponenty' })).toBeInTheDocument();
   expect(screen.getByRole('tab', { name: 'game.js' })).toBeInTheDocument();
+  expect(screen.queryByTitle('Podgląd gry ucznia')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Pokaż podgląd wyniku' }));
   expect(screen.getByTitle('Podgląd gry ucznia')).toHaveAttribute('sandbox', 'allow-scripts');
   expect(container.querySelector('.editor-shell')).toContainElement(screen.getByRole('heading', { name: 'Konsola' }));
   await user.click(screen.getByRole('button', { name: 'Dokumentacja GameLab' }));

@@ -118,7 +118,7 @@ export default function LessonWorkspace({
   return (
     <div className="lesson-workspace">
       {playground ? <section className="lesson-overview"><p className="eyebrow">Playground · GameLab</p><h1>{lesson.title}</h1><p className="lesson-summary">{lesson.summary}</p><PlaygroundTools project={files} onImport={onImportProject} /></section> : <LessonOverview lesson={lesson} headingOnly={modular} />}
-      <LearningModule enabled={modular} stage={stage} onChange={onStageChange} learning={<LessonOverview lesson={lesson} learningOnly />} quiz={<JsLessonQuiz key={lesson.id} lesson={lesson} standalone onContinue={() => onStageChange('task')} />}>
+      <LearningModule enabled={modular} learning={<LessonOverview lesson={lesson} learningOnly />} quiz={<JsLessonQuiz key={lesson.id} lesson={lesson} standalone onContinue={() => document.getElementById('lesson-task-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />}>
       {(playground || lesson.track === 'game-dev') && <><GameCoursePdf key={lesson.id} /><p className="task-hint">PDF startowy: aktualny program 24 lekcji i pierwszych pięć lekcji JS. Materiały o kamerze i tweenach uzupełniają lekcje 15–17 i 19.</p></>}
       {playground && <GameTutor key={`${activeTask.id}:${projectRevision}`} project={files} projectRevision={projectRevision} onApply={onTutorApply} />}
       {!playground && <TaskPanel

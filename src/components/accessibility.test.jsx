@@ -9,7 +9,7 @@ test('exposes landmarks and labels for the editor workflow', async () => {
   expect(screen.getByRole('main')).toBeInTheDocument();
   await user.click(screen.getByLabelText('Wybierz ścieżkę'));
   await user.click(screen.getByRole('tab', { name: 'CSS 6' }));
-  await user.click(screen.getByRole('button', { name: 'Zadanie', exact: true }));
+  // Lesson sections now share one page, so the editor is already available.
   expect(screen.getByLabelText('Edytor index.html')).toBeInTheDocument();
   await user.click(screen.getAllByRole('button', { name: 'Pokaż podgląd' })[0]);
   expect(screen.getByRole('complementary', { name: 'Podgląd i diagnostyka' })).toBeInTheDocument();

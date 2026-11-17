@@ -2,9 +2,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { lessons } from './lessons.js';
+import { cssLessons } from './cssLessons.js';
+import { cssGdLessons, cssGdTheorySource } from './cssGdLessons.js';
 import { taskLearningFor } from './taskLearning.js';
+import { htmlCssTeachingPages } from './htmlCssTeachingPages.js';
 import { buildPreviewDocument } from '../services/previewDocument.js';
 import { evaluateChecks } from '../services/lessonValidator.js';
+import { courseQuizPages } from '../../shared/assignments/courseQuizCatalog.js';
 
 const parserDom = new JSDOM('');
 beforeAll(() => {
@@ -47,6 +51,24 @@ describe('CSS GD lessons 1001–1006', () => {
   it('defines 6 lessons in the 1000 block with file styles.css', () => {
     expect(gdLessons.map((lesson) => lesson.order)).toEqual([1001, 1002, 1003, 1004, 1005, 1006]);
     expect(gdLessons.every((lesson) => lesson.file === 'styles.css')).toBe(true);
+  });
+
+  it('teaches the same six CSS concepts in classic and GD, with a quiz in classic', () => {
+    const classic = lessons.filter((lesson) => Object.values(cssGdTheorySource).includes(lesson.id));
+    expect(classic).toHaveLength(6);
+    expect(Object.keys(cssGdTheorySource)).toEqual(gdLessons.map((lesson) => lesson.id));
+    for (const gdLesson of gdLessons) {
+      const classicId = cssGdTheorySource[gdLesson.id];
+      const classicLesson = classic.find((lesson) => lesson.id === classicId);
+      const classicIndex = cssGdTheorySource[gdLesson.id] && classic.findIndex((lesson) => lesson.id === classicId);
+      expect(classicLesson.theory, gdLesson.id).toBeTruthy();
+      expect(courseQuizPages[classicId]?.length, classicId).toBeGreaterThan(0);
+      expect(courseQuizPages[classicId].every((page) => page.title && page.text && page.code)).toBe(true);
+      expect(gdLesson.theory, gdLesson.id).toEqual(htmlCssTeachingPages[classicId]);
+      expect(gdLesson.objectives, gdLesson.id).toEqual(classicLesson.objectives);
+      expect(cssGdLessons[gdLesson.order - 1001].requiredProperties, gdLesson.id).toEqual(cssLessons[classicIndex].requiredProperties);
+      expect(cssGdLessons[gdLesson.order - 1001].requiredPractices, gdLesson.id).toEqual(cssLessons[classicIndex].requiredPractices);
+    }
   });
 
   it('keeps stable unique task ids: guided / modified-v2 / independent-v2', () => {

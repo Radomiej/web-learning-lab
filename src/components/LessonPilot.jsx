@@ -100,7 +100,7 @@ function PredictionQuiz({ question, options }) {
 }
 
 // Układ „pilot" — jak w java-lab: teoria pod ręką, przewidywanie z próbą
-// krokową i zadanie z edytorem + podglądem na żywo w jednym widoku.
+// krokową i zadanie z edytorem; wynik uczeń otwiera na żądanie.
 export default function LessonPilot({
   lesson, activeTask, learning, completedTasks, onTaskChange, onNextLesson, editor, preview, feedback, submission, studentHtml,
 }) {
@@ -110,6 +110,8 @@ export default function LessonPilot({
   }, [lesson.id]);
   const gameUi = ['html-gd', 'css-gd'].includes(lesson.track);
   const [liveHtml, setLiveHtml] = useState(studentHtml);
+  const [showPreview, setShowPreview] = useState(false);
+  useEffect(() => setShowPreview(false), [activeTask.id]);
   useEffect(() => {
     const timer = setTimeout(() => setLiveHtml(studentHtml), 300);
     return () => clearTimeout(timer);
@@ -155,10 +157,10 @@ export default function LessonPilot({
             <div><h3>Zapis w kodzie</h3><CodeExample key={activeTask.id} code={learning.code} /></div>
           </div>
           {gameUi && learning.visual?.kind === 'html' && (
-            <div className="pilot-theory-tree">
-              <h3>Drzewo elementów przykładu</h3>
+            <details className="pilot-theory-tree">
+              <summary>Drzewo elementów przykładu <span>opcjonalnie</span></summary>
               <ElementTree html={learning.visual.code} />
-            </div>
+            </details>
           )}
           <button type="button" className="pilot-return" onClick={focusTask}>Wróć do edytora ↓</button>
         </div>
@@ -215,14 +217,19 @@ export default function LessonPilot({
       </details>}
       <div className="pilot-workbench">
         {editor}
-        {preview}
+        {preview && <section className="pilot-output" aria-label="Wynik zadania">
+          <button type="button" className="button button--ghost pilot-output-toggle" aria-expanded={showPreview} aria-controls={`pilot-output-${lesson.id}`} onClick={() => setShowPreview(value => !value)}>
+            {showPreview ? 'Schowaj podgląd' : 'Pokaż podgląd wyniku'}
+          </button>
+          {showPreview && <div id={`pilot-output-${lesson.id}`} className="pilot-output-content">{preview}</div>}
+        </section>}
       </div>
       {gameUi && (
-        <section className="pilot-element-tree" aria-labelledby="pilot-element-tree-title">
-          <h3 id="pilot-element-tree-title">Drzewo elementów</h3>
+        <details className="pilot-element-tree">
+          <summary>Drzewo elementów <span>opcjonalnie</span></summary>
           <p className="pilot-element-tree-hint">Struktura Twojego <code>index.html</code> na żywo. ✓ oznacza spełnione warunki zadania.</p>
           <ElementTree html={liveHtml} checks={treeChecks} />
-        </section>
+        </details>
       )}
       {feedback}
       {submission}

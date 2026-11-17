@@ -34,8 +34,9 @@ export default function PhpMysqlShell() {
     <details className="php-mysql-shell">
       <summary>Konsola SQL w stylu MySQL</summary>
       <p id="php-mysql-help">
-        Baza <strong>{database}</strong> działa w SQLite. Wypróbuj <code>USE biblioteka</code>,
-        {' '}<code>SHOW TABLES</code>, <code>DESCRIBE ksiazki</code> lub zapytanie <code>SELECT</code>.
+        To ograniczony adapter dydaktyczny: DSN i polecenia przypominają MySQL, ale PDO wykonuje zapytania na lokalnym SQLite — nie łączy się z serwerem MySQL.
+        Obsługuje <code>USE biblioteka</code>, <code>SHOW TABLES</code>, <code>DESCRIBE</code> oraz tylko odczytujące <code>SELECT</code>/<code>WITH</code>.
+        Zmiany danych i tabel są wyłączone; funkcje oraz typy specyficzne dla MySQL mogą działać inaczej.
       </p>
       <form onSubmit={execute}>
         <label htmlFor="php-mysql-command">Polecenie SQL</label>
