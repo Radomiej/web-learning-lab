@@ -7,18 +7,21 @@ import { buildPlaygroundOrbit } from '../src/services/orbitPlayground.js';
 
 test('Orbit package keeps the student scene, D-pad, canvas operations and synthesizer calls', async () => {
   const source = `
+    import { speed } from './movement.js';
     class StudentGame extends GameLab.Game {
       onCreate() {
         this.x = 32;
         this.audio.playNote('A4', { wave: 'sine', beats: 0.5 });
         this.audio.playSong({ tempo: 120, tracks: [{ wave: 'triangle', notes: [{ note: 'A4', beats: 1 }] }] });
       }
-      onUpdate() { if (this.input.isKeyDown('ArrowRight')) this.x += 3; }
+      onUpdate() { if (this.input.isKeyDown('ArrowRight')) this.x += speed; }
       onDrawUI() { this.canvas.drawRect(this.x, 60, 24, 22, '#ffd166'); }
     }
     GameLab.run(StudentGame);
   `;
-  const files = unzipSync(await buildPlaygroundOrbit({ files: { 'game.js': source } }, 'web-lab-test'));
+  const files = unzipSync(await buildPlaygroundOrbit({
+    files: { 'game.js': source, 'movement.js': 'export const speed = 3;' },
+  }, 'web-lab-test'));
   const manifest = JSON.parse(strFromU8(files['orbit.json']));
   assert.equal(manifest.files[0].sha256, createHash('sha256').update(files['main.js']).digest('hex'));
   const tones = [], tracks = [], translations = [];

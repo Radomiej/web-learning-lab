@@ -13,15 +13,16 @@ VITE_WEB_LAB_URL po stronie Nekko i VITE_NEKKO_ORIGIN po stronie Web Lab.
 Do instalacji przez Wi-Fi dostępny jest także formularz LAN z adresem
 konsoli i pięcioznakowym kodem.
 
-Orbit uruchamia scenę z pojedynczego game.js przez GameLab.run(). Adapter
+Orbit uruchamia scenę z game.js przez GameLab.run(). Lokalne moduły JavaScript
+są składane do jednej paczki przy eksporcie. Adapter
 korzysta z logiki sceny i fizyki Web Lab, a prostokąty, koła, tekst i zgodne
 sprite’y, kafelki i paski postępu rysuje z oryginalnych zasobów Web Lab przez
 natywne API. Krzyżak obsługuje strzałki oraz WASD,
 A zastępuje spację, Enter lub Z, a B zastępuje Escape lub X.
 GameLab Audio przekłada nuty i utwory na natywny syntezator, do czterech
 ścieżek utworu. Tekst używa czcionki Orbit. Eksport pomija
-HTML, CSS, własne zasoby, mysz i bezpośrednie użycie Web Audio. Importy
-modułów i pełny Canvas 2D wymagają adaptacji.
+HTML, CSS, własne zasoby, mysz i bezpośrednie użycie Web Audio. Zewnętrzne
+importy i pełny Canvas 2D wymagają adaptacji.
 
 Instalacja LAN weryfikuje parowanie, przesyła pliki do katalogu tymczasowego
 launchera i prosi o uruchomienie po zatwierdzeniu kompletnej paczki.

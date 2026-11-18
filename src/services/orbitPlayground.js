@@ -167,7 +167,9 @@ export async function buildPlaygroundOrbit(project, id) {
   const game = project?.files?.['game.js'];
   if (typeof game !== 'string' || !game.trim()) throw new Error('Projekt musi zawierać game.js.');
   if (!/^web-lab-[a-z0-9-]{1,38}$/.test(id)) throw new Error('Nieprawidłowy identyfikator projektu.');
-  if (/^\s*(?:import\s|export\s)/m.test(game)) throw new Error('Eksport Orbit wymaga sceny w jednym pliku game.js bez importów.');
+  const { compileModules } = await import('./moduleCompiler.js');
+  const compiled = compileModules(project.files, 'game.js', { target: 'orbit' });
+  if (compiled.errors.length) throw new Error(compiled.errors.join('\n'));
   const runtime = getGameRuntimeScript('{window,skipAssetLoading:true,recordTiles:true,createAudio:orbitPlayground.createAudio}');
   const source = [
     'var orbitPlayground = (' + orbitEnvironment.toString() + ')(' + JSON.stringify(assetManifest) + ');',
@@ -175,7 +177,7 @@ export async function buildPlaygroundOrbit(project, id) {
     'const window = orbitPlayground.window;',
     runtime,
     'const GameLab = window.GameLab;',
-    game,
+    compiled.code,
     'if (!GameLab.current) throw new Error("Uruchom scenę przez GameLab.run.");',
     '}',
     'function update(dt) { orbitPlayground.update(dt); }',
