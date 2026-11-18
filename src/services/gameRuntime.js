@@ -441,13 +441,15 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       for (let row = firstRow; row <= firstRow + rows; row++) for (let column = firstColumn; column <= firstColumn + columns; column++) {
         const variant = (column * 31 + row * 17 + column * row * 7) & 3;
         const texture = tileMap.getTile(column, row) ?? tileMap.texture, grass = texture === 'grass';
-        renderer.drawSprite(this.context, { texture, x: (column + .5) * tileSize - this.view.x, y: (row + .5) * tileSize - this.view.y, width: tileSize + overlap, height: tileSize + overlap, rotation: 0, scaleX: grass && (variant & 1) ? -1 : 1, scaleY: grass && (variant & 2) ? -1 : 1 });
+        const sprite = { op: 'sprite', texture, x: (column + .5) * tileSize - this.view.x, y: (row + .5) * tileSize - this.view.y, width: tileSize + overlap, height: tileSize + overlap, rotation: 0, scaleX: grass && (variant & 1) ? -1 : 1, scaleY: grass && (variant & 2) ? -1 : 1 };
+        if (environment.recordTiles) this.commands.push(sprite);
+        renderer.drawSprite(this.context, sprite);
       }
     }
     drawSprite(sprite, transform) {
       const command = { op: 'sprite', texture: sprite.texture, x: transform.x, y: transform.y, screenX: transform.x - this.view.x, screenY: transform.y - this.view.y, width: sprite.width, height: sprite.height, rotation: transform.rotation, scaleX: transform.scale.x * (sprite.flipX ? -1 : 1), scaleY: transform.scale.y * (sprite.flipY ? -1 : 1) };
       renderer.drawSprite(this.context, { ...command, x: command.screenX + transform.visualOffset.x, y: command.screenY + transform.visualOffset.y });
-      this.commands.push(command);
+      this.commands.push(environment.recordTiles ? {...command, screenX: command.screenX + transform.visualOffset.x, screenY: command.screenY + transform.visualOffset.y} : command);
     }
   }
   const size = object => {
@@ -464,7 +466,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
       this.physics = createPhysics(this, { Collider2D, CircleCollider2D, CharacterController2D, Projectile2D }, SpatialHash);
       this.componentIndex=new Map();this.tagIndex=new Map();
       this.background = '#0b2033'; this.started = false; this.disposed = false; this.canvas = null; this.tweens = []; this.cameraView = { x: 0, y: 0 }; this.debugColliders = false;
-      this.audio = audioKit.createAudio({ window: win });
+      this.audio = environment.createAudio ? environment.createAudio(audioKit) : audioKit.createAudio({ window: win });
     }
     onCreate() {}
     onUpdate() {}
@@ -888,6 +890,6 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, SpriteAnimator, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Layers, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
 }
 
-export function getGameRuntimeScript() {
-  return `window.GameLab = (${createGameLab.toString()})({}, {Assets:Object.freeze(${JSON.stringify(Assets)}),assetManifest:${JSON.stringify(assetManifest)},SpatialHash:(${SpatialHash.toString()}),createPhysics:(${createPhysics.toString()}),createRenderer:(${createRenderer.toString()}),createAddons:(${createAddons.toString()}),createLabAudio:(${createLabAudio.toString()}),createFrameStats:(${createFrameStats.toString()}),Keys:Object.freeze(${JSON.stringify(defaultKeys)})});`;
+export function getGameRuntimeScript(environment = '{}') {
+  return `window.GameLab = (${createGameLab.toString()})(${environment}, {Assets:Object.freeze(${JSON.stringify(Assets)}),assetManifest:${JSON.stringify(assetManifest)},SpatialHash:(${SpatialHash.toString()}),createPhysics:(${createPhysics.toString()}),createRenderer:(${createRenderer.toString()}),createAddons:(${createAddons.toString()}),createLabAudio:(${createLabAudio.toString()}),createFrameStats:(${createFrameStats.toString()}),Keys:Object.freeze(${JSON.stringify(defaultKeys)})});`;
 }

@@ -2,7 +2,35 @@ import { useEffect, useRef, useState } from 'react';
 import { MAX_GAME_PROJECT_BYTES, parseGameProject, serializeGameProject } from '../services/gameProjectTransfer.js';
 import { buildPlaygroundOrbit, runPlaygroundOnLan } from '../services/orbitPlayground.js';
 
-const NEKKO_ORIGIN = 'https://play.nekko.software';
+const NEKKO_ORIGIN = new URL(import.meta.env.VITE_NEKKO_ORIGIN || 'https://play.nekko.software').origin;
+
+function sendOrbitPackage(target, requestId, name, bytes, waitForReady) {
+  return new Promise((resolve, reject) => {
+    let sent = false;
+    const timeout = setTimeout(() => {
+      window.removeEventListener('message', receive);
+      reject(new Error('Nekko nie odebrało gry. Zaloguj się lub użyj opcji Pobierz paczkę .orbit.'));
+    }, waitForReady ? 180000 : 10000);
+    function send() {
+      if (sent) return;
+      sent = true;
+      target.postMessage({
+        type: 'orbit:game-package', version: 1, intent: 'private-playground', requestId, name, bytes: bytes.buffer,
+      }, NEKKO_ORIGIN);
+    }
+    function receive(event) {
+      if (event.source !== target || event.origin !== NEKKO_ORIGIN || event.data?.requestId !== requestId) return;
+      if (waitForReady && event.data.type === 'orbit:playground-ready') send();
+      if (sent && event.data.type === 'orbit:game-package-ack') {
+        clearTimeout(timeout);
+        window.removeEventListener('message', receive);
+        resolve();
+      }
+    }
+    window.addEventListener('message', receive);
+    if (!waitForReady) send();
+  });
+}
 
 export default function PlaygroundTools({ project, onImport }) {
   const inputRef = useRef(null);
@@ -43,7 +71,12 @@ export default function PlaygroundTools({ project, onImport }) {
     finally { if (aliveRef.current) setReading(false); }
   }
 
-  async function sendToOrbit(local) {
+  async function sendToOrbit(mode) {
+    const requestId = crypto.randomUUID();
+    const embedded = window.parent !== window && document.referrer &&
+      new URL(document.referrer).origin === NEKKO_ORIGIN;
+    const popup = mode === 'online' && !embedded
+      ? window.open(NEKKO_ORIGIN + '/?orbitPlayground=' + requestId, '_blank') : null;
     setSending(true);
     setStatus('Przygotowuję paczkę Orbit…');
     try {
@@ -51,20 +84,16 @@ export default function PlaygroundTools({ project, onImport }) {
       const bytes = await buildPlaygroundOrbit(project, orbitId.current);
       if (!aliveRef.current) return;
       const name = orbitId.current + '.orbit';
-      if (local) {
+      if (mode === 'local') {
         await runPlaygroundOnLan(orbitAddress, orbitCode, bytes);
         if (aliveRef.current) {
           setOrbitCode('');
           setStatus('Konsola przyjęła polecenie uruchomienia gry.');
         }
-      } else if (window.parent !== window && document.referrer &&
-          new URL(document.referrer).origin === NEKKO_ORIGIN) {
-        const requestId = crypto.randomUUID();
-        window.parent.postMessage({ type: 'orbit:relay-connect' }, NEKKO_ORIGIN);
-        window.parent.postMessage({
-          type: 'orbit:game-package', version: 1, requestId, name, bytes: bytes.buffer,
-        }, NEKKO_ORIGIN, [bytes.buffer]);
-        setStatus('W Nekko wpisz kod z ekranu Dev Server konsoli, a następnie wybierz instalację i uruchomienie.');
+      } else if (mode === 'online' && (embedded || popup)) {
+        setStatus('Zaloguj się w Nekko, jeśli pojawi się formularz logowania.');
+        await sendOrbitPackage(embedded ? window.parent : popup, requestId, name, bytes, !embedded);
+        if (aliveRef.current) setStatus('Nekko odebrało grę. Wpisz kod online lub wybierz sparowaną konsolę.');
       } else {
         const url = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }));
         const link = document.createElement('a');
@@ -74,7 +103,7 @@ export default function PlaygroundTools({ project, onImport }) {
         link.click();
         link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setStatus('Pobrano paczkę. W Nekko otwórz Konsolki → Connect, wpisz kod i wczytaj plik .orbit.');
+        setStatus('Pobrano paczkę. W Nekko otwórz Konsolki → Connect, wpisz kod i wczytaj plik .orbit w sekcji prywatnej gry Playground.');
       }
     } catch (error) {
       if (aliveRef.current) setStatus(`Orbit: ${error.message}`);
@@ -94,18 +123,22 @@ export default function PlaygroundTools({ project, onImport }) {
       }}>Importuj JSON</button>
       <input ref={inputRef} className="sr-only" type="file" accept=".json,application/json" aria-label="Plik JSON projektu gry" onChange={importProject} />
     </div>
-    {orbitOpen && <form id="playground-orbit" onSubmit={event => { event.preventDefault(); void sendToOrbit(true); }}>
-      <p>Połącz komputer i konsolę z tym samym Wi‑Fi. Adres i pięcioznakowy kod znajdziesz na ekranie Dev Server. Orbit uruchamia scenę z game.js.</p>
-      <label>Adres konsoli <input required value={orbitAddress} placeholder="192.168.0.232:8080"
-        onChange={event => setOrbitAddress(event.target.value)} /></label>
-      <label>Kod parowania <input required maxLength={5} autoComplete="off" value={orbitCode}
-        onChange={event => setOrbitCode(event.target.value.toUpperCase())} /></label>
+    {orbitOpen && <form id="playground-orbit" onSubmit={event => { event.preventDefault(); void sendToOrbit('local'); }}>
+      <p>Włącz tryb online na ekranie Dev Server konsoli. Nekko połączy ją z Twoim kontem za pomocą ośmioznakowego kodu i wyśle grę.</p>
       <div className="playground-tools-actions">
-        <button className="button button--secondary" disabled={sending}>Połącz i uruchom</button>
+        <button className="button button--secondary" type="button" disabled={sending}
+          onClick={() => void sendToOrbit('online')}>Przygotuj grę do uruchomienia online</button>
         <button className="button button--ghost" type="button" disabled={sending}
-          onClick={() => void sendToOrbit(false)}>Eksportuj do Nekko</button>
-        <a href={NEKKO_ORIGIN} target="_blank" rel="noreferrer">Otwórz Nekko Launcher</a>
+          onClick={() => void sendToOrbit('download')}>Pobierz paczkę .orbit</button>
       </div>
+      <details>
+        <summary>Połącz przez lokalne Wi‑Fi</summary>
+        <label>Adres konsoli <input value={orbitAddress} placeholder="192.168.0.232:8080"
+          onChange={event => setOrbitAddress(event.target.value)} /></label>
+        <label>Pięcioznakowy kod LAN <input maxLength={5} autoComplete="off" value={orbitCode}
+          onChange={event => setOrbitCode(event.target.value.toUpperCase())} /></label>
+        <button className="button button--ghost" disabled={sending || !orbitAddress || !orbitCode}>Uruchom przez LAN</button>
+      </details>
     </form>}
     {status && <p role="status">{status}</p>}
   </div>;

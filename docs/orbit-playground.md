@@ -1,17 +1,27 @@
 # Uruchamianie gry z Playground na Orbit
 
-1. Połącz komputer i konsolę z tym samym Wi-Fi.
-2. Na konsoli otwórz **Dev Server**. W Playground wybierz **Uruchom na Orbit**.
-3. Wpisz adres konsoli i pięcioznakowy kod LAN. Wybierz **Połącz i uruchom**.
-4. Jeśli przeglądarka prosi o dostęp do sieci lokalnej, zezwól na niego. Gdy połączenie jest blokowane, wyeksportuj plik .orbit do Nekko Launcher. Parowanie online w Nekko używa ośmiu znaków i wymaga konta z dostępem do instalacji paczek.
+Wymagany launcher Orbit 0.3.33 lub nowszy.
+
+1. Na konsoli otwórz **Dev Server** i naciśnij **X**, aby włączyć tryb online.
+2. W Playground wybierz **Uruchom na Orbit → Przygotuj grę do uruchomienia online**. Web Lab otworzy Nekko. Zaloguj się, jeśli pojawi się formularz logowania.
+3. Wpisz osiem znaków z konsoli. Po udanym parowaniu Nekko zainstaluje i uruchomi oczekującą grę. Dla wcześniej sparowanej konsoli wybierz **Zainstaluj i uruchom online**.
+4. Jeśli przeglądarka blokuje nowe okno, pobierz plik .orbit i wczytaj go w Nekko w sekcji **Uruchom prywatną grę Playground**. Konsola i przeglądarka mogą być w różnych sieciach.
+
+Bezpośrednie przekazanie z nowego okna jest ograniczone do zaufanego originu
+Web Lab (domyślnie produkcyjnego). W środowisku testowym można ustawić
+VITE_WEB_LAB_URL po stronie Nekko i VITE_NEKKO_ORIGIN po stronie Web Lab.
+Do instalacji przez Wi-Fi dostępny jest także formularz LAN z adresem
+konsoli i pięcioznakowym kodem.
 
 Orbit uruchamia scenę z pojedynczego game.js przez GameLab.run(). Adapter
 korzysta z logiki sceny i fizyki Web Lab, a prostokąty, koła, tekst i zgodne
-sprite’y rysuje przez natywne API. Krzyżak obsługuje strzałki oraz WASD,
+sprite’y, kafelki i paski postępu rysuje z oryginalnych zasobów Web Lab przez
+natywne API. Krzyżak obsługuje strzałki oraz WASD,
 A zastępuje spację, Enter lub Z, a B zastępuje Escape lub X.
-Eksport pomija HTML, CSS, własne zasoby, mysz i dźwięk przeglądarki.
-Importy modułów oraz część efektów Canvas 2D, w tym kafelki i panele
-dziewięcioczęściowe, wymagają adaptacji.
+GameLab Audio przekłada nuty i utwory na natywny syntezator, do czterech
+ścieżek utworu. Tekst używa czcionki Orbit. Eksport pomija
+HTML, CSS, własne zasoby, mysz i bezpośrednie użycie Web Audio. Importy
+modułów i pełny Canvas 2D wymagają adaptacji.
 
 Instalacja LAN weryfikuje parowanie, przesyła pliki do katalogu tymczasowego
 launchera i prosi o uruchomienie po zatwierdzeniu kompletnej paczki.
