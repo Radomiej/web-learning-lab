@@ -75,8 +75,7 @@ function orbitEnvironment(assetManifest) {
     const name = spriteName(key);
     const entry = atlas.get(key);
     if (name !== 'weblab-' + key || !entry || typeof lab.drawSpriteRegion !== 'function') {
-      lab.drawRect(x - w / 2, y - h / 2, w, h, '#172c45');
-      return;
+      throw new Error(`kalio-portable/1: ninepatch asset "${key}" is unavailable or the host lacks drawSpriteRegion.`);
     }
     const { frame: f, ninePatch: slice = { left: 12, top: 12, right: 12, bottom: 12 } } = entry;
     const border = Math.max(0, Math.min(inset ?? 8, w / 2, h / 2));
@@ -105,8 +104,7 @@ function orbitEnvironment(assetManifest) {
       ninePatch(command.frame, x, y, w, h, Math.min(10, h / 3));
       return;
     }
-    lab.drawRect(x - w / 2, y - h / 2, w, h, '#172c45');
-    if (ratio) lab.drawRect(x - w / 2, y - h / 2, w * ratio, h, '#76b9f2');
+    throw new Error(`kalio-portable/1: progress bar assets "${command.frame}", "${command.track}", or "${command.fill}" are unavailable.`);
   }
   function draw(command) {
     const x = command.screenX ?? command.x;
@@ -138,7 +136,7 @@ function orbitEnvironment(assetManifest) {
               flipX: command.scaleX < 0, flipY: command.scaleY < 0,
               rot: (command.rotation || 0) * 180 / Math.PI,
             });
-          } else lab.drawRect(x - w / 2, y - h / 2, w, h, '#76b9f2');
+          } else throw new Error(`kalio-portable/1: sprite asset "${command.texture}" is unavailable.`);
         }
         break;
       case 'progress':
@@ -147,9 +145,17 @@ function orbitEnvironment(assetManifest) {
       case 'ninepatch':
         if (w > 0 && h > 0) ninePatch(command.texture, x, y, w, h, command.border);
         break;
+      case 'tilemap':
+        // The bundled Lab runtime records this metadata marker before it
+        // expands the visible map into ordered sprite commands. The sprites
+        // that follow are the actual draw operations for Orbit.
+        break;
+      default:
+        throw new Error(`kalio-portable/1: unsupported render operation "${command.op}".`);
     }
   }
   function update(dt) {
+    if (!Number.isFinite(dt) || dt < 0 || dt > 0.1) throw new Error('kalio-portable/1: update(dt) requires finite seconds in [0, 0.1]. Configure the host frame cap before running this project.');
     for (const [button, aliases] of Object.entries(keys)) {
       const down = lab.isKeyDown(button);
       if (down === !!held[button]) continue;

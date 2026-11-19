@@ -288,6 +288,18 @@
         "kind": "method"
       },
       {
+        "name": "onEnable",
+        "signature": "public void onEnable()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onDisable",
+        "signature": "public void onDisable()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
         "name": "onLateUpdate",
         "signature": "public void onLateUpdate(double delta)",
         "parameters": [
@@ -1182,6 +1194,66 @@
     "parent": "Component",
     "members": [
       {
+        "name": "setTile",
+        "signature": "public TileMap setTile(int column,int row,String texture)",
+        "parameters": [
+          "int column",
+          "int row",
+          "String texture"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setTile",
+        "signature": "public TileMap setTile(int column,int row,Assets texture)",
+        "parameters": [
+          "int column",
+          "int row",
+          "Assets texture"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getTile",
+        "signature": "public String getTile(int column,int row)",
+        "parameters": [
+          "int column",
+          "int row"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "tileAt",
+        "signature": "public String tileAt(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "generate",
+        "signature": "public TileMap generate(int width,int height,long seed,String... layers)",
+        "parameters": [
+          "int width",
+          "int height",
+          "long seed",
+          "String... layers"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "generate",
+        "signature": "public TileMap generate(int width,int height,long seed,Assets... layers)",
+        "parameters": [
+          "int width",
+          "int height",
+          "long seed",
+          "Assets... layers"
+        ],
+        "kind": "method"
+      },
+      {
         "name": "onDrawBackground",
         "signature": "public void onDrawBackground()",
         "parameters": [],
@@ -1218,6 +1290,84 @@
       {
         "name": "layer",
         "signature": "int layer",
+        "kind": "field"
+      }
+    ]
+  },
+  "SpriteAnimator": {
+    "constructible": true,
+    "parent": "Component",
+    "members": [
+      {
+        "name": "play",
+        "signature": "public SpriteAnimator play(String[] frames,double fps)",
+        "parameters": [
+          "String[] frames",
+          "double fps"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "play",
+        "signature": "public SpriteAnimator play()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "stop",
+        "signature": "public SpriteAnimator stop()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "SpriteAnimator",
+        "signature": "public SpriteAnimator(String[] frames,double fps)",
+        "parameters": [
+          "String[] frames",
+          "double fps"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "SpriteAnimator",
+        "signature": "public SpriteAnimator(Assets[] assets,double fps)",
+        "parameters": [
+          "Assets[] assets",
+          "double fps"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "frames",
+        "signature": "String[] frames",
+        "kind": "field"
+      },
+      {
+        "name": "fps",
+        "signature": "double fps",
+        "kind": "field"
+      },
+      {
+        "name": "loop",
+        "signature": "boolean loop",
+        "kind": "field"
+      },
+      {
+        "name": "elapsed",
+        "signature": "double elapsed",
+        "kind": "field"
+      },
+      {
+        "name": "frame",
+        "signature": "int frame",
         "kind": "field"
       }
     ]
@@ -1927,6 +2077,16 @@
       {
         "name": "D",
         "signature": "String D",
+        "kind": "field"
+      },
+      {
+        "name": "E",
+        "signature": "String E",
+        "kind": "field"
+      },
+      {
+        "name": "R",
+        "signature": "String R",
         "kind": "field"
       },
       {

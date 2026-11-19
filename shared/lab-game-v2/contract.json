@@ -4,6 +4,13 @@
     "Java",
     "JavaScript"
   ],
+  "compatibility": {
+    "canonicalModel": "Lab Game 2D v2",
+    "canonicalCore": "Lab Game 2D v2 defines the shared learner API. Adapter profiles declare target support only; Java/Web parity is claimed only for tested scenarios.",
+    "kalioAdapterProfile": "kalio-portable/1",
+    "targetRuntime": "quickjs-lrp",
+    "targetApiVersion": "game-lab-lrp/1"
+  },
   "coordinates": {
     "position": "object center",
     "units": "pixels",
@@ -50,6 +57,7 @@
       "description": "Bazowa klasa sceny. Nadpisz hooki onCreate/onUpdate; stan gry trzymaj w scenie lub komponentach.",
       "example": "class MyGame extends GameLab.Game {\n  onCreate() {\n    const player = this.createObject(\"Player\");\n  }\n}\nGameLab.run(MyGame);",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "canvas",
@@ -156,6 +164,7 @@
       "description": "Obiekt sceny z nazwą, pozycją, skalą i komponentami. Tworzy go Game.createObject().",
       "example": "const enemy = this.createObject(\"Enemy\");\nenemy.setPosition(120, 80);",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "id",
@@ -250,6 +259,7 @@
       "description": "Bazowa klasa własnych zachowań. this.gameObject wskazuje właściciela, a this.game zwraca scenę.",
       "example": "class PlayerMove extends GameLab.Component {\n  onUpdate(delta) {\n    this.transform.x += 80 * delta;\n  }\n}",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "game",
@@ -289,6 +299,14 @@
         },
         {
           "name": "onLateUpdate",
+          "description": null
+        },
+        {
+          "name": "onEnable",
+          "description": null
+        },
+        {
+          "name": "onDisable",
           "description": null
         },
         {
@@ -344,6 +362,7 @@
       "description": "Pozycja x/y (środek w pikselach), rotation w radianach, scale oraz visualOffset.",
       "example": "player.transform.x = 120;\nplayer.transform.scale.x = 1.2;",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "x",
@@ -374,6 +393,7 @@
       "description": "Rysuje prostokąt (domyślnie 32×32 px) lub koło. GameLab.ShapeRenderer.circle(radius, color) tworzy koło; collider dodajesz osobno.",
       "example": "object.addComponent(new GameLab.ShapeRenderer(48, 32, \"#70c994\"));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "circle",
@@ -420,6 +440,7 @@
       "description": "Rysuje teksturę ze wspólnego katalogu Assets: postacie, przeciwnicy, pociski, świat i UI. Nazwy i podgląd wszystkich grafik: zakładka Assety.",
       "example": "object.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01, 32, 32));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "texture",
@@ -462,6 +483,7 @@
       "description": "Tekst w pozycji obiektu. Domyślnie world; space=\"screen\" lub UITransform tworzy HUD. text może być funkcją.",
       "example": "const hud=this.createObject(\"HUD\").setPosition(10,24);\nhud.addComponent(new GameLab.TextRenderer(() => `Punkty: ${this.points}`)).space=\"screen\";",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "text",
@@ -508,6 +530,7 @@
       "description": "Opcjonalna instrukcja na dole canvasu. Znika po kliknięciu planszy, wraca po utracie fokusu. Bez dodania komponentu instrukcja nie jest wyświetlana.",
       "example": "player.addComponent(new GameLab.ControlsHint(\"Kliknij planszę. WASD: ruch\"));",
       "kind": "Constructor",
+      "scope": "web-host-extension",
       "members": []
     },
     {
@@ -517,6 +540,7 @@
       "description": "Pierwsza aktywna kamera przesuwa świat. offsetX/Y to przesunięcie widoku; follow(target) utrzymuje gracza w środku ekranu. Fizyczne pozycje i HUD pozostają niezależne od widoku.",
       "example": "const cameraObject = this.createObject(\"Camera\");\nconst camera = cameraObject.addComponent(new GameLab.Camera2D());\ncamera.follow(player);\ncamera.shake(4, 0.2);",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "offsetX",
@@ -563,6 +587,7 @@
       "description": "Kafelkowe tło świata; przesuwa się z kamerą. Nie tworzy kolizji.",
       "example": "const ground = this.createObject(\"Ground\");\nground.addComponent(new GameLab.TileMap(\"grass\", 32));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "texture",
@@ -579,6 +604,22 @@
         {
           "name": "order",
           "description": null
+        },
+        {
+          "name": "setTile",
+          "description": null
+        },
+        {
+          "name": "getTile",
+          "description": null
+        },
+        {
+          "name": "tileAt",
+          "description": null
+        },
+        {
+          "name": "generate",
+          "description": null
         }
       ]
     },
@@ -589,14 +630,15 @@
       "description": "Klawiatura i mysz sceny: game.input. Pozycja myszy w pikselach logicznych canvas (640×480); naciśnięcie i zwolnienie trwają jedną klatkę. Pad konsoli emituje ACTION_A/B/X/Y/START/SELECT wraz z odpowiednikami klawiatury.",
       "example": "if (this.game.input.isMousePressed(GameLab.InputManager.MOUSE_LEFT)) {\n  const p=this.game.input.getPointerPosition();\n}",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "isKeyDown",
-          "description": "Sprawdza, czy klawisz jest trzymany. Np. isKeyDown(\"w\")."
+          "description": "Sprawdza, czy klawisz jest trzymany. Np. isKeyDown(GameLab.Keys.W)."
         },
         {
           "name": "isKeyPressed",
-          "description": "Sprawdza nowe naciśnięcie w bieżącej klatce. Np. isKeyPressed(\"Space\")."
+          "description": "Sprawdza nowe naciśnięcie w bieżącej klatce. Np. isKeyPressed(GameLab.Keys.SPACE)."
         },
         {
           "name": "isKeyReleased",
@@ -649,12 +691,44 @@
       ]
     },
     {
+      "name": "SpriteAnimator",
+      "category": "Grafika i UI",
+      "signature": "new SpriteAnimator(assets, fps)",
+      "description": "Animacja poklatkowa na sprite — cyklicznie podmienia teksturę w rytm fps. frames to tablica GameLab.Assets lub nazw; play(assets?, fps?) zmienia klip, stop() zatrzymuje.",
+      "example": "player.addComponent(new GameLab.SpriteAnimator([GameLab.Assets.FIREBALL, GameLab.Assets.EXPLOSION], 8));",
+      "kind": "Constructor",
+      "scope": "shared-core",
+      "members": [
+        {
+          "name": "frames",
+          "description": null
+        },
+        {
+          "name": "fps",
+          "description": null
+        },
+        {
+          "name": "playing",
+          "description": null
+        },
+        {
+          "name": "play",
+          "description": "Odtwarza utwór: play(song) albo play(song, { loop: true })."
+        },
+        {
+          "name": "stop",
+          "description": "Zeruje zadany ruch. Grawitacja platformera pozostaje aktywna."
+        }
+      ]
+    },
+    {
       "name": "Keys",
       "category": "Wejście",
       "signature": "GameLab.Keys.SPACE",
       "description": "Zamrożone stałe nazw klawiszy dla isKeyDown/isKeyPressed/isKeyReleased/consumeKey — chronią przed literówkami. Strzałki, WASD, cyfry 1–3, klawisze specjalne i kody konsoli ACTION_*. Te same wartości co engine.Keys w Javie.",
       "example": "if (this.game.input.isKeyDown(GameLab.Keys.D)) {\n  controller.walk(1);\n}\nif (this.game.input.isKeyPressed(GameLab.Keys.ACTION_A)) {\n  jump();\n}",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "UP",
@@ -686,6 +760,14 @@
         },
         {
           "name": "D",
+          "description": null
+        },
+        {
+          "name": "E",
+          "description": null
+        },
+        {
+          "name": "R",
           "description": null
         },
         {
@@ -765,6 +847,7 @@
       "description": "Dostęp przez this.canvas. Plansza ma stałą rozdzielczość logiczną 640×480; width/height zwracają wymiary logiczne, a skalowanie do okna robi letterbox. Rysuj elementy HUD w onDrawUI().",
       "example": "this.canvas.drawText(\"Punkty: 0\", 12, 24, 16, \"white\");",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "drawRect",
@@ -827,6 +910,7 @@
       "description": "Syntezator sceny. Nuty C4, C#4, Db4; pauza \"-\"; czas w taktach; fale square, triangle, sine, sawtooth, noise. Java gra przez ten sam scheduler WebAudio.",
       "example": "this.audio.playNote(\"C4\", { beats: 0.5, wave: \"triangle\" });\nthis.audio.play(song, { loop: true });",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "playNote",
@@ -853,6 +937,7 @@
       "description": "Utwór z tempem w BPM i sekwencerami; każdy sequencer to równoległa ścieżka z własną falą. notes(\"C4:1 E4:0.5 -:2\") dodaje kolejne kroki.",
       "example": "const song=new GameLab.Song(140);\nsong.sequencer(\"square\").notes(\"C4:1 E4:1 -:0.5 G4:2\");\nsong.sequencer(\"triangle\").note(\"C3\",2);",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "tempo",
@@ -875,6 +960,7 @@
       "description": "Ustawia prędkość w px/s, normalizuje ruch po przekątnej. getDirection() zwraca kopię ostatniego niezerowego kierunku, także po zatrzymaniu. Wywołuj w każdej klatce onUpdate().",
       "example": "this.gameObject.addComponent(new GameLab.CharacterController2D());\ncontroller.move(1, 0, 120);",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "getDirection",
@@ -905,6 +991,7 @@
       "description": "Jawna prostokątna bryła 32×32. Rozmiar kolizji nie zależy od sprite ani skali grafiki. asTrigger() czyni ją wykrywającą bez blokowania; layer/mask filtrują kontakty.",
       "example": "wall.addComponent(new GameLab.Collider2D(40,80));\ncoin.addComponent(new GameLab.Collider2D(20,20).asTrigger());",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "width",
@@ -947,6 +1034,7 @@
       "description": "Jawna kołowa bryła o promieniu w pikselach świata; width i height to jego średnica.",
       "example": "player.addComponent(new GameLab.CircleCollider2D(12));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "radius",
@@ -993,6 +1081,7 @@
       "description": "Pocisk wykrywa cele na całej drodze ruchu. owner, hitLayers i maxHits wybierają trafienia.",
       "example": "shot.addComponent(new GameLab.Projectile2D(1,0,300,2,player));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "direction",
@@ -1031,6 +1120,7 @@
       "description": "Zamrożone nazwane warstwy kolizji: DEFAULT, ENEMY, PLAYER, PROJECTILE, PICKUP, WALL i ALL dla layer, mask, hitLayers i zapytań physics.",
       "example": "enemyCollider.layer = GameLab.Layers.ENEMY;\nmotion.hitLayers = GameLab.Layers.ENEMY;",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "DEFAULT",
@@ -1069,6 +1159,7 @@
       "description": "Wspólny katalog sprite i UI. Java używa enum Assets, JavaScript zamrożonych stałych o tych samych nazwach. Pełna lista i podgląd: zakładka Assety.",
       "example": "player.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01));",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "PLAYER01",
@@ -1555,6 +1646,7 @@
       "description": "Wymiary, kotwica i pivot UI. Pozycja obiektu wyznacza margines od kotwicy.",
       "example": "const ui=panel.addComponent(new GameLab.UITransform(200,30));\nui.anchor=GameLab.UIAnchor.TOP_LEFT;",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "width",
@@ -1588,6 +1680,7 @@
       "signature": "GameLab.UIAnchor.TOP_LEFT",
       "description": "Kotwice: TOP_LEFT, TOP_CENTER, TOP_RIGHT, CENTER_LEFT, CENTER, CENTER_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT.",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "TOP_LEFT",
@@ -1634,6 +1727,7 @@
       "description": "Osobne frame/track/fill z atlasu. setProgress(50) przyjmuje procent, setValue(value,max) przelicza wartość.",
       "example": "const pb=hud.addComponent(new GameLab.ProgressBar(200,20));\npb.setProgress(50);",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "setProgress",
@@ -1676,6 +1770,7 @@
       "description": "Rozciągana grafika 9patch, onClick, fokus i klawiatura. Aktywacja po zwolnieniu myszy lub Enter/Space.",
       "example": "const button=menu.addComponent(new GameLab.Button(160,44));\nbutton.text=\"Start\";button.onClick=()=>this.resume();",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "width",
@@ -1730,6 +1825,7 @@
       "description": "Wektor x/y; set, copy, length i normalized.",
       "example": "const direction=new GameLab.Vector2(1,1).normalized();",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "x",
@@ -1768,6 +1864,7 @@
       "description": "Deterministyczny generator identyczny w obu językach.",
       "example": "const random=new GameLab.Random(42);\nconst x=random.range(0,640);",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "setSeed",
@@ -1793,6 +1890,7 @@
       "signature": "class Tween",
       "description": "Uchwyt animacji zwrócony przez GameLab.Tweens. Ma elapsed, duration, easing, completed i cancel().",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "cancel",
@@ -1827,6 +1925,7 @@
       "description": "Animuje Transform przez zadany czas w sekundach. Nowa animacja tej samej właściwości zastępuje poprzednią.",
       "example": "GameLab.Tweens.scale(object, 1.2, 1.2, 0.3).easing = \"smooth\";\nGameLab.Tweens.shake(object, 6, 0.2);",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "position",
@@ -1853,6 +1952,7 @@
       "description": "Tworzy scenę, podpina klawiaturę i uruchamia pętlę. Domyślnie szuka canvasu #game.",
       "example": "GameLab.run(MyGame, { canvas: \"#game\" });",
       "kind": "Function",
+      "scope": "web-host-extension",
       "members": []
     },
     {
@@ -1862,6 +1962,7 @@
       "description": "Zatrzymuje pętlę, odłącza zdarzenia i niszczy aktywną scenę.",
       "example": "GameLab.dispose();",
       "kind": "Function",
+      "scope": "web-host-extension",
       "members": []
     },
     {
@@ -1870,6 +1971,7 @@
       "signature": "class Steering2D extends Component",
       "description": "Baza generatora kierunku AI. Wymaga CharacterController2D; jeden aktywny generator na obiekt. Podklasa implementuje direction(x,y,distance).",
       "kind": "Class",
+      "scope": "shared-core",
       "members": [
         {
           "name": "target",
@@ -1888,6 +1990,7 @@
       "description": "Podąża za celem tej samej sceny. speed=100 px/s, stopDistance=32 px; brak aktywnego celu zatrzymuje ruch.",
       "example": "enemy.addComponent(new GameLab.FollowTarget2D(player)).speed=60;",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "target",
@@ -1910,6 +2013,7 @@
       "description": "Ucieka od zagrożenia do safeDistance=200 px. Przy wspólnym środku wybiera kierunek w prawo.",
       "example": "enemy.addComponent(new GameLab.FleeTarget2D(player));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "target",
@@ -1932,6 +2036,7 @@
       "description": "Zbliża się do radius=100 px i obiega cel. clockwise wybiera kierunek; speed jest w px/s.",
       "example": "const ai=enemy.addComponent(new GameLab.FlankTarget2D(player));\nai.clockwise=false;",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "target",
@@ -1958,6 +2063,7 @@
       "description": "Koryguje kierunek lokalnie przez zapytania przestrzenne. lookAhead=80 px, weight=2. Ignoruje triggery; nie wyszukuje drogi w labiryncie.",
       "example": "enemy.addComponent(new GameLab.ObstacleAvoidance2D());",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "lookAhead",
@@ -1980,6 +2086,7 @@
       "description": "Ruch bez grawitacji i odczytu klawiszy. walkSpeed=120, runSpeed=240 px/s, automatyczne flipX sprite. Zastępuje CharacterController2D na postaci.",
       "example": "controller.walk(1,0);\ncontroller.run(-1,0);",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "getDirection",
@@ -2040,8 +2147,9 @@
       "category": "Ruch i kolizje",
       "signature": "new PlatformerCharacterController2D()",
       "description": "Ruch poziomy, grawitacja i pojedynczy skok z podłoża. Użyj prostokątnego collidera; gravity=900, jumpSpeed=340, maxFallSpeed=600.",
-      "example": "controller.walk(1);\nif(this.game.input.isKeyPressed(\"Space\"))controller.jump();",
+      "example": "controller.walk(1);\nif(this.game.input.isKeyPressed(GameLab.Keys.SPACE))controller.jump();",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "getDirection",
@@ -2122,8 +2230,9 @@
       "category": "Wejście",
       "signature": "new KeyPressed(key, action)",
       "description": "Wywołuje callback raz na nowe naciśnięcie klawisza wejścia swojej sceny; powtórzenia systemowe nie tworzą nowych naciśnięć.",
-      "example": "player.addComponent(new GameLab.KeyPressed(\"W\",()=>{this.debug=true;}));",
+      "example": "player.addComponent(new GameLab.KeyPressed(GameLab.Keys.W,()=>{this.debug=true;}));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "key",
@@ -2140,8 +2249,9 @@
       "category": "Wejście",
       "signature": "new KeyDoublePressed(key, action)",
       "description": "Callback po dwóch naciśnięciach z puszczeniem pomiędzy. maxDelaySeconds=0.3 s czasu symulacji; udana para resetuje uzbrojenie.",
-      "example": "player.addComponent(new GameLab.KeyDoublePressed(\"D\",()=>controller.setRunning(true)));",
+      "example": "player.addComponent(new GameLab.KeyDoublePressed(GameLab.Keys.D,()=>controller.setRunning(true)));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "key",
@@ -2162,8 +2272,9 @@
       "category": "Wejście",
       "signature": "new NoneOfKeysPressed(keys, action)",
       "description": "Callback w każdej aktualizacji, gdy żaden klawisz z kopii tablicy nie jest trzymany.",
-      "example": "player.addComponent(new GameLab.NoneOfKeysPressed([\"W\",\"A\",\"S\",\"D\"],()=>controller.setRunning(false)));",
+      "example": "player.addComponent(new GameLab.NoneOfKeysPressed([GameLab.Keys.W,GameLab.Keys.A,GameLab.Keys.S,GameLab.Keys.D],()=>controller.setRunning(false)));",
       "kind": "Constructor",
+      "scope": "shared-core",
       "members": [
         {
           "name": "keys",

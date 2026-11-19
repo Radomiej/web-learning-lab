@@ -24,6 +24,10 @@ GameLab Audio przekłada nuty i utwory na natywny syntezator, do czterech
 HTML, CSS, własne zasoby, mysz i bezpośrednie użycie Web Audio. Zewnętrzne
 importy i pełny Canvas 2D wymagają adaptacji.
 
+Komponent `TileMap` z Lab v2 działa w tym profilu: dołączony runtime rozwija
+widoczne kafelki w uporządkowane polecenia sprite'ów. Wewnętrzny znacznik
+`tilemap` opisuje mapę i nie jest samodzielnym poleceniem rysowania.
+
 Instalacja LAN weryfikuje parowanie, przesyła pliki do katalogu tymczasowego
 launchera i prosi o uruchomienie po zatwierdzeniu kompletnej paczki.
 Kod parowania jest używany w bieżącym formularzu i nie trafia do projektu.

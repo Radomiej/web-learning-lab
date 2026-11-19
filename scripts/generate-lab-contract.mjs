@@ -2,13 +2,20 @@ import {writeFileSync} from 'node:fs';
 import {gameLabApi,gameLabMembers,gameLabMemberDocs} from '../src/data/gameLabApi.js';
 const root=new URL('../shared/lab-game-v2/',import.meta.url);
 const save=(name,data)=>writeFileSync(new URL(name,root),JSON.stringify(data,null,2)+'\n');
+const webHostExtensions=new Set(['ControlsHint','run','dispose']);
 save('contract.json',{
   engineApiVersion:'2.0.0',languages:['Java','JavaScript'],
+  compatibility:{
+    canonicalModel:'Lab Game 2D v2',
+    canonicalCore:'Lab Game 2D v2 defines the shared learner API. Adapter profiles declare target support only; Java/Web parity is claimed only for tested scenarios.',
+    kalioAdapterProfile:'kalio-portable/1',
+    targetRuntime:'quickjs-lrp',targetApiVersion:'game-lab-lrp/1',
+  },
   coordinates:{position:'object center',units:'pixels',positiveY:'down',rotation:'radians',input:'canvas logical pixels'},
   display:{logicalResolution:'640x480',scaling:'fit letterbox preserving aspect; image-rendering pixelated',console:'FPS, mean frame ms over 3 s, max frame ms, pressed keys; virtual pad emits ACTION_* + keyboard aliases'},
   audio:{facade:'game.audio',synthesis:'shared WebAudio scheduler; Java serializes audio| commands into frame records',notes:'C4, C#4, Db4, rest -, duration in quarter beats, tempo BPM',waves:['square','triangle','sine','sawtooth','noise']},
   frame:{maximumDeltaSeconds:.1,phases:['create','UI update','WORLD update','physics','late update','world render','UI render','input edges clear'],pause:'WORLD and world time stop; UI and unscaled time continue'},
-  types:gameLabApi.map(type=>({...type,members:(gameLabMembers[type.name]||[]).map(name=>({name,description:gameLabMemberDocs[`${type.name}.${name}`]??gameLabMemberDocs[name]??null}))})),
+  types:gameLabApi.map(type=>({...type,scope:webHostExtensions.has(type.name)?'web-host-extension':'shared-core',members:(gameLabMembers[type.name]||[]).map(name=>({name,description:gameLabMemberDocs[`${type.name}.${name}`]??gameLabMemberDocs[name]??null}))})),
   query:{components:'intersection; inheritance; inactive included; destroyed excluded; ordered by ID; snapshot',tags:'scene index; snapshot'},
   collision:{broadPhase:'spatial hash',cellSize:64,narrowPhase:'swept rectangle, circle and rounded rectangle',axisOrder:['x','y'],tolerance:1e-6,layerMask:'both colliders must accept the other layer',onContactEnter:'once per contact; reentry after separation'},
   languageDifferences:{componentType:{Java:'Player.class',JavaScript:'Player'},assets:{Java:'enum Assets',JavaScript:'Object.freeze(Assets)'},directTransformQueries:'Java: physics.refresh() after direct field mutations within WORLD update; setPosition invalidates automatically. JavaScript: position accessors invalidate automatically.'}

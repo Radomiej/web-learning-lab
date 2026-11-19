@@ -1,5 +1,59 @@
 # Wspólne API Lab Game 2D v2
 
+## Zacznij od obiektu, zachowania i renderera
+
+Silnik rozdziela trzy role: `Game` tworzy scenę, `GameObject` przechowuje pozycję i komponenty, a `Component` opisuje zachowanie lub wygląd. Utworzenie klasy komponentu nie dodaje jej automatycznie do obiektu — zrób to w `onCreate`.
+
+```js
+class MoveWithD extends GameLab.Component {
+  onUpdate(delta) {
+    if (this.game.input.isKeyDown(GameLab.Keys.D)) {
+      this.gameObject.transform.x += 120 * delta; // px/s × s = px
+    }
+  }
+}
+
+class MyGame extends GameLab.Game {
+  onCreate() {
+    const player = this.createObject('Player').setPosition(320, 240);
+    player.addComponent(new GameLab.ShapeRenderer(24, 24, '#ffd166'));
+    player.addComponent(new MoveWithD());
+  }
+}
+GameLab.run(MyGame);
+```
+
+W Javie te same role zapisujesz składnią języka Java. Kurs automatycznie importuje `engine.*`:
+
+```java
+class MoveWithD extends Component {
+    @Override public void onUpdate(double delta) {
+        if (getGame().input.isKeyDown(Keys.D)) {
+            gameObject.transform.x += 120 * delta; // px/s × s = px
+        }
+    }
+}
+
+class MyGame extends Game {
+    @Override public void onCreate() {
+        GameObject player = createObject("Player").setPosition(320, 240);
+        player.addComponent(new ShapeRenderer(24, 24, "#ffd166"));
+        player.addComponent(new MoveWithD());
+    }
+}
+```
+
+W obu językach najpierw tworzysz obiekt, potem dodajesz instancję komponentu. `GameLab.run(MyGame)` jest wejściem JavaScriptowym; Java Lab uruchamia wskazaną klasę sceny przez własny runner.
+
+### Dobre praktyki i błędy
+
+- Ruch licz jako prędkość × `deltaTime`; nie dodawaj stałej liczby pikseli w każdej klatce.
+- Użyj `isKeyPressed` do jednorazowej akcji i `isKeyDown` do ruchu ciągłego. Stałe `Keys`/`GameLab.Keys` pomagają uniknąć literówek.
+- Sprawdź brakujący komponent przez `getComponent` (wynik może być `null`) albo użyj `requireComponent`, gdy scena bez niego jest błędna. Błąd konfiguracji powinien wskazać nazwę komponentu i obiektu.
+- Kolizja wymaga osobnego collidera; sam `Sprite` ani `ShapeRenderer` nie tworzy fizycznej bryły.
+- Dla Java publicznych pól zmienianych w trakcie `WORLD` odśwież indeks przed następnym zapytaniem: `physics.refresh()`. Preferuj metody zmieniające stan, które same unieważniają indeks.
+- Pozycje oznaczają środek obiektu, Y rośnie w dół, a obrót podaje się w radianach. Sprawdź te trzy konwencje przed korektą współrzędnych.
+
 Scena dziedziczy po `Game`, zachowanie po `Component`. Java importuje `engine.*`; JavaScript używa przestrzeni `GameLab`. Kod lekcji różni się składnią, typami i przekazywaniem klasy: `Player.class` w Javie, `Player` w JavaScript.
 
 | API | Kontrakt |
@@ -51,6 +105,8 @@ Collider2D(width,height) i CircleCollider2D(radius) mają jawne rozmiary. `colli
 Tween jest komponentem obiektu. `Tweens.position/scale/rotation/shake` zwracają uchwyt z `cancel()` oraz `onComplete(callback)`. Zakończenie naturalne wywołuje callback raz; anulowanie i zniszczenie nie wywołują go. Rejestracja po zakończeniu, także po czasie zero, wywołuje nowy callback od razu. Shake usuwa tylko swój wkład do visualOffset.
 
 Wejście: [InputManager](INPUT.md). Dźwięk: [Audio](AUDIO.md). Katalog: [manifest assetów](assets/manifest.json). Definicje kursu i scenariuszy są danymi; ich obecność nie oznacza wykonania wszystkich testów zgodności.
+
+Wspólny model Java/JavaScript i ograniczenia poszczególnych hostów opisuje [przewodnik przenośności](PORTABILITY.md). To samo API ucznia oznacza wspólne pojęcia i zachowanie; składnia języka oraz obsługiwane możliwości konkretnego hosta mogą się różnić.
 
 ### Ekran konsoli
 

@@ -1,0 +1,63 @@
+{
+  "profile": "kalio-portable/1",
+  "status": "partial-adapter-contract",
+  "canonicalSourceApi": "Lab Game 2D v2",
+  "targetRuntime": "quickjs-lrp",
+  "targetApi": "game-lab-lrp/1",
+  "sourceExecution": "The Web exporter bundles the full JavaScript Lab Game v2 runtime. The profile describes its host boundary; it does not replace or narrow the Lab Game v2 core.",
+  "javaFollowOn": {
+    "status": "not-implemented",
+    "plannedRuntime": "teavm-wasm",
+    "plannedAdapter": "lab-game-wasm/1",
+    "sourceApi": "Lab Game 2D v2 (2.0.0)",
+    "reason": "Orbit QuickJS/LRP does not execute Java Lab TeaVM modules. A representative current TeaVM output imports teavmJso, teavmMath, teavm, and wasm:js-string host functions; packaging .wasm alone is insufficient.",
+    "gates": ["profile actual TeaVM imports/exports and compiler version", "select a Rust WebAssembly runtime that satisfies that ABI and device budgets", "implement and version input, frame, render, audio, lifecycle, and error bridges", "pass paired desktop traces before device qualification"]
+  },
+  "capabilities": {
+    "gameplayRuntime": "The bundled JavaScript engine runs Game Lab v2 scenes, components and JavaScript physics inside the package; this is separate from Orbit's native ECS and Rapier adapter.",
+    "drawOperations": ["clear", "rect", "circle", "text", "sprite", "progress", "ninepatch"],
+    "metadataOperations": {
+      "tilemap": "The bundled Lab runtime expands each visible tile into an ordered sprite command. The adapter ignores the preceding tilemap metadata marker and draws those sprite commands."
+    },
+    "input": "Logical keyboard/gamepad aliases are forwarded as keydown/keyup; Game Lab derives held/pressed/released edges. Pointer and mouse events are unavailable.",
+    "audio": "Notes and songs are mapped to Orbit synthesis; songs support at most four tracks and are not sample-identical to WebAudio."
+  },
+  "semantics": {
+    "viewport": { "logicalSize": [640, 480], "positiveY": "down", "letterbox": true },
+    "frameTime": {
+      "unit": "seconds",
+      "source": "Orbit LRP update(dt)",
+      "hostBehavior": "Orbit clamps finite dt to [0, 0.1] before calling the game; non-finite dt becomes 0.1.",
+      "exporterBehavior": "The Web Lab adapter rejects non-finite dt and values outside [0, 0.1].",
+      "requirement": "Lab v2 receives finite dt in [0, 0.1] seconds."
+    },
+    "drawing": {
+      "order": "preserve command array order",
+      "rect": "GameLab center x/y to LRP top-left x-width/2,y-height/2",
+      "sprite": "center x/y to LRP top-left x-width/2,y-height/2; radians converted to degrees for drawSpriteEx",
+      "circle": "center x/y preserved",
+      "rotation": "radians in Lab v2; adapter converts where the host operation requires degrees",
+      "text": "alignment and baseline approximated from host measureText; pixel-identical font rendering is not guaranteed"
+    },
+    "input": {
+      "mapping": { "left": ["ArrowLeft", "a"], "right": ["ArrowRight", "d"], "up": ["ArrowUp", "w"], "down": ["ArrowDown", "s"], "a": [" ", "Enter", "z"], "b": ["Escape", "x"], "x": ["c"], "y": ["v"], "select": ["Tab"] },
+      "edges": "Host level changes are translated to keydown/keyup; Lab derives held/pressed/released state.",
+      "limitations": ["No pointer or mouse event mapping in this adapter." ]
+    },
+    "audio": {
+      "waveIndex": { "square": 0, "sine": 1, "triangle": 2, "noise": 3, "sawtooth": 4 },
+      "note": "Lab note names convert to frequency; beats convert to milliseconds using BPM.",
+      "song": "At most four tracks; host clamps BPM to 60..300 and may pad loop tracks to a common duration. This is not sample-identical to WebAudio."
+    }
+  },
+  "failClosed": ["unknown render operation", "missing texture/asset required by a render command", "invalid or out-of-profile frame time"],
+  "notProvided": ["Java TeaVM/Wasm execution by QuickJS LRP", "Orbit-native Rapier physics parity", "mouse/pointer parity", "pixel-identical text", "full native GameObject/Component execution in Orbit ECS"],
+  "fixtures": [
+    { "id": "K01", "input": "rect center (32,24), size 8x6", "expected": "LRP rect top-left (28,21), command order unchanged" },
+    { "id": "K02", "input": "circle center (11,13), radius 5", "expected": "LRP circle center (11,13), radius 5" },
+    { "id": "K03", "input": "left held then released", "expected": "ArrowLeft/a keydown then keyup; pressed/released edge once each" },
+    { "id": "K04", "input": "dt 0.05 and dt 0.1", "expected": "same seconds delivered to v2; WORLD delta follows v2 phase semantics" },
+    { "id": "K05", "input": "A4, sine, 0.5 beats at 120 BPM", "expected": "440 Hz, 250 ms, host wave index 1" },
+    { "id": "K06", "input": "unknown operation or missing sprite key", "expected": "actionable export/runtime error; no silent drop or placeholder" }
+  ]
+}
