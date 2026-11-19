@@ -206,6 +206,12 @@ function evaluateOne(check = {}, context = {}) {
       case 'sourceIncludes': {
         const source = getFile(files, check.file);
         const needle = safeString(expectedValue(check));
+        if (check.compact) {
+          const compactSource = source.replace(/\s+/g, '');
+          const matches = [needle, ...(check.variants || [])]
+            .some((candidate) => compactSource.includes(safeString(candidate).replace(/\s+/g, '')));
+          return resultFor(check, matches, matches ? 'Znaleziono wymagany fragment kodu.' : `Brak fragmentu „${needle}” w ${check.file || 'pliku'}.`);
+        }
         return textMatches(check, source, needle)
           ? resultFor(check, true, 'Znaleziono wymagany fragment kodu.')
           : resultFor(check, false, `Brak fragmentu „${needle}” w ${check.file || 'pliku'}.`);

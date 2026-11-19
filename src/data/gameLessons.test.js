@@ -86,7 +86,11 @@ for(const lesson of gameLessons)for(const task of lesson.tasks) test(task.id+' s
      const value=path.split('.').reduce((value,key)=>value?.[key],snapshot);if(typeof expected==='number')expect(value,path).toBeCloseTo(expected,1);else expect(value,path).toBe(expected);
     }
    }
-   if(check.type==='sourceIncludes')expect(task.solution.files[check.file]).toContain(check.value);
+   if(check.type==='sourceIncludes') {
+    const source=task.solution.files[check.file];
+    if(check.compact)expect(source.replace(/\s+/g,'')).toContain(check.value.replace(/\s+/g,''));
+    else expect(source).toContain(check.value);
+   }
   }
  }finally{lab.dispose();}
 });
@@ -100,7 +104,11 @@ for(const lesson of gameLessons)for(const task of lesson.tasks) test(task.id+' s
      const value=path.split('.').reduce((value,key)=>value?.[key],snapshot);if(typeof expected==='number'?(typeof value!=='number'||Math.abs(value-expected)>.02):value!==expected)failed=true;
     }}catch {failed=true;}
    }
-   if(check.type==='sourceIncludes'&&!task.starter.files[check.file]?.includes(check.value))failed=true;
+   if(check.type==='sourceIncludes') {
+    const source=task.starter.files[check.file];
+    const hit=check.compact?source?.replace(/\s+/g,'').includes(check.value.replace(/\s+/g,'')):source?.includes(check.value);
+    if(!hit)failed=true;
+   }
   }
   expect(failed).toBe(true);
  }finally{lab.dispose();}

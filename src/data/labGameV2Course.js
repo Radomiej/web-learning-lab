@@ -19,29 +19,57 @@ function hoistJavaImports(src) {
 }
 
 // Structural formatter: line breaks at {}, ; and dedent; expression braces stay inline.
+// Additionally: wraps braceless control bodies in {}, separates class members with
+// a blank line, splits multi-declarator field/local declarations and normalizes
+// operator spacing (phase 2). Result resembles Google Java Style (4 spaces).
 export function formatCourseSource(src) {
   const INLINE_PREV = new Set(['=', '(', ',', ':', '[', ']', '?', '!', '&', '|', '+', '-', '*', '/', '%', '<', ';']);
   const INLINE_WORD = new Set(['return', 'new', 'throw', 'case']);
   const JOIN_WORD = /^(else|catch|finally|while)\b/;
   const CONTROL_WORD = new Set(['if', 'for', 'while', 'switch', 'catch', 'synchronized']);
+  const BODY_WORD = new Set(['if', 'for', 'while', 'catch']);
+  const DECL_WORD = new Set(['public', 'private', 'protected', 'static', 'final', 'abstract', 'const', 'let', 'var', 'int', 'double', 'boolean', 'long', 'short', 'byte', 'float', 'char', 'String', 'GameObject']);
   let out = '';
   const stack = [];
   const parenWords = [];
-  let parens = 0, i = 0;
+  const pending = [];
+  let parens = 0, brackets = 0, i = 0, afterElse = false;
+  let stmtFresh = true, stmtDecl = false, stmtType = false, generics = 0;
   const n = src.length;
-  const depth = () => stack.reduce((a, e) => a + (e.b ? 1 : 0), 0);
+  const depth = () => stack.reduce((a, e) => a + (e.b ? 1 : 0), 0) + pending.length;
   const parenBlocks = () => stack.reduce((a, e) => a + (e.b && e.p ? 1 : 0), 0);
   const nl = () => { out = out.replace(/[ \t]+$/, ''); if (out.length && !out.endsWith('\n')) out += '\n'; out += '    '.repeat(depth()); };
   const nlBody = () => { out = out.replace(/[ \t]+$/, ''); if (out.length && !out.endsWith('\n')) out += '\n'; out += '    '.repeat(depth() + 1); };
   const prev = () => { const t = out.trimEnd(); return t ? t[t.length - 1] : ''; };
   const prevWord = () => (/([A-Za-z_$][\w$]*)\s*$/.exec(out) || [])[1] || '';
   const nextToken = () => { let j = i; while (j < n && /\s/.test(src[j])) j++; return src[j] || ''; };
+  const lineLen = () => out.length - out.lastIndexOf('\n') - 1;
+  const peekIsMethod = () => {
+    let j = i;
+    while (j < n && /\s/.test(src[j])) j++;
+    if (/^@[A-Za-z]/.test(src.slice(j))) return true;
+    for (; j < n; j++) {
+      const c = src[j];
+      if (c === ';' || c === '}' || c === '\n' && false) return false;
+      if (c === '(' || c === '{') return true;
+      if (c === '=' || c === ';') return false;
+    }
+    return false;
+  };
+  const member = afterBlock => {
+    out = out.replace(/[ \t]+$/, '');
+    if (out.length && !out.endsWith('\n')) out += '\n';
+    const t = nextToken();
+    if (depth() === 1 && t && t !== '}' && (afterBlock || peekIsMethod()) && !out.endsWith('\n\n')) out += '\n';
+    out += '    '.repeat(depth());
+  };
   const openBrace = inParens => {
-    const arrow = out.replace(/\s+$/, '').endsWith('->');
+    const tail = out.replace(/\s+$/, '');
+    const arrow = tail.endsWith('->') || tail.endsWith('=>');
     const inline = !arrow && (INLINE_PREV.has(prev()) || INLINE_WORD.has(prevWord()));
     stack.push({ b: !inline, p: inParens });
     out += '{'; i++;
-    if (!inline) nl();
+    if (!inline) { nl(); stmtFresh = true; stmtDecl = false; stmtType = false; generics = 0; }
   };
   const closeBrace = () => {
     const entry = stack.pop() || { b: false };
@@ -53,47 +81,305 @@ export function formatCourseSource(src) {
       let j = i; while (j < n && /\s/.test(src[j])) j++;
       const rest = src.slice(j);
       const join = JOIN_WORD.exec(rest);
-      if (join) { out += ' ' + join[1]; i = j + join[1].length; }
-      else if (rest[0] === ';' || rest[0] === ',') { out += rest[0]; i = j + 1; nl(); }
-      else if (rest[0] === ')') { i = j; }
-      else nl();
+      if (join) { out += ' ' + join[1]; i = j + join[1].length; if (join[1] === 'else') afterElse = true; }
+      else {
+        while (pending.length && pending[pending.length - 1].depth >= depth() - pending.length) {
+          const e = pending.pop();
+          out = out.replace(/\s+$/, ''); nl(); out += '}';
+          if (e.kind === 'if') {
+            let k = i; while (k < n && /\s/.test(src[k])) k++;
+            if (/^else\b/.test(src.slice(k))) { out += ' else'; i = k + 4; afterElse = true; }
+          }
+          if (afterElse) break;
+        }
+        if (!afterElse) {
+          if (rest[0] === ';' || rest[0] === ',') { out += rest[0]; i = j + 1; member(false); }
+          else if (rest[0] === ')') { i = j; }
+          else member();
+        }
+      }
     }
     else out += '}';
+    stmtFresh = true; stmtDecl = false; stmtType = false; generics = 0;
   };
+  const dropPending = () => {
+    if (!pending.length || pending[pending.length - 1].depth !== depth() - 1) return false;
+    for (;;) {
+      const e = pending.pop();
+      out = out.replace(/\s+$/, ''); nl(); out += '}';
+      let j = i; while (j < n && /\s/.test(src[j])) j++;
+      if (e.kind === 'if' && /^else\b/.test(src.slice(j))) { out += ' else'; i = j + 4; afterElse = true; return true; }
+      if (!(pending.length && pending[pending.length - 1].depth === depth() - 1)) break;
+    }
+    member(true);
+    return true;
+  };
+  const spaceBefore = () => { if (out && !out.endsWith(' ') && !out.endsWith('\n')) out += ' '; };
   while (i < n) {
     const c = src[i];
     if (c === '"' || c === "'" || c === '`') {
-      const q = c; out += c; i++;
+      const q = c; if (stmtFresh) { stmtDecl = false; stmtFresh = false; } out += c; i++;
       while (i < n) { const d = src[i]; out += d; i++; if (d === '\\') { if (i < n) { out += src[i]; i++; } continue; } if (d === q) break; if (q !== '`' && d === '\n') break; }
       continue;
     }
     if (c === '/' && src[i + 1] === '/') { out += '//'; i += 2; while (i < n && src[i] !== '\n') { out += src[i]; i++; } nl(); continue; }
     if (c === '/' && src[i + 1] === '*') { out += '/*'; i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { out += src[i]; i++; } out += '*/'; i += 2; continue; }
-    if (/\s/.test(c)) { if (out && !out.endsWith('\n') && !out.endsWith(' ')) out += ' '; i++; continue; }
+    if (/\s/.test(c)) { if (out.length && !/\s$/.test(out)) out += ' '; i++; continue; }
+    if (afterElse) {
+      if (c === '{') afterElse = false;
+      else if (!(c === 'i' && src[i + 1] === 'f' && !/[\w$]/.test(src[i + 2] || ''))) { afterElse = false; pending.push({ depth: depth(), kind: 'else' }); if (!out.endsWith(' ')) out += ' '; out += '{'; nl(); }
+    }
+    if (/[A-Za-z_$]/.test(c)) {
+      let word = ''; while (i < n && /[\w$]/.test(src[i])) { word += src[i]; i++; }
+      if (stmtFresh) {
+        stmtDecl = DECL_WORD.has(word) || /^[A-Z]/.test(word);
+        stmtType = stmtDecl && word !== 'return' && word !== 'new';
+        stmtFresh = false; generics = 0;
+      }
+      if (word === 'else') { spaceBefore(); out += 'else'; afterElse = true; continue; }
+      if (word === 'do') { spaceBefore(); out += 'do'; afterElse = true; continue; }
+      if (word === 'if' && afterElse) afterElse = false;
+      if (CONTROL_WORD.has(word) && (prev() === '' || prev() === ';' || prev() === '{' || prev() === '}' || prev() === '\n' || prevWord() === 'else')) spaceBefore();
+      out += word;
+      continue;
+    }
+    if (c === ';' && parens === 0) {
+      out += ';'; i++;
+      stmtFresh = true; stmtDecl = false; stmtType = false; generics = 0;
+      if (dropPending()) continue;
+      member();
+      continue;
+    }
     if (parens > 0) {
-      if (c === '(') { parens++; parenWords.push(''); }
+      if (c === '(') { parens++; parenWords.push(prevWord()); out += c; i++; continue; }
       else if (c === ')') {
         parens--;
         const word = parenWords.pop() || '';
         out += c; i++;
         if (CONTROL_WORD.has(word) && (parens === 0 || parenBlocks() > 0)) {
           const next = nextToken();
-          if (next && next !== '{' && next !== ';' && !'.-,?:)]'.includes(next) && !'+-*/%<>=!&|^~'.includes(next)) nlBody();
+          if (next && next !== '{' && next !== ';' && !'.-,?:)]'.includes(next) && !'+-*/%<>=!&|^~'.includes(next)) {
+            if (BODY_WORD.has(word)) { pending.push({ depth: depth(), kind: word }); out += ' {'; nl(); stmtFresh = true; }
+            else nlBody();
+          }
         }
         continue;
       }
       else if (c === '{') { openBrace(true); continue; }
       else if (c === '}') { closeBrace(); continue; }
-      else if (c === ';' && parenBlocks() > 0) { out += ';'; i++; nl(); continue; }
-      out += c; i++; continue;
+      else if (c === ';') {
+        if (parenBlocks() > 0 && parenWords[parenWords.length - 1] !== 'for') {
+          out += ';'; i++;
+          stmtFresh = true; stmtDecl = false; stmtType = false; generics = 0;
+          if (dropPending()) continue;
+          nl();
+          continue;
+        }
+        out += '; '; i++; continue;
+      }
+      else if (c === ',') { out += ','; i++; if (lineLen() > 100) { out += '\n' + '    '.repeat(depth() + 1); } else out += ' '; continue; }
+      else if (c === '[') { brackets++; out += c; i++; continue; }
+      else if (c === ']') { brackets--; out += c; i++; continue; }
+      else { out += c; i++; continue; }
     }
-    if (c === '(') { parens++; parenWords.push(prevWord()); out += c; i++; continue; }
-    if (c === '{') { openBrace(false); continue; }
+    if (c === '(') { parens++; parenWords.push(prevWord()); out += c; i++; if (stmtDecl) stmtType = false; continue; }
+    if (c === '[') { brackets++; out += c; i++; continue; }
+    if (c === ']') { brackets--; out += c; i++; continue; }
+    if (c === '{') { openBrace(false); stmtFresh = true; stmtDecl = false; stmtType = false; generics = 0; continue; }
     if (c === '}') { closeBrace(); continue; }
-    if (c === ';') { out += ';'; i++; nl(); continue; }
+    if (c === ',') {
+      out += ','; i++;
+      if (stmtDecl && parens === 0 && brackets === 0 && generics === 0) { out += '\n' + '    '.repeat(depth() + 1); }
+      else out += ' ';
+      continue;
+    }
+    if (c === '<' && stmtType) generics++;
+    else if (c === '>' && stmtType && generics > 0) generics--;
+    else if ((c === '=' || c === ':' || c === '(') && stmtType) stmtType = false;
     out += c; i++;
   }
-  return out.replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+  return splitDeclarations(wrapLongLines(spaceCourseSource(withLifecycleComments(out)).replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n'))).trim() + '\n';
+}
+
+// Rozbija zawiniętą deklarację `Type a = 0,\n     b = 1;` na osobne deklaracje.
+function splitDeclarations(text) {
+  const TYPE = '((?:(?:public|private|protected|static|final|readonly)\\s+)*(?:int|double|boolean|String|long|float|char|short|byte|var|let|const|[A-Z][\\w$]*(?:<[^;{}()\\n]*>)?(?:\\[\\])?(?:\\.[\\w$]+)*(?:<[^;{}()\\n]*>)?)\\s+)';
+  const first = new RegExp('^(\\s*)' + TYPE + '([\\w$]+)\\s*=([^;{}()\\[\\]]*)$');
+  const next = /^(\s*)([\w$]+)\s*=([^;{}()\[\]]*?[;,]?)\s*$/;
+  const lines = text.split('\n');
+  const out = [];
+  let type = null, indent = null;
+  for (const line of lines) {
+    const m = line.match(first);
+    if (type && line.trim().endsWith(',') && next.test(line)) {
+      const [, pad, name, rest] = line.match(next);
+      out.push(indent + type + name + ' = ' + rest.trim().replace(/,$/, '') + ';');
+      continue;
+    }
+    if (type && next.test(line)) {
+      const [, , name, rest] = line.match(next);
+      out.push(indent + type + name + ' = ' + rest.trim().replace(/;$/, '') + ';');
+      type = null; indent = null;
+      continue;
+    }
+    type = null; indent = null;
+    if (m && line.trimEnd().endsWith(',') && !line.includes('(') && !line.includes(')')) {
+      const [, pad, t, name, rest] = m;
+      type = t; indent = pad;
+      out.push(pad + t + name + ' = ' + rest.trim().replace(/,$/, '') + ';');
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
+// Łamie linie >100 znaków po ostatnim przecinku w nawiasach przed ~90 kolumną.
+function wrapLongLines(text) {
+  const out = [];
+  for (const raw of text.split('\n')) {
+    let line = raw;
+    for (let guard = 0; guard < 4 && line.length > 100; guard++) {
+      let cut = -1, depth = 0, inStr = null;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (inStr) { if (c === '\\') i++; else if (c === inStr) inStr = null; continue; }
+        if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+        if (c === '/' && line[i + 1] === '/') { inStr = '//'; break; }
+        if (c === '(' || c === '[') depth++;
+        else if (c === ')' || c === ']') depth--;
+        else if (c === ',' && depth > 0 && i >= 30 && i <= 92) cut = i;
+      }
+      if (cut < 0) break;
+      const indent = /^\s*/.exec(line)[0] + '    ';
+      out.push(line.slice(0, cut + 1));
+      line = indent + line.slice(cut + 1).trimStart();
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
+// Krótki polski komentarz nad każdą metodą cyklu życia komponentu.
+const LIFECYCLE_COMMENTS = {
+  onCreate: 'Start: uruchamia się raz, po utworzeniu obiektu',
+  onUpdate: 'Co klatkę: główna logika obiektu',
+  onLateUpdate: 'Co klatkę po wszystkich onUpdate (np. kamera podąża za celem)',
+  onEnable: 'Wywołuje się przy włączeniu obiektu',
+  onDisable: 'Wywołuje się przy wyłączeniu obiektu',
+  onDestroy: 'Sprzątanie: uruchamia się tuż przed zniszczeniem obiektu',
+  onCollision: 'Reakcja na zderzenie fizyczne z innym obiektem',
+  onTrigger: 'Reakcja na wejście w obszar wyzwalacza',
+  onDrawUI: 'Co klatkę: rysowanie interfejsu na ekranie',
+};
+function withLifecycleComments(text) {
+  const lines = text.split('\n');
+  const out = [];
+  for (const line of lines) {
+    const m = /^(\s*)(?:@\w+\s+)*(?:public\s+|private\s+|protected\s+)?(?:static\s+)?(?:void|double|int|boolean|String|long|GameObject)\s+(on\w+)\s*\(/.exec(line)
+      || /^(\s*)(on\w+)\s*\(/.exec(line);
+    if (m && LIFECYCLE_COMMENTS[m[2]]) {
+      const prev = out.length ? out[out.length - 1].trim() : '';
+      if (!prev.startsWith('//')) out.push(m[1] + '// ' + LIFECYCLE_COMMENTS[m[2]]);
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
+// Phase 2: normalize operator spacing outside strings/comments.
+function spaceCourseSource(text) {
+  const CONTROL = new Set(['if', 'for', 'while', 'switch', 'catch', 'synchronized']);
+  const KW_UNARY = new Set(['return', 'throw', 'case', 'new', 'typeof', 'delete', 'in', 'of', 'else', 'do']);
+  const OPS = ['>>>=', '>>=', '<<=', '===', '!==', '>>>', '<<', '>>', '->', '=>', '==', '!=', '<=', '>=', '&&', '||', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '++', '--', '?.', '??', '...'];
+  let res = '';
+  let i = 0;
+  const n = text.length;
+  const stack = [];
+  let ternary = 0, parens = 0;
+  const last = () => { const t = res.replace(/[ \t]+$/, ''); return t[t.length - 1] || ''; };
+  const wordBefore = () => (/([A-Za-z_$][\w$]*)[\s]*$/.exec(res) || [])[1] || '';
+  const operandish = ch => /[\w$\)\]"'`]/.test(ch);
+  const pad = on => { if (on && res && !/[ \t\n]$/.test(res)) res += ' '; };
+  const tight = () => { res = res.replace(/(^|[^\s\n])[ \t]+$/, '$1'); };
+  while (i < n) {
+    const c = text[i];
+    if (c === '"' || c === "'" || c === '`') {
+      const q = c; res += c; i++;
+      while (i < n) { const d = text[i]; res += d; i++; if (d === '\\') { if (i < n) { res += text[i]; i++; } continue; } if (d === q) break; if (q !== '`' && d === '\n') break; }
+      continue;
+    }
+    if (c === '/' && text[i + 1] === '/') { res += '//'; i += 2; while (i < n && text[i] !== '\n') { res += text[i]; i++; } continue; }
+    if (c === '/' && text[i + 1] === '*') { res += '/*'; i += 2; while (i < n && !(text[i] === '*' && text[i + 1] === '/')) { res += text[i]; i++; } res += '*/'; i += 2; continue; }
+    if (c === ' ' || c === '\t') {
+      const tail = res.slice(res.lastIndexOf('\n') + 1);
+      if (/^[ \t]*$/.test(tail)) res += c; else if (!/ $/.test(res)) res += ' ';
+      i++; continue;
+    }
+    if (c === '(') {
+      const wb = wordBefore();
+      if (CONTROL.has(wb) || wb === 'return' || wb === 'throw' || wb === 'case') pad(true); else if (operandish(last())) tight();
+      parens++; stack.push({ w: wordBefore(), t: ternary }); ternary = 0;
+      res += c; i++; continue;
+    }
+    if (c === ')') { parens--; const e = stack.pop(); ternary = e ? e.t : 0; tight(); res += c; i++; continue; }
+    if (c === '{') { if (operandish(last())) pad(true); res += c; i++; ternary = 0; continue; }
+    if (c === '}') { tight(); res += c; i++; ternary = 0; continue; }
+    if (c === ';') { tight(); res += c; i++; ternary = 0; continue; }
+    if (c === ',') { tight(); res += ', '; i++; continue; }
+    if (c === '.') {
+      if (text.slice(i, i + 3) === '...') { res += '...'; i += 3; continue; }
+      tight(); res += '.'; i++; continue;
+    }
+    if (c === '?') {
+      if (text[i + 1] === '.') { res += '?.'; i += 2; continue; }
+      if (text[i + 1] === '?') { pad(operandish(last())); res += '?? '; i += 2; continue; }
+      if (last() === '<' || last() === ',') { tight(); res += '?'; }
+      else { pad(operandish(last())); res += '? '; ternary++; }
+      i++; continue;
+    }
+    if (c === ':') {
+      const inFor = stack.some(e => e.w === 'for');
+      if (ternary > 0 || inFor) { pad(true); res += ': '; if (ternary) ternary--; }
+      else { tight(); res += ': '; }
+      i++; continue;
+    }
+    if (c === '<' || c === '>') {
+      const two = text.slice(i, i + 2);
+      if (two === '<=' || two === '>=' || two === '<<' || two === '>>') { pad(operandish(last())); res += two + ' '; i += 2; continue; }
+      const w = wordBefore();
+      const generic = /^[A-Z]/.test(w) || last() === '<' || last() === '>' || (last() === '?' );
+      if (generic) { tight(); res += c; }
+      else { pad(operandish(last())); res += c + ' '; }
+      i++; continue;
+    }
+    if (OPS.includes(text.slice(i, i + 3))) { const t = text.slice(i, i + 3); pad(operandish(last())); res += t + ' '; i += 3; continue; }
+    if (OPS.includes(text.slice(i, i + 2))) {
+      const t = text.slice(i, i + 2);
+      if (t === '++' || t === '--') { tight(); res += t; }
+      else if (t === '->' || t === '=>') { pad(operandish(last())); res += t + ' '; }
+      else { pad(operandish(last())); res += t + ' '; }
+      i += 2; continue;
+    }
+    if (c === '+' || c === '-') {
+      const p = last();
+      const before2 = res.replace(/[ \t]+$/, '');
+      const exponent = /[eE]/.test(p) && /\d/.test(before2[before2.length - 2] || '');
+      const unary = exponent || !p || /[({\[\s;,=<>!&|?+\-*/%^~:]/.test(p) || KW_UNARY.has(wordBefore());
+      if (exponent) { res += c; }
+      else if (unary) { pad(operandish(p)); res += c; }
+      else { pad(true); res += c + ' '; }
+      i++; continue;
+    }
+    if (c === '*' || c === '/' || c === '%') { pad(operandish(last())); res += c + ' '; i++; continue; }
+    if (c === '!') { pad(operandish(last())); res += '!'; i++; continue; }
+    if (c === '~') { pad(operandish(last())); res += '~'; i++; continue; }
+    if (c === '&' || c === '|' || c === '^') { pad(operandish(last())); res += c + ' '; i++; continue; }
+    if (c === '=') { pad(true); res += '= '; i++; continue; }
+    if (c === '@' || c === '#') { res += c; i++; continue; }
+    res += c; i++;
+  }
+  return res;
 }
 
 function formatCourseFiles(files) {
@@ -219,8 +505,8 @@ function buildCourseProjectRaw(language, chapter, mode, solved = true, useEnemyA
   const builtins = new Set(['Sprite','TileMap','ShapeRenderer','Camera2D','CharacterController2D','UITransform','CircleCollider2D','Button','ProgressBar','TextRenderer']);
   const get = (owner,type) => `${owner}.getComponent(${!java && builtins.has(type) ? 'GameLab.' : ''}${type}${java ? '.class' : ''})`;
   const movement = (speed=120, sprint=false) => component('PlayerController',
-    `speed = ${speed};\nonUpdate(delta) {\n const input = this.game.input;\n const x = Number(input.isKeyDown(GameLab.Keys.D) || input.isKeyDown(GameLab.Keys.RIGHT)) - Number(input.isKeyDown(GameLab.Keys.A) || input.isKeyDown(GameLab.Keys.LEFT));\n const y = Number(input.isKeyDown(GameLab.Keys.S) || input.isKeyDown(GameLab.Keys.DOWN)) - Number(input.isKeyDown(GameLab.Keys.W) || input.isKeyDown(GameLab.Keys.UP));\n this.requireComponent(GameLab.CharacterController2D).move(x, y, ${sprint ? 'input.isKeyDown(GameLab.Keys.SHIFT) ? this.speed * 2 : ' : ''}this.speed);\n}`,
-    `public double speed = ${speed};\n@Override public void onUpdate(double delta) {\n double x = (getGame().input.isKeyDown(Keys.D) || getGame().input.isKeyDown(Keys.RIGHT) ? 1 : 0) - (getGame().input.isKeyDown(Keys.A) || getGame().input.isKeyDown(Keys.LEFT) ? 1 : 0);\n double y = (getGame().input.isKeyDown(Keys.S) || getGame().input.isKeyDown(Keys.DOWN) ? 1 : 0) - (getGame().input.isKeyDown(Keys.W) || getGame().input.isKeyDown(Keys.UP) ? 1 : 0);\n requireComponent(CharacterController2D.class).move(x, y, ${sprint ? 'getGame().input.isKeyDown(Keys.SHIFT) ? speed * 2 : ' : ''}speed);\n}`);
+    `speed = ${speed};\nonUpdate(delta) {\n const input = this.game.input;\n const right = input.isKeyDown(GameLab.Keys.D) || input.isKeyDown(GameLab.Keys.RIGHT);\n const left = input.isKeyDown(GameLab.Keys.A) || input.isKeyDown(GameLab.Keys.LEFT);\n const down = input.isKeyDown(GameLab.Keys.S) || input.isKeyDown(GameLab.Keys.DOWN);\n const up = input.isKeyDown(GameLab.Keys.W) || input.isKeyDown(GameLab.Keys.UP);\n const x = Number(right) - Number(left);\n const y = Number(down) - Number(up);${sprint ? '\n const currentSpeed = input.isKeyDown(GameLab.Keys.SHIFT) ? this.speed * 2 : this.speed;' : ''}\n this.requireComponent(GameLab.CharacterController2D).move(x, y, ${sprint ? 'currentSpeed' : 'this.speed'});\n}`,
+    `public double speed = ${speed};\n@Override public void onUpdate(double delta) {\n boolean right = getGame().input.isKeyDown(Keys.D) || getGame().input.isKeyDown(Keys.RIGHT);\n boolean left = getGame().input.isKeyDown(Keys.A) || getGame().input.isKeyDown(Keys.LEFT);\n boolean down = getGame().input.isKeyDown(Keys.S) || getGame().input.isKeyDown(Keys.DOWN);\n boolean up = getGame().input.isKeyDown(Keys.W) || getGame().input.isKeyDown(Keys.UP);\n double x = (right ? 1 : 0) - (left ? 1 : 0);\n double y = (down ? 1 : 0) - (up ? 1 : 0);${sprint ? '\n double currentSpeed = getGame().input.isKeyDown(Keys.SHIFT) ? speed * 2 : speed;' : ''}\n requireComponent(CharacterController2D.class).move(x, y, ${sprint ? 'currentSpeed' : 'speed'});\n}`);
   const player = (x=100,y=100,speed=120,sprint=false,withCollider=true,spriteSize=32) => {
     movement(speed,sprint);
     return object('Player',x,y,[sprite('PLAYER01',spriteSize,spriteSize),...(withCollider?['CircleCollider2D(12)']:[]),'CharacterController2D()','PlayerController()']);
@@ -262,7 +548,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
   };
   const enemyFactory = () => {
     health();
-    component('EnemyAI','constructor(target,speed) {super();this.target=target;this.speed=speed;} onUpdate() {if(!this.target || this.target.destroyed)return;this.requireComponent(GameLab.CharacterController2D).move(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y,this.speed);}','public GameObject target;public double speed;public EnemyAI(GameObject target,double speed) {this.target=target;this.speed=speed;} @Override public void onUpdate(double delta) {if(target==null || target.destroyed)return;requireComponent(CharacterController2D.class).move(target.transform.x-transform.x,target.transform.y-transform.y,speed);}');
+    component('EnemyAI','constructor(target,speed) {super();this.target=target;this.speed=speed;} onUpdate() {if(!this.target || this.target.destroyed)return;const dx=this.target.transform.x-this.transform.x;const dy=this.target.transform.y-this.transform.y;this.requireComponent(GameLab.CharacterController2D).move(dx,dy,this.speed);}','public GameObject target;public double speed;public EnemyAI(GameObject target,double speed) {this.target=target;this.speed=speed;} @Override public void onUpdate(double delta) {if(target==null || target.destroyed)return;double dx=target.transform.x-transform.x;double dy=target.transform.y-transform.y;requireComponent(CharacterController2D.class).move(dx,dy,speed);}');
     component('XpOrb','constructor(value) {super();this.value=value;}','public int value;public XpOrb(int value) {this.value=value;}');
     component('RunStats','kills=0;','public int kills=0;');
     component('LootOnDeath','onCreate() {this.unsubscribe=this.requireComponent(Health).onDeath(()=>{const player=this.game.find("Player");const stats=player?.getComponent(RunStats);if(stats)stats.kills++;const orb=this.game.createObject("XpOrb");orb.setPosition(this.transform.x,this.transform.y);orb.addComponent(new GameLab.Sprite(GameLab.Assets.GEM,16,16));orb.addComponent(new GameLab.Collider2D(20,20).asTrigger());orb.addComponent(new XpOrb(1));this.gameObject.destroy();});} onDestroy() {this.unsubscribe?.();}','private Runnable unsubscribe;@Override public void onCreate() {unsubscribe=requireComponent(Health.class).onDeath(()->{GameObject player=getGame().find("Player");RunStats stats=player==null?null:player.getComponent(RunStats.class);if(stats!=null)stats.kills++;GameObject orb=getGame().createObject("XpOrb");orb.setPosition(transform.x,transform.y);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new Collider2D(20,20).asTrigger());orb.addComponent(new XpOrb(1));gameObject.destroy();});} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();}');
@@ -271,21 +557,21 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
   };
   const runScene = (survivor = false) => {
     upgrades(true,survivor && mode==='independent');enemyFactory();setup='';
-    component('RunHud',`constructor() {super();this.updateMode="UI";this.buttons=[];this.wasOpen=false;} onCreate() {for(const [name,y] of [["HealthBar",12],["XpBar",38],["LevelText",64]]) {const object=this.game.createObject(name);object.setPosition(12,y);const ui=object.addComponent(new GameLab.UITransform(200,18));ui.anchor="TOP_LEFT";if(name==="LevelText")object.addComponent(new GameLab.TextRenderer("Poziom: 1",18,"#ffffff"));else object.addComponent(new GameLab.ProgressBar(200,18));}for(let i=0;i<3;i++) {const object=this.game.createObject("UpgradeButton"+i);object.setPosition(0,(i-1)*54);object.addComponent(new GameLab.UITransform(280,44));const button=object.addComponent(new GameLab.Button(280,44));button.text=["Szybkość","Obrażenia","Tempo"][i];button.onClick=()=>this.requireComponent(UpgradeController).select(i+1);object.active=false;this.buttons.push(button);}} onLateUpdate() {const hp=this.requireComponent(Health),xp=this.requireComponent(Experience),menu=this.requireComponent(UpgradeController);this.game.find("HealthBar").getComponent(GameLab.ProgressBar).setValue(hp.currentHealth,hp.maxHealth);this.game.find("XpBar").getComponent(GameLab.ProgressBar).setValue(xp.xp,5*xp.level);this.game.find("LevelText").getComponent(GameLab.TextRenderer).text="Poziom: "+xp.level;for(let i=0;i<3;i++) {const button=this.buttons[i];button.gameObject.active=menu.opened && (!menu.shop || i===1);button.width=Math.min(280,this.game.getViewportWidth()-32);button.getComponent(GameLab.UITransform).width=button.width;if(!menu.opened)button.blur();}if(menu.opened&&!this.wasOpen)this.buttons[menu.shop?1:0].focus();this.wasOpen=menu.opened;}`,
-    `private final java.util.ArrayList<Button> buttons=new java.util.ArrayList<>();private boolean wasOpen=false;public RunHud() {updateMode="UI";} @Override public void onCreate() {String[] names={"HealthBar","XpBar","LevelText"};for(int i=0;i<3;i++) {GameObject object=getGame().createObject(names[i]);object.setPosition(12,12+26*i);UITransform ui=object.addComponent(new UITransform(200,18));ui.anchor="TOP_LEFT";if(i==2)object.addComponent(new TextRenderer("Poziom: 1",18,"#ffffff"));else object.addComponent(new ProgressBar(200,18));}for(int i=0;i<3;i++) {final int choice=i+1;GameObject object=getGame().createObject("UpgradeButton"+i);object.setPosition(0,(i-1)*54);object.addComponent(new UITransform(280,44));Button button=object.addComponent(new Button(280,44));button.text=new String[]{"Szybkość","Obrażenia","Tempo"}[i];button.onClick=()->requireComponent(UpgradeController.class).select(choice);object.active=false;buttons.add(button);}} @Override public void onLateUpdate(double delta) {Health hp=requireComponent(Health.class);Experience xp=requireComponent(Experience.class);UpgradeController menu=requireComponent(UpgradeController.class);getGame().find("HealthBar").getComponent(ProgressBar.class).setValue(hp.currentHealth,hp.maxHealth);getGame().find("XpBar").getComponent(ProgressBar.class).setValue(xp.xp,5*xp.level);getGame().find("LevelText").getComponent(TextRenderer.class).text="Poziom: "+xp.level;for(int i=0;i<3;i++) {Button button=buttons.get(i);button.gameObject.active=menu.opened&&(!menu.shop||i==1);button.width=Math.min(280,getGame().getViewportWidth()-32);button.getComponent(UITransform.class).width=button.width;if(!menu.opened)button.blur();}if(menu.opened&&!wasOpen)buttons.get(menu.shop?1:0).focus();wasOpen=menu.opened;}`);
+    component('RunHud',`constructor() {super();this.updateMode="UI";this.buttons=[];this.wasOpen=false;} onCreate() {for(const [name,y] of [["HealthBar",12],["XpBar",38],["LevelText",64]]) {const object=this.game.createObject(name);object.setPosition(12,y);const ui=object.addComponent(new GameLab.UITransform(200,18));ui.anchor="TOP_LEFT";if(name==="LevelText")object.addComponent(new GameLab.TextRenderer("Poziom: 1",18,"#ffffff"));else object.addComponent(new GameLab.ProgressBar(200,18));}for(let i=0;i<3;i++) {const object=this.game.createObject("UpgradeButton"+i);object.setPosition(0,(i-1)*54);object.addComponent(new GameLab.UITransform(280,44));const button=object.addComponent(new GameLab.Button(280,44));button.text=["Szybkość","Obrażenia","Tempo"][i];button.onClick=()=>this.requireComponent(UpgradeController).select(i+1);object.active=false;this.buttons.push(button);}} onLateUpdate() {const hp=this.requireComponent(Health),xp=this.requireComponent(Experience),menu=this.requireComponent(UpgradeController);const hpBar=this.game.find("HealthBar").getComponent(GameLab.ProgressBar);hpBar.setValue(hp.currentHealth,hp.maxHealth);const xpBar=this.game.find("XpBar").getComponent(GameLab.ProgressBar);xpBar.setValue(xp.xp,5*xp.level);this.game.find("LevelText").getComponent(GameLab.TextRenderer).text="Poziom: "+xp.level;for(let i=0;i<3;i++) {const button=this.buttons[i];button.gameObject.active=menu.opened && (!menu.shop || i===1);button.width=Math.min(280,this.game.getViewportWidth()-32);button.getComponent(GameLab.UITransform).width=button.width;if(!menu.opened)button.blur();}if(menu.opened&&!this.wasOpen)this.buttons[menu.shop?1:0].focus();this.wasOpen=menu.opened;}`,
+    `private final java.util.ArrayList<Button> buttons=new java.util.ArrayList<>();private boolean wasOpen=false;public RunHud() {updateMode="UI";} @Override public void onCreate() {String[] names={"HealthBar","XpBar","LevelText"};for(int i=0;i<3;i++) {GameObject object=getGame().createObject(names[i]);object.setPosition(12,12+26*i);UITransform ui=object.addComponent(new UITransform(200,18));ui.anchor="TOP_LEFT";if(i==2)object.addComponent(new TextRenderer("Poziom: 1",18,"#ffffff"));else object.addComponent(new ProgressBar(200,18));}for(int i=0;i<3;i++) {final int choice=i+1;GameObject object=getGame().createObject("UpgradeButton"+i);object.setPosition(0,(i-1)*54);object.addComponent(new UITransform(280,44));Button button=object.addComponent(new Button(280,44));button.text=new String[]{"Szybkość","Obrażenia","Tempo"}[i];button.onClick=()->requireComponent(UpgradeController.class).select(choice);object.active=false;buttons.add(button);}} @Override public void onLateUpdate(double delta) {Health hp=requireComponent(Health.class);Experience xp=requireComponent(Experience.class);UpgradeController menu=requireComponent(UpgradeController.class);ProgressBar hpBar=getGame().find("HealthBar").getComponent(ProgressBar.class);hpBar.setValue(hp.currentHealth,hp.maxHealth);ProgressBar xpBar=getGame().find("XpBar").getComponent(ProgressBar.class);xpBar.setValue(xp.xp,5*xp.level);getGame().find("LevelText").getComponent(TextRenderer.class).text="Poziom: "+xp.level;for(int i=0;i<3;i++) {Button button=buttons.get(i);button.gameObject.active=menu.opened&&(!menu.shop||i==1);button.width=Math.min(280,getGame().getViewportWidth()-32);button.getComponent(UITransform.class).width=button.width;if(!menu.opened)button.blur();}if(menu.opened&&!wasOpen)buttons.get(menu.shop?1:0).focus();wasOpen=menu.opened;}`);
     component('ContactDamage','onCollision(other) {const hp=other.getComponent(Health);if(hp)hp.damage(1);}','@Override public void onCollision(GameObject other) {Health hp=other.getComponent(Health.class);if(hp!=null)hp.damage(1);}');
     component('RunClock','elapsed=0;onUpdate(delta) {this.elapsed+=delta;}','public double elapsed=0;@Override public void onUpdate(double delta) {elapsed+=delta;}');
     const advanced=survivor && mode!=='guided';
-    component('SurvivorSpawner',`elapsed=0;next=1.5;wave=0;onUpdate(delta) {this.elapsed+=delta;const intervals=[1.5,1,0.75,0.5];while(this.next<=this.elapsed+1e-9) {${advanced?'if(this.wave<3 && this.next>=30*(this.wave+1)-1e-9) {this.wave++;this.next=this.wave*30+intervals[this.wave];continue;}':''}this.next+=intervals[this.wave];const player=this.game.find("Player");if(!player)return;if(this.game.getObjects().filter(o=>o.getComponent(EnemyAI)).length>=200)continue;const angle=this.game.random.next()*Math.PI*2;const type=Math.floor(this.game.random.next()*(this.wave>=2?3:this.wave>=1?2:1));const spec=type===0?new EnemySpec("Slime",GameLab.Assets.SLIME,2,40,12):type===1?new EnemySpec("Bat",GameLab.Assets.BAT,1,65,10):new EnemySpec("Ghost",GameLab.Assets.GHOST,3,35,12);const radius=0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40;const enemy=player.getComponent(EnemyFactory).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`,
-    `public double elapsed=0;private double next=1.5;public int wave=0;@Override public void onUpdate(double delta) {elapsed+=delta;double[] intervals={1.5,1,.75,.5};while(next<=elapsed+1e-9) {${advanced?'if(wave<3 && next>=30*(wave+1)-1e-9) {wave++;next=wave*30+intervals[wave];continue;}':''}next+=intervals[wave];GameObject player=getGame().find("Player");if(player==null)return;if(getGame().getObjects().stream().filter(o->o.hasComponent(EnemyAI.class)).count()>=200)continue;double angle=getGame().random.next()*Math.PI*2;int type=(int)(getGame().random.next()*(wave>=2?3:wave>=1?2:1));EnemySpec spec=type==0?new EnemySpec("Slime",Assets.SLIME,2,40,12):type==1?new EnemySpec("Bat",Assets.BAT,1,65,10):new EnemySpec("Ghost",Assets.GHOST,3,35,12);double radius=.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40;GameObject enemy=player.getComponent(EnemyFactory.class).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`);
+    component('SurvivorSpawner',`elapsed=0;next=1.5;wave=0;onUpdate(delta) {this.elapsed+=delta;const intervals=[1.5,1,0.75,0.5];while(this.next<=this.elapsed+1e-9) {${advanced?'if(this.wave<3 && this.next>=30*(this.wave+1)-1e-9) {this.wave++;this.next=this.wave*30+intervals[this.wave];continue;}':''}this.next+=intervals[this.wave];const player=this.game.find("Player");if(!player)return;if(this.game.getObjects().filter(o=>o.getComponent(EnemyAI)).length>=200)continue;const angle=this.game.random.next()*Math.PI*2;let types=1;if(this.wave>=1)types=2;if(this.wave>=2)types=3;const type=Math.floor(this.game.random.next()*types);let spec;if(type===0)spec=new EnemySpec("Slime",GameLab.Assets.SLIME,2,40,12);else if(type===1)spec=new EnemySpec("Bat",GameLab.Assets.BAT,1,65,10);else spec=new EnemySpec("Ghost",GameLab.Assets.GHOST,3,35,12);const radius=0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40;const enemy=player.getComponent(EnemyFactory).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`,
+    `public double elapsed=0;private double next=1.5;public int wave=0;@Override public void onUpdate(double delta) {elapsed+=delta;double[] intervals={1.5,1,.75,.5};while(next<=elapsed+1e-9) {${advanced?'if(wave<3 && next>=30*(wave+1)-1e-9) {wave++;next=wave*30+intervals[wave];continue;}':''}next+=intervals[wave];GameObject player=getGame().find("Player");if(player==null)return;int live=0;for(GameObject object:getGame().getObjects())if(object.hasComponent(EnemyAI.class))live++;if(live>=200)continue;double angle=getGame().random.next()*Math.PI*2;int types=1;if(wave>=1)types=2;if(wave>=2)types=3;int type=(int)(getGame().random.next()*types);EnemySpec spec;if(type==0)spec=new EnemySpec("Slime",Assets.SLIME,2,40,12);else if(type==1)spec=new EnemySpec("Bat",Assets.BAT,1,65,10);else spec=new EnemySpec("Ghost",Assets.GHOST,3,35,12);double radius=.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40;GameObject enemy=player.getComponent(EnemyFactory.class).create(spec,player.transform.x+Math.cos(angle)*radius,player.transform.y+Math.sin(angle)*radius);enemy.addComponent(new ContactDamage());}}`);
     const extraJs=survivor && mode==='independent'?'const orb=p.addComponent(new Weapon());orb.cooldown=1;orb.timer=1;orb.damage=2;orb.projectileSpeed=220;orb.lifetime=3;orb.range=240;const chest=this.game.createObject("Chest");chest.setPosition(420,180);chest.addComponent(new GameLab.Sprite(GameLab.Assets.CHEST,32,32));chest.addComponent(new GameLab.Collider2D(24,24).asTrigger());chest.addComponent(new ShopChest());':'';
     const extraJava=survivor && mode==='independent'?'Weapon orb=p.addComponent(new Weapon());orb.cooldown=1;orb.timer=1;orb.damage=2;orb.projectileSpeed=220;orb.lifetime=3;orb.range=240;GameObject chest=getGame().createObject("Chest");chest.setPosition(420,180);chest.addComponent(new Sprite(Assets.CHEST,32,32));chest.addComponent(new Collider2D(24,24).asTrigger());chest.addComponent(new ShopChest());':'';
     if(survivor && mode==='independent')component('ShopChest','opened=false;onTrigger(other) {const wallet=other.getComponent(Wallet),menu=other.getComponent(UpgradeController);if(this.opened || !wallet || !menu)return;this.opened=true;wallet.gold+=20;menu.shop=true;menu.opened=true;other.getComponent(PauseController).request("upgrade");}','public boolean opened=false;@Override public void onTrigger(GameObject other) {Wallet wallet=other.getComponent(Wallet.class);UpgradeController menu=other.getComponent(UpgradeController.class);if(opened || wallet==null || menu==null)return;opened=true;wallet.gold+=20;menu.shop=true;menu.opened=true;other.getComponent(PauseController.class).request("upgrade");}');
     const lost=survivor || mode!=='guided',win=survivor && mode!=='guided' || !survivor && mode==='independent';
-    component('RunController',`constructor() {super();this.updateMode="UI";this.state="READY";this.player=null;this.unsubscribe=null;} start() {if(this.state==="RUNNING")return;this.game.time.elapsed=0;if(this.unsubscribe)this.unsubscribe();for(const object of this.game.getObjects())if(object!==this.gameObject && object.name!=="StartButton")object.destroy();this.game.resume();this.game.setWorldBounds(0,0,2000,1200);const ground=this.game.createObject("Ground");ground.addComponent(new GameLab.TileMap(GameLab.Assets.GRASS,32));const p=this.game.createObject("Player");p.setPosition(320,180);p.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01,32,32));p.addComponent(new GameLab.CircleCollider2D(12));p.addComponent(new GameLab.CharacterController2D());p.addComponent(new PlayerController());const hp=p.addComponent(new Health(5,0.75));p.addComponent(new Weapon());p.getComponent(Weapon).range=240;p.addComponent(new Experience());p.addComponent(new Wallet());p.addComponent(new PauseController());p.addComponent(new UpgradeController());p.addComponent(new RunStats());p.addComponent(new RunClock());p.addComponent(new EnemyFactory(p));p.addComponent(new SurvivorSpawner());const camera=this.game.createObject("Camera");camera.addComponent(new GameLab.Camera2D()).follow(p);this.player=p;this.state="RUNNING";${lost?'this.unsubscribe=hp.onDeath(()=>{this.state="LOST";this.game.pause();});':''}${extraJs}} onUpdate() {if(this.game.input.isKeyPressed(GameLab.Keys.ENTER) && this.state!=="RUNNING") {this.start();this.game.input.consumeKey(GameLab.Keys.ENTER);}} onLateUpdate() {${win?'if(this.state==="RUNNING" && !this.player.getComponent(Health).dead && this.player.getComponent(RunClock).elapsed>=120) {this.state="WON";this.game.pause();}':''} const button=this.game.find("StartButton");if(button) {button.setActive(this.state!=="RUNNING");button.getComponent(GameLab.Button).text=this.state==="READY"?"Start":"Restart";} } onDestroy() {this.unsubscribe?.();} onDrawUI() {if(this.state==="READY")this.game.canvas.drawText("WASD: ruch; Enter: Start",320,100);if(this.state==="LOST" || this.state==="WON") {const xp=this.player.getComponent(Experience),stats=this.player.getComponent(RunStats),clock=this.player.getComponent(RunClock);this.game.canvas.drawText(this.state+"  Czas: "+clock.elapsed.toFixed(1)+"  Poziom: "+xp.level+"  Pokonani: "+stats.kills,320,100);}const menu=this.player?.getComponent(UpgradeController);if(menu?.opened)this.game.canvas.drawText("1 Szybkość  2 Obrażenia  3 Tempo",320,150);}`,
-    `public String state="READY";public GameObject player;private Runnable unsubscribe;public RunController() {updateMode="UI";} public void start() {if(state.equals("RUNNING"))return;getGame().time.elapsed=0;if(unsubscribe!=null)unsubscribe.run();for(GameObject object:getGame().getObjects())if(object!=gameObject&&!object.name.equals("StartButton"))object.destroy();getGame().resume();getGame().setWorldBounds(0,0,2000,1200);GameObject ground=getGame().createObject("Ground");ground.addComponent(new TileMap(Assets.GRASS,32));GameObject p=getGame().createObject("Player");p.setPosition(320,180);p.addComponent(new Sprite(Assets.PLAYER01,32,32));p.addComponent(new CircleCollider2D(12));p.addComponent(new CharacterController2D());p.addComponent(new PlayerController());Health hp=p.addComponent(new Health(5,.75));p.addComponent(new Weapon());p.getComponent(Weapon.class).range=240;p.addComponent(new Experience());p.addComponent(new Wallet());p.addComponent(new PauseController());p.addComponent(new UpgradeController());p.addComponent(new RunStats());p.addComponent(new RunClock());p.addComponent(new EnemyFactory(p));p.addComponent(new SurvivorSpawner());GameObject camera=getGame().createObject("Camera");camera.addComponent(new Camera2D()).follow(p);player=p;state="RUNNING";${lost?'unsubscribe=hp.onDeath(()->{state="LOST";getGame().pause();});':''}${extraJava}} @Override public void onUpdate(double delta) {if(getGame().input.isKeyPressed(Keys.ENTER)&&!state.equals("RUNNING")) {start();getGame().input.consumeKey(Keys.ENTER);}} @Override public void onLateUpdate(double delta) {${win?'if(state.equals("RUNNING")&&!player.getComponent(Health.class).dead&&player.getComponent(RunClock.class).elapsed>=120) {state="WON";getGame().pause();}':''}GameObject button=getGame().find("StartButton");if(button!=null) {button.setActive(!state.equals("RUNNING"));button.getComponent(Button.class).text=state.equals("READY")?"Start":"Restart";}} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();} @Override public void onDrawUI() {if(state.equals("READY"))getGame().canvas.drawText("WASD: ruch; Enter: Start",320,100);if(state.equals("LOST")||state.equals("WON")) {Experience xp=player.getComponent(Experience.class);RunStats stats=player.getComponent(RunStats.class);RunClock clock=player.getComponent(RunClock.class);getGame().canvas.drawText(state+" Czas: "+clock.elapsed+" Poziom: "+xp.level+" Pokonani: "+stats.kills,320,100);}UpgradeController menu=player==null?null:player.getComponent(UpgradeController.class);if(menu!=null&&menu.opened)getGame().canvas.drawText("1 Szybkość  2 Obrażenia  3 Tempo",320,150);}`);
+    component('RunController',`constructor() {super();this.updateMode="UI";this.state="READY";this.player=null;this.unsubscribe=null;} start() {if(this.state==="RUNNING")return;this.game.time.elapsed=0;if(this.unsubscribe)this.unsubscribe();for(const object of this.game.getObjects())if(object!==this.gameObject && object.name!=="StartButton")object.destroy();this.game.resume();this.game.setWorldBounds(0,0,2000,1200);const ground=this.game.createObject("Ground");ground.addComponent(new GameLab.TileMap(GameLab.Assets.GRASS,32));const p=this.game.createObject("Player");p.setPosition(320,180);p.addComponent(new GameLab.Sprite(GameLab.Assets.PLAYER01,32,32));p.addComponent(new GameLab.CircleCollider2D(12));p.addComponent(new GameLab.CharacterController2D());p.addComponent(new PlayerController());const hp=p.addComponent(new Health(5,0.75));p.addComponent(new Weapon());p.getComponent(Weapon).range=240;p.addComponent(new Experience());p.addComponent(new Wallet());p.addComponent(new PauseController());p.addComponent(new UpgradeController());p.addComponent(new RunStats());p.addComponent(new RunClock());p.addComponent(new EnemyFactory(p));p.addComponent(new SurvivorSpawner());const camera=this.game.createObject("Camera");camera.addComponent(new GameLab.Camera2D()).follow(p);this.player=p;this.state="RUNNING";${lost?'this.unsubscribe=hp.onDeath(()=>{this.state="LOST";this.game.pause();});':''}${extraJs}} onUpdate() {if(this.game.input.isKeyPressed(GameLab.Keys.ENTER) && this.state!=="RUNNING") {this.start();this.game.input.consumeKey(GameLab.Keys.ENTER);}} onLateUpdate() {${win?'const alive=this.player!=null&&!this.player.getComponent(Health).dead;const clock=this.player==null?null:this.player.getComponent(RunClock);if(this.state==="RUNNING"&&alive&&clock.elapsed>=120) {this.state="WON";this.game.pause();}':''} const button=this.game.find("StartButton");if(button) {button.setActive(this.state!=="RUNNING");button.getComponent(GameLab.Button).text=this.state==="READY"?"Start":"Restart";} } onDestroy() {this.unsubscribe?.();} onDrawUI() {if(this.state==="READY")this.game.canvas.drawText("WASD: ruch; Enter: Start",320,100);if(this.state==="LOST" || this.state==="WON") {const xp=this.player.getComponent(Experience),stats=this.player.getComponent(RunStats),clock=this.player.getComponent(RunClock);let summary=this.state+"  Czas: "+clock.elapsed.toFixed(1);summary+="  Poziom: "+xp.level+"  Pokonani: "+stats.kills;this.game.canvas.drawText(summary,320,100);}const menu=this.player?this.player.getComponent(UpgradeController):null;if(menu?.opened)this.game.canvas.drawText("1 Szybkość  2 Obrażenia  3 Tempo",320,150);}`,
+    `public String state="READY";public GameObject player;private Runnable unsubscribe;public RunController() {updateMode="UI";} public void start() {if(state.equals("RUNNING"))return;getGame().time.elapsed=0;if(unsubscribe!=null)unsubscribe.run();for(GameObject object:getGame().getObjects())if(object!=gameObject&&!object.name.equals("StartButton"))object.destroy();getGame().resume();getGame().setWorldBounds(0,0,2000,1200);GameObject ground=getGame().createObject("Ground");ground.addComponent(new TileMap(Assets.GRASS,32));GameObject p=getGame().createObject("Player");p.setPosition(320,180);p.addComponent(new Sprite(Assets.PLAYER01,32,32));p.addComponent(new CircleCollider2D(12));p.addComponent(new CharacterController2D());p.addComponent(new PlayerController());Health hp=p.addComponent(new Health(5,.75));p.addComponent(new Weapon());p.getComponent(Weapon.class).range=240;p.addComponent(new Experience());p.addComponent(new Wallet());p.addComponent(new PauseController());p.addComponent(new UpgradeController());p.addComponent(new RunStats());p.addComponent(new RunClock());p.addComponent(new EnemyFactory(p));p.addComponent(new SurvivorSpawner());GameObject camera=getGame().createObject("Camera");camera.addComponent(new Camera2D()).follow(p);player=p;state="RUNNING";${lost?'unsubscribe=hp.onDeath(()->{state="LOST";getGame().pause();});':''}${extraJava}} @Override public void onUpdate(double delta) {if(getGame().input.isKeyPressed(Keys.ENTER)&&!state.equals("RUNNING")) {start();getGame().input.consumeKey(Keys.ENTER);}} @Override public void onLateUpdate(double delta) {${win?'boolean alive=player!=null&&!player.getComponent(Health.class).dead;RunClock clock=player==null?null:player.getComponent(RunClock.class);if(state.equals("RUNNING")&&alive&&clock.elapsed>=120) {state="WON";getGame().pause();}':''}GameObject button=getGame().find("StartButton");if(button!=null) {button.setActive(!state.equals("RUNNING"));button.getComponent(Button.class).text=state.equals("READY")?"Start":"Restart";}} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();} @Override public void onDrawUI() {if(state.equals("READY"))getGame().canvas.drawText("WASD: ruch; Enter: Start",320,100);if(state.equals("LOST")||state.equals("WON")) {Experience xp=player.getComponent(Experience.class);RunStats stats=player.getComponent(RunStats.class);RunClock clock=player.getComponent(RunClock.class);String summary=state+" Czas: "+clock.elapsed;summary+=" Poziom: "+xp.level+" Pokonani: "+stats.kills;getGame().canvas.drawText(summary,320,100);}UpgradeController menu=null;if(player!=null)menu=player.getComponent(UpgradeController.class);if(menu!=null&&menu.opened)getGame().canvas.drawText("1 Szybkość  2 Obrażenia  3 Tempo",320,150);}`);
     files[`RunController.${java?'java':'js'}`]=files[`RunController.${java?'java':'js'}`].replace('p.addComponent(new RunStats());','p.addComponent(new RunStats());p.addComponent(new RunHud());');
-    object('Run',0,0,['RunController()']);object('StartButton',0,0,['UITransform(160,44)','Button(160,44)']);setup+=`${get('startButton','Button')}.text="Start";\n${get('startButton','Button')}.onClick=${java?'()->':'()=>'}${get('run','RunController')}.start();\n${java?'':'this.'}pause();\n`;
+    object('Run',0,0,['RunController()']);object('StartButton',0,0,['UITransform(160,44)','Button(160,44)']);setup+=`${java?'RunController controller':'const controller'}=${get('run','RunController')};\n${get('startButton','Button')}.text="Start";\n${get('startButton','Button')}.onClick=${java?'()->':'()=>'}controller.start();\n${java?'':'this.'}pause();\n`;
     if(survivor)files['README.md']='Sterowanie: WASD/strzałki, Escape pauza, 1/2/3 wybór ulepszenia, Enter start, Restart po zakończeniu. Balans: Orb zadaje 2 obrażenia co sekundę; dwa niezależne cooldowny zwiększają przewidywalność ataku.';
   };
   let ready = true;
@@ -298,7 +584,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     case 'components':
       if (mode === 'independent') {
         fields = java ? 'public int cleanup = 0;' : 'cleanup = 0;';
-        component('Lifetime','remaining = 0.3; onUpdate(delta) { this.remaining -= delta; if (this.remaining <= 0) this.gameObject.destroy(); } onDestroy() { this.game.cleanup++; }','public double remaining = 0.3; @Override public void onUpdate(double delta) { remaining -= delta; if (remaining <= 0) gameObject.destroy(); } @Override public void onDestroy() { ((GameMain)getGame()).cleanup++; }');
+        component('Lifetime','remaining = 0.3; onUpdate(delta) { this.remaining -= delta; if (this.remaining <= 0) this.gameObject.destroy(); } onDestroy() { this.game.cleanup++; }','public double remaining = 0.3; @Override public void onUpdate(double delta) { remaining -= delta; if (remaining <= 0) gameObject.destroy(); } @Override public void onDestroy() { GameMain game=(GameMain)getGame();game.cleanup++; }');
         object('Spark',100,100,[sprite('FIREBALL',16,16),'Lifetime()']);
       } else {
         component('Counter','counts = 0; creates = 0; onCreate() { this.creates++; } onUpdate() { this.counts++; }','public int counts = 0, creates = 0; @Override public void onCreate() { creates++; } @Override public void onUpdate(double delta) { counts++; }');
@@ -332,7 +618,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
         setup+=`${get('player','Sprite')}.texture=Assets.RANGER${java?'.key()':''};\n${get('player','Sprite')}.width=48;\n${get('player','Sprite')}.height=48;\n`;
         object('Wall',240,100,[shape(24,120,'#70c994'),'Collider2D(24,120)']);
       }
-      if(mode==='modified') { component('FacingVisual','onUpdate() { const i=this.game.input; const x=Number(i.isKeyDown(GameLab.Keys.D))-Number(i.isKeyDown(GameLab.Keys.A)); if(x) this.requireComponent(GameLab.Sprite).flipX=x>0; }','@Override public void onUpdate(double delta) { double x=(getGame().input.isKeyDown(Keys.D)?1:0)-(getGame().input.isKeyDown(Keys.A)?1:0); if(x!=0) requireComponent(Sprite.class).flipX=x>0; }'); setup+='player.addComponent(new FacingVisual());\n'; }
+      if(mode==='modified') { component('FacingVisual','onUpdate() { const i=this.game.input; let x=0;if(i.isKeyDown(GameLab.Keys.D))x++;if(i.isKeyDown(GameLab.Keys.A))x--;if(x)this.requireComponent(GameLab.Sprite).flipX=x>0; }','@Override public void onUpdate(double delta) { double x=0;if(getGame().input.isKeyDown(Keys.D))x++;if(getGame().input.isKeyDown(Keys.A))x--;if(x!=0)requireComponent(Sprite.class).flipX=x>0; }'); setup+='player.addComponent(new FacingVisual());\n'; }
       if(mode==='independent') { object('Decoration',240,180,[sprite('COIN',16,16)]); setup+=`${get('decoration','Sprite')}.layer=5;\n`; }
       break;
     }
@@ -415,13 +701,14 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       } else setup+=`projectile.addComponent(new ProjectileMotion(1,0,200,${mode==='modified'?0.5:2}));\nprojectile.addComponent(new CircleCollider2D(4).asTrigger());\n`;
       // Ready combat components: students expand Health in lesson 10 and Weapon in lesson 11.
       component('FireWeapon',
-        'timer=0; onUpdate(delta) {this.timer=Math.max(0,this.timer-delta);if(!this.game.input.isKeyPressed(GameLab.Keys.SPACE)||this.timer>0||this.requireComponent(Health).dead)return;this.timer=.3;const d=this.requireComponent(GameLab.CharacterController2D).getDirection();const shot=this.game.createObject("PlayerShot");shot.setPosition(this.transform.x,this.transform.y);shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,12,12));shot.addComponent(new ProjectileHit(this.gameObject,1));const motion=shot.addComponent(new GameLab.Projectile2D(d.x,d.y,300,2,this.gameObject));motion.hitLayers=GameLab.Layers.ENEMY;}',
-        'private double timer=0; @Override public void onUpdate(double delta) {timer=Math.max(0,timer-delta);if(!getGame().input.isKeyPressed(Keys.SPACE)||timer>0||requireComponent(Health.class).dead)return;timer=.3;Vector2 d=requireComponent(CharacterController2D.class).getDirection();GameObject shot=getGame().createObject("PlayerShot");shot.setPosition(transform.x,transform.y);shot.addComponent(new Sprite(Assets.FIREBALL,12,12));shot.addComponent(new ProjectileHit(gameObject,1));Projectile2D motion=shot.addComponent(new Projectile2D(d.x,d.y,300,2,gameObject));motion.hitLayers=Layers.ENEMY;}');
+        'timer=0; onUpdate(delta) {this.timer=Math.max(0,this.timer-delta);const dead=this.requireComponent(Health).dead;if(!this.game.input.isKeyPressed(GameLab.Keys.SPACE)||this.timer>0||dead)return;this.timer=.3;const d=this.requireComponent(GameLab.CharacterController2D).getDirection();const shot=this.game.createObject("PlayerShot");shot.setPosition(this.transform.x,this.transform.y);shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,12,12));shot.addComponent(new ProjectileHit(this.gameObject,1));const motion=shot.addComponent(new GameLab.Projectile2D(d.x,d.y,300,2,this.gameObject));motion.hitLayers=GameLab.Layers.ENEMY;}',
+        'private double timer=0; @Override public void onUpdate(double delta) {timer=Math.max(0,timer-delta);boolean dead=requireComponent(Health.class).dead;if(!getGame().input.isKeyPressed(Keys.SPACE)||timer>0||dead)return;timer=.3;Vector2 d=requireComponent(CharacterController2D.class).getDirection();GameObject shot=getGame().createObject("PlayerShot");shot.setPosition(transform.x,transform.y);shot.addComponent(new Sprite(Assets.FIREBALL,12,12));shot.addComponent(new ProjectileHit(gameObject,1));Projectile2D motion=shot.addComponent(new Projectile2D(d.x,d.y,300,2,gameObject));motion.hitLayers=Layers.ENEMY;}');
       component('CombatEnemy',
-        'constructor(target) {super();this.target=target;} onCreate(){this.unsubscribe=this.requireComponent(Health).onDeath(()=>this.gameObject.destroy());} onUpdate(){if(this.target.destroyed||this.target.getComponent(Health).dead)return;this.requireComponent(GameLab.CharacterController2D).move(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y,40);} onTrigger(other){if(other===this.target)other.getComponent(Health).damage(1);} onDestroy(){this.unsubscribe?.();}',
-        'public GameObject target;private Runnable unsubscribe;public CombatEnemy(GameObject target){this.target=target;} @Override public void onCreate(){unsubscribe=requireComponent(Health.class).onDeath(()->gameObject.destroy());} @Override public void onUpdate(double delta){if(target.destroyed||target.getComponent(Health.class).dead)return;requireComponent(CharacterController2D.class).move(target.transform.x-transform.x,target.transform.y-transform.y,40);} @Override public void onTrigger(GameObject other){if(other==target)other.getComponent(Health.class).damage(1);} @Override public void onDestroy(){if(unsubscribe!=null)unsubscribe.run();}');
+        'constructor(target) {super();this.target=target;} onCreate(){this.unsubscribe=this.requireComponent(Health).onDeath(()=>this.gameObject.destroy());} onUpdate(){if(this.target.destroyed||this.target.getComponent(Health).dead)return;const dx=this.target.transform.x-this.transform.x;const dy=this.target.transform.y-this.transform.y;this.requireComponent(GameLab.CharacterController2D).move(dx,dy,40);} onTrigger(other){if(other===this.target)other.getComponent(Health).damage(1);} onDestroy(){this.unsubscribe?.();}',
+        'public GameObject target;private Runnable unsubscribe;public CombatEnemy(GameObject target){this.target=target;} @Override public void onCreate(){unsubscribe=requireComponent(Health.class).onDeath(()->gameObject.destroy());} @Override public void onUpdate(double delta){if(target.destroyed||target.getComponent(Health.class).dead)return;double dx=target.transform.x-transform.x;double dy=target.transform.y-transform.y;requireComponent(CharacterController2D.class).move(dx,dy,40);} @Override public void onTrigger(GameObject other){if(other==target)other.getComponent(Health.class).damage(1);} @Override public void onDestroy(){if(unsubscribe!=null)unsubscribe.run();}');
       setup+='player.addComponent(new Health(5,0.75));\nplayer.addComponent(new FireWeapon());\nenemy.addComponent(new CharacterController2D());\nenemy.addComponent(new CombatEnemy(player));\n';
-      setup+=`${get('enemy','CircleCollider2D')}.isTrigger=true;\n${get('player','Health')}.onDeath(${java?'()->':'()=>'}${get('player','PlayerController')}.enabled=false);\n`;
+      setup+=`${java?'PlayerController controls':'const controls'}=${get('player','PlayerController')};\n`;
+      setup+=`${get('enemy','CircleCollider2D')}.isTrigger=true;\n${get('player','Health')}.onDeath(${java?'()->':'()=>'}controls.enabled=false);\n`;
       draw=java?'GameObject p=find("Player"),e=find("Enemy");if(p==null)return;canvas.drawText("WASD / strzalki: ruch",12,20,12,"#ffffff","left","middle");canvas.drawText("Space: strzal w kierunku postaci",12,38,12,"#ffffff","left","middle");canvas.drawText("HP gracza: "+p.getComponent(Health.class).currentHealth,12,58,14,"#ffd166","left","middle");if(e!=null)canvas.drawText("HP: "+e.getComponent(Health.class).currentHealth,e.transform.x,e.transform.y-28,14,"#ffffff");else canvas.drawText("Przeciwnik pokonany!",canvas.getWidth()/2,110,16,"#ffd166");if(p.getComponent(Health.class).dead)canvas.drawText("Koniec gry — kliknij RUN",canvas.getWidth()/2,180,14,"#ffd166");':
         'const p=this.find("Player"),e=this.find("Enemy");if(!p)return;canvas.drawText("WASD / strzałki: ruch",12,20,12,"#ffffff","left","middle");canvas.drawText("Space: strzał w kierunku postaci",12,38,12,"#ffffff","left","middle");canvas.drawText("HP gracza: "+p.getComponent(Health).currentHealth,12,58,14,"#ffd166","left","middle");if(e)canvas.drawText("HP: "+e.getComponent(Health).currentHealth,e.transform.x,e.transform.y-28,14,"#ffffff");else canvas.drawText("Przeciwnik pokonany!",canvas.width/2,110,16,"#ffd166");if(p.getComponent(Health).dead)canvas.drawText("Koniec gry — kliknij RUN",canvas.width/2,180,14,"#ffd166");';
       break;
@@ -437,7 +724,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
         fields=java?'public RunStats runStats=new RunStats();':'runStats=new RunStats();';
         component('RunStats','kills=0;','public int kills=0;');
         component('XpOrb','constructor(value) { super(); this.value=value; }','public int value; public XpOrb(int value) {this.value=value;}');
-        component('LootOnDeath','onCreate() { this.unsubscribe=this.requireComponent(Health).onDeath(()=>{ this.game.kills++;const orb=this.game.createObject("XpOrb");orb.setPosition(this.transform.x,this.transform.y);orb.addComponent(new GameLab.Sprite(GameLab.Assets.GEM,16,16));orb.addComponent(new GameLab.Collider2D(20,20).asTrigger());orb.addComponent(new XpOrb(1)); }); } onDestroy() { this.unsubscribe?.(); }','private Runnable unsubscribe; @Override public void onCreate() {unsubscribe=requireComponent(Health.class).onDeath(()->{((GameMain)getGame()).kills++;GameObject orb=getGame().createObject("XpOrb");orb.setPosition(transform.x,transform.y);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new Collider2D(20,20).asTrigger());orb.addComponent(new XpOrb(1));});} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();}');
+        component('LootOnDeath','onCreate() { this.unsubscribe=this.requireComponent(Health).onDeath(()=>{ this.game.kills++;const orb=this.game.createObject("XpOrb");orb.setPosition(this.transform.x,this.transform.y);orb.addComponent(new GameLab.Sprite(GameLab.Assets.GEM,16,16));orb.addComponent(new GameLab.Collider2D(20,20).asTrigger());orb.addComponent(new XpOrb(1)); }); } onDestroy() { this.unsubscribe?.(); }','private Runnable unsubscribe; @Override public void onCreate() {unsubscribe=requireComponent(Health.class).onDeath(()->{GameMain game=(GameMain)getGame();game.kills++;GameObject orb=getGame().createObject("XpOrb");orb.setPosition(transform.x,transform.y);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new Collider2D(20,20).asTrigger());orb.addComponent(new XpOrb(1));});} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();}');
         object('Enemy',220,120,[sprite('SLIME'),'Health(2,0)','LootOnDeath()']);
         break;
       }
@@ -467,9 +754,10 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       upgrades();setup+=`${get('player','Experience')}.pendingChoices=1;\n`;
       object('Panel',0,0,['UITransform(360,220)',shape(360,220,'#16314a')]);
       setup+=`${get('panel','ShapeRenderer')}.space="screen";\n`;
+      setup+=`${java?'UpgradeController upgrades':'const upgrades'}=${get('player','UpgradeController')};\n`;
       for(const [name,text,choice,y] of [['SpeedButton','Szybkość',1,-60],['DamageButton','Obrażenia',2,0],['TempoButton','Tempo',3,60]]) {
         const n=object(name,0,y,['UITransform(280,44)','Button(280,44)']);
-        setup+=`${get(n,'Button')}.text="${text}";\n${get(n,'Button')}.onClick=${java?'()->':'()=>'}${get('player','UpgradeController')}.select(${choice});\n`;
+        setup+=`${get(n,'Button')}.text="${text}";\n${get(n,'Button')}.onClick=${java?'()->':'()=>'}upgrades.select(${choice});\n`;
       }
       component('MenuView','constructor(player) {super();this.player=player;this.updateMode="UI";this.wasOpen=false;} onLateUpdate() {const open=this.player.getComponent(UpgradeController).opened;this.gameObject.active=open;const panel=this.getComponent(GameLab.UITransform);panel.width=Math.min(360,this.game.getViewportWidth()-32);for(const name of ["SpeedButton","DamageButton","TempoButton"]) {const object=this.game.find(name);if(object)object.active=open;} }','private GameObject player;public MenuView(GameObject player) {this.player=player;updateMode="UI";} @Override public void onLateUpdate(double delta) {boolean open=player.getComponent(UpgradeController.class).opened;gameObject.active=open;getComponent(UITransform.class).width=Math.min(360,getGame().getViewportWidth()-32);for(String name:new String[]{"SpeedButton","DamageButton","TempoButton"}) {GameObject object=getGame().find(name);if(object!=null)object.active=open;}}');
       // The controller stays on a separate active object so it can reopen an inactive panel.
@@ -479,11 +767,11 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       if(mode!=='guided') {
         object('HealthBar',12,12,['UITransform(200,18)','ProgressBar(200,18)']);object('XpBar',12,38,['UITransform(200,18)','ProgressBar(200,18)']);object('LevelText',12,64,['UITransform(200,18)','TextRenderer("Poziom: 1",18,"#ffffff")']);
         for(const n of ['healthBar','xpBar','levelText'])setup+=`${get(n,'UITransform')}.anchor="TOP_LEFT";\n`;
-        component('HudView','constructor(player) {super();this.player=player;this.updateMode="UI";} onLateUpdate() {const hp=this.player.getComponent(Health),xp=this.player.getComponent(Experience);this.game.find("HealthBar").getComponent(GameLab.ProgressBar).setValue(hp.currentHealth,hp.maxHealth);this.game.find("XpBar").getComponent(GameLab.ProgressBar).setValue(xp.xp,5*xp.level);this.game.find("LevelText").getComponent(GameLab.TextRenderer).text="Poziom: "+xp.level;}','private GameObject player;public HudView(GameObject player) {this.player=player;updateMode="UI";} @Override public void onLateUpdate(double delta) {Health hp=player.getComponent(Health.class);Experience xp=player.getComponent(Experience.class);getGame().find("HealthBar").getComponent(ProgressBar.class).setValue(hp.currentHealth,hp.maxHealth);getGame().find("XpBar").getComponent(ProgressBar.class).setValue(xp.xp,5*xp.level);getGame().find("LevelText").getComponent(TextRenderer.class).text="Poziom: "+xp.level;}');object('HudView',0,0,['HudView(player)']);
+        component('HudView','constructor(player) {super();this.player=player;this.updateMode="UI";} onLateUpdate() {const hp=this.player.getComponent(Health),xp=this.player.getComponent(Experience);const hpBar=this.game.find("HealthBar").getComponent(GameLab.ProgressBar);hpBar.setValue(hp.currentHealth,hp.maxHealth);const xpBar=this.game.find("XpBar").getComponent(GameLab.ProgressBar);xpBar.setValue(xp.xp,5*xp.level);this.game.find("LevelText").getComponent(GameLab.TextRenderer).text="Poziom: "+xp.level;}','private GameObject player;public HudView(GameObject player) {this.player=player;updateMode="UI";} @Override public void onLateUpdate(double delta) {Health hp=player.getComponent(Health.class);Experience xp=player.getComponent(Experience.class);ProgressBar hpBar=getGame().find("HealthBar").getComponent(ProgressBar.class);hpBar.setValue(hp.currentHealth,hp.maxHealth);ProgressBar xpBar=getGame().find("XpBar").getComponent(ProgressBar.class);xpBar.setValue(xp.xp,5*xp.level);getGame().find("LevelText").getComponent(TextRenderer.class).text="Poziom: "+xp.level;}');object('HudView',0,0,['HudView(player)']);
       }
       if(mode==='independent') {
         setup+=`${get('speedButton','Button')}.focus();\n`;
-        component('MenuFocus','constructor(player) {super();this.player=player;this.updateMode="UI";this.wasOpen=false;} onLateUpdate() {const open=this.player.getComponent(UpgradeController).opened;const buttons=["SpeedButton","DamageButton","TempoButton"].map(n=>this.game.find(n).getComponent(GameLab.Button));if(open && !this.wasOpen)buttons[0].focus();if(!open)for(const button of buttons)button.blur();this.wasOpen=open;}','private GameObject player;private boolean wasOpen=false;public MenuFocus(GameObject player) {this.player=player;updateMode="UI";} @Override public void onLateUpdate(double delta) {boolean open=player.getComponent(UpgradeController.class).opened;Button[] buttons=new Button[]{getGame().find("SpeedButton").getComponent(Button.class),getGame().find("DamageButton").getComponent(Button.class),getGame().find("TempoButton").getComponent(Button.class)};if(open&&!wasOpen)buttons[0].focus();if(!open)for(Button button:buttons)button.blur();wasOpen=open;}');object('MenuFocus',0,0,['MenuFocus(player)']);
+        component('MenuFocus','constructor(player) {super();this.player=player;this.updateMode="UI";this.wasOpen=false;} onLateUpdate() {const open=this.player.getComponent(UpgradeController).opened;const buttons=["SpeedButton","DamageButton","TempoButton"].map(n=>this.game.find(n).getComponent(GameLab.Button));if(open && !this.wasOpen)buttons[0].focus();if(!open)for(const button of buttons)button.blur();this.wasOpen=open;}','private GameObject player;private boolean wasOpen=false;public MenuFocus(GameObject player) {this.player=player;updateMode="UI";} @Override public void onLateUpdate(double delta) {boolean open=player.getComponent(UpgradeController.class).opened;String[] names={"SpeedButton","DamageButton","TempoButton"};Button[] buttons=new Button[names.length];for(int i=0;i<names.length;i++)buttons[i]=getGame().find(names[i]).getComponent(Button.class);if(open&&!wasOpen)buttons[0].focus();if(!open)for(Button button:buttons)button.blur();wasOpen=open;}');object('MenuFocus',0,0,['MenuFocus(player)']);
       }
       break;
     }
@@ -505,11 +793,11 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
         object('Camera',320,180,['Camera2D()']);
         setup+=`${get('camera','Camera2D')}.follow(player);\n`;
       }
-      const schedule=mode==='guided'?'[1,2,3]':mode==='modified'?'[1,2,3,5.5,6,6.5,7]':'Array.from({length:120},(_,i)=>i+1)';
-      const javaSchedule=mode==='guided'?'new double[]{1,2,3}':mode==='modified'?'new double[]{1,2,3,5.5,6,6.5,7}':'java.util.stream.IntStream.rangeClosed(1,120).mapToDouble(i->i).toArray()';
-      component('WaveSpawner',`elapsed=0;next=0;schedule=${schedule}; onUpdate(delta) { this.elapsed+=delta; while(this.next<this.schedule.length && this.elapsed+1e-9>=this.schedule[this.next]) { const index=this.next++; ${mode==='independent'?'if(this.game.getObjects().filter(o=>o.name==="Slime" && !o.destroyed).length>=100)continue;':''} const target=this.game.find("Player"); const radius=${mode==='independent'?'0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40':'140'}; const angle=this.game.random.next()*Math.PI*2; const enemy=this.game.createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new GameLab.CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'})); } }`,
-      `private double elapsed=0;private int next=0;private double[] schedule=${javaSchedule}; @Override public void onUpdate(double delta) { elapsed+=delta;while(next<schedule.length && elapsed+1e-9>=schedule[next]) {int index=next++;${mode==='independent'?'if(getGame().getObjects().stream().filter(o->o.name.equals("Slime")&&!o.destroyed).count()>=100)continue;':''} GameObject target=getGame().find("Player");double radius=${mode==='independent'?'0.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40':'140'};double angle=getGame().random.next()*Math.PI*2;GameObject enemy=getGame().createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'}));} }`);
-      component('EnemyAI','constructor(target,speed) { super();this.target=target;this.speed=speed; } onUpdate() { if(!this.target || this.target.destroyed)return;this.requireComponent(GameLab.CharacterController2D).move(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y,this.speed); }','public GameObject target;public double speed;public EnemyAI(GameObject target,double speed) {this.target=target;this.speed=speed;} @Override public void onUpdate(double delta) {if(target==null || target.destroyed)return;requireComponent(CharacterController2D.class).move(target.transform.x-transform.x,target.transform.y-transform.y,speed);}');
+      const schedule=mode==='guided'?'[1,2,3]':mode==='modified'?'[1,2,3,5.5,6,6.5,7]':'[]';
+      const javaSchedule=mode==='guided'?'new double[]{1,2,3}':mode==='modified'?'new double[]{1,2,3,5.5,6,6.5,7}':'new double[120]';
+      component('WaveSpawner',`elapsed=0;next=0;schedule=${schedule}; ${mode==='independent'?'onCreate() {for(let i=0;i<120;i++)this.schedule.push(i+1);} ':''}onUpdate(delta) { this.elapsed+=delta; const schedule=this.schedule; while(this.next<schedule.length && this.elapsed+1e-9>=schedule[this.next]) { const index=this.next++; ${mode==='independent'?'let live=0;for(const o of this.game.getObjects())if(o.name==="Slime"&&!o.destroyed)live++;if(live>=100)continue;':''} const target=this.game.find("Player"); const radius=${mode==='independent'?'0.5*Math.hypot(this.game.getViewportWidth(),this.game.getViewportHeight())+40':'140'}; const angle=this.game.random.next()*Math.PI*2; const enemy=this.game.createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new GameLab.CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'})); } }`,
+      `private double elapsed=0;private int next=0;private double[] schedule=${javaSchedule}; ${mode==='independent'?'@Override public void onCreate() {for(int i=0;i<schedule.length;i++)schedule[i]=i+1;} ':''}@Override public void onUpdate(double delta) { elapsed+=delta;while(next<schedule.length && elapsed+1e-9>=schedule[next]) {int index=next++;${mode==='independent'?'int live=0;for(GameObject object:getGame().getObjects())if(object.name.equals("Slime")&&!object.destroyed)live++;if(live>=100)continue;':''} GameObject target=getGame().find("Player");double radius=${mode==='independent'?'0.5*Math.hypot(getGame().getViewportWidth(),getGame().getViewportHeight())+40':'140'};double angle=getGame().random.next()*Math.PI*2;GameObject enemy=getGame().createObject("Slime");enemy.setPosition(target.transform.x+Math.cos(angle)*radius,target.transform.y+Math.sin(angle)*radius);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new CharacterController2D());enemy.addComponent(new Health(${mode==='modified'?'index<3?2:3':'2'},0));enemy.addComponent(new EnemyAI(target,${mode==='modified'?'index<3?40:60':'40'}));} }`);
+      component('EnemyAI','constructor(target,speed) { super();this.target=target;this.speed=speed; } onUpdate() { if(!this.target || this.target.destroyed)return;const dx=this.target.transform.x-this.transform.x;const dy=this.target.transform.y-this.transform.y;this.requireComponent(GameLab.CharacterController2D).move(dx,dy,this.speed); }','public GameObject target;public double speed;public EnemyAI(GameObject target,double speed) {this.target=target;this.speed=speed;} @Override public void onUpdate(double delta) {if(target==null || target.destroyed)return;double dx=target.transform.x-transform.x;double dy=target.transform.y-transform.y;requireComponent(CharacterController2D.class).move(dx,dy,speed);}');
       object('Spawner',0,0,['WaveSpawner()']);break;
     }
     case 'run-state': runScene();break;
@@ -518,12 +806,12 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       if(mode==='modified') {weapon();player();setup+='player.addComponent(new Weapon());\n';object('Enemy',200,100,[sprite('SLIME'),'CircleCollider2D(12)','Health(3,0)']);setup+=`${get('enemy','CircleCollider2D')}.layer=Layers.ENEMY;\n`;break;}
       projectile();health();component('XpOrb','constructor(value) {super();this.value=value;}','public int value;public XpOrb(int value) {this.value=value;}');
       component('LoadFixture',`elapsed=0;next=0.2;shots=0;reward=0;onCreate() {${mode==='independent'?'for(let i=0;i<200;i++) {const enemy=this.game.createObject("Enemy");enemy.setPosition(100+this.game.random.next()*440,100+Math.floor(i/20)*20);enemy.addComponent(new GameLab.Sprite(GameLab.Assets.SLIME,32,32));enemy.addComponent(new GameLab.CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} onUpdate(delta) {this.elapsed+=delta;while(this.next<=Math.min(this.elapsed,${mode==='guided'?20:60})+1e-9) {this.next+=0.2;const live=this.game.getObjects().filter(o=>o.name==="Projectile");if(live.length<300) {const shot=this.game.createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new GameLab.Sprite(GameLab.Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));this.shots++;}${mode==='independent'?'const orbs=this.game.getObjects().filter(o=>o.getComponent(XpOrb));this.reward++;if(orbs.length>=200)orbs[0].getComponent(XpOrb).value++;else {const orb=this.game.createObject("XpOrb");orb.setPosition(50+orbs.length%20*20,100+Math.floor(orbs.length/20)*20);orb.addComponent(new GameLab.Sprite(GameLab.Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`,
-      `public double elapsed=0,next=.2;public int shots=0,reward=0;@Override public void onCreate() {${mode==='independent'?'for(int i=0;i<200;i++) {GameObject enemy=getGame().createObject("Enemy");enemy.setPosition(100+getGame().random.next()*440,100+(i/20)*20);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} @Override public void onUpdate(double delta) {elapsed+=delta;while(next<=Math.min(elapsed,${mode==='guided'?20:60})+1e-9) {next+=.2;long live=getGame().getObjects().stream().filter(o->o.name.equals("Projectile")).count();if(live<300) {GameObject shot=getGame().createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new Sprite(Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));shots++;}${mode==='independent'?'java.util.ArrayList<GameObject> orbs=new java.util.ArrayList<>();for(GameObject object:getGame().getObjects())if(object.hasComponent(XpOrb.class))orbs.add(object);reward++;if(orbs.size()>=200)orbs.get(0).getComponent(XpOrb.class).value++;else {GameObject orb=getGame().createObject("XpOrb");orb.setPosition(50+orbs.size()%20*20,100+(orbs.size()/20)*20);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`);object('LoadFixture',0,0,['LoadFixture()']);draw='canvas.drawText("Test obciazenia: pociski co 0.2 s",20,55,18,"#ffffff","left","middle");';break;
+      `public double elapsed=0,next=.2;public int shots=0,reward=0;@Override public void onCreate() {${mode==='independent'?'for(int i=0;i<200;i++) {GameObject enemy=getGame().createObject("Enemy");enemy.setPosition(100+getGame().random.next()*440,100+(i/20)*20);enemy.addComponent(new Sprite(Assets.SLIME,32,32));enemy.addComponent(new CircleCollider2D(12));enemy.addComponent(new Health(2,0));}':''}} @Override public void onUpdate(double delta) {elapsed+=delta;while(next<=Math.min(elapsed,${mode==='guided'?20:60})+1e-9) {next+=.2;int live=0;for(GameObject object:getGame().getObjects())if(object.name.equals("Projectile"))live++;if(live<300) {GameObject shot=getGame().createObject("Projectile");shot.setPosition(20,20);shot.addComponent(new Sprite(Assets.FIREBALL,8,8));shot.addComponent(new ProjectileMotion(1,0,200,${mode==='guided'?1:15}));shots++;}${mode==='independent'?'java.util.ArrayList<GameObject> orbs=new java.util.ArrayList<>();for(GameObject object:getGame().getObjects())if(object.hasComponent(XpOrb.class))orbs.add(object);reward++;if(orbs.size()>=200)orbs.get(0).getComponent(XpOrb.class).value++;else {GameObject orb=getGame().createObject("XpOrb");orb.setPosition(50+orbs.size()%20*20,100+(orbs.size()/20)*20);orb.addComponent(new Sprite(Assets.GEM,16,16));orb.addComponent(new XpOrb(1));}':''}}}`);object('LoadFixture',0,0,['LoadFixture()']);draw='canvas.drawText("Test obciazenia: pociski co 0.2 s",20,55,18,"#ffffff","left","middle");';break;
       
     default: ready=false;
   }
   const ext=java?'java':'js';
-  if(chapter==='loot-xp' && mode==='guided')files[`LootOnDeath.${ext}`]=files[`LootOnDeath.${ext}`].replace(java?'((GameMain)getGame()).kills++':'this.game.kills++',java?'((GameMain)getGame()).runStats.kills++':'this.game.runStats.kills++');
+  if(chapter==='loot-xp' && mode==='guided')files[`LootOnDeath.${ext}`]=files[`LootOnDeath.${ext}`].replace(java?'game.kills++':'this.game.kills++',java?'game.runStats.kills++':'this.game.runStats.kills++');
   let playerColliderSeen=false;
   setup=setup.replace(/player\.addComponent\(new CircleCollider2D\(12\)\);\n/g,match=>{if(playerColliderSeen)return '';playerColliderSeen=true;return match;});
   if(chapter==='loot-xp' && mode==='guided')files[`LootOnDeath.${ext}`]=files[`LootOnDeath.${ext}`].replace('orb.addComponent(new XpOrb(1));',`orb.addComponent(new XpOrb(1));${java?'gameObject':'this.gameObject'}.destroy();`);
@@ -537,7 +825,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
   }
   if(files[`Experience.${ext}`])files[`Experience.${ext}`]=java?files[`Experience.${ext}`].replace('public int level=1,xp=0,pendingChoices=0;','public int totalXp=0,level=1,xp=0,pendingChoices=0;').replace('xp+=value;','totalXp+=value;xp+=value;'):files[`Experience.${ext}`].replace('level=1;','totalXp=0;level=1;').replace('this.xp+=value;','this.totalXp+=value;this.xp+=value;');
   if(files[`LootOnDeath.${ext}`])files[`LootOnDeath.${ext}`]=files[`LootOnDeath.${ext}`].replace(java?'GameObject orb=getGame().createObject("XpOrb");':'const orb=this.game.createObject("XpOrb");',java?'java.util.ArrayList<GameObject> orbs=new java.util.ArrayList<>();for(GameObject o:getGame().getObjects())if(o.hasComponent(XpOrb.class))orbs.add(o);if(orbs.size()>=200) {orbs.get(0).getComponent(XpOrb.class).value++;gameObject.destroy();return;}GameObject orb=getGame().createObject("XpOrb");':'const orbs=this.game.getObjects().filter(o=>o.getComponent(XpOrb));if(orbs.length>=200) {orbs[0].getComponent(XpOrb).value++;this.gameObject.destroy();return;}const orb=this.game.createObject("XpOrb");');
-  if(files[`Weapon.${ext}`])files[`Weapon.${ext}`]=files[`Weapon.${ext}`].replace(java?'GameObject shot=getGame().createObject("Projectile");':'const shot=this.game.createObject("Projectile");',java?'if(getGame().getObjects().stream().filter(o->o.name.equals("Projectile")).count()>=300)return;GameObject shot=getGame().createObject("Projectile");':'if(this.game.getObjects().filter(o=>o.name==="Projectile").length>=300)return;const shot=this.game.createObject("Projectile");');
+  if(files[`Weapon.${ext}`])files[`Weapon.${ext}`]=files[`Weapon.${ext}`].replace(java?'GameObject shot=getGame().createObject("Projectile");':'const shot=this.game.createObject("Projectile");',java?'int live=0;for(GameObject object:getGame().getObjects())if(object.name.equals("Projectile"))live++;if(live>=300)return;GameObject shot=getGame().createObject("Projectile");':'if(this.game.getObjects().filter(o=>o.name==="Projectile").length>=300)return;const shot=this.game.createObject("Projectile");');
   if(chapter==='enemy-ai' && mode==='independent') {
     files[`FleeAI.${ext}`]=files[`EnemyAI.${ext}`].replaceAll('EnemyAI','FleeAI');delete files[`EnemyAI.${ext}`];setup=setup.replaceAll('EnemyAI','FleeAI');
   }

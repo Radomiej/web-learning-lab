@@ -227,8 +227,9 @@ export function courseWebChecks(chapter,mode,id,files) {
   if(chapter==='components' && mode==='independent')checks.push({type:'gameScenario',id:id+'.spark-alive',label:'Spark istnieje po 0.2 s.',scenario:{phases:[phase(2)]},expected:{'objects.length':1},tolerance:.02});
   if(sourceToken) {
     for(const token of sourceToken.split('|')) {
-      const file=Object.entries(files).find(([name,source])=>name.endsWith('.js') && source.includes(token))?.[0];
-      if(file) {checks.push({type:'sourceIncludes',id:id+'.source',label:'Wymagane API i reguła zadania.',file,value:token});break;}
+      const compactToken = token.replace(/\s+/g, '');
+      const file=Object.entries(files).find(([name,source])=>name.endsWith('.js') && (source.includes(token) || source.replace(/\s+/g, '').includes(compactToken)))?.[0];
+      if(file) {checks.push({type:'sourceIncludes',id:id+'.source',label:'Wymagane API i reguła zadania.',file,value:token,compact:true});break;}
     }
   }
   return checks;
