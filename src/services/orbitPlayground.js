@@ -30,13 +30,18 @@ function orbitEnvironment(assetManifest) {
   const held = {};
   let clock = 0;
   function createAudio(kit) {
-    function wave(value) { return ({ square: 0, sine: 1, triangle: 2, noise: 3, sawtooth: 4 })[value] ?? 0; }
+    function wave(value) {
+      const result = ({ square: 0, sine: 1, triangle: 2, noise: 3, sawtooth: 4 })[value];
+      if (result === undefined) throw new Error(`kalio-portable/1: unsupported audio wave "${value}".`);
+      return result;
+    }
     function playNote(note, { wave: shape = 'square', beats = 1, tempo = 120, volume = 0.6 } = {}) {
       const midi = kit.parseNote(note);
       if (midi !== null) lab.beep(kit.midiToHz(midi), beats * 60000 / tempo, volume, wave(shape));
     }
     function playSong(song, { loop = false, volume = 0.6 } = {}) {
       const data = kit.normalizeSong(song);
+      if (data.tracks.length > 4) throw new Error('kalio-portable/1: Orbit supports at most four simultaneous song tracks.');
       const bpm = Math.max(60, Math.min(300, data.tempo));
       const beatScale = bpm / data.tempo;
       const duration = track => track.notes.reduce((sum, step) => sum + step.beats, 0);
@@ -49,9 +54,10 @@ function orbitEnvironment(assetManifest) {
         }
         return { wave: wave(track.wave), vol: volume, notes: notes.map(([hz, beats]) => [hz, beats * beatScale]) };
       });
-      if (tracks.length) lab.music({ bpm, loop, tracks }); else lab.stopMusic();
+      stop();
+      if (tracks.length) lab.music({ bpm, loop, tracks });
     }
-    const stop = () => lab.stopMusic();
+    const stop = () => { lab.stopMusic(); lab.stopSfx?.(); };
     return { playNote, playSong, play: playSong, stop, dispose: stop, resume: noop, bindGestures: noop };
   }
   function color(value) { return /^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(value || '') ? value : '#ffffff'; }

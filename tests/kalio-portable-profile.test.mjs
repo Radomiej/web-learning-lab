@@ -32,8 +32,11 @@ test('kalio-portable/1 declares geometry, wave mappings, and deliberate gaps', a
   assert.match(profile.capabilities.metadataOperations.tilemap, /expands each visible tile into an ordered sprite command/);
   assert.match(profile.semantics.frameTime.hostBehavior, /clamps finite dt to \[0, 0\.1\]/);
   assert.equal(profile.semantics.audio.waveIndex.triangle, 2);
+  assert.match(profile.semantics.audio.song, /more tracks fail before playback changes/);
+  assert.match(profile.semantics.audio.song, /active one-shot tones/);
   assert.ok(profile.notProvided.includes('Java TeaVM/Wasm execution by QuickJS LRP'));
   assert.ok(profile.fixtures.some(fixture => fixture.id === 'K06'));
+  assert.ok(profile.fixtures.some(fixture => fixture.id === 'K07'));
 });
 
 test('Orbit export rejects unsupported render ops and out-of-profile dt', async () => {

@@ -11,10 +11,14 @@ test('Orbit package keeps the student scene, D-pad, canvas operations and synthe
     class StudentGame extends GameLab.Game {
       onCreate() {
         this.x = 32;
-        this.audio.playNote('A4', { wave: 'sine', beats: 0.5 });
         this.audio.playSong({ tempo: 120, tracks: [{ wave: 'triangle', notes: [{ note: 'A4', beats: 1 }] }] });
       }
-      onUpdate() { if (this.input.isKeyDown('ArrowRight')) this.x += speed; }
+      onUpdate() {
+        if (this.input.isKeyDown('ArrowRight')) {
+          this.x += speed;
+          this.audio.playNote('A4', { wave: 'sine', beats: 0.5 });
+        }
+      }
       onDrawUI() {
         this.canvas.drawRect(this.x, 60, 24, 22, '#ffd166');
         this.canvas.drawCircle(420, 80, 12, '#63d1c7');
@@ -27,14 +31,17 @@ test('Orbit package keeps the student scene, D-pad, canvas operations and synthe
   }, 'web-lab-test'));
   const manifest = JSON.parse(strFromU8(files['orbit.json']));
   assert.equal(manifest.files[0].sha256, createHash('sha256').update(files['main.js']).digest('hex'));
-  const tones = [], tracks = [], translations = [], circles = [];
+  const tones = [], tracks = [], translations = [], circles = [], audioCalls = [];
   let right = false;
   const ignore = () => {};
   const context = vm.createContext({ lab: {
     isKeyDown: button => button === 'right' && right,
     clear: ignore, drawRect: ignore, drawCircle: (...circle) => circles.push(circle), save: ignore, restore: ignore,
     translate: (...point) => translations.push(point),
-    beep: (...tone) => tones.push(tone), music: song => tracks.push(song), stopMusic: ignore,
+    beep: (...tone) => tones.push(tone),
+    music: song => { tracks.push(song); audioCalls.push('music'); },
+    stopMusic: () => audioCalls.push('stopMusic'),
+    stopSfx: () => { tones.length = 0; audioCalls.push('stopSfx'); },
   } });
   vm.runInContext(strFromU8(files['main.js']) + '\ninit(); update(1 / 60);', context);
   right = true;
@@ -46,10 +53,28 @@ test('Orbit package keeps the student scene, D-pad, canvas operations and synthe
   assert.equal(tracks[0].tracks[0].vol, 0.6);
   assert.equal(tracks[0].tracks[0].notes[0][0], 440);
   assert.equal(tracks[0].tracks[0].notes[0][1], 1);
+  assert.ok(audioCalls.indexOf('stopMusic') < audioCalls.indexOf('stopSfx'));
+  assert.ok(audioCalls.indexOf('stopSfx') < audioCalls.indexOf('music'));
+  assert.deepEqual(tones, [[440, 250, 0.6, 1]]);
   assert.ok(translations.some(([x, y]) => x === 35 && y === 60));
   assert.equal(circles.length, 2, 'the circle is drawn on both frames');
   assert.ok(circles.every(args => args[0] === 0 && args[1] === 0 && args[2] === 12 && args[3] === '#63d1c7'));
   assert.ok(translations.some(([x, y]) => x === 420 && y === 80));
+});
+
+test('Orbit export rejects songs that exceed the host track budget', async () => {
+  const files = unzipSync(await buildPlaygroundOrbit({ files: { 'game.js': `
+    class TooManyTracks extends GameLab.Game {
+      onCreate() {
+        this.audio.playSong({ tempo: 120, tracks: Array.from({ length: 5 }, () => ({ wave: 'square', notes: [{ note: 'A4', beats: 1 }] })) });
+      }
+    }
+    GameLab.run(TooManyTracks);
+  ` } }, 'web-lab-audio-track-limit'));
+  const context = vm.createContext({ lab: new Proxy({}, {
+    get: (_target, key) => key === 'isKeyDown' ? () => false : () => {},
+  }) });
+  assert.throws(() => vm.runInContext(strFromU8(files['main.js']) + '\ninit();', context), /at most four simultaneous song tracks/);
 });
 
 test('Orbit draws TileMap sprite records and skips the non-visual metadata marker', async () => {

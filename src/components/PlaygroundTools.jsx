@@ -9,7 +9,7 @@ function sendOrbitPackage(target, requestId, name, bytes, waitForReady) {
     let sent = false;
     const timeout = setTimeout(() => {
       window.removeEventListener('message', receive);
-      reject(new Error('Nekko nie odebrało gry. Zaloguj się lub użyj opcji Pobierz paczkę .orbit.'));
+      reject(new Error('Nekko nie odebrało gry. Sprawdź, czy okno Nekko jest otwarte. Bez konta możesz połączyć tylko nieprzypisaną konsolę; do przypisanej zaloguj się na konto właściciela. Możesz też pobrać paczkę .orbit.'));
     }, waitForReady ? 180000 : 10000);
     function send() {
       if (sent) return;
@@ -91,9 +91,9 @@ export default function PlaygroundTools({ project, onImport }) {
           setStatus('Konsola przyjęła polecenie uruchomienia gry.');
         }
       } else if (mode === 'online' && (embedded || popup)) {
-        setStatus('Zaloguj się w Nekko, jeśli pojawi się formularz logowania.');
+        setStatus('W Nekko wybierz sesję tymczasową bez konta dla nieprzypisanej konsoli albo zaloguj się, aby przypisać konsolę do swojego konta.');
         await sendOrbitPackage(embedded ? window.parent : popup, requestId, name, bytes, !embedded);
-        if (aliveRef.current) setStatus('Nekko odebrało grę. Wpisz kod online lub wybierz sparowaną konsolę.');
+        if (aliveRef.current) setStatus('Nekko odebrało grę. Wpisz kod dla sesji tymczasowej albo zaloguj się na konto właściciela już przypisanej konsoli.');
       } else {
         const url = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }));
         const link = document.createElement('a');
@@ -103,7 +103,7 @@ export default function PlaygroundTools({ project, onImport }) {
         link.click();
         link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setStatus('Pobrano paczkę. W Nekko otwórz Konsolki → Connect, wpisz kod i wczytaj plik .orbit w sekcji prywatnej gry Playground.');
+        setStatus('Pobrano paczkę. W Nekko rozpocznij sesję tymczasową bez konta dla nieprzypisanej konsoli albo zaloguj się na konto właściciela już przypisanej konsoli. Wpisz kod i wczytaj plik .orbit w sekcji prywatnej gry Playground.');
       }
     } catch (error) {
       if (aliveRef.current) setStatus(`Orbit: ${error.message}`);
@@ -124,7 +124,7 @@ export default function PlaygroundTools({ project, onImport }) {
       <input ref={inputRef} className="sr-only" type="file" accept=".json,application/json" aria-label="Plik JSON projektu gry" onChange={importProject} />
     </div>
     {orbitOpen && <form id="playground-orbit" onSubmit={event => { event.preventDefault(); void sendToOrbit('local'); }}>
-      <p>Włącz tryb online na ekranie Dev Server konsoli. Nekko połączy ją z Twoim kontem za pomocą ośmioznakowego kodu i wyśle grę.</p>
+      <p>Włącz tryb online na ekranie Dev Server konsoli. W Nekko możesz rozpocząć pięciogodzinną sesję tymczasową bez konta dla nieprzypisanej konsoli albo zalogować się na konto, do którego chcesz ją przypisać. Konsola już przypisana wymaga konta jej właściciela.</p>
       <div className="playground-tools-actions">
         <button className="button button--secondary" type="button" disabled={sending}
           onClick={() => void sendToOrbit('online')}>Przygotuj grę do uruchomienia online</button>
