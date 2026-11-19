@@ -54,4 +54,15 @@ describe('formatCourseSource', () => {
     const out = formatCourseSource('class T { void a() {} void b() {} }');
     expect(out).toMatch(/\}\n\n {4}void b\(\)/);
   });
+
+  test('puts @Override on its own line above the method', () => {
+    const out = formatCourseSource('class T { @Override public void onUpdate(double delta) { x(); } }');
+    expect(out).toContain('    @Override\n    public void onUpdate(double delta)');
+    expect(out).not.toContain('@Override public');
+  });
+
+  test('adds a blank line between the import block and the class', () => {
+    const out = formatCourseSource('import java.util.ArrayList;\nimport java.util.List;\npublic class T { void f() {} }');
+    expect(out).toContain('import java.util.List;\n\npublic class T');
+  });
 });
