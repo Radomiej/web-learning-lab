@@ -800,26 +800,26 @@
         {
           "id": "g2d.camera.guided",
           "mode": "guided",
-          "title": "Przesunięty widok",
-          "prompt": "Masz gotową kamerę i obiekty. Ustaw camera.getComponent(Camera2D).offsetX na 80; offsetY=40 jest już ustawione.",
-          "objective": "Obliczyć wynik przesunięcia kamery.",
+          "title": "Kamera to obiekt",
+          "prompt": "Masz gotową kamerę na pozycji (40, 30) i obiekty. Ustaw jej pozycję tak, aby gracz znalazł się na środku ekranu — pozycja obiektu kamery to środek widoku, bez offsetX/offsetY.",
+          "objective": "Przesunąć środek widoku przez pozycję obiektu kamery.",
           "criteria": [
-            "Player ma transform=(100,100), a środek renderu ekranowego=(20,60).",
-            "Punkt świata (80,40) jest widoczny w lewym górnym rogu (0,0).",
-            "Dodanie i przesunięcie kamery nie zmienia współrzędnych colliderów ani wyników kontaktu."
+            "Player ma transform=(100,100), a kamera stoi na (100,100) — punkt świata (100,100) wypada na środku ekranu (320,180).",
+            "Początek widoku to (-220,-80) przy ekranie 640×360.",
+            "Przesunięcie kamery nie zmienia pozycji obiektów ani colliderów w świecie."
           ],
           "learningStage": "Z przykładem",
-          "solutionExplanation": "Przesunięcie widoku zmienia miejsce rysowania, a nie pozycje obiektów i colliderów w świecie."
+          "solutionExplanation": "Camera2D czyta pozycję własnego GameObjectu jako środek widoku. Ustawienie kamery na pozycję celu zastępuje ręczne liczenie offsetX/offsetY."
         },
         {
           "id": "g2d.camera.modified",
           "mode": "modified",
-          "title": "Kamera śledzi gracza",
-          "prompt": "Wywołaj Game.setWorldBounds(0, 0, 2000, 1200), ustaw pozycję Player na (400, 300) oraz włącz Camera2D.follow(player). Poruszaj graczem po świecie większym niż ekran.",
-          "objective": "Oddzielić granice świata od rozmiaru widoku kamery.",
+          "title": "Kamera jedzie tylko po X",
+          "prompt": "Wywołaj Game.setWorldBounds(0, 0, 2000, 1200), ustaw pozycję Player na (400, 300). Włącz camera.follow(player), wyłącz camera.followY i ustaw kamerze y = 180 — podążanie tylko po osi X.",
+          "objective": "Śledzić cel tylko na wybranej osi, zachowując ręczną wysokość kamery.",
           "criteria": [
-            "Przy widoku 320×200 gracz jest rysowany na środku ekranu w (160, 100), podczas gdy jego pozycja w świecie się zmienia.",
-            "Przy widoku 500×300 środek gracza na ekranie wypada w (250, 150).",
+            "Po ruchu w prawo Player jest w x = 580, a początek widoku to (260, 0) — szerokość podąża za graczem, wysokość zostaje ustawiona ręcznie.",
+            "camera.followY = false sprawia, że transform kamery po y zostaje 180 niezależnie od ruchu gracza.",
             "Po przejściu gracza poza x = 640 kamera nadal podąża za nim, nie zatrzymując się na szerokości pojedynczego ekranu.",
             "Zmiana rozmiaru widoku nie zmienia prędkości ruchu postaci w świecie."
           ],
@@ -829,13 +829,13 @@
           "id": "g2d.camera.independent",
           "mode": "independent",
           "title": "Wskaż punkt świata",
-          "prompt": "Napisz komponent CursorMarker: pobierz game.input.getPointerPosition(), sprawdź czy wynik nie jest null przed pierwszym ruchem myszy, przelicz punkt metodą Camera2D.screenToWorld i ustaw tam znacznik świata. Kamera ma początek widoku origin = (60, 150).",
+          "prompt": "Napisz komponent CursorMarker: pobierz game.input.getPointerPosition(), sprawdź czy wynik nie jest null przed pierwszym ruchem myszy, przelicz punkt metodą Camera2D.screenToWorld i ustaw tam znacznik świata. Kliknięcie myszy może dodać camera.shake(3, 0.25) — wstrząs rusza tylko obraz, nie pozycję obiektu kamery. Kamera stoi w (380, 330).",
           "objective": "Przeliczyć współrzędne kursora z ekranu na współrzędne świata.",
           "criteria": [
             "Wskaźnik w punkcie ekranu (220, 100) ustawia znacznik w punkcie świata (280, 250).",
-            "Po zmianie początku widoku (origin) na (100, 200) ten sam punkt ekranu daje w świecie (320, 300).",
+            "Po przesunięciu obiektu kamery na (420, 380) początek widoku staje się (100, 200), więc ten sam punkt ekranu daje w świecie (320, 300).",
             "Przeliczenie z powrotem ze świata na ekran zwraca pierwotny punkt (220, 100) z dokładnością 1e-6.",
-            "Znacznik nie przesuwa kamery ani gracza."
+            "Znacznik nie przesuwa kamery ani gracza; shake nie zmienia transformu obiektu kamery."
           ],
           "learningStage": "Rozbudowa"
         }
@@ -1091,7 +1091,7 @@
           "id": "g2d.projectile-types.guided",
           "mode": "guided",
           "title": "Pocisk naprowadzany",
-          "prompt": "Kierunek do celu i Projectile2D są gotowe. W Homing zapisz obliczony d jako direction pocisku; w Javie użyj direction.set(d.x,d.y).",
+          "prompt": "Kierunek do celu i Projectile2D są gotowe. W Homing co klatkę przelicz kierunek do celu i zapisz go jako direction pocisku; w Javie użyj direction.set(d.x,d.y).",
           "objective": "Naprowadzać pocisk na cel podczas lotu.",
           "criteria": [
             "Homing aktualizuje direction pocisku do celu; Projectile2D wykonuje ruch i wykrywa kontakt na całym odcinku.",
@@ -1105,7 +1105,7 @@
           "id": "g2d.projectile-types.modified",
           "mode": "modified",
           "title": "Dwa trafienia",
-          "prompt": "Ustaw maxHits=2 i dopisz HitCount: każdy trafiony przeciwnik otrzymuje jedno obrażenie; pocisk trafia obu przeciwników i znika.",
+          "prompt": "addComponent zwraca utworzony komponent — wynik shot.addComponent(new Projectile2D(...)) zapisz do zmiennej motion i ustaw motion.maxHits=2. Dopisz HitCount: każdy trafiony przeciwnik otrzymuje jedno obrażenie; pocisk trafia obu przeciwników i znika.",
           "objective": "Pozwolić pociskowi trafić więcej niż jeden cel.",
           "criteria": [
             "maxHits=2 pozwala jednemu pociskowi trafić dwóch różnych przeciwników.",
@@ -1117,12 +1117,13 @@
         {
           "id": "g2d.projectile-types.independent",
           "mode": "independent",
-          "title": "Szybki pocisk i pierwszy cel",
-          "prompt": "Dodaj Projectile2D o prędkości 3000 i ustaw hitLayers=Layers.ENEMY. W jednym kroku ma trafić pierwszego wroga i ominąć sojusznika.",
-          "objective": "Zastosować ciągłe wykrywanie kontaktu w nowym typie pocisku.",
+          "title": "Naprowadzany pocisk i warstwy",
+          "prompt": "Zbuduj scenę: EnemyA stoi na prostej drodze pocisku, EnemyB jest poza osią (to cel Homing), a Ally na warstwie PLAYER stoi na drodze — nie może zostać trafiony. Pocisk ma maxHits=2 i hitLayers=Layers.ENEMY, więc przechodzi przez pierwszego wroga i dogania drugiego.",
+          "objective": "Połączyć Homing, maxHits i hitLayers w jednym pocisku.",
           "criteria": [
-            "Przy prędkości 3000 pocisk trafia pierwszego wroga w jednym kroku; HP Enemy spada do 2.",
-            "hitLayers=Layers.ENEMY pomija sojusznika na linii lotu; pocisk nie rani właściciela."
+            "Pocisk trafia EnemyA na prostej drodze (TargetHp spada do 2), a następnie skręca do EnemyB poza osią (TargetHp spada do 2).",
+            "Ally na warstwie PLAYER stoi na drodze, ale hitLayers=Layers.ENEMY sprawia, że TargetHp Ally zostaje 3.",
+            "maxHits=2 niszczy pocisk po drugim trafieniu; na scenie zostają trzy cele."
           ],
           "learningStage": "Rozbudowa"
         }

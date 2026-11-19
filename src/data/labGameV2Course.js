@@ -113,7 +113,7 @@ export function buildCourseProject(language, chapter, mode, solved = true, useEn
 function buildCourseProjectRaw(language, chapter, mode, solved = true, useEnemyAiScene = true) {
   if(!solved) {
     const solution=buildCourseProjectRaw(language,chapter,mode,true,useEnemyAiScene);
-    const scaffold=earlyStarter(language,chapter==='projectile-types'&&mode==='independent'?'projectiles':chapter,mode,solution);
+    const scaffold=earlyStarter(language,chapter,mode,solution);
     if(scaffold)return scaffold;
     const guided=guidedStarter(language,chapter,mode,solution);
     if(guided)return guided;
@@ -121,7 +121,7 @@ function buildCourseProjectRaw(language, chapter, mode, solved = true, useEnemyA
     const extension=language==='java'?'java':'js';
     const entry=language==='java'?'GameMain.java':'game.js';
     if(chapter==='camera' && mode!=='independent') {
-      files[entry]=files[entry].split('\n').filter(line=>!line.includes('.offsetX=')&&!line.includes('.offsetY=')&&!line.includes('.follow(player)')).join('\n');
+      files[entry]=files[entry].split('\n').filter(line=>!line.includes('.offsetX=')&&!line.includes('.offsetY=')&&!line.includes('.follow(player)')&&!line.includes('.followY=')&&!line.includes('.followX=')&&!line.includes('camera.setPosition(player')&&!line.includes('camera.setPosition(400,180)')).join('\n');
       files[entry]=files[entry].replace(/(camera\.addComponent\(new (?:GameLab\.)?Camera2D\(\)\);)/,'$1\n// TODO: Ustaw kamerę zgodnie z poleceniem; ruch gracza jest już gotowy.');
       return {files,ready:solution.ready};
     }
@@ -178,16 +178,23 @@ function buildCourseProjectRaw(language, chapter, mode, solved = true, useEnemyA
     return project;
   }
   if(chapter==='projectile-types') {
-    if(mode==='independent')return buildCourseProjectRaw(language,'projectiles','independent',true);
     const java=language==='java',ext=java?'java':'js',files={};
     const klass=(name,js,j)=>files[`${name}.${ext}`]=java?`public class ${name} extends Component {${j}}`:`export default class ${name} extends GameLab.Component {${js}}`;
     klass('TargetHp','hp=3;','public int hp=3;');
     klass('HitCount','onTrigger(other){const hp=other.getComponent(TargetHp);if(hp)hp.hp--;}', '@Override public void onTrigger(GameObject other){TargetHp hp=other.getComponent(TargetHp.class);if(hp!=null)hp.hp--;}');
-    if(mode==='guided')klass('Homing','constructor(target){super();this.target=target;} onUpdate(){const d=new GameLab.Vector2(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y).normalized();this.requireComponent(GameLab.Projectile2D).direction=d;}','public GameObject target;public Homing(GameObject target){this.target=target;} @Override public void onUpdate(double delta){Vector2 d=new Vector2(target.transform.x-transform.x,target.transform.y-transform.y).normalized();requireComponent(Projectile2D.class).direction.set(d.x,d.y);}');
+    if(mode==='guided'||mode==='independent')klass('Homing','constructor(target){super();this.target=target;} onUpdate(){const d=new GameLab.Vector2(this.target.transform.x-this.transform.x,this.target.transform.y-this.transform.y).normalized();this.requireComponent(GameLab.Projectile2D).direction=d;}','public GameObject target;public Homing(GameObject target){this.target=target;} @Override public void onUpdate(double delta){Vector2 d=new Vector2(target.transform.x-transform.x,target.transform.y-transform.y).normalized();requireComponent(Projectile2D.class).direction.set(d.x,d.y);}');
     const prefix=java?'':'GameLab.';
-    let body=`${java?'GameObject':'const'} a=${java?'':'this.'}createObject("Enemy");a.setPosition(200,100);a.addComponent(new ${prefix}Sprite(${prefix}Assets.SLIME,32,32));a.addComponent(new ${prefix}CircleCollider2D(12));a.addComponent(new TargetHp());\n`;
-    if(mode==='modified')body+=`${java?'GameObject':'const'} b=${java?'':'this.'}createObject("EnemyB");b.setPosition(300,100);b.addComponent(new ${prefix}Sprite(${prefix}Assets.BAT,32,32));b.addComponent(new ${prefix}CircleCollider2D(12));b.addComponent(new TargetHp());\n`;
-    body+=`${java?'GameObject':'const'} shot=${java?'':'this.'}createObject("Projectile");shot.setPosition(100,100);shot.addComponent(new ${prefix}Sprite(${prefix}Assets.FIREBALL,12,12));${mode==='guided'?'shot.addComponent(new Homing(a));':''}shot.addComponent(new HitCount());${java?'Projectile2D':'const'} motion=shot.addComponent(new ${prefix}Projectile2D(${mode==='guided'?'0,1,200':'1,0,300'},2,null));${mode==='modified'?'motion.maxHits=2;':''}`;
+    let body='';
+    if(mode==='independent') {
+      body+=`${java?'GameObject':'const'} a=${java?'':'this.'}createObject("EnemyA");a.setPosition(240,130);a.addComponent(new ${prefix}Sprite(${prefix}Assets.SLIME,32,32));${java?'Collider2D':'const'} aCol=a.addComponent(new ${prefix}CircleCollider2D(12));aCol.layer=${prefix}Layers.ENEMY;a.addComponent(new TargetHp());\n`;
+      body+=`${java?'GameObject':'const'} b=${java?'':'this.'}createObject("EnemyB");b.setPosition(380,160);b.addComponent(new ${prefix}Sprite(${prefix}Assets.BAT,32,32));${java?'Collider2D':'const'} bCol=b.addComponent(new ${prefix}CircleCollider2D(12));bCol.layer=${prefix}Layers.ENEMY;b.addComponent(new TargetHp());\n`;
+      body+=`${java?'GameObject':'const'} ally=${java?'':'this.'}createObject("Ally");ally.setPosition(156,112);ally.addComponent(new ${prefix}Sprite(${prefix}Assets.RANGER,32,32));${java?'Collider2D':'const'} allyCol=ally.addComponent(new ${prefix}CircleCollider2D(12));allyCol.layer=${prefix}Layers.PLAYER;ally.addComponent(new TargetHp());\n`;
+      body+=`${java?'GameObject':'const'} shot=${java?'':'this.'}createObject("Projectile");shot.setPosition(100,100);shot.addComponent(new ${prefix}Sprite(${prefix}Assets.FIREBALL,12,12));${java?'Projectile2D':'const'} motion=shot.addComponent(new ${prefix}Projectile2D(1,0,300,3,null));motion.maxHits=2;motion.hitLayers=${prefix}Layers.ENEMY;shot.addComponent(new Homing(b));shot.addComponent(new HitCount());`;
+    } else {
+      body=`${java?'GameObject':'const'} a=${java?'':'this.'}createObject("Enemy");a.setPosition(200,100);a.addComponent(new ${prefix}Sprite(${prefix}Assets.SLIME,32,32));a.addComponent(new ${prefix}CircleCollider2D(12));a.addComponent(new TargetHp());\n`;
+      if(mode==='modified')body+=`${java?'GameObject':'const'} b=${java?'':'this.'}createObject("EnemyB");b.setPosition(300,100);b.addComponent(new ${prefix}Sprite(${prefix}Assets.BAT,32,32));b.addComponent(new ${prefix}CircleCollider2D(12));b.addComponent(new TargetHp());\n`;
+      body+=`${java?'GameObject':'const'} shot=${java?'':'this.'}createObject("Projectile");shot.setPosition(100,100);shot.addComponent(new ${prefix}Sprite(${prefix}Assets.FIREBALL,12,12));${mode==='guided'?'shot.addComponent(new Homing(a));':''}shot.addComponent(new HitCount());${java?'Projectile2D':'const'} motion=shot.addComponent(new ${prefix}Projectile2D(${mode==='guided'?'0,1,200':'1,0,300'},2,null));${mode==='modified'?'motion.maxHits=2;':''}`;
+    }
     if(java)files['GameMain.java']=`public class GameMain extends Game {@Override public void onCreate(){${body}}}`;
     else {for(const name of Object.keys(files)){const deps=Object.keys(files).filter(n=>n!==name&&files[name].includes(n.slice(0,-3)));files[name]=deps.map(n=>`import ${n.slice(0,-3)} from './${n}';`).join('\n')+'\n'+files[name];}files['game.js']=Object.keys(files).map(n=>`import ${n.slice(0,-3)} from './${n}';`).join('\n')+`\nclass MyGame extends GameLab.Game {onCreate(){${body}}} GameLab.run(MyGame,{canvas:'#game'});`;files['index.html']='<!doctype html><html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lab Game 2D</title><link rel="stylesheet" href="styles.css"></head><body><canvas id="game" tabindex="0" style="width:100%;height:100%"></canvas><script type="module" src="game.js"></script></body></html>';files['styles.css']='html,body{margin:0;width:100%;height:100%;background:#10263a}#game{display:block;width:100%;height:100%;outline:none}';}
     return {files,ready:true};
@@ -341,11 +348,11 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       object('Ground',0,0,['TileMap(Assets.GRASS,32)']);
       if(mode==='modified') setup+='setWorldBounds(0,0,2000,1200);\n';
       player(mode==='modified'?400:100,mode==='modified'?300:mode==='independent'?200:100);
-      object('Camera',mode==='independent'?60:80,mode==='independent'?150:40,['Camera2D()']);
-      if(mode==='modified') setup+=`${get('camera','Camera2D')}.follow(player);\n`;
-      else setup+=`${get('camera','Camera2D')}.offsetX=${mode==='independent'?60:80};\n${get('camera','Camera2D')}.offsetY=${mode==='independent'?150:40};\n`;
+      object('Camera',mode==='guided'?40:mode==='modified'?320:380,mode==='guided'?30:mode==='modified'?180:330,['Camera2D()']);
+      if(mode==='modified') setup+=`${get('camera','Camera2D')}.follow(player);\n${get('camera','Camera2D')}.followY=false;\ncamera.setPosition(400,180);\n`;
+      else if(mode==='guided') setup+='camera.setPosition(player.transform.x, player.transform.y);\n';
       if(mode==='independent') {
-        component('CursorMarker','onUpdate() { const p=this.game.input.getPointerPosition(); if(!p)return; const camera=this.game.find("Camera").getComponent(GameLab.Camera2D); const world=camera.screenToWorld(p); this.gameObject.setPosition(world.x,world.y); }','@Override public void onUpdate(double delta) { Vector2 p=getGame().input.getPointerPosition(); if(p==null)return; Camera2D camera=getGame().find("Camera").getComponent(Camera2D.class); Vector2 world=camera.screenToWorld(p); gameObject.setPosition(world.x,world.y); }');
+        component('CursorMarker','onUpdate() { const p=this.game.input.getPointerPosition(); if(!p)return; const camera=this.game.find("Camera").getComponent(GameLab.Camera2D); const world=camera.screenToWorld(p); this.gameObject.setPosition(world.x,world.y); if(this.game.input.isMousePressed())camera.shake(3,0.25); }','@Override public void onUpdate(double delta) { Vector2 p=getGame().input.getPointerPosition(); if(p==null)return; Camera2D camera=getGame().find("Camera").getComponent(Camera2D.class); Vector2 world=camera.screenToWorld(p); gameObject.setPosition(world.x,world.y); if(getGame().input.isMousePressed())camera.shake(3,0.25); }');
         object('Marker',0,0,[shape(8,8,'#ffd166'),'CursorMarker()']);
       }
       break;
@@ -447,7 +454,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
     case 'feedback':
       if(mode==='guided') {object('Coin',160,160,[sprite('COIN',16,16)]);setup+=`${java?'':'GameLab.'}Tweens.position(coin,160,100,1);\n`;}
       else if(mode==='modified') {
-        health();player();setup+='player.addComponent(new Health(5,0.75));\n';object('Camera',0,0,['Camera2D()']);
+        health();player();setup+='player.addComponent(new Health(5,0.75));\n';object('Camera',320,180,['Camera2D()']);
         component('HitFeedback','onCreate() {this.unsubscribe=this.requireComponent(Health).onDamage(()=>{GameLab.Tweens.shake(this.gameObject,8,0.3);const text=this.game.createObject("DamageText");text.setPosition(this.transform.x,this.transform.y-24);text.addComponent(new GameLab.TextRenderer("−1",18,"#ffd166"));GameLab.Tweens.position(text,this.transform.x,this.transform.y-64,.5).onComplete(()=>text.destroy());const camera=this.game.find("Camera");if(camera)GameLab.Tweens.shake(camera,2,0.3);});} onDestroy() {this.unsubscribe?.();}','private Runnable unsubscribe;@Override public void onCreate() {unsubscribe=requireComponent(Health.class).onDamage(()->{Tweens.shake(gameObject,8,0.3);GameObject text=getGame().createObject("DamageText");text.setPosition(transform.x,transform.y-24);text.addComponent(new TextRenderer("-1",18,"#ffd166"));Tweens.position(text,transform.x,transform.y-64,.5).onComplete(()->text.destroy());GameObject camera=getGame().find("Camera");if(camera!=null)Tweens.shake(camera,2,0.3);});} @Override public void onDestroy() {if(unsubscribe!=null)unsubscribe.run();}');
         setup+='player.addComponent(new HitFeedback());\n';
       } else {
@@ -495,7 +502,7 @@ public Runnable onDamage(Runnable fn) { damageListeners.add(fn);return ()->damag
       if(mode==='independent') {
         setup+='setWorldBounds(0,0,4000,4000);\n';
         object('Ground',0,0,['TileMap(Assets.GRASS,32)']);
-        object('Camera',0,0,['Camera2D()']);
+        object('Camera',320,180,['Camera2D()']);
         setup+=`${get('camera','Camera2D')}.follow(player);\n`;
       }
       const schedule=mode==='guided'?'[1,2,3]':mode==='modified'?'[1,2,3,5.5,6,6.5,7]':'Array.from({length:120},(_,i)=>i+1)';

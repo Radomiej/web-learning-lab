@@ -68,5 +68,9 @@ składnia Javy).
 
 Testy: `src/components/<Board>.test.jsx` w obu labach + rozszerzony test
 pokrycia `src/data/gameDevTaskLearning.test.js` (`board.kind` ∈ chase |
-coordinates | components | keypress | canvas | lifecycle | sprint | vector-race | events). Uruchom: `npx vitest run <pliki>
+coordinates | components | keypress | canvas | lifecycle | sprint | vector-race | events | camera). Uruchom: `npx vitest run <pliki>
 --maxWorkers=1 --minWorkers=1` sekwencyjnie w każdym labie.
+
+### Tablica kamery (`board.kind === 'camera'`)
+
+Kontrakt: `player: {name, x, y}`, `camera: {x, y}`, `world: {width, height}`, `view: {width, height}` oraz łańcuchy kodu `followCode`, `axisCode` (szablon z `{axis}`/`{value}`), `positionCode` (szablon z `{x}`/`{y}`) — te ostatnie w języku danego labu. Plansza pokazuje świat z góry, gracza (drag + strzałki), ramkę widoku wyśrodkowaną na pozycji GameObjectu kamery, przełączniki `followX`/`followY`, suwak ręcznego Y i przycisk wstrząsu (drga tylko ramka — status podkreśla, że pozycja kamery się nie zmienia). Użyta w `g2d.camera.modified`.

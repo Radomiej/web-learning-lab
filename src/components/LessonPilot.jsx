@@ -4,6 +4,7 @@ import PageDiagram from '../../shared/lab-game-v2/editor/PageDiagram.jsx';
 import CopyLessonLink from './CopyLessonLink.jsx';
 import HtmlLessonExample from './HtmlLessonExample.jsx';
 import GameDevTerms from './GameDevTerms.jsx';
+import CameraBoard from './CameraBoard.jsx';
 import CanvasDrawBoard from './CanvasDrawBoard.jsx';
 import ChaseVectorBoard from './ChaseVectorBoard.jsx';
 import CoordinateBoard from './CoordinateBoard.jsx';
@@ -52,6 +53,7 @@ function TheoryVisual({ learning }) {
   }
   if (learning.board?.kind === 'coordinates') return <CoordinateBoard {...learning.board} />;
   if (learning.board?.kind === 'components') return <ComponentToggleBoard {...learning.board} />;
+  if (learning.board?.kind === 'camera') return <CameraBoard {...learning.board} />;
   if (learning.board?.kind === 'keypress') return <KeyPressBoard {...learning.board} />;
   if (learning.board?.kind === 'canvas') return <CanvasDrawBoard {...learning.board} />;
   if (learning.board?.kind === 'lifecycle') return <LifecycleBoard {...learning.board} />;

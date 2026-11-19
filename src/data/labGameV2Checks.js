@@ -63,8 +63,8 @@ export function courseScenario(chapter,mode) {
       if(mode==='independent')expect(state('Chest','Chest','opened'),true);
       break;
     case 'camera':
-      if(mode==='modified') {phases=[phase(10,['d']),phase(5,['d'])];expect(object('Player','x'),580);expect('camera.x',260);expect('camera.y',120);}
-      else {expect('camera.x',mode==='guided'?80:60);expect('camera.y',mode==='guided'?40:150);expect(object('Player','x'),100);if(mode==='independent') {phases=[phase(1,[],[action(null,'input','setPointer',20,30)])];expect(object('Marker','x'),80);expect(object('Marker','y'),180);sourceToken='screenToWorld';}}
+      if(mode==='modified') {phases=[phase(10,['d']),phase(5,['d'])];expect(object('Player','x'),580);expect('camera.x',260);expect('camera.y',0);}
+      else {expect('camera.x',mode==='guided'?-220:60);expect('camera.y',mode==='guided'?-80:150);expect(object('Player','x'),100);if(mode==='independent') {phases=[phase(1,[],[action(null,'input','setPointer',20,30)])];expect(object('Marker','x'),80);expect(object('Marker','y'),180);sourceToken='screenToWorld';}}
       break;
     case 'canvas-ui':
       if(mode==='guided') {expect(object('HUD','x'),12);expect(state('HUD','TextRenderer','text'),'Złoto: 0');expect(state('HUD','UITransform','anchor'),'TOP_LEFT');}
@@ -101,7 +101,7 @@ export function courseScenario(chapter,mode) {
       break;
     case 'projectile-types':
       // Guided: teleport the enemy mid-flight — only a live homing component still scores the hit.
-      if(mode==='independent'){phases=[phase(1)];expect(state('Enemy','Health','currentHealth'),2);}
+      if(mode==='independent'){phases=[phase(15)];expect(state('EnemyA','TargetHp','hp'),2);expect(state('EnemyB','TargetHp','hp'),2);expect(state('Ally','TargetHp','hp'),3);expect('objects.length',3);}
       else if(mode==='guided'){phases=[phase(3),phase(7,[],[action('Enemy',null,'setPosition',200,160)])];expect(state('Enemy','TargetHp','hp'),2);expect('objects.length',1);}
       else {phases=[phase(15)];expect(state('Enemy','TargetHp','hp'),2);expect(state('EnemyB','TargetHp','hp'),2);}
       break;
@@ -199,11 +199,16 @@ double playerX=player.transform.x,playerY=player.transform.y;
 game.input.setPointer(220,100);game.step(.1);
 check(Math.abs(marker.transform.x-280)<1e-6 && Math.abs(marker.transform.y-250)<1e-6,"Ekran (220,100) powinien wskazać świat (280,250).");
 check(Math.abs(game.getCameraView().x-60)<1e-6 && Math.abs(game.getCameraView().y-150)<1e-6,"Marker nie może przesuwać kamery.");
-camera.offsetX=100;camera.offsetY=200;game.step(.1);
-check(Math.abs(marker.transform.x-320)<1e-6 && Math.abs(marker.transform.y-300)<1e-6,"Po zmianie widoku wskaźnik powinien wskazać świat (320,300).");
+camera.gameObject.setPosition(420,380);game.step(.1);
+check(Math.abs(marker.transform.x-320)<1e-6 && Math.abs(marker.transform.y-300)<1e-6,"Po przesunięciu kamery wskaźnik powinien wskazać świat (320,300).");
 Vector2 screen=camera.worldToScreen(new Vector2(marker.transform.x,marker.transform.y));
 check(Math.abs(screen.x-220)<1e-6 && Math.abs(screen.y-100)<1e-6,"worldToScreen powinno odtworzyć punkt (220,100).");
 check(player.transform.x==playerX && player.transform.y==playerY,"Marker nie może przesuwać gracza.");
+camera.shake(6,0.3);game.step(.05);
+check(Math.abs(camera.gameObject.transform.x-420)<1e-6 && Math.abs(camera.gameObject.transform.y-380)<1e-6,"shake nie może zmieniać pozycji obiektu kamery.");
+check(Math.abs(game.getCameraView().x-100)<=6.5 && Math.abs(game.getCameraView().y-200)<=6.5,"shake dodaje tylko do widoku.");
+camera.stopShake();game.step(.1);
+check(Math.abs(game.getCameraView().x-100)<1e-6 && Math.abs(game.getCameraView().y-200)<1e-6,"stopShake przywraca widok.");
 `;
   if(chapter==='canvas-ui' && mode==='modified')body+='check(GameCanvas.frame().contains("rect|80.0|90.0|40.0|30.0|#76b9f2"),"centered rectangle");check(GameCanvas.frame().contains("text|Start|80.0|140.0"),"centered text");\n';
   if(chapter==='canvas-ui' && mode==='independent')body+='check(GameCanvas.frame().contains("rect|80.0|40.0|120.0|12.0"),"progress left edge and width");check(GameCanvas.frame().contains("|left|"),"paragraph alignment");\n';

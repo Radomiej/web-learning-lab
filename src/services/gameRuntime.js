@@ -138,12 +138,18 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     onDrawUI() { const r=uiRect(this); this.game.canvas.drawNinePatch(this.texture,r.x,r.y,r.width,r.height,this.border); this.game.canvas.drawText(this.text,r.x,r.y,16,'#ffffff'); }
   }
   class Camera2D extends Component {
-    constructor() { super(); this.offsetX = 0; this.offsetY = 0; this.target = null; this.shakeStrength = 0; this.shakeRemaining = 0; this.shakeElapsed = 0; }
+    constructor() { super(); this.offsetX = 0; this.offsetY = 0; this.followX = true; this.followY = true; this.target = null; this.shakeStrength = 0; this.shakeRemaining = 0; this.shakeElapsed = 0; }
     follow(target) {
       if (!this.gameObject || !target || target.game !== this.game || target.destroyed) throw new Error('Kamera wymaga celu z tej samej sceny.');
       this.target = target;
     }
     stopFollowing() { this.target = null; }
+    onLateUpdate() {
+      const live = this.target?.active && !this.target.destroyed ? this.target : null;
+      if (!live) return;
+      if (this.followX) this.transform.x = live.transform.x;
+      if (this.followY) this.transform.y = live.transform.y;
+    }
     worldToScreen(point) { const view = this.getView(); return new Vector2(point.x-view.x,point.y-view.y); }
     screenToWorld(point) { const view = this.getView(); return new Vector2(point.x+view.x,point.y+view.y); }
     shake(strength, seconds) {
@@ -154,12 +160,12 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     stopShake() { this.shakeRemaining = 0; }
     onUpdate(delta) { this.shakeRemaining = Math.max(0, this.shakeRemaining - delta); this.shakeElapsed += delta; }
     getView() {
-      const target = this.target?.active && !this.target.destroyed ? this.target : null;
-      const x = target ? target.transform.x - this.game.canvas.width / 2 : 0;
-      const y = target ? target.transform.y - this.game.canvas.height / 2 : 0;
+      const live = this.target?.active && !this.target.destroyed ? this.target : null;
+      const x = (this.followX && live ? live.transform.x : finite(this.transform.x, 'Kamera x')) - Screen.width / 2 + finite(this.offsetX, 'Kamera x');
+      const y = (this.followY && live ? live.transform.y : finite(this.transform.y, 'Kamera y')) - Screen.height / 2 + finite(this.offsetY, 'Kamera y');
       return {
-        x: x + finite(this.offsetX, 'Kamera x') + (this.shakeRemaining > 0 ? Math.sin(this.shakeElapsed * 47) * this.shakeStrength : 0),
-        y: y + finite(this.offsetY, 'Kamera y') + (this.shakeRemaining > 0 ? Math.cos(this.shakeElapsed * 39) * this.shakeStrength : 0),
+        x: x + (this.shakeRemaining > 0 ? Math.sin(this.shakeElapsed * 47) * this.shakeStrength : 0),
+        y: y + (this.shakeRemaining > 0 ? Math.cos(this.shakeElapsed * 39) * this.shakeStrength : 0),
       };
     }
   }
@@ -491,7 +497,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     }
     getObjectsWithTag(tag) { return [...(this.tagIndex.get(tag)||[])].filter(o=>!o.destroyed).sort((a,b)=>a.id-b.id); }
     getViewportWidth() { return this.canvas?.width ?? 640; }
-    getViewportHeight() { return this.canvas?.height ?? 360; }
+    getViewportHeight() { return this.canvas?.height ?? 480; }
     setWorldBounds(x, y, width, height) { [x, y, width, height].forEach(v => finite(v, 'Granice świata')); if (width <= 0 || height <= 0) throw new Error('Niepoprawne granice'); this.worldBounds = { x, y, width, height }; }
     clearWorldBounds() { this.worldBounds = null; }
     createObject(name = 'Object') {
@@ -603,6 +609,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     }
     dispose() {
       if (this.disposed) return; this.disposed = true;
+      if (screenGame === this) screenGame = current && current !== this && !current.disposed ? current : null;
       for (const tween of this.tweens) tween.cancel(); this.tweens = [];
       for (const object of [...this.objects]) object.destroy();
       this.objects = []; this.input.clear(); this.onDestroy(); this.audio.dispose();
@@ -770,7 +777,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     };
     return { root, stats, update, dispose, setView };
   }
-  let current = null, factory = null, frame = null, cleanup = () => {}, lastTime = null, liveConsole = null;
+  let current = null, factory = null, frame = null, cleanup = () => {}, lastTime = null, liveConsole = null, screenGame = null;
   const debugFlags = { view: false, colliders: false };
   const applyDebugFlags = () => { if (current && !current.disposed) current.debugColliders = debugFlags.colliders; liveConsole?.setView(debugFlags.view); };
   win.addEventListener('message', event => {
@@ -808,7 +815,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
   function createScene(canvas) {
     const game = new factory();
     if (!(game instanceof Game)) throw new Error('Twoja scena musi rozszerzać GameLab.Game.');
-    game.canvas = new Canvas(canvas); return game;
+    game.canvas = new Canvas(canvas); screenGame = game; return game;
   }
   function run(GameClass, config = {}) {
     dispose(); factory = GameClass;
@@ -883,9 +890,13 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
     } finally { game.dispose(); }
   }
   win.addEventListener('pagehide', dispose);
+  const Screen = Object.freeze({
+    get width() { return screenGame ? screenGame.getViewportWidth() : 640; },
+    get height() { return screenGame ? screenGame.getViewportHeight() : 480; },
+  });
   const addons=createAddons({Component,GameObject,Vector2,CharacterController2D,Sprite,Collider2D,CircleCollider2D});
   for(const [name,type] of Object.entries(addons))componentNames.set(type,name);
-  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, SpriteAnimator, TextRenderer, ControlsHint, Camera2D, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Layers, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
+  return { ...addons, Assets, Keys, UIAnchor, UITransform, Vector2, Random, ProgressBar, Button, Game, GameObject, Component, Transform, InputManager: Input, Input, Canvas, ShapeRenderer, Sprite, SpriteAnimator, TextRenderer, ControlsHint, Camera2D, Screen, TileMap, Tween, Tweens, Collider2D, CircleCollider2D, Projectile2D, Layers, CharacterController2D, Song: audioKit.Song, Sequencer: audioKit.Sequencer, run, dispose, snapshot, evaluateScenario, assetsReady, get current() { return current; } };
 }
 
 export function getGameRuntimeScript() {

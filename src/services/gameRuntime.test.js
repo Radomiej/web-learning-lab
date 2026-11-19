@@ -413,3 +413,41 @@ test('TileMap setTile/getTile/tileAt and generate fill cells deterministically f
   expect(map.tileAt(100, 100)).not.toBeNull();
   lab.dispose();
 });
+
+test('Screen exposes logical viewport dimensions that track resize', () => {
+  const { lab, canvas } = fixture();
+  expect(lab.Screen.width).toBe(640);
+  expect(lab.Screen.height).toBe(480);
+  class Scene extends lab.Game {}
+  lab.run(Scene, { canvas });
+  expect(lab.Screen.width).toBe(lab.current.getViewportWidth());
+  expect(lab.Screen.height).toBe(lab.current.getViewportHeight());
+  lab.current.canvas.resize(800, 450, 1);
+  expect(lab.Screen.width).toBe(800);
+  expect(lab.Screen.height).toBe(450);
+  expect(lab.Screen.width).toBe(lab.current.getViewportWidth());
+  lab.dispose();
+});
+
+test('camera tracks only followX when followY is off and shake keeps transform', () => {
+  const { lab, canvas } = fixture();
+  class Move extends lab.Component { onUpdate(delta) { this.transform.x += 100 * delta; this.transform.y += 50 * delta; } }
+  class Scene extends lab.Game {
+    onCreate() {
+      const player = this.createObject('Player'); player.setPosition(400, 300);
+      player.addComponent(new Move());
+      const cameraObject = this.createObject('Camera').setPosition(400, 180);
+      this.camera = cameraObject.addComponent(new lab.Camera2D());
+      this.camera.follow(player); this.camera.followY = false;
+    }
+  }
+  lab.run(Scene, { canvas });
+  for (let i = 0; i < 10; i++) lab.current.step(0.1);
+  const cameraObject = lab.current.find('Camera');
+  expect(cameraObject.transform.x).toBe(500);
+  expect(cameraObject.transform.y).toBe(180);
+  lab.current.camera.shake(6, 0.2); lab.current.step(0.05);
+  expect(cameraObject.transform.x).toBe(lab.current.find('Player').transform.x);
+  expect(cameraObject.transform.y).toBe(180);
+  lab.dispose();
+});
