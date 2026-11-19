@@ -3,7 +3,7 @@ import { resolveLocalPath } from "./projectFiles.js";
 import {
   BOOTSTRAP_CSS_RESOURCE,
   BOOTSTRAP_CSS_SPECIFIER,
-} from "./bootstrapRuntime.js";
+} from "./bootstrapResources.js";
 
 const Babel = BabelNamespace.default ?? BabelNamespace;
 const EXTERNAL_MODULES = new Set(["react", "react-dom", "react-dom/client"]);
@@ -158,7 +158,7 @@ function buildRuntime(modules, entry, sharedRuntimeKey) {
   return runtime.replace(/<\/script/gi, "<\\/script");
 }
 
-export function compileModules(files, entry, { sharedRuntimeKey } = {}) {
+export function compileModules(files, entry, { sharedRuntimeKey, target: platform = "browser" } = {}) {
   const cssPaths = [];
   const cssSeen = new Set();
   const modules = new Map();
@@ -182,7 +182,7 @@ export function compileModules(files, entry, { sharedRuntimeKey } = {}) {
       if (typeof source !== "string") {
         throw new Error(`${path}: module source must be text.`);
       }
-      if (!JAVASCRIPT_EXTENSION.test(path)) {
+      if (!JAVASCRIPT_EXTENSION.test(path) || (platform === "orbit" && !/\.js$/i.test(path))) {
         throw new Error(
           `${path}: only .js and .jsx entry modules are supported.`,
         );
@@ -202,6 +202,9 @@ export function compileModules(files, entry, { sharedRuntimeKey } = {}) {
 
       const dependencyMap = Object.create(null);
       for (const specifier of specifiers) {
+        if (platform === "orbit" && !specifier.startsWith(".")) {
+          throw new Error(`${path}: Orbit obsługuje wyłącznie lokalne importy JavaScript (${specifier}).`);
+        }
         if (EXTERNAL_MODULES.has(specifier)) {
           dependencyMap[specifier] =
             specifier === "react" ? "@external/react" : "@external/react-dom";
@@ -230,6 +233,7 @@ export function compileModules(files, entry, { sharedRuntimeKey } = {}) {
         }
 
         if (CSS_EXTENSION.test(target)) {
+          if (platform === "orbit") throw new Error(`${path}: pliki CSS nie działają na Orbit.`);
           dependencyMap[specifier] = "@css";
           if (!cssSeen.has(target)) {
             cssSeen.add(target);

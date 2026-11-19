@@ -376,6 +376,10 @@ button:focus-visible, textarea:focus-visible, iframe:focus-visible, .monaco-edit
 .playground-tools { margin: 18px 0 4px; padding: 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--paper); }
 .playground-tools p { margin: 0 0 12px; color: var(--ink-700); font-size: 13px; line-height: 1.6; }
 .playground-tools-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.playground-tools #playground-orbit { display: grid; gap: 10px; margin-top: 14px; }
+.playground-tools #playground-orbit p { margin: 0; }
+.playground-tools #playground-orbit label { display: grid; gap: 4px; max-width: 24rem; }
+.playground-tools #playground-orbit input { width: 100%; min-width: 0; }
 .playground-tools p[role="status"] { margin: 12px 0 0; }
 .game-api-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
 .game-api-nav button { padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; color: var(--ink-700); background: transparent; cursor: pointer; font: inherit; }
