@@ -32,7 +32,7 @@ test("shows the first lesson, three editor files, preview status, and track navi
   ).not.toBeInTheDocument();
   expect(screen.getByRole("tab", { name: "script.js" })).toBeInTheDocument();
   expect(screen.getByText("Podgląd na żywo")).toBeInTheDocument();
-  expect(screen.getByText("100 lekcji")).toBeInTheDocument();
+  expect(screen.getByText("101 lekcji")).toBeInTheDocument();
 });
 
 test("opens the CRA public entry when the React track is selected", async () => {
