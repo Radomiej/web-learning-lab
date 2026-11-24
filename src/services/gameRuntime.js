@@ -621,7 +621,7 @@ export function createGameLab(environment = {}, shared = { Assets, assetManifest
 .lab-console-brand{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:#8e99c9;font:700 10px/1 ui-monospace,Consolas,monospace;letter-spacing:.32em;text-transform:uppercase}
 .lab-console-brand::before,.lab-console-brand::after{content:'';flex:1;border-top:1px solid rgba(255,255,255,.12)}
 .lab-console-screen{position:relative;aspect-ratio:4/3;border:5px solid #10142a;border-radius:12px;background:#0a1524;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(124,226,214,.12),0 2px 8px rgba(0,0,0,.45)}
-.lab-console-screen>canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;outline:none}
+.lab-console-screen>canvas{display:block!important;width:100%!important;height:100%!important;box-shadow:none;image-rendering:pixelated;image-rendering:crisp-edges;outline:none}
 .lab-console-screen>canvas:focus{box-shadow:inset 0 0 0 3px rgba(124,226,214,.55)}
 .lab-console-stats{display:flex;align-items:center;gap:12px;margin:12px 4px 0;padding:6px 10px;border-radius:8px;background:#141a33;color:#7d8abc;font:10px ui-monospace,Consolas,monospace;letter-spacing:.04em}
 .lab-console-stats b{color:#e9edff;font-weight:700}
