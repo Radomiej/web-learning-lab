@@ -14,9 +14,42 @@ export function parseJavaApi(sources) {
     const pattern=/\bpublic\s+(?:(?:static|final|abstract|synchronized)\s+)*(?:<[^\n{}]+?>\s+)?([\w<>?,.\[\] ]+?)\s+(\w+)\s*\(([^()]*)\)/g;
     for(const match of source.matchAll(pattern))members.push({name:match[2],signature:match[0],parameters:splitArguments(match[3]),kind:'method'});
     for(const match of source.matchAll(new RegExp(`\\bpublic\\s+${owner}\\s*\\(([^()]*)\\)`,'g')))members.push({name:owner,signature:match[0],parameters:splitArguments(match[1]),kind:'constructor'});
-    for(const match of source.matchAll(/\bpublic\s+(?:(?:static|final)\s+)*([\w<>?,.\[\] ]+?)\s+(\w+)\s*(?=[=;])/g))members.push({name:match[2],signature:`${match[1]} ${match[2]}`,kind:'field'});
-    if(/\benum\b/.test(source))for(const match of source.matchAll(/^\s*([A-Z][A-Z\d_]+)\s*\(/gm))members.push({name:match[1],signature:`${owner}.${match[1]}`,kind:'field'});
-    return [owner,{constructible:new RegExp(`\\bpublic\\s+(?:final\\s+)?class\\s+${owner}\\b`).test(source),parent:source.match(/\bextends\s+(\w+)/)?.[1],members}];
+    // Pola: deklaracje zbiorcze `int a=1,b=2;` — inicjalizatory przecinamy
+    // na przecinkach tylko na głębokości 0 (poza nawiasami i literałami).
+    const skipValue=i=>{let depth=0;for(;i<source.length;i++){const c=source[i];if(c==='"'||c==="'"){for(i++;i<source.length&&source[i]!==c;i++)if(source[i]==='\\')i++;continue;}if('([{'.includes(c))depth++;else if(')]}'.includes(c))depth--;else if(depth===0&&(c===','||c===';'))return i;}return i;};
+    const ws=i=>{while(i<source.length&&/\s/.test(source[i]))i++;return i;};
+    for(const head of source.matchAll(/\bpublic\s+((?:(?:static|final|volatile|transient)\s+)*)((?:[\w$]+\.)*[\w$]+(?:<[\w$?,. \[\]<>]*>)?(?:\[\])*)\s+/g)){
+      const isStatic=/\bstatic\b/.test(head[1]),type=head[2];
+      for(let i=ws(head.index+head[0].length);;){
+        const name=source.slice(i).match(/^[A-Za-z_$][\w$]*/)?.[0];
+        if(!name)break;
+        let c=ws(i+name.length);
+        if(source[c]==='('||source[c]==='{')break; // metoda, konstruktor albo `public class/enum`
+        if(source[c]!=='='&&source[c]!==';'&&source[c]!==',')break; // np. `public abstract class` — to nie pole
+        members.push({name,signature:`${type} ${name}`,kind:'field',static:isStatic});
+        if(source[c]==='=')c=skipValue(c+1);
+        c=ws(c);
+        if(source[c]===','){i=ws(c+1);continue;}
+        break;
+      }
+    }
+    // Stałe enuma `enum X {A,B,C(...)}` — nazwy przed pierwszym średnikiem ciała.
+    const enumHead=source.match(/\benum\s+[A-Za-z_$][\w$]*\s*\{/);
+    if(enumHead){
+      let depth=1,body='',i=enumHead.index+enumHead[0].length;
+      for(;i<source.length&&depth;i++){const c=source[i];if(c==='{')depth++;else if(c==='}')depth--;if(depth)body+=c;}
+      let split=0,start=0;
+      for(let j=0;j<=body.length;j++){
+        const c=body[j];
+        if('([{'.includes(c))split++;else if(')]}'.includes(c))split--;
+        else if(split===0&&(c===','||j===body.length||c===';')){
+          const name=body.slice(start,j).trim().match(/^[A-Z][A-Z\d_]*/)?.[0];
+          if(name)members.push({name,signature:`${owner} ${name}`,kind:'field',static:true});
+          start=j+1;if(c===';')break;
+        }
+      }
+    }
+    return [owner,{constructible:new RegExp(`\\bpublic\\s+(?:final\\s+)?class\\s+${owner}\\b`).test(source),parent:source.match(/\bextends\s+(\w+)/)?.[1],enum:!!enumHead,members}];
   }));
 }
 export function apiMembers(catalog,owner) {

@@ -1,6 +1,7 @@
 {
   "Vector2": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "set",
@@ -51,15 +52,23 @@
         "kind": "constructor"
       },
       {
+        "name": "x",
+        "signature": "double x",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "y",
-        "signature": "double x, y",
-        "kind": "field"
+        "signature": "double y",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Sprite": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "Sprite",
@@ -104,30 +113,65 @@
         "kind": "constructor"
       },
       {
+        "name": "Sprite",
+        "signature": "class Sprite",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "texture",
         "signature": "String texture",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "height",
-        "signature": "double width, height",
-        "kind": "field"
+        "signature": "double height",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "flipX",
+        "signature": "boolean flipX",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "flipY",
-        "signature": "boolean flipX, flipY",
-        "kind": "field"
+        "signature": "boolean flipY",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "space",
         "signature": "String space",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "layer",
+        "signature": "int layer",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "order",
+        "signature": "int order",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Collider2D": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onContactEnter",
@@ -175,19 +219,46 @@
         "kind": "constructor"
       },
       {
+        "name": "Collider2D",
+        "signature": "class Collider2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "isTrigger",
         "signature": "boolean isTrigger",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "height",
+        "signature": "double height",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "layer",
         "signature": "int layer",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "mask",
+        "signature": "int mask",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Bounds": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "Bounds",
@@ -199,22 +270,85 @@
           "double bottom"
         ],
         "kind": "constructor"
+      },
+      {
+        "name": "left",
+        "signature": "double left",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "top",
+        "signature": "double top",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "right",
+        "signature": "double right",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "bottom",
+        "signature": "double bottom",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Layers": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "DEFAULT",
         "signature": "int DEFAULT",
-        "kind": "field"
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "ENEMY",
+        "signature": "int ENEMY",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "PLAYER",
+        "signature": "int PLAYER",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "PROJECTILE",
+        "signature": "int PROJECTILE",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "PICKUP",
+        "signature": "int PICKUP",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "WALL",
+        "signature": "int WALL",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "ALL",
+        "signature": "int ALL",
+        "kind": "field",
+        "static": true
       }
     ]
   },
   "CharacterController2D": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "getDirection",
@@ -250,20 +384,29 @@
         "kind": "method"
       },
       {
+        "name": "CharacterController2D",
+        "signature": "class CharacterController2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "velocity",
         "signature": "Vector2 velocity",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "constrainToBounds",
         "signature": "boolean constrainToBounds",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Component": {
     "constructible": false,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "attach",
@@ -284,6 +427,18 @@
       {
         "name": "onCreate",
         "signature": "public void onCreate()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onEnable",
+        "signature": "public void onEnable()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onDisable",
+        "signature": "public void onDisable()",
         "parameters": [],
         "kind": "method"
       },
@@ -398,53 +553,69 @@
         "kind": "method"
       },
       {
+        "name": "class",
+        "signature": "abstract class",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "gameObject",
         "signature": "GameObject gameObject",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "transform",
         "signature": "Transform transform",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "enabled",
         "signature": "boolean enabled",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "updateMode",
         "signature": "String updateMode",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "ComponentChange": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "type",
         "signature": "String type",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "component",
         "signature": "Component component",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "object",
         "signature": "GameObject object",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "ComponentChangeListener": {
     "constructible": false,
+    "enum": false,
     "members": []
   },
   "Game": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "getObjectsWith",
@@ -614,52 +785,80 @@
       {
         "name": "time",
         "signature": "Time time",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "input",
         "signature": "InputManager input",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "canvas",
         "signature": "Canvas canvas",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "audio",
         "signature": "Audio audio",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "physics",
         "signature": "Physics2D physics",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "random",
         "signature": "Random random",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "worldBounds",
         "signature": "double[] worldBounds",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "background",
         "signature": "String background",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "debug",
         "signature": "boolean debug",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      }
+    ]
+  },
+  "Screen": {
+    "constructible": true,
+    "enum": false,
+    "members": [
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "height",
+        "signature": "double height",
+        "kind": "field",
+        "static": true
       }
     ]
   },
   "GameCanvas": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "getWidth",
@@ -870,6 +1069,7 @@
   },
   "Input": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "bind",
@@ -922,6 +1122,7 @@
   },
   "Transform": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "Transform",
@@ -935,33 +1136,39 @@
       {
         "name": "x",
         "signature": "double x",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "y",
         "signature": "double y",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "rotation",
         "signature": "double rotation",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "scale",
         "signature": "Vector2 scale",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "visualOffset",
         "signature": "Vector2 visualOffset",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "GameObject": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "addTag",
@@ -1123,38 +1330,45 @@
       {
         "name": "id",
         "signature": "int id",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "transform",
         "signature": "Transform transform",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "name",
         "signature": "String name",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "active",
         "signature": "boolean active",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "destroyed",
         "signature": "boolean destroyed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "game",
         "signature": "Game game",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "CircleCollider2D": {
     "constructible": true,
     "parent": "Collider2D",
+    "enum": false,
     "members": [
       {
         "name": "asTrigger",
@@ -1171,16 +1385,84 @@
         "kind": "constructor"
       },
       {
+        "name": "CircleCollider2D",
+        "signature": "class CircleCollider2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "radius",
         "signature": "double radius",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "TileMap": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
+      {
+        "name": "setTile",
+        "signature": "public TileMap setTile(int column,int row,String texture)",
+        "parameters": [
+          "int column",
+          "int row",
+          "String texture"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "setTile",
+        "signature": "public TileMap setTile(int column,int row,Assets texture)",
+        "parameters": [
+          "int column",
+          "int row",
+          "Assets texture"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "getTile",
+        "signature": "public String getTile(int column,int row)",
+        "parameters": [
+          "int column",
+          "int row"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "tileAt",
+        "signature": "public String tileAt(double x,double y)",
+        "parameters": [
+          "double x",
+          "double y"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "generate",
+        "signature": "public TileMap generate(int width,int height,long seed,String... layers)",
+        "parameters": [
+          "int width",
+          "int height",
+          "long seed",
+          "String... layers"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "generate",
+        "signature": "public TileMap generate(int width,int height,long seed,Assets... layers)",
+        "parameters": [
+          "int width",
+          "int height",
+          "long seed",
+          "Assets... layers"
+        ],
+        "kind": "method"
+      },
       {
         "name": "onDrawBackground",
         "signature": "public void onDrawBackground()",
@@ -1206,25 +1488,137 @@
         "kind": "constructor"
       },
       {
+        "name": "TileMap",
+        "signature": "class TileMap",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "texture",
         "signature": "String texture",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "tileSize",
         "signature": "double tileSize",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "layer",
         "signature": "int layer",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "order",
+        "signature": "int order",
+        "kind": "field",
+        "static": false
+      }
+    ]
+  },
+  "SpriteAnimator": {
+    "constructible": true,
+    "parent": "Component",
+    "enum": false,
+    "members": [
+      {
+        "name": "play",
+        "signature": "public SpriteAnimator play(String[] frames,double fps)",
+        "parameters": [
+          "String[] frames",
+          "double fps"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "play",
+        "signature": "public SpriteAnimator play()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "stop",
+        "signature": "public SpriteAnimator stop()",
+        "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onUpdate",
+        "signature": "public void onUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
+        "kind": "method"
+      },
+      {
+        "name": "SpriteAnimator",
+        "signature": "public SpriteAnimator(String[] frames,double fps)",
+        "parameters": [
+          "String[] frames",
+          "double fps"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "SpriteAnimator",
+        "signature": "public SpriteAnimator(Assets[] assets,double fps)",
+        "parameters": [
+          "Assets[] assets",
+          "double fps"
+        ],
+        "kind": "constructor"
+      },
+      {
+        "name": "SpriteAnimator",
+        "signature": "class SpriteAnimator",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "frames",
+        "signature": "String[] frames",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "fps",
+        "signature": "double fps",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "loop",
+        "signature": "boolean loop",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "playing",
+        "signature": "boolean playing",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "elapsed",
+        "signature": "double elapsed",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "frame",
+        "signature": "int frame",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Steering2D": {
     "constructible": false,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onUpdate",
@@ -1235,20 +1629,29 @@
         "kind": "method"
       },
       {
+        "name": "class",
+        "signature": "abstract class",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "target",
         "signature": "GameObject target",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "speed",
         "signature": "double speed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "FollowTarget2D": {
     "constructible": true,
     "parent": "Steering2D",
+    "enum": false,
     "members": [
       {
         "name": "FollowTarget2D",
@@ -1259,15 +1662,23 @@
         "kind": "constructor"
       },
       {
+        "name": "FollowTarget2D",
+        "signature": "class FollowTarget2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "stopDistance",
         "signature": "double stopDistance",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "FleeTarget2D": {
     "constructible": true,
     "parent": "Steering2D",
+    "enum": false,
     "members": [
       {
         "name": "FleeTarget2D",
@@ -1278,15 +1689,23 @@
         "kind": "constructor"
       },
       {
+        "name": "FleeTarget2D",
+        "signature": "class FleeTarget2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "safeDistance",
         "signature": "double safeDistance",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "FlankTarget2D": {
     "constructible": true,
     "parent": "Steering2D",
+    "enum": false,
     "members": [
       {
         "name": "FlankTarget2D",
@@ -1297,20 +1716,29 @@
         "kind": "constructor"
       },
       {
+        "name": "FlankTarget2D",
+        "signature": "class FlankTarget2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "radius",
         "signature": "double radius",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "clockwise",
         "signature": "boolean clockwise",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "ObstacleAvoidance2D": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "steer",
@@ -1322,20 +1750,29 @@
         "kind": "method"
       },
       {
+        "name": "ObstacleAvoidance2D",
+        "signature": "class ObstacleAvoidance2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "lookAhead",
         "signature": "double lookAhead",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "weight",
         "signature": "double weight",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Projectile2D": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onCreate",
@@ -1364,30 +1801,59 @@
         "kind": "constructor"
       },
       {
+        "name": "Projectile2D",
+        "signature": "class Projectile2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "maxHits",
         "signature": "int maxHits",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "hits",
+        "signature": "int hits",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "hitLayers",
+        "signature": "int hitLayers",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "direction",
         "signature": "Vector2 direction",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "speed",
+        "signature": "double speed",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "remainingLifetime",
-        "signature": "double speed, remainingLifetime",
-        "kind": "field"
+        "signature": "double remainingLifetime",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "owner",
         "signature": "GameObject owner",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Tween": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onComplete",
@@ -1418,29 +1884,40 @@
         "kind": "method"
       },
       {
+        "name": "Tween",
+        "signature": "class Tween",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "property",
         "signature": "String property",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "easing",
         "signature": "String easing",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "completed",
         "signature": "boolean completed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "cancelled",
         "signature": "boolean cancelled",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Tweens": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "position",
@@ -1489,6 +1966,7 @@
   "Camera2D": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "follow",
@@ -1502,6 +1980,14 @@
         "name": "stopFollowing",
         "signature": "public void stopFollowing()",
         "parameters": [],
+        "kind": "method"
+      },
+      {
+        "name": "onLateUpdate",
+        "signature": "public void onLateUpdate(double delta)",
+        "parameters": [
+          "double delta"
+        ],
         "kind": "method"
       },
       {
@@ -1550,14 +2036,40 @@
         "kind": "method"
       },
       {
+        "name": "Camera2D",
+        "signature": "class Camera2D",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "offsetX",
+        "signature": "double offsetX",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "offsetY",
-        "signature": "double offsetX, offsetY",
-        "kind": "field"
+        "signature": "double offsetY",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "followX",
+        "signature": "boolean followX",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "followY",
+        "signature": "boolean followY",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Physics2D": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "refresh",
@@ -1614,15 +2126,41 @@
         "kind": "constructor"
       },
       {
+        "name": "candidates",
+        "signature": "int candidates",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "narrowPhaseTests",
+        "signature": "int narrowPhaseTests",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "candidates",
+        "signature": "int candidates",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "narrowPhaseTests",
+        "signature": "int narrowPhaseTests",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "stats",
         "signature": "Stats stats",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "TopDownCharacterController2D": {
     "constructible": true,
     "parent": "CharacterController2D",
+    "enum": false,
     "members": [
       {
         "name": "move",
@@ -1688,20 +2226,29 @@
         "kind": "method"
       },
       {
+        "name": "TopDownCharacterController2D",
+        "signature": "class TopDownCharacterController2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "walkSpeed",
         "signature": "double walkSpeed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "runSpeed",
         "signature": "double runSpeed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "PlatformerCharacterController2D": {
     "constructible": true,
     "parent": "TopDownCharacterController2D",
+    "enum": false,
     "members": [
       {
         "name": "onCreate",
@@ -1776,25 +2323,35 @@
         "kind": "method"
       },
       {
+        "name": "PlatformerCharacterController2D",
+        "signature": "class PlatformerCharacterController2D",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "gravity",
         "signature": "double gravity",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "jumpSpeed",
         "signature": "double jumpSpeed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "maxFallSpeed",
         "signature": "double maxFallSpeed",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "KeyPressed": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onUpdate",
@@ -1814,20 +2371,29 @@
         "kind": "constructor"
       },
       {
+        "name": "KeyPressed",
+        "signature": "class KeyPressed",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "key",
         "signature": "String key",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "action",
         "signature": "Runnable action",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "KeyDoublePressed": {
     "constructible": true,
     "parent": "KeyPressed",
+    "enum": false,
     "members": [
       {
         "name": "onUpdate",
@@ -1847,15 +2413,23 @@
         "kind": "constructor"
       },
       {
+        "name": "KeyDoublePressed",
+        "signature": "class KeyDoublePressed",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "maxDelaySeconds",
         "signature": "double maxDelaySeconds",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "NoneOfKeysPressed": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onUpdate",
@@ -1875,159 +2449,256 @@
         "kind": "constructor"
       },
       {
+        "name": "NoneOfKeysPressed",
+        "signature": "class NoneOfKeysPressed",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "keys",
         "signature": "String[] keys",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "action",
         "signature": "Runnable action",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Keys": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "UP",
         "signature": "String UP",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "DOWN",
         "signature": "String DOWN",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "LEFT",
         "signature": "String LEFT",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "RIGHT",
         "signature": "String RIGHT",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "W",
         "signature": "String W",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "A",
         "signature": "String A",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "S",
         "signature": "String S",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "D",
         "signature": "String D",
-        "kind": "field"
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "E",
+        "signature": "String E",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "R",
+        "signature": "String R",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "X",
         "signature": "String X",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "Y",
         "signature": "String Y",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "Z",
         "signature": "String Z",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "DIGIT_1",
         "signature": "String DIGIT_1",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "DIGIT_2",
         "signature": "String DIGIT_2",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "DIGIT_3",
         "signature": "String DIGIT_3",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SPACE",
         "signature": "String SPACE",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ENTER",
         "signature": "String ENTER",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SHIFT",
         "signature": "String SHIFT",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "TAB",
         "signature": "String TAB",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ESCAPE",
         "signature": "String ESCAPE",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ACTION_A",
         "signature": "String ACTION_A",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ACTION_B",
         "signature": "String ACTION_B",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ACTION_X",
         "signature": "String ACTION_X",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ACTION_Y",
         "signature": "String ACTION_Y",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ACTION_START",
         "signature": "String ACTION_START",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ACTION_SELECT",
         "signature": "String ACTION_SELECT",
-        "kind": "field"
+        "kind": "field",
+        "static": true
       }
     ]
   },
   "UIAnchor": {
-    "constructible": true,
+    "constructible": false,
+    "enum": true,
     "members": [
       {
         "name": "TOP_LEFT",
-        "signature": "String TOP_LEFT",
-        "kind": "field"
+        "signature": "UIAnchor TOP_LEFT",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "TOP_CENTER",
+        "signature": "UIAnchor TOP_CENTER",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "TOP_RIGHT",
+        "signature": "UIAnchor TOP_RIGHT",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "CENTER_LEFT",
+        "signature": "UIAnchor CENTER_LEFT",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "CENTER",
+        "signature": "UIAnchor CENTER",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "CENTER_RIGHT",
+        "signature": "UIAnchor CENTER_RIGHT",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "BOTTOM_LEFT",
+        "signature": "UIAnchor BOTTOM_LEFT",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "BOTTOM_CENTER",
+        "signature": "UIAnchor BOTTOM_CENTER",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "BOTTOM_RIGHT",
+        "signature": "UIAnchor BOTTOM_RIGHT",
+        "kind": "field",
+        "static": true
       }
     ]
   },
   "UIBounds": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "centerX",
@@ -2051,12 +2722,37 @@
           "double bottom"
         ],
         "kind": "constructor"
+      },
+      {
+        "name": "left",
+        "signature": "double left",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "top",
+        "signature": "double top",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "right",
+        "signature": "double right",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "bottom",
+        "signature": "double bottom",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "UITransform": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "getBounds",
@@ -2096,20 +2792,41 @@
         "kind": "constructor"
       },
       {
+        "name": "UITransform",
+        "signature": "class UITransform",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "height",
+        "signature": "double height",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "anchor",
-        "signature": "String anchor",
-        "kind": "field"
+        "signature": "UIAnchor anchor",
+        "kind": "field",
+        "static": false
       },
       {
         "name": "pivot",
         "signature": "Vector2 pivot",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "ShapeRenderer": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "circle",
@@ -2137,15 +2854,65 @@
         "kind": "constructor"
       },
       {
+        "name": "ShapeRenderer",
+        "signature": "class ShapeRenderer",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "height",
+        "signature": "double height",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "color",
+        "signature": "String color",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "space",
+        "signature": "String space",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "shape",
+        "signature": "String shape",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "radius",
         "signature": "double radius",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "layer",
+        "signature": "int layer",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "order",
+        "signature": "int order",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "TextRenderer": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "onDrawUI",
@@ -2172,14 +2939,64 @@
         "kind": "constructor"
       },
       {
+        "name": "TextRenderer",
+        "signature": "class TextRenderer",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "text",
+        "signature": "String text",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "color",
+        "signature": "String color",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "align",
+        "signature": "String align",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "baseline",
+        "signature": "String baseline",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "space",
+        "signature": "String space",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "fontSize",
         "signature": "double fontSize",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "layer",
+        "signature": "int layer",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "order",
+        "signature": "int order",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Canvas": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "getWidth",
@@ -2245,6 +3062,7 @@
   },
   "InputManager": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "setKey",
@@ -2382,16 +3200,68 @@
       {
         "name": "MOUSE_LEFT",
         "signature": "int MOUSE_LEFT",
-        "kind": "field"
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "MOUSE_MIDDLE",
+        "signature": "int MOUSE_MIDDLE",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "MOUSE_RIGHT",
+        "signature": "int MOUSE_RIGHT",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "MOUSE_BACK",
+        "signature": "int MOUSE_BACK",
+        "kind": "field",
+        "static": true
+      },
+      {
+        "name": "MOUSE_FORWARD",
+        "signature": "int MOUSE_FORWARD",
+        "kind": "field",
+        "static": true
       }
     ]
   },
   "Time": {
     "constructible": true,
-    "members": []
+    "enum": false,
+    "members": [
+      {
+        "name": "deltaTime",
+        "signature": "double deltaTime",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "elapsed",
+        "signature": "double elapsed",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "unscaledDeltaTime",
+        "signature": "double unscaledDeltaTime",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "unscaledElapsed",
+        "signature": "double unscaledElapsed",
+        "kind": "field",
+        "static": false
+      }
+    ]
   },
   "Random": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "setSeed",
@@ -2444,6 +3314,7 @@
   "ProgressBar": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "setProgress",
@@ -2490,15 +3361,47 @@
         "kind": "constructor"
       },
       {
+        "name": "ProgressBar",
+        "signature": "class ProgressBar",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "height",
+        "signature": "double height",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "frame",
         "signature": "Assets frame",
-        "kind": "field"
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "track",
+        "signature": "Assets track",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "fill",
+        "signature": "Assets fill",
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "Button": {
     "constructible": true,
     "parent": "Component",
+    "enum": false,
     "members": [
       {
         "name": "activate",
@@ -2554,34 +3457,58 @@
         "kind": "constructor"
       },
       {
+        "name": "Button",
+        "signature": "class Button",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "width",
+        "signature": "double width",
+        "kind": "field",
+        "static": false
+      },
+      {
+        "name": "height",
+        "signature": "double height",
+        "kind": "field",
+        "static": false
+      },
+      {
         "name": "texture",
         "signature": "Assets texture",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "text",
         "signature": "String text",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "border",
         "signature": "double border",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "onClick",
         "signature": "Runnable onClick",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       },
       {
         "name": "focused",
         "signature": "boolean focused",
-        "kind": "field"
+        "kind": "field",
+        "static": false
       }
     ]
   },
   "SpatialHash2D": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "remove",
@@ -2614,10 +3541,12 @@
   },
   "Notes": {
     "constructible": true,
+    "enum": false,
     "members": []
   },
   "Sequencer": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "note",
@@ -2668,6 +3597,7 @@
   },
   "Song": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "sequencer",
@@ -2719,6 +3649,7 @@
   },
   "Audio": {
     "constructible": true,
+    "enum": false,
     "members": [
       {
         "name": "playNote",
@@ -2774,6 +3705,7 @@
   },
   "Assets": {
     "constructible": false,
+    "enum": true,
     "members": [
       {
         "name": "key",
@@ -2783,598 +3715,717 @@
       },
       {
         "name": "PLAYER01",
-        "signature": "Assets.PLAYER01",
-        "kind": "field"
+        "signature": "Assets PLAYER01",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "KNIGHT",
-        "signature": "Assets.KNIGHT",
-        "kind": "field"
+        "signature": "Assets KNIGHT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "RANGER",
-        "signature": "Assets.RANGER",
-        "kind": "field"
+        "signature": "Assets RANGER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WIZARD",
-        "signature": "Assets.WIZARD",
-        "kind": "field"
+        "signature": "Assets WIZARD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "CLERIC",
-        "signature": "Assets.CLERIC",
-        "kind": "field"
+        "signature": "Assets CLERIC",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ROGUE",
-        "signature": "Assets.ROGUE",
-        "kind": "field"
+        "signature": "Assets ROGUE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "PALADIN",
-        "signature": "Assets.PALADIN",
-        "kind": "field"
+        "signature": "Assets PALADIN",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "MONK",
-        "signature": "Assets.MONK",
-        "kind": "field"
+        "signature": "Assets MONK",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "VAMPIRE",
-        "signature": "Assets.VAMPIRE",
-        "kind": "field"
+        "signature": "Assets VAMPIRE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WARRIOR",
-        "signature": "Assets.WARRIOR",
-        "kind": "field"
+        "signature": "Assets WARRIOR",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SLIME",
-        "signature": "Assets.SLIME",
-        "kind": "field"
+        "signature": "Assets SLIME",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SLIME_BLUE",
-        "signature": "Assets.SLIME_BLUE",
-        "kind": "field"
+        "signature": "Assets SLIME_BLUE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SLIME_RED",
-        "signature": "Assets.SLIME_RED",
-        "kind": "field"
+        "signature": "Assets SLIME_RED",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SLIME_PURPLE",
-        "signature": "Assets.SLIME_PURPLE",
-        "kind": "field"
+        "signature": "Assets SLIME_PURPLE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BAT",
-        "signature": "Assets.BAT",
-        "kind": "field"
+        "signature": "Assets BAT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "GHOST",
-        "signature": "Assets.GHOST",
-        "kind": "field"
+        "signature": "Assets GHOST",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SKELETON",
-        "signature": "Assets.SKELETON",
-        "kind": "field"
+        "signature": "Assets SKELETON",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ZOMBIE",
-        "signature": "Assets.ZOMBIE",
-        "kind": "field"
+        "signature": "Assets ZOMBIE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "GOBLIN",
-        "signature": "Assets.GOBLIN",
-        "kind": "field"
+        "signature": "Assets GOBLIN",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ORC",
-        "signature": "Assets.ORC",
-        "kind": "field"
+        "signature": "Assets ORC",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SPIDER",
-        "signature": "Assets.SPIDER",
-        "kind": "field"
+        "signature": "Assets SPIDER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WOLF",
-        "signature": "Assets.WOLF",
-        "kind": "field"
+        "signature": "Assets WOLF",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "MUSHROOM_MONSTER",
-        "signature": "Assets.MUSHROOM_MONSTER",
-        "kind": "field"
+        "signature": "Assets MUSHROOM_MONSTER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "FLOATING_EYE",
-        "signature": "Assets.FLOATING_EYE",
-        "kind": "field"
+        "signature": "Assets FLOATING_EYE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BOSS_DEMON",
-        "signature": "Assets.BOSS_DEMON",
-        "kind": "field"
+        "signature": "Assets BOSS_DEMON",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "FIREBALL",
-        "signature": "Assets.FIREBALL",
-        "kind": "field"
+        "signature": "Assets FIREBALL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ICE_BOLT",
-        "signature": "Assets.ICE_BOLT",
-        "kind": "field"
+        "signature": "Assets ICE_BOLT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "LIGHTNING_BOLT",
-        "signature": "Assets.LIGHTNING_BOLT",
-        "kind": "field"
+        "signature": "Assets LIGHTNING_BOLT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "MAGIC_ORB",
-        "signature": "Assets.MAGIC_ORB",
-        "kind": "field"
+        "signature": "Assets MAGIC_ORB",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "POISON_BALL",
-        "signature": "Assets.POISON_BALL",
-        "kind": "field"
+        "signature": "Assets POISON_BALL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ARROW",
-        "signature": "Assets.ARROW",
-        "kind": "field"
+        "signature": "Assets ARROW",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "KNIFE",
-        "signature": "Assets.KNIFE",
-        "kind": "field"
+        "signature": "Assets KNIFE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "STAKE",
-        "signature": "Assets.STAKE",
-        "kind": "field"
+        "signature": "Assets STAKE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BOMB",
-        "signature": "Assets.BOMB",
-        "kind": "field"
+        "signature": "Assets BOMB",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ENERGY_WAVE",
-        "signature": "Assets.ENERGY_WAVE",
-        "kind": "field"
+        "signature": "Assets ENERGY_WAVE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SWORD",
-        "signature": "Assets.SWORD",
-        "kind": "field"
+        "signature": "Assets SWORD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "AXE",
-        "signature": "Assets.AXE",
-        "kind": "field"
+        "signature": "Assets AXE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BOW",
-        "signature": "Assets.BOW",
-        "kind": "field"
+        "signature": "Assets BOW",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WAND",
-        "signature": "Assets.WAND",
-        "kind": "field"
+        "signature": "Assets WAND",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "CROSSBOW",
-        "signature": "Assets.CROSSBOW",
-        "kind": "field"
+        "signature": "Assets CROSSBOW",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SPEAR",
-        "signature": "Assets.SPEAR",
-        "kind": "field"
+        "signature": "Assets SPEAR",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "HAMMER",
-        "signature": "Assets.HAMMER",
-        "kind": "field"
+        "signature": "Assets HAMMER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "HOLY_CROSS",
-        "signature": "Assets.HOLY_CROSS",
-        "kind": "field"
+        "signature": "Assets HOLY_CROSS",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SPELL_BOOK",
-        "signature": "Assets.SPELL_BOOK",
-        "kind": "field"
+        "signature": "Assets SPELL_BOOK",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SHIELD",
-        "signature": "Assets.SHIELD",
-        "kind": "field"
+        "signature": "Assets SHIELD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "EXPLOSION",
-        "signature": "Assets.EXPLOSION",
-        "kind": "field"
+        "signature": "Assets EXPLOSION",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "FROST_BURST",
-        "signature": "Assets.FROST_BURST",
-        "kind": "field"
+        "signature": "Assets FROST_BURST",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "MAGIC_BURST",
-        "signature": "Assets.MAGIC_BURST",
-        "kind": "field"
+        "signature": "Assets MAGIC_BURST",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SLASH",
-        "signature": "Assets.SLASH",
-        "kind": "field"
+        "signature": "Assets SLASH",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "IMPACT",
-        "signature": "Assets.IMPACT",
-        "kind": "field"
+        "signature": "Assets IMPACT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "COIN",
-        "signature": "Assets.COIN",
-        "kind": "field"
+        "signature": "Assets COIN",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "GEM",
-        "signature": "Assets.GEM",
-        "kind": "field"
+        "signature": "Assets GEM",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "HEART",
-        "signature": "Assets.HEART",
-        "kind": "field"
+        "signature": "Assets HEART",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "POTION",
-        "signature": "Assets.POTION",
-        "kind": "field"
+        "signature": "Assets POTION",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "POTION_MANA",
-        "signature": "Assets.POTION_MANA",
-        "kind": "field"
+        "signature": "Assets POTION_MANA",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "POTION_POISON",
-        "signature": "Assets.POTION_POISON",
-        "kind": "field"
+        "signature": "Assets POTION_POISON",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "CHEST",
-        "signature": "Assets.CHEST",
-        "kind": "field"
+        "signature": "Assets CHEST",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "CHEST_WOOD",
-        "signature": "Assets.CHEST_WOOD",
-        "kind": "field"
+        "signature": "Assets CHEST_WOOD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "KEY_SILVER",
-        "signature": "Assets.KEY_SILVER",
-        "kind": "field"
+        "signature": "Assets KEY_SILVER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "KEY_GOLD",
-        "signature": "Assets.KEY_GOLD",
-        "kind": "field"
+        "signature": "Assets KEY_GOLD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "TREE",
-        "signature": "Assets.TREE",
-        "kind": "field"
+        "signature": "Assets TREE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "PINE",
-        "signature": "Assets.PINE",
-        "kind": "field"
+        "signature": "Assets PINE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "TREE_DEAD",
-        "signature": "Assets.TREE_DEAD",
-        "kind": "field"
+        "signature": "Assets TREE_DEAD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BUSH",
-        "signature": "Assets.BUSH",
-        "kind": "field"
+        "signature": "Assets BUSH",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "ROCK",
-        "signature": "Assets.ROCK",
-        "kind": "field"
+        "signature": "Assets ROCK",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BOULDER",
-        "signature": "Assets.BOULDER",
-        "kind": "field"
+        "signature": "Assets BOULDER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "BARREL",
-        "signature": "Assets.BARREL",
-        "kind": "field"
+        "signature": "Assets BARREL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "CRATE",
-        "signature": "Assets.CRATE",
-        "kind": "field"
+        "signature": "Assets CRATE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "GRAVESTONE",
-        "signature": "Assets.GRAVESTONE",
-        "kind": "field"
+        "signature": "Assets GRAVESTONE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "FENCE",
-        "signature": "Assets.FENCE",
-        "kind": "field"
+        "signature": "Assets FENCE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "CAMPFIRE",
-        "signature": "Assets.CAMPFIRE",
-        "kind": "field"
+        "signature": "Assets CAMPFIRE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "MUSHROOM_RED",
-        "signature": "Assets.MUSHROOM_RED",
-        "kind": "field"
+        "signature": "Assets MUSHROOM_RED",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "MUSHROOM_BROWN",
-        "signature": "Assets.MUSHROOM_BROWN",
-        "kind": "field"
+        "signature": "Assets MUSHROOM_BROWN",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "GRASS_TUFT",
-        "signature": "Assets.GRASS_TUFT",
-        "kind": "field"
+        "signature": "Assets GRASS_TUFT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "STONE",
-        "signature": "Assets.STONE",
-        "kind": "field"
+        "signature": "Assets STONE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_PANEL_BRONZE",
-        "signature": "Assets.UI_PANEL_BRONZE",
-        "kind": "field"
+        "signature": "Assets UI_PANEL_BRONZE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_PANEL_BLUE",
-        "signature": "Assets.UI_PANEL_BLUE",
-        "kind": "field"
+        "signature": "Assets UI_PANEL_BLUE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_PANEL_WOOD",
-        "signature": "Assets.UI_PANEL_WOOD",
-        "kind": "field"
+        "signature": "Assets UI_PANEL_WOOD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_PANEL_PARCHMENT",
-        "signature": "Assets.UI_PANEL_PARCHMENT",
-        "kind": "field"
+        "signature": "Assets UI_PANEL_PARCHMENT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_RED",
-        "signature": "Assets.UI_BUTTON_RED",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_RED",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_RED_PRESSED",
-        "signature": "Assets.UI_BUTTON_RED_PRESSED",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_RED_PRESSED",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_BLUE",
-        "signature": "Assets.UI_BUTTON_BLUE",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_BLUE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_BLUE_PRESSED",
-        "signature": "Assets.UI_BUTTON_BLUE_PRESSED",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_BLUE_PRESSED",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_GREEN",
-        "signature": "Assets.UI_BUTTON_GREEN",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_GREEN",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_GREEN_PRESSED",
-        "signature": "Assets.UI_BUTTON_GREEN_PRESSED",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_GREEN_PRESSED",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_GOLD",
-        "signature": "Assets.UI_BUTTON_GOLD",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_GOLD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BUTTON_GRAY",
-        "signature": "Assets.UI_BUTTON_GRAY",
-        "kind": "field"
+        "signature": "Assets UI_BUTTON_GRAY",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_SLOT_BRONZE",
-        "signature": "Assets.UI_SLOT_BRONZE",
-        "kind": "field"
+        "signature": "Assets UI_SLOT_BRONZE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_SLOT_GOLD",
-        "signature": "Assets.UI_SLOT_GOLD",
-        "kind": "field"
+        "signature": "Assets UI_SLOT_GOLD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_SLOT_PURPLE",
-        "signature": "Assets.UI_SLOT_PURPLE",
-        "kind": "field"
+        "signature": "Assets UI_SLOT_PURPLE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_HEALTH",
-        "signature": "Assets.UI_BAR_HEALTH",
-        "kind": "field"
+        "signature": "Assets UI_BAR_HEALTH",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_EXPERIENCE",
-        "signature": "Assets.UI_BAR_EXPERIENCE",
-        "kind": "field"
+        "signature": "Assets UI_BAR_EXPERIENCE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_GOLD",
-        "signature": "Assets.UI_BAR_GOLD",
-        "kind": "field"
+        "signature": "Assets UI_BAR_GOLD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_HEART",
-        "signature": "Assets.UI_HEART",
-        "kind": "field"
+        "signature": "Assets UI_HEART",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_STAR",
-        "signature": "Assets.UI_STAR",
-        "kind": "field"
+        "signature": "Assets UI_STAR",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_GEAR",
-        "signature": "Assets.UI_GEAR",
-        "kind": "field"
+        "signature": "Assets UI_GEAR",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_PAUSE",
-        "signature": "Assets.UI_PAUSE",
-        "kind": "field"
+        "signature": "Assets UI_PAUSE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_PLAY",
-        "signature": "Assets.UI_PLAY",
-        "kind": "field"
+        "signature": "Assets UI_PLAY",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_CLOSE",
-        "signature": "Assets.UI_CLOSE",
-        "kind": "field"
+        "signature": "Assets UI_CLOSE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_UPGRADE",
-        "signature": "Assets.UI_UPGRADE",
-        "kind": "field"
+        "signature": "Assets UI_UPGRADE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "PROJECTILE",
-        "signature": "Assets.PROJECTILE",
-        "kind": "field"
+        "signature": "Assets PROJECTILE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "GRASS",
-        "signature": "Assets.GRASS",
-        "kind": "field"
+        "signature": "Assets GRASS",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "DIRT",
-        "signature": "Assets.DIRT",
-        "kind": "field"
+        "signature": "Assets DIRT",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "SAND",
-        "signature": "Assets.SAND",
-        "kind": "field"
+        "signature": "Assets SAND",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WOOD",
-        "signature": "Assets.WOOD",
-        "kind": "field"
+        "signature": "Assets WOOD",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "LEAVES",
-        "signature": "Assets.LEAVES",
-        "kind": "field"
+        "signature": "Assets LEAVES",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WATER",
-        "signature": "Assets.WATER",
-        "kind": "field"
+        "signature": "Assets WATER",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "COAL_ORE",
-        "signature": "Assets.COAL_ORE",
-        "kind": "field"
+        "signature": "Assets COAL_ORE",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "WALL",
-        "signature": "Assets.WALL",
-        "kind": "field"
+        "signature": "Assets WALL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_HEALTH_FRAME",
-        "signature": "Assets.UI_BAR_HEALTH_FRAME",
-        "kind": "field"
+        "signature": "Assets UI_BAR_HEALTH_FRAME",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_HEALTH_FILL",
-        "signature": "Assets.UI_BAR_HEALTH_FILL",
-        "kind": "field"
+        "signature": "Assets UI_BAR_HEALTH_FILL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_HEALTH_TRACK",
-        "signature": "Assets.UI_BAR_HEALTH_TRACK",
-        "kind": "field"
+        "signature": "Assets UI_BAR_HEALTH_TRACK",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_EXPERIENCE_FRAME",
-        "signature": "Assets.UI_BAR_EXPERIENCE_FRAME",
-        "kind": "field"
+        "signature": "Assets UI_BAR_EXPERIENCE_FRAME",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_EXPERIENCE_FILL",
-        "signature": "Assets.UI_BAR_EXPERIENCE_FILL",
-        "kind": "field"
+        "signature": "Assets UI_BAR_EXPERIENCE_FILL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_EXPERIENCE_TRACK",
-        "signature": "Assets.UI_BAR_EXPERIENCE_TRACK",
-        "kind": "field"
+        "signature": "Assets UI_BAR_EXPERIENCE_TRACK",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_GOLD_FRAME",
-        "signature": "Assets.UI_BAR_GOLD_FRAME",
-        "kind": "field"
+        "signature": "Assets UI_BAR_GOLD_FRAME",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_GOLD_FILL",
-        "signature": "Assets.UI_BAR_GOLD_FILL",
-        "kind": "field"
+        "signature": "Assets UI_BAR_GOLD_FILL",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "UI_BAR_GOLD_TRACK",
-        "signature": "Assets.UI_BAR_GOLD_TRACK",
-        "kind": "field"
+        "signature": "Assets UI_BAR_GOLD_TRACK",
+        "kind": "field",
+        "static": true
       },
       {
         "name": "PLAYER",
-        "signature": "Assets.PLAYER",
-        "kind": "field"
+        "signature": "Assets PLAYER",
+        "kind": "field",
+        "static": true
       }
     ]
   }

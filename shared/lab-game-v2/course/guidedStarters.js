@@ -13,7 +13,7 @@ export function guidedStarter(language,chapter,mode,solution) {
   'loot-xp':['LootOnDeath',/orb\.addComponent\(new XpOrb\(1\)\);/],
   'enemy-tactics':['EnemyAI',/if\(Math\.hypot\(dx,dy\)>150\)return;/],
   camera:[null,/camera\.setPosition\(player\.transform\.x, player\.transform\.y\);/],
-  'canvas-ui':[null,/hUD\.getComponent\((?:GameLab\.)?UITransform(?:\.class)?\)\.anchor="TOP_LEFT";/],
+  'canvas-ui':[null,/hUD\.getComponent\((?:GameLab\.)?UITransform(?:\.class)?\)\.anchor=(?:"TOP_LEFT"|(?:GameLab\.)?UIAnchor\.TOP_LEFT);/],
   'ui-flow':['MenuView',/if\(object(?:!=null)?\)object\.active=open;/],
   upgrades:['UpgradeController',/speed\.speed\+=30;/],
   feedback:[null,/(?:GameLab\.)?Tweens\.position\(coin,160,100,1\);/],
