@@ -4,7 +4,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/ai/chat.js": { "maxDuration": 60 },
+    "api/ai/chat.js": {
+      "maxDuration": 60,
+      "includeFiles": "{docs/*.md,shared/lab-game-v2/*.md,src/data/gameLabApi.js}"
+    },
     "api/ai/config.js": { "maxDuration": 20 }
   }
 }

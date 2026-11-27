@@ -60,6 +60,31 @@ export async function readProviderCompletion(response, onEvent) {
   return { choices: [{ message: { content, ...(calls.size ? { tool_calls: [...calls.values()] } : {}) } }] };
 }
 
+export async function readOpenAIResponse(response, onEvent) {
+  if (!response.headers?.get('content-type')?.includes('text/event-stream')) return response.json();
+  let completedResponse;
+  let complete = false;
+  await readSSE(response, ({ event, data }) => {
+    if (data === '[DONE]') return;
+    let chunk;
+    try { chunk = JSON.parse(data); } catch { throw new Error('OpenAI zwrócił nieprawidłowe zdarzenie.'); }
+    const type = chunk.type || event;
+    if (type === 'error' || type === 'response.failed') throw new Error('OpenAI przerwał odpowiedź.');
+    if (type === 'response.incomplete') throw new Error('Odpowiedź została przerwana przed ukończeniem.');
+    if (type === 'response.in_progress') onEvent?.({ type: 'status', phase: 'thinking' });
+    if (type === 'response.output_text.delta' && typeof chunk.delta === 'string' && chunk.delta) {
+      onEvent?.({ type: 'delta', text: chunk.delta });
+    }
+    if (type === 'response.function_call_arguments.delta') onEvent?.({ type: 'status', phase: 'editing' });
+    if (type === 'response.completed') {
+      completedResponse = chunk.response;
+      complete = !!completedResponse;
+    }
+  });
+  if (!complete) throw new Error('Strumień OpenAI zakończył się przed ukończeniem odpowiedzi.');
+  return completedResponse;
+}
+
 export async function sendTutorStream(res, handler, payload, signal) {
   res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', 'X-Accel-Buffering': 'no' });
   res.flushHeaders?.();

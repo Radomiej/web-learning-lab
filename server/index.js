@@ -1,7 +1,6 @@
 import { sendTutorStream } from '../shared/lab-game-v2/tutorStream.js';
 import { createServer } from 'node:http';
-import { createTutorHandler } from './tutor.js';
-import { listFreeOpenRouterModels } from './freeModels.js';
+import { createTutorHandler, getTutorConfig } from './tutor.js';
 
 const handler = createTutorHandler();
 const requests = new Map();
@@ -13,8 +12,8 @@ function send(res, status, body) {
 export const server = createServer(async (req, res) => {
   if (!['127.0.0.1:5183', 'localhost:5183'].includes(req.headers.host) || (req.headers.origin && !['http://localhost:5181', 'http://127.0.0.1:5181'].includes(req.headers.origin))) return send(res, 403, { message: 'Niedozwolone źródło zapytania.' });
   if (req.url === '/api/ai/config' && req.method === 'GET') {
-    try { return send(res, 200, await listFreeOpenRouterModels()); }
-    catch { return send(res, 502, { message: 'Nie udało się pobrać listy darmowych modeli. Spróbuj ponownie.' }); }
+    try { return send(res, 200, await getTutorConfig()); }
+    catch { return send(res, 502, { message: 'Nie udało się odczytać konfiguracji korepetytora. Spróbuj ponownie.' }); }
   }
   if (req.url !== '/api/ai/chat' || req.method !== 'POST') return send(res, 404, { message: 'Nie znaleziono endpointu.' });
   if (!req.headers['content-type']?.startsWith('application/json')) return send(res, 415, { message: 'Wymagany JSON.' });
